@@ -1,0 +1,389 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{B8B52E8A-3A29-449D-B324-7A72994F83E2}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <HeaderFileName>WinArk.h</HeaderFileName>
+      <InterfaceIdentifierFileName>WinArk_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>WinArk_p.c</ProxyFileName>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)/WinArk.tlb</TypeLibraryName>
+      <DllDataFileName />
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <HeaderFileName>WinArk.h</HeaderFileName>
+      <InterfaceIdentifierFileName>WinArk_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>WinArk_p.c</ProxyFileName>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)/WinArk.tlb</TypeLibraryName>
+      <DllDataFileName />
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling />
+      <DebugInformationFormat />
+      <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>..\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <HeaderFileName>WinArk.h</HeaderFileName>
+      <InterfaceIdentifierFileName>WinArk_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>WinArk_p.c</ProxyFileName>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)/WinArk.tlb</TypeLibraryName>
+      <DllDataFileName />
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling />
+      <DebugInformationFormat />
+      <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <HeaderFileName>WinArk.h</HeaderFileName>
+      <InterfaceIdentifierFileName>WinArk_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>WinArk_p.c</ProxyFileName>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>$(IntDir)/WinArk.tlb</TypeLibraryName>
+      <DllDataFileName />
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="AccessMaskDecoder.cpp" />
+    <ClCompile Include="AppCommandBase.cpp" />
+    <ClCompile Include="BinaryValueDlg.cpp" />
+    <ClCompile Include="ClipboardHelper.cpp" />
+    <ClCompile Include="CommandManager.cpp" />
+    <ClCompile Include="CreateNewKeyCommand.cpp" />
+    <ClCompile Include="DeleteKeyCommand.cpp" />
+    <ClCompile Include="DeviceManagerView.cpp" />
+    <ClCompile Include="DeviceObjectType.cpp" />
+    <ClCompile Include="DriverTable.cpp" />
+    <ClCompile Include="EnvironmentDlg.cpp" />
+    <ClCompile Include="EventObjectType.cpp" />
+    <ClCompile Include="FileObjectType.cpp" />
+    <ClCompile Include="FormatHelper.cpp" />
+    <ClCompile Include="ImageHelper.cpp" />
+    <ClCompile Include="IntValueDlg.cpp" />
+    <ClCompile Include="JobObjectType.cpp" />
+    <ClCompile Include="JobPropertiesDlg.cpp" />
+    <ClCompile Include="KeyObjectType.cpp" />
+    <ClCompile Include="MainDlg.cpp" />
+    <ClCompile Include="MultiStringValueDlg.cpp" />
+    <ClCompile Include="MutexObjectType.cpp" />
+    <ClCompile Include="NetworkTable.cpp" />
+    <ClCompile Include="NewKeyDlg.cpp" />
+    <ClCompile Include="ObjectType.cpp" />
+    <ClCompile Include="ObjectTypeFactory.cpp" />
+    <ClCompile Include="ProcessHandleDlg.cpp" />
+    <ClCompile Include="ProcessHandleTable.cpp" />
+    <ClCompile Include="ProcessHelper.cpp" />
+    <ClCompile Include="ProcessInfoEx.cpp" />
+    <ClCompile Include="ProcessMemoryDlg.cpp" />
+    <ClCompile Include="ProcessMemoryTable.cpp" />
+    <ClCompile Include="ProcessModuleDlg.cpp" />
+    <ClCompile Include="ProcessModuleTable.cpp" />
+    <ClCompile Include="ProcessObjectType.cpp" />
+    <ClCompile Include="ProcessPropertiesDlg.cpp" />
+    <ClCompile Include="ProcessTable.cpp" />
+    <ClCompile Include="ProcessThreadDlg.cpp" />
+    <ClCompile Include="ProcessThreadTable.cpp" />
+    <ClCompile Include="RegHelper.cpp" />
+    <ClCompile Include="RegistryManager.cpp" />
+    <ClCompile Include="RenameKeyCommand.cpp" />
+    <ClCompile Include="RenameValueCommand.cpp" />
+    <ClCompile Include="SectionObjectType.cpp" />
+    <ClCompile Include="SecurityInfo.cpp" />
+    <ClCompile Include="SecurityInformation.cpp" />
+    <ClCompile Include="SemaphoreObjectType.cpp" />
+    <ClCompile Include="ServiceInfoEx.cpp" />
+    <ClCompile Include="SortHelpler.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="KernelModuleTable.cpp" />
+    <ClCompile Include="StringValueDlg.cpp" />
+    <ClCompile Include="SymbolicLinkObjectType.cpp" />
+    <ClCompile Include="Table.cpp" />
+    <ClCompile Include="ThemeSystem.cpp" />
+    <ClCompile Include="ThreadObjectType.cpp" />
+    <ClCompile Include="TimerObjectType.cpp" />
+    <ClCompile Include="TokenObjectType.cpp" />
+    <ClCompile Include="TokenPropertiesDlg.cpp" />
+    <ClCompile Include="TreeNode.cpp" />
+    <ClCompile Include="TreeNodes.cpp" />
+    <ClCompile Include="View.cpp" />
+    <ClCompile Include="WinArk.cpp" />
+    <ClCompile Include="WinStationObjectType.cpp" />
+    <ClCompile Include="WorkerFactoryObjectType.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="AccessMaskDecoder.h" />
+    <ClInclude Include="AppCommandBase.h" />
+    <ClInclude Include="BinaryValueDlg.h" />
+    <ClInclude Include="ChangeValueCommand.h" />
+    <ClInclude Include="ClipboardHelper.h" />
+    <ClInclude Include="CommandManager.h" />
+    <ClInclude Include="CreateNewKeyCommand.h" />
+    <ClInclude Include="CreateNewValueCommand.h" />
+    <ClInclude Include="DeleteKeyCommand.h" />
+    <ClInclude Include="DeviceManagerView.h" />
+    <ClInclude Include="DeviceObjectType.h" />
+    <ClInclude Include="DriverTable.h" />
+    <ClInclude Include="EnvironmentDlg.h" />
+    <ClInclude Include="EventObjectType.h" />
+    <ClInclude Include="FileObjectType.h" />
+    <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="ImageHelper.h" />
+    <ClInclude Include="Internals.h" />
+    <ClInclude Include="IntValueDlg.h" />
+    <ClInclude Include="JobObjectType.h" />
+    <ClInclude Include="JobPropertiesDlg.h" />
+    <ClInclude Include="KeyObjectType.h" />
+    <ClInclude Include="MainDlg.h" />
+    <ClInclude Include="MultiStringValueDlg.h" />
+    <ClInclude Include="MutexObjectType.h" />
+    <ClInclude Include="NetworkTable.h" />
+    <ClInclude Include="NewKeyDlg.h" />
+    <ClInclude Include="NtDll.h" />
+    <ClInclude Include="ObjectType.h" />
+    <ClInclude Include="ObjectTypeFactory.h" />
+    <ClInclude Include="ProcessHandleDlg.h" />
+    <ClInclude Include="ProcessHandleTable.h" />
+    <ClInclude Include="ProcessHelper.h" />
+    <ClInclude Include="ProcessInfoEx.h" />
+    <ClInclude Include="ProcessMemoryDlg.h" />
+    <ClInclude Include="ProcessMemoryTable.h" />
+    <ClInclude Include="ProcessModuleDlg.h" />
+    <ClInclude Include="ProcessModuleTable.h" />
+    <ClInclude Include="ProcessObjectType.h" />
+    <ClInclude Include="ProcessPropertiesDlg.h" />
+    <ClInclude Include="ProcessTable.h" />
+    <ClInclude Include="ProcessThreadDlg.h" />
+    <ClInclude Include="ProcessThreadTable.h" />
+    <ClInclude Include="RegHelper.h" />
+    <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="RenameKeyCommand.h" />
+    <ClInclude Include="RenameValueCommand.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SectionObjectType.h" />
+    <ClInclude Include="SecurityInfo.h" />
+    <ClInclude Include="SecurityInformation.h" />
+    <ClInclude Include="SemaphoreObjectType.h" />
+    <ClInclude Include="ServiceInfoEx.h" />
+    <ClInclude Include="SortedFilteredVector.h" />
+    <ClInclude Include="SortHelper.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="KernelModuleTable.h" />
+    <ClInclude Include="StringValueDlg.h" />
+    <ClInclude Include="SymbolicLinkObjectType.h" />
+    <ClInclude Include="Table.h" />
+    <ClInclude Include="ThemeSystem.h" />
+    <ClInclude Include="ThreadObjectType.h" />
+    <ClInclude Include="TimerObjectType.h" />
+    <ClInclude Include="TokenObjectType.h" />
+    <ClInclude Include="TokenPropertiesDlg.h" />
+    <ClInclude Include="TreeNode.h" />
+    <ClInclude Include="TreeNodes.h" />
+    <ClInclude Include="UICommon.h" />
+    <ClInclude Include="View.h" />
+    <ClInclude Include="VirtualListView.h" />
+    <ClInclude Include="WinStationObjectType.h" />
+    <ClInclude Include="WorkerFactoryObjectType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinArk.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\WinArk.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Debug\AntiRootkit.sys" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinSysCore\WinSysCore.vcxproj">
+      <Project>{38942b29-a5a3-49c3-a922-0c1082db33c0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\packages\wtl.10.0.10320\build\native\wtl.targets')" />
+    <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\wtl.10.0.10320\build\native\wtl.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.201120.3\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+  </Target>
+</Project>

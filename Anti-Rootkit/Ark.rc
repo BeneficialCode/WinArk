@@ -1,0 +1,13 @@
+// 这是一个rc脚本文件
+/*
+ 	Resources.Rc
+*/
+
+#include <Windows.h>
+#include <ntverp.h>
+
+/**
+ *  Version	
+*/
+///////////////////////////////////////////////////////
+
