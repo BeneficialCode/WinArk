@@ -125,7 +125,7 @@ void CDeviceManagerView::UpdateList() {
 				{L"Removal Policy",ItemType::Dword,DeviceRegistryPropertyType::RemovalPolicy},
 				{L"Removal Policy (Default)",ItemType::Dword,DeviceRegistryPropertyType::RemovalPolicyHwDefault},
 				{L"Removal Policy (Override)",ItemType::Dword,DeviceRegistryPropertyType::RemovalPolicyOverride},
-				{L"Security Descriptor",ItemType::String,DeviceRegistryPropertyType::SecurityDescriptor},
+				{L"Security Descriptor",ItemType::String,DeviceRegistryPropertyType::SecurityDescriptorString},
 				{L"UI Number",ItemType::Dword,DeviceRegistryPropertyType::UINumber},
 				{L"Install State",ItemType::Dword,DeviceRegistryPropertyType::InstallState},
 				{L"Legacy Bus Type",ItemType::Dword,DeviceRegistryPropertyType::LegacyBusType},

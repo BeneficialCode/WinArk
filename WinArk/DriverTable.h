@@ -16,7 +16,7 @@ public:
 
 	CDriverTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, WinSys::ServiceInfo& info, int column);
-
+	
 	BEGIN_MSG_MAP(CKernelModuleTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)

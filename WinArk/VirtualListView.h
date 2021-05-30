@@ -1,5 +1,8 @@
 #pragma once
 
+#include "ColumnManager.h"
+
+
 template<typename T>
 struct CVirtualListView {
 	BEGIN_MSG_MAP(CVirtualListView)
@@ -179,4 +182,5 @@ private:
 	}
 
 	mutable std::vector<SortInfo> m_Controls;
+	
 };

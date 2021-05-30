@@ -339,7 +339,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		L"进程",
 		L"内核模块",
 		//L"内核",
-		//L"内核钩子",
+		// L"内核钩子",
 		//L"应用层钩子",
 		L"网络",
 		L"驱动",

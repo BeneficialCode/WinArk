@@ -105,3 +105,14 @@ int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std
 	}
 	return s.GetLength();
 }
+
+bool CKernelModuleTable::CompareItems(const std::shared_ptr<WinSys::KernelModuleInfo>& p1, const std::shared_ptr<WinSys::KernelModuleInfo>& p2, int col, bool asc) {
+	switch (static_cast<KernemModuleColumn>(col)) {
+	case KernemModuleColumn::Name: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
+	case KernemModuleColumn::ImageBase:return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
+	case KernemModuleColumn::ImageSize:return SortHelper::SortNumbers(p1->ImageSize, p2->ImageSize, asc);
+	case KernemModuleColumn::LoadOrderIndex: return SortHelper::SortNumbers(p1->LoadOrderIndex, p2->LoadOrderIndex, asc);
+	case KernemModuleColumn::FullPath: return SortHelper::SortStrings(p1->FullPath, p2->FullPath, asc);
+	}
+	return false;
+}

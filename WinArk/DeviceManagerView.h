@@ -6,7 +6,7 @@ class CDeviceManagerView :
 	public CWindowImpl<CDeviceManagerView,CListViewCtrl>,
 	public CVirtualListView<CDeviceManagerView> {
 public:
-	DECLARE_WND_CLASS(nullptr)
+	DECLARE_WND_CLASS(nullptr);
 
 	void DoSort(const SortInfo* si);
 
@@ -32,6 +32,7 @@ private:
 		MESSAGE_HANDLER(WM_CREATE,OnCreate)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED,OnTreeSelectionChanged)
 		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnListGetDispInfo)
+		CHAIN_MSG_MAP(CVirtualListView<CDeviceManagerView>)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -40,12 +41,10 @@ private:
 
 	void Refresh();
 	void UpdateList();
-
 	CString GetDeviceProperty(WinSys::DeviceInfo& di, int index) const;
 	LRESULT GetDeviceClassInfo(LVITEM& item) const;
 	CString GetDeviceClassProperty(const GUID* guid, int index) const;
 	LRESULT GetDeviceInfo(LVITEM& item) const;
-	
 	static bool CompareItems(const CString& i1, const CString& i2, bool asc);
 
 	friend class CMainDlg;

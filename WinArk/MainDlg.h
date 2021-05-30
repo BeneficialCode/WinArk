@@ -12,7 +12,8 @@
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
 enum class TabColumn :int {
 	Process, KernelModule, 
-	//Kernel, KernelHook, Ring3Hook, 
+	//Kernel, UserHook,
+	// KernelHook,
 	Network,Driver,Registry,Device
 };
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -125,6 +126,7 @@ public:
 
 private:
 	CTabCtrl m_TabCtrl;
+	
 	CProcessTable* m_ProcTable{ nullptr };
 	CNetwrokTable* m_NetTable{ nullptr };
 	CKernelModuleTable* m_KernelModuleTable{ nullptr };
@@ -137,7 +139,9 @@ private:
 	TreeNodeBase* m_SelectedNode;
 	CRegistryManagerView m_RegView;
 	CDeviceManagerView m_DevView;
-	HWND m_hwndArray[6];
+	// table array
+	HWND m_hwndArray[16];
+	// current select tab
 	int _index = 0;
 
 	CommandManager m_CmdMgr;

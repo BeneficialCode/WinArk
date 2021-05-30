@@ -217,6 +217,7 @@
     <ClCompile Include="AppCommandBase.cpp" />
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
+    <ClCompile Include="ColumnManager.cpp" />
     <ClCompile Include="CommandManager.cpp" />
     <ClCompile Include="CreateNewKeyCommand.cpp" />
     <ClCompile Include="DeleteKeyCommand.cpp" />
@@ -225,6 +226,7 @@
     <ClCompile Include="DriverTable.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
     <ClCompile Include="EventObjectType.cpp" />
+    <ClCompile Include="FileManagerView.cpp" />
     <ClCompile Include="FileObjectType.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
@@ -281,6 +283,8 @@
     <ClCompile Include="TreeNodes.cpp" />
     <ClCompile Include="View.cpp" />
     <ClCompile Include="WinArk.cpp" />
+    <ClCompile Include="WindowHelper.cpp" />
+    <ClCompile Include="WindowsView.cpp" />
     <ClCompile Include="WinStationObjectType.cpp" />
     <ClCompile Include="WorkerFactoryObjectType.cpp" />
   </ItemGroup>
@@ -291,6 +295,7 @@
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
+    <ClInclude Include="ColumnManager.h" />
     <ClInclude Include="CommandManager.h" />
     <ClInclude Include="CreateNewKeyCommand.h" />
     <ClInclude Include="CreateNewValueCommand.h" />
@@ -300,6 +305,7 @@
     <ClInclude Include="DriverTable.h" />
     <ClInclude Include="EnvironmentDlg.h" />
     <ClInclude Include="EventObjectType.h" />
+    <ClInclude Include="FileManagerView.h" />
     <ClInclude Include="FileObjectType.h" />
     <ClInclude Include="FormatHelper.h" />
     <ClInclude Include="ImageHelper.h" />
@@ -353,9 +359,12 @@
     <ClInclude Include="TokenPropertiesDlg.h" />
     <ClInclude Include="TreeNode.h" />
     <ClInclude Include="TreeNodes.h" />
+    <ClInclude Include="TreeViewManager.h" />
     <ClInclude Include="UICommon.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="VirtualListView.h" />
+    <ClInclude Include="WindowHelper.h" />
+    <ClInclude Include="WindowsView.h" />
     <ClInclude Include="WinStationObjectType.h" />
     <ClInclude Include="WorkerFactoryObjectType.h" />
   </ItemGroup>

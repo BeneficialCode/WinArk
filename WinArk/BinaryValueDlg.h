@@ -10,6 +10,7 @@ class CBinaryValueDlg :
 public:
 	enum { IDD = IDD_BINVALUE };
 
+
 	CBinaryValueDlg(bool canModify) : m_CanModify(canModify) {}
 
 	void SetName(const CString& name, bool readonly);

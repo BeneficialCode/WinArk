@@ -11,6 +11,7 @@ public:
 
 	CKernelModuleTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::KernelModuleInfo>& info, int column);
+	bool CompareItems(const std::shared_ptr<WinSys::KernelModuleInfo>& p1, const std::shared_ptr<WinSys::KernelModuleInfo>& p2, int col, bool asc = true);
 
 	BEGIN_MSG_MAP(CKernelModuleTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
@@ -53,6 +54,10 @@ public:
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	void DoRefresh();
+	enum class KernemModuleColumn {
+		Name, ImageBase, ImageSize, LoadOrderIndex, FullPath,
+	};
+
 private:
 	WinSys::KernelModuleTracker m_Tracker;
 };
