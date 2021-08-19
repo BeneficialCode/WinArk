@@ -234,6 +234,7 @@
     <ClCompile Include="JobObjectType.cpp" />
     <ClCompile Include="JobPropertiesDlg.cpp" />
     <ClCompile Include="KeyObjectType.cpp" />
+    <ClCompile Include="ListCtrlHelper.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="MultiStringValueDlg.cpp" />
     <ClCompile Include="MutexObjectType.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="JobObjectType.h" />
     <ClInclude Include="JobPropertiesDlg.h" />
     <ClInclude Include="KeyObjectType.h" />
+    <ClInclude Include="ListCtrlHelper.h" />
     <ClInclude Include="MainDlg.h" />
     <ClInclude Include="MultiStringValueDlg.h" />
     <ClInclude Include="MutexObjectType.h" />

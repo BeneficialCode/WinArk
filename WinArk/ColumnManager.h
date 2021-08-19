@@ -125,4 +125,12 @@ int ColumnManager::AddColumn(PCWSTR name, int format, int width, T tag, ColumnFl
 	}
 
 	m_Columns.push_back(info);
+	if (!categoryName.IsEmpty()) {
+		if (std::find(m_Categories.begin(), m_Categories.end(), categoryName) ==
+			m_Categories.end()) {
+			m_ColumnsByCategory[categoryName].push_back(static_cast<int>(m_Columns.size() - 1));
+		}
+
+		return static_cast<int>(m_Columns.size());
+	}
 }

@@ -246,6 +246,9 @@
     <ClCompile Include="ThemeSystem.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
+    <ClCompile Include="ListCtrlHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -481,6 +484,9 @@
     </ClInclude>
     <ClInclude Include="AboutDlg.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ListCtrlHelper.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
