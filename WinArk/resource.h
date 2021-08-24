@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -22,6 +22,7 @@
 #define IDD_NEWKEY                      221
 #define IDD_INTVALUE                    222
 #define IDD_BINVALUE                    223
+#define IDI_WINDOW                      224
 #define IDC_TAB_VIEW                    1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -99,13 +100,37 @@
 #define ID_EDIT_MODIFYVALUE             32812
 #define ID_EDIT_PERMISSIONS             32813
 #define ID_LIST_NEW                     32814
+#define ID_WIN_STATE                    32823
+#define ID_WIN_PROPERTIES               32824
+#define ID_STATE_SHOW                   32825
+#define ID_STATE_HIDE                   32826
+#define ID_STATE_HIGHLIGHT              32827
+#define ID_STATE_MINIMIZE               32828
+#define ID_STATE_MAXMIZE                32829
+#define ID_STATE_RESTORE                32830
+#define ID_STATE_BRINGTOFRONT           32831
+#define ID_STATE_CLOSE                  32832
+#define ID_STATE_FLASH                  32833
+#define ID_WINDOW_SHOW                  32834
+#define ID_WINDOW_HIDE                  32835
+#define ID_WINDOW_HIGHLIGHT             32836
+#define ID_WINDOW_MINIMIZE              32837
+#define ID_WINDOW_MAXMIZE               32838
+#define ID_WINDOW_RESTORE               32839
+#define ID_WINDOW_BRINGTOFRONT          32840
+#define ID_WINDOW_CLOSE                 32841
+#define ID_WINDOW_FLASH                 32842
+#define ID_WINDOW_PROPERTIES            32843
+#define ID_WINDOW_MAXIMIZE              32844
+#define ID_WIN_REFRESH                  32845
+#define ID_WINDOW_REFRESH               32846
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        224
-#define _APS_NEXT_COMMAND_VALUE         32823
+#define _APS_NEXT_RESOURCE_VALUE        225
+#define _APS_NEXT_COMMAND_VALUE         32847
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

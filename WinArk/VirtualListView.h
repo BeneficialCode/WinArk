@@ -1,7 +1,13 @@
 #pragma once
 
 #include "ColumnManager.h"
+#include <memory>
 
+enum class ListViewRowCheck {
+	None,
+	Unchecked,
+	Checked
+};
 
 template<typename T>
 struct CVirtualListView {
@@ -9,10 +15,14 @@ struct CVirtualListView {
 		NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK,OnColumnClick)
 		NOTIFY_CODE_HANDLER(LVN_ODFINDITEM,OnFindItem)
 		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnGetDispInfo) // 更新列表控件
+		NOTIFY_CODE_HANDLER(NM_RCLICK,OnRightClick)
+		NOTIFY_CODE_HANDLER(NM_DBLCLK,OnDoubleClick)
 		ALT_MSG_MAP(1)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnGetDispInfo)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK,OnColumnClick)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
+		NOTIFY_CODE_HANDLER(NM_RCLICK, OnRightClick)
+		NOTIFY_CODE_HANDLER(NM_DBLCLK, OnDoubleClick)
 	END_MSG_MAP()
 
 	struct SortInfo {
@@ -53,7 +63,91 @@ struct CVirtualListView {
 		return true;
 	}
 
+	LRESULT OnDoubleClick(int, LPNMHDR hdr, BOOL& handled) {
+		CListViewCtrl lv(hdr->hwndFrom);
+		POINT pt;
+		::GetCursorPos(&pt);
+		POINT pt2;
+		lv.ScreenToClient(&pt);
+		LVHITTESTINFO info{};
+		info.pt = pt;
+		lv.SubItemHitTest(&info);
+		auto pT = static_cast<T*>(this);
+		handled = pT->OnDoubleClickList(info.iItem, info.iSubItem, pt2);
+		return 0;
+	}
+
+	LRESULT OnRightClick(int, LPNMHDR hdr, BOOL& handled) {
+		WCHAR className[16];
+		if (!::GetClassName(hdr->hwndFrom, className, _countof(className))) {
+			handled = FALSE;
+			return 0;
+		}
+
+		if (::wcscmp(className, WC_LISTVIEW)) {
+			handled = FALSE;
+			return 0;
+		}
+
+		CListViewCtrl lv(hdr->hwndFrom);
+		POINT pt;
+		::GetCursorPos(&pt);
+		POINT pt2(pt);
+		auto header = lv.GetHeader();
+		ATLASSERT(header);
+		header.ScreenToClient(&pt);
+		HDHITTESTINFO hti;
+		hti.pt = pt;
+		auto pT = static_cast<T*>(this);
+		int index = header.HitTest(&hti);
+		if (index >= 0) {
+			handled = pT->OnRightClickHeader(index, pt2);
+		}
+		else {
+			LVHITTESTINFO info{};
+			info.pt = pt;
+			lv.SubItemHitTest(&info);
+			handled = pT->OnRightClickList(info.iItem, info.iSubItem, pt2);
+		}
+		return 0;
+	}
+
+	bool OnRightClickHeader(int index, POINT& pt) {
+		return false;
+	}
+
+	bool OnRightClickList(int row, int col, POINT& pt) {
+		return false;
+	}
+
+	bool OnDoubleClickList(int row, int col, POINT& pt) {
+		return false;
+	}
+
 protected:
+	ColumnManager* GetExistingColumnManager(HWND hListView) const {
+		auto it = std::find_if(m_Columns.begin(), m_Columns.end(), [=](auto& cm) {
+			return cm->GetListView() == hListView;
+			});
+		if (it != m_Columns.end())
+			return (*it).get();
+		return nullptr;
+	}
+
+	ColumnManager* GetColumnManager(HWND hListView) const {
+		auto mgr = GetExistingColumnManager(hListView);
+		if (mgr)
+			return mgr;
+		auto cm = std::make_unique<ColumnManager>(hListView);
+		auto pcm = cm.get();
+		m_Columns.push_back(std::move(cm));
+		return pcm;
+	}
+
+	int GetRealColumn(HWND hListView, int column) const {
+		auto cm = GetExistingColumnManager(hListView);
+		return cm ? cm->GetRealColumn(column) : column;
+	}
 	/*
 	* 当Virtual List 需要显示一行数据时,
 	它发送这个消息给父窗口询问数据内容.
@@ -67,7 +161,31 @@ protected:
 		auto p = static_cast<T*>(this);
 		if (item.mask & LVIF_TEXT)
 			::StringCchCopy(item.pszText, item.cchTextMax, p->GetColumnText(hdr->hwndFrom, item.iItem, item.iSubItem));
+		if (item.mask & LVIF_IMAGE) {
+			item.iImage = p->GetRowImage(hdr->hwndFrom, item.iItem);
+		}
+		if (item.mask & LVIF_INDENT)
+			item.iIndent = p->GetRowIndent(item.iItem);
+		if ((ListView_GetExtendedListViewStyle(hdr->hwndFrom) & LVS_EX_CHECKBOXES)
+			&& item.iSubItem == 0 && (item.mask & LVIF_STATE)) {
+			item.state = LVIS_STATEIMAGEMASK;
 
+			if (item.iItem == m_Selected) {
+				item.state |= LVIS_SELECTED;
+				item.stateMask |= LVIS_SELECTED;
+			}
+		}
+		return 0;
+	}
+
+	int m_Selected = -1;
+
+	LRESULT OnItemChanaged(int /*idCtrl*/, LPNMHDR hdr, BOOL& bHandled) {
+		auto lv = (NMLISTVIEW*)hdr;
+		if (lv->uChanged & LVIF_STATE) {
+			if (lv->uNewState & LVIS_SELECTED)
+				m_Selected = lv->iItem;
+		}
 		return 0;
 	}
 
@@ -77,7 +195,8 @@ protected:
 
 	LRESULT OnColumnClick(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
 		auto lv = (NMLISTVIEW*)hdr;
-		auto col = lv->iSubItem;
+		// auto col = lv->iSubItem;
+		auto col = GetRealColumn(hdr->hwndFrom, lv->iSubItem);
 
 		auto p = static_cast<T*>(this);
 		if (!p->IsSortable(col))
@@ -162,6 +281,19 @@ protected:
 		return h == nullptr ? &m_Controls[0] : FindByHwnd(h);
 	}
 
+	int GetRowImage(HWND hWnd, int row) const {
+		return -1;
+	}
+
+	int GetRowIndent(int row) const {
+		return 0;
+	}
+
+	// 行
+	ListViewRowCheck IsRowChecked(int row) const {
+		return ListViewRowCheck::None;
+	}
+	
 private:
 	SortInfo* FindById(UINT_PTR id) const {
 		if (id == 0)
@@ -182,5 +314,5 @@ private:
 	}
 
 	mutable std::vector<SortInfo> m_Controls;
-	
+	mutable std::vector<std::unique_ptr<ColumnManager>> m_Columns;
 };

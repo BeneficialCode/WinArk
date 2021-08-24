@@ -12,7 +12,7 @@ LRESULT CDeviceManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	::GetClientRect(hWnd, &rect);
 	rect.bottom -= 50;
 
-	m_Splitter.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE);
+	m_Splitter.Create(m_hWnd, rect, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE);
 
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL);

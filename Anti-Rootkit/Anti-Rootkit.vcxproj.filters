@@ -100,11 +100,6 @@
     </MASM>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="Anti-Rootkit.inf">
-      <Filter>Driver Files</Filter>
-    </Inf>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Anti-Rootkit.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>

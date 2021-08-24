@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -76,6 +76,23 @@ BEGIN
         MENUITEM "&Rename\tF2",                 ID_EDIT_RENAME
         MENUITEM "Modify &Value",               ID_EDIT_MODIFYVALUE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+    END
+    POPUP "win_tree"
+    BEGIN
+        POPUP "&State"
+        BEGIN
+            MENUITEM "&Show",                       ID_WINDOW_SHOW
+            MENUITEM "&Hide",                       ID_WINDOW_HIDE
+            MENUITEM "&Highlight",                  ID_WINDOW_HIGHLIGHT
+            MENUITEM "&Minimize",                   ID_WINDOW_MINIMIZE
+            MENUITEM "Ma&ximize",                   ID_WINDOW_MAXIMIZE
+            MENUITEM "&Restore",                    ID_WINDOW_RESTORE
+            MENUITEM "&Bring To Front",             ID_WINDOW_BRINGTOFRONT
+            MENUITEM "&Close",                      ID_STATE_CLOSE
+            MENUITEM "&Flash",                      ID_STATE_FLASH
+        END
+        MENUITEM "&Properties...",              ID_WINDOW_PROPERTIES
+        MENUITEM "Refresh",                     ID_WINDOW_REFRESH
     END
 END
 
@@ -321,12 +338,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -559,6 +576,8 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\WinArk.ico"
 
+IDI_WINDOW              ICON                    "res\\window.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -712,7 +731,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

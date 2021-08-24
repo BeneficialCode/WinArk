@@ -9,20 +9,26 @@
 #include "CommandManager.h"
 #include "RegistryManager.h"
 
+#include "ProcessTable.h"
+#include "NetworkTable.h"
+#include "KernelModuleTable.h"
+#include "DriverTable.h"
+
+
+#include "View.h"
+#include "DeviceManagerView.h"
+#include "WindowsView.h"
+
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
 enum class TabColumn :int {
 	Process, KernelModule, 
 	//Kernel, UserHook,
 	// KernelHook,
-	Network,Driver,Registry,Device
+	Network,Driver,Registry,Device,Windows
 };
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
 
-class CRegistryManagerView;
-class CProcessTable;
-class CNetwrokTable;
-class CKernelModuleTable;
-class CDriverTable;
+
 class CMainDlg : 
 	public CDialogImpl<CMainDlg>, 
 	public CAutoUpdateUI<CMainDlg>,
@@ -53,6 +59,32 @@ public:
 
 	bool CanPaste() const;
 
+	LRESULT OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTcnSelChange(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
+
+	LRESULT OnTreeContextMenu(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnTreeDeleteItem(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnTreeItemExpanding(int /*idCtrl*/, LPNMHDR nmhdr, BOOL& /*bHandled*/);
+	LRESULT OnTreeSelectionChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
+	void CloseDialog(int nVal);
+	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
+
+	LRESULT OnBeginRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnEndRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
+	void ShowCommandError(PCWSTR message = nullptr) override;
+	bool AddCommand(std::shared_ptr<AppCommandBase> cmd, bool execute = true) override;
+
+	void InitProcessTable();
+	void InitNetworkTable();
+	void InitKernelModuleTable();
+	void InitDriverTable();
+	void InitDriverInterface();
+	void InitRegistryView();
+	void InitDeviceView();
+	void InitWindowsView();
+
 	BEGIN_MSG_MAP_EX(CMainDlg)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -82,27 +114,17 @@ public:
 	END_MSG_MAP()
 public:
 	CCommandBarCtrl m_CmdBar;
+
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 //	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 public:
+
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
-	LRESULT OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT OnTcnSelChange(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
-
-	LRESULT OnTreeContextMenu(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnTreeDeleteItem(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnTreeItemExpanding(int /*idCtrl*/, LPNMHDR nmhdr, BOOL& /*bHandled*/);
-	LRESULT OnTreeSelectionChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-
-	void CloseDialog(int nVal);
-	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
 
 	LRESULT OnNewKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -110,20 +132,7 @@ public:
 	LRESULT OnEditPermissions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCopyKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCopyFullKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnBeginRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnEndRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-
-	void ShowCommandError(PCWSTR message = nullptr) override;
-	bool AddCommand(std::shared_ptr<AppCommandBase> cmd, bool execute = true) override;
-
-	void InitProcessTable();
-	void InitNetworkTable();
-	void InitKernelModuleTable();
-	void InitDriverTable();
-	void InitDriverInterface();
-	void InitRegistryView();
-	void InitDeviceView();
-
+	
 private:
 	CTabCtrl m_TabCtrl;
 	
@@ -139,6 +148,8 @@ private:
 	TreeNodeBase* m_SelectedNode;
 	CRegistryManagerView m_RegView;
 	CDeviceManagerView m_DevView;
+	CWindowsView m_WinView;
+
 	// table array
 	HWND m_hwndArray[16];
 	// current select tab

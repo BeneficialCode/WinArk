@@ -498,6 +498,9 @@
     <Image Include="res\WinArk.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\window.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

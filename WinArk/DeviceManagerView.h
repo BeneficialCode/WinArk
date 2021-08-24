@@ -6,6 +6,7 @@ class CDeviceManagerView :
 	public CWindowImpl<CDeviceManagerView,CListViewCtrl>,
 	public CVirtualListView<CDeviceManagerView> {
 public:
+	// 根据这个会创建一个窗口句柄给m_hWnd
 	DECLARE_WND_CLASS(nullptr);
 
 	void DoSort(const SortInfo* si);

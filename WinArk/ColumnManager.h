@@ -13,6 +13,7 @@ enum class ColumnFlags {
 	Modified = 0x80
 };
 DEFINE_ENUM_FLAG_OPERATORS(ColumnFlags);
+// use enum as falgs
 
 class ColumnManager {
 public:
@@ -50,6 +51,7 @@ public:
 	template<typename T = int>
 	int AddColumn(PCWSTR name, int format, int width, T tag = T(),
 		ColumnFlags flags = ColumnFlags::Visible);
+	template<typename T = int>
 	T GetColumnTag(int index) const {
 		return static_cast<T>(m_Columns[index].Tag);
 	}
@@ -84,7 +86,7 @@ inline bool ColumnManager::ColumnInfo::IsMandatory() const {
 	return (Flags & ColumnFlags::Mandatory) == ColumnFlags::Mandatory;
 }
 
-inline bool ColumnManager::ColumnInfo::SetVisible(bool visible) {
+inline void ColumnManager::ColumnInfo::SetVisible(bool visible) {
 	bool old = (Flags & ColumnFlags::Visible) == ColumnFlags::Visible;
 	if (old == visible)
 		return;
@@ -98,7 +100,7 @@ inline bool ColumnManager::ColumnInfo::SetVisible(bool visible) {
 
 template<typename T>
 int ColumnManager::AddColumn(PCWSTR name, int format, int width, T tag, ColumnFlags flags) {
-	auto category = ::wcscat(name, L'\\');
+	auto category = ::wcschr(name, L'\\');
 	CString categoryName;
 	if (category) {
 		categoryName = CString(name, static_cast<int>(category - name));

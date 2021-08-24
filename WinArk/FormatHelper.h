@@ -18,4 +18,5 @@ struct FormatHelper {
 	static CString ComFlagsToString(WinSys::ComFlags flags);
 	static PCWSTR ComApartmentToString(WinSys::ComFlags flags);
 	static CString ProcessAttributesToString(ProcessAttributes attributes);
+	static CString FormatHWndOrNone(HWND hWnd);
 };

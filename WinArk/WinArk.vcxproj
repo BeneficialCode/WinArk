@@ -375,6 +375,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\WinArk.ico" />
+    <Image Include="res\window.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Debug\AntiRootkit.sys" />

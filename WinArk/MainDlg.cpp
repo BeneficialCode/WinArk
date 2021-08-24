@@ -5,19 +5,11 @@
 #include "stdafx.h"
 #include "resource.h"
 
-#include "ProcessTable.h"
-#include "NetworkTable.h"
-#include "KernelModuleTable.h"
-#include "DriverTable.h"
-#include "ClipboardHelper.h"
-
-#include "View.h"
-#include "DeviceManagerView.h"
-
 #include "aboutdlg.h"
 #include "MainDlg.h"
 #include "DriverHelper.h"
 #include "SecurityHelper.h"
+#include "ClipboardHelper.h"
 #include "SecurityInformation.h"
 
 #include "NewKeyDlg.h"
@@ -307,6 +299,20 @@ void CMainDlg::InitDeviceView() {
 	m_hwndArray[static_cast<int>(TabColumn::Device)] = m_DevView.m_hWnd;
 }
 
+// 窗口视图
+void CMainDlg::InitWindowsView() {
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	// WS_CLIPCHILDREN 子窗口区域父窗口不负责绘制,子窗口自行绘制
+	// 不设置的话，父窗口绘制会遮挡住子窗口
+	HWND hWnd = m_WinView.Create(m_hWnd, rect, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPSIBLINGS| WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::Windows)] = m_WinView.m_hWnd;
+}
+
 LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -345,6 +351,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		L"驱动",
 		L"注册表",
 		L"设备",
+		L"窗口",
 	};
 
 	int i = 0;
@@ -362,6 +369,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	InitDriverTable();
 	InitRegistryView();
 	InitDeviceView();
+	InitWindowsView();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -411,13 +419,16 @@ LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 	m_StatusBar.GetClientRect(&statusRect);
 	int statusHeight = statusRect.bottom - statusRect.top;
 
+	
 	int width = rect.right - rect.left;
 	int tabHeight = tabRect.bottom - tabRect.top;
 	::MoveWindow(m_TabCtrl.m_hWnd, rect.left, rect.top, width, tabHeight, true);
 	int iX = rect.left;
 	int iY = rect.top + tabHeight;
 	int height = rect.bottom - tabHeight - statusHeight - rect.top;
+
 	::MoveWindow(m_hwndArray[_index], iX, iY, width, height, true);
+
 	iY = rect.bottom - statusHeight;
 	::MoveWindow(m_StatusBar.m_hWnd, iX, iY, width, statusHeight, true);
 	if (_index == static_cast<int>(TabColumn::Device)) {
@@ -427,6 +438,14 @@ LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 		height = rect.bottom - rect.top;
 		width = rect.right - rect.left;
 		::MoveWindow(m_DevView.m_Splitter.m_hWnd, iX, iY, width, height, true);
+	}
+	if (_index == static_cast<int>(TabColumn::Windows)) {
+		::GetClientRect(m_hwndArray[_index], &rect);
+		iX = rect.left;
+		iY = rect.top;
+		height = rect.bottom - rect.top;
+		width = rect.right - rect.left;
+		::MoveWindow(m_WinView.m_Splitter.m_hWnd, iX, iY, width, height, true);
 	}
 
 	RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
@@ -443,7 +462,8 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	m_KernelModuleTable->ShowWindow(SW_HIDE);
 	m_DriverTable->ShowWindow(SW_HIDE);
 	m_splitter.ShowWindow(SW_HIDE);
-	m_DevView.m_Splitter.ShowWindow(SW_HIDE);
+	m_DevView.ShowWindow(SW_HIDE);
+	m_WinView.ShowWindow(SW_HIDE);
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
 			m_ProcTable->ShowWindow(SW_SHOW);
@@ -461,7 +481,10 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_splitter.ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Device:
-			m_DevView.m_Splitter.ShowWindow(SW_SHOW);
+			m_DevView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Windows:
+			m_WinView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
