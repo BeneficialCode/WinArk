@@ -3,6 +3,7 @@
 #include "VirtualListView.h"
 #include "TreeViewManager.h"
 
+
 class CWindowsView :
 	public CWindowImpl<CWindowsView, CListViewCtrl>,
 	public CVirtualListView<CWindowsView>,

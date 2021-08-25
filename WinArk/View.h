@@ -20,10 +20,16 @@ struct ListItem {
 	bool UpDir{ false };
 };
 
+// 界面上
+// 颜色修改技术
+// 用户自绘技术 CustomDraw
+// 拥有者自绘技术 OwnerDraw
 class CRegistryManagerView :
 	public CWindowImpl<CRegistryManagerView,CListViewCtrl>,
 	public CVirtualListView<CRegistryManagerView> {
 public:
+	// 行为上
+	// 窗口子类化技术，控件子类化技术
 	DECLARE_WND_SUPERCLASS(nullptr,CListViewCtrl::GetWndClassName())
 
 	const ListItem& GetItem(int index) const;

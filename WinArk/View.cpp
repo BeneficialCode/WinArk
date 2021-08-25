@@ -155,10 +155,12 @@ void CRegistryManagerView::Update(TreeNodeBase* node, bool ifTheSame) {
 			}
 		}
 	}
+	// sort the items
+	DoSort(GetSortInfo());
 	int count = static_cast<int>(m_Items.size());
 	SetItemCountEx(count, ifTheSame?(LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL) : 0);
+	// update the list view
 	RedrawItems(0, min(count, GetCountPerPage()));
-	DoSort(GetSortInfo());
 }
 
 const ListItem& CRegistryManagerView::GetItem(int index) const {
