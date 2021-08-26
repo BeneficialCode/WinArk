@@ -158,11 +158,33 @@ bool Token::EnablePrivilege(PCWSTR privName, bool enable) {
 	TOKEN_PRIVILEGES tp;
 	tp.PrivilegeCount = 1;
 	tp.Privileges[0].Attributes = enable ? SE_PRIVILEGE_ENABLED : 0;
-	if (::LookupPrivilegeValue(nullptr, privName,
+	// get the LUID of a privilege
+	if (::LookupPrivilegeValue(nullptr,// for the local machine
+		privName,
 		&tp.Privileges[0].Luid)) {
 		if (::AdjustTokenPrivileges(hToken.get(), FALSE, &tp, sizeof(tp),
 			nullptr, nullptr))
+			// It returns TRUE on any kind of
+			// success, even if only some of the privileges have been changed successfully
+			// The correct thing to do
+			// (if the call returns TRUE) is call GetLastError.
+			// If zero is returned, all went well
 			result = ::GetLastError() == ERROR_SUCCESS;
 	}
 	return result;
+}
+
+bool Token::SetVirtualizationState(DWORD set) {
+	return ::SetTokenInformation(_handle.get(), TokenVirtualizationEnabled, &set, sizeof(set));
+}
+
+bool Token::IsPrivilegeEnabled(PCWSTR name) {
+	PRIVILEGE_SET set{};
+	set.PrivilegeCount = 1;
+
+	if (!::LookupPrivilegeValue(nullptr, name, &set.Privilege[0].Luid))
+		return false;
+
+	BOOL result;
+	return ::PrivilegeCheck(_handle.get(), &set, &result) && result;
 }

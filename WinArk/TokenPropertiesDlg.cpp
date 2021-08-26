@@ -64,7 +64,20 @@ void CTokenPropertiesDlg::InitToken() {
 	auto stats = m_Token.GetStats();
 
 	CString text;
-	text.Format(L"0x%llX", *(ULONG64*)(&stats.AuthenticationId));
+	ULONG64 logonSessionID = *(ULONG64*)(&stats.AuthenticationId);
+	text.Format(L"0x%llX", logonSessionID);
+	if (logonSessionID == 0x3e7) {
+		text += L" (System)";
+	}
+	else if( logonSessionID == 0x3e5 ) {
+		text += L" (Local Service)";
+	}
+	else if(logonSessionID == 0x3e4){
+		text += L" (Network Service)";
+	}
+
+
+	
 	SetDlgItemText(IDC_LOGONSESSION, text);
 	SetDlgItemText(IDC_ELEVATED, m_Token.IsElevated() ? L"Yes" : L"No");
 

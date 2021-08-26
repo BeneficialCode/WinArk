@@ -71,6 +71,8 @@ namespace WinSys {
 		std::vector<TokenGroup> EnumGroups(bool caps = false) const;
 		std::vector<TokenPrivilege> EnumPrivileges() const;
 
+		bool SetVirtualizationState(DWORD set);
+		bool IsPrivilegeEnabled(PCWSTR name);
 	private:
 		wil::unique_handle _handle;
 	};
