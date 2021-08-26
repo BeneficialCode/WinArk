@@ -1263,6 +1263,9 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 				ret = SendMessage(hw, WM_USER_VABS, rows, 0);
 				if (ret < 0)
 					ret = 0x4000 - ret;
+				if (m_Table.offset != 0&& ret == 0) {
+					ret = MulDiv(m_Table.offset+rows, 0x4000,m_Table.data.n);
+				}
 				if (ret != GetScrollPos(hw, SB_VERT)) {
 					SetScrollPos(hw, SB_VERT, ret, true);
 				}
@@ -1370,7 +1373,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 					iVScrollPos = HIWORD(wp);
 					if (bottomRow < 0)
 						iVScrollPos = 0x3ff - iVScrollPos;
-					ret = SendMessage(hw, WM_USER_VREL, rows, iVScrollPos);
+					ret = ::SendMessage(hw, WM_USER_VREL, rows, iVScrollPos);
 					break;
 				default:
 					ret = -1;

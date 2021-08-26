@@ -10,8 +10,8 @@ LRESULT CHandleDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 LRESULT CHandleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{12,"类型",0},
-		{10,"地址",0},
+		{22,"类型",0},
+		{20,"地址",0},
 		{25,"Name",0},
 		{20,"句柄值",0},
 		{30,"进程名",0},

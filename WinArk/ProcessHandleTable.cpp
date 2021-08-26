@@ -21,6 +21,7 @@ LRESULT CProcessHandleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	Refresh();
 	return 0;
 }
+
 LRESULT CProcessHandleTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
 	return 0;
 }
