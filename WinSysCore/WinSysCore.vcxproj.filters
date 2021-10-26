@@ -36,9 +36,6 @@
     <ClCompile Include="ProcessManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Helpers.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkInformation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -84,6 +81,9 @@
     <ClCompile Include="DeviceManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Helpers.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processes.h">
@@ -111,9 +111,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Keys.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Helpers.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NetworkInformation.h">
@@ -162,6 +159,9 @@
       <Filter>Trackers</Filter>
     </ClInclude>
     <ClInclude Include="DeviceManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

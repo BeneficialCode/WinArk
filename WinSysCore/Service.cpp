@@ -32,14 +32,18 @@ bool Service::Continue() {
 ServiceStatusProcess Service::GetStatus() const{
 	ServiceStatusProcess status{};
 	DWORD len;
-	::QueryServiceStatusEx(_handle.get(), SC_STATUS_PROCESS_INFO, (BYTE*)&status, sizeof(status), &len);
+	::QueryServiceStatusEx(_handle.get(), 
+		SC_STATUS_PROCESS_INFO, // the only value currently supported
+		(BYTE*)&status, sizeof(status), &len);
 	return status;
 }
 
 std::vector<ServiceTrigger> Service::GetTriggers() const {
 	std::vector<ServiceTrigger> triggers;
 	DWORD needed;
-	::QueryServiceConfig2(_handle.get(), SERVICE_CONFIG_TRIGGER_INFO, nullptr, 0, &needed);
+	::QueryServiceConfig2(_handle.get(), 
+		SERVICE_CONFIG_TRIGGER_INFO, // Trigger(s) to start/stop the service
+		nullptr, 0, &needed);
 	if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER)
 		return triggers;
 
@@ -65,12 +69,16 @@ std::vector<ServiceTrigger> Service::GetTriggers() const {
 std::vector<std::wstring>Service::GetRequiredPrivileges() const {
 	std::vector<std::wstring> privileges;
 	DWORD needed;
-	::QueryServiceConfig2(_handle.get(),SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO, nullptr, 0, &needed);
+	::QueryServiceConfig2(_handle.get(),
+		SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO, // Required privileges to add to the server
+		nullptr, 0, &needed);
 	if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER)
 		return privileges;
 
 	auto buffer = std::make_unique<BYTE[]>(needed);
-	if (!::QueryServiceConfig2(_handle.get(), SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO, buffer.get(), needed, &needed))
+	if (!::QueryServiceConfig2(_handle.get(), 
+		SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO, 
+		buffer.get(), needed, &needed))
 		return privileges;
 
 	auto info = reinterpret_cast<SERVICE_REQUIRED_PRIVILEGES_INFO*>(buffer.get());
@@ -85,7 +93,9 @@ std::vector<std::wstring>Service::GetRequiredPrivileges() const {
 ServiceSidType WinSys::Service::GetSidType() const {
 	ServiceSidType type;
 	DWORD len;
-	if (::QueryServiceConfig2(_handle.get(), SERVICE_CONFIG_SERVICE_SID_INFO, (BYTE*)&type, sizeof(type), &len))
+	if (::QueryServiceConfig2(_handle.get(), 
+		SERVICE_CONFIG_SERVICE_SID_INFO, // Service SID Type
+		(BYTE*)&type, sizeof(type), &len))
 		return type;
 	return ServiceSidType::Unknow;
 }

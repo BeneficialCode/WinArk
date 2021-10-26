@@ -20,6 +20,4 @@ public:
 	static T FindColumn(CListViewCtrl list, int id) {
 		return FindColumn(list.GetHeader(), id);
 	}
-
-	
 };

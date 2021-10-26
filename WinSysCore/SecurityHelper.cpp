@@ -2,6 +2,7 @@
 #include "SecurityHelper.h"
 #include <sddl.h>
 #include <shellapi.h>
+#include "DriverHelper.h"
 
 bool SecurityHelper::IsRunningElevated() {
 	static bool runningElevated = false;
@@ -84,4 +85,17 @@ std::wstring SecurityHelper::GetSidFromUser(PCWSTR name) {
 		return result;
 	}
 	return L"";
+}
+
+HANDLE SecurityHelper::DupHandle(HANDLE hSource, DWORD sourcePid, DWORD access) {
+	auto h = DriverHelper::DupHandle(hSource, sourcePid, access, access == 0 ? DUPLICATE_SAME_ACCESS : 0);
+	if (!h) {
+		wil::unique_handle hProcess(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, sourcePid));
+		if (!hProcess)
+			return nullptr;
+
+		::DuplicateHandle(hProcess.get(), hSource, ::GetCurrentProcess(), &h, access, FALSE,
+			access == 0 ? DUPLICATE_SAME_ACCESS : 0);
+	}
+	return h;
 }

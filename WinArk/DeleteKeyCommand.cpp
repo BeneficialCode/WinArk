@@ -1,42 +1,59 @@
 #include "stdafx.h"
 #include "DeleteKeyCommand.h"
-#include "RegistryManager.h"
+#include "Registry.h"
+#include "Helpers.h"
 
-DeleteKeyCommand::DeleteKeyCommand(const CString& path)
-	: AppCommandBase(L"Delete Key"), _path(path) {
+DeleteKeyCommand::DeleteKeyCommand(PCWSTR path, PCWSTR name, AppCommandCallback<DeleteKeyCommand> cb)
+	:RegAppCommandBase(L"Delete Key " + CString(name), path,name, cb) {
 }
 
 bool DeleteKeyCommand::Execute() {
-	GUID guid;
-	if (FAILED(::CoCreateGuid(&guid)))
+	auto key = Registry::OpenKey(_path, KEY_ENUMERATE_SUB_KEYS | DELETE | KEY_QUERY_VALUE);
+	if (!key)
 		return false;
 
-	WCHAR delname[64];
-	::StringFromGUID2(guid, delname, 64);
-
-	CString realpath;
-	auto root = RegistryManager::Get().GetRoot(_path, realpath);
-	if (!root)
+	if (_savePath.IsEmpty()) {
+		LARGE_INTEGER li;
+		::QueryPerformanceCounter(&li);
+		_savePath.Format(L"%llX", li.QuadPart);
+	}
+	CRegKey keyBacukup;
+	auto error = keyBacukup.Create(HKEY_CURRENT_USER, DeletedPathBackup + _savePath, nullptr, 0, KEY_ALL_ACCESS);
+	::SetLastError(error);
+	if (!keyBacukup)
+		return false;
+	::SetLastError(error = ::RegCopyTree(key.Get(), _name, keyBacukup));
+	if (ERROR_SUCCESS != error)
 		return false;
 
-	if (!_deletedKey)
-		_deletedKey.Create(RegistryManager::Get().GetDeletedKey(), delname,
-			nullptr, 0, KEY_CREATE_SUB_KEY, nullptr, nullptr);
-
-	if (!_deletedKey)
+	::SetLastError(error = ::RegDeleteTree(key.Get(), _name));
+	if (ERROR_SUCCESS != error) {
 		return false;
-
-	auto status = ::RegCopyTree(*root->GetKey(), realpath, _deletedKey);
-	if (status != ERROR_SUCCESS)
-		return false;
-
-	auto name = _path.Mid(_path.ReverseFind(L'\\') + 1);
-	auto parent = _path.Left(_path.GetLength() - name.GetLength());
-
-	status = RegistryManager::Get().DeleteKey(parent, name);
-	return status == ERROR_SUCCESS;
+	}
+	return InvokeCallback(true);
 }
 
 bool DeleteKeyCommand::Undo() {
-	return false;
+	auto key = Registry::OpenKey(_path, KEY_CREATE_SUB_KEY);
+	if (!key)
+		return false;
+
+	DWORD error;
+	CRegKey keyBackup;
+	::SetLastError(error = keyBackup.Open(HKEY_CURRENT_USER, DeletedPathBackup + _savePath, KEY_READ));
+	if (!keyBackup)
+		return false;
+
+	CRegKey newKey;
+	DWORD disp;
+	error = newKey.Create(key.Get(), _name, nullptr, 0, KEY_ALL_ACCESS, nullptr, &disp);
+	::SetLastError(error);
+	if (error != ERROR_SUCCESS)
+		return false;
+
+	::SetLastError(error = ::RegCopyTree(keyBackup, nullptr, newKey));
+	if (error != ERROR_SUCCESS)
+		return false;
+
+	return InvokeCallback(false);
 }

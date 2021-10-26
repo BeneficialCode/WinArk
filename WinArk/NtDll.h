@@ -18,6 +18,7 @@ typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 #endif
 
 #define STATUS_ACCESS_DENIED             ((NTSTATUS)0xC0000022L)
+#define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
 
 typedef LONG KPRIORITY;
 
@@ -680,3 +681,43 @@ extern "C" {
 		_In_ ULONG ThreadInformationLength,
 		_Out_opt_ PULONG ReturnLength);*/
 }
+
+extern "C" NTSTATUS NTAPI NtCreateKey(
+	_Out_ PHANDLE KeyHandle,
+	_In_ ACCESS_MASK DesiredAccess,
+	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
+	_Reserved_ ULONG TitleIndex,
+	_In_opt_ PUNICODE_STRING Class,
+	_In_ ULONG CreateOptions,
+	_Out_opt_ PULONG Disposition
+);
+
+//typedef enum _SYSTEM_INFORMATION_CLASS {
+//	ExtendedHandleInformation = 64,
+//}SYSTEM_INFORMATION_CLASS;
+
+extern "C" NTSTATUS NTAPI NtQuerySystemInformation(
+	_In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
+	_Out_writes_bytes_opt_(SystemInformationLength) PVOID SystemInformation,
+	_In_ ULONG SystemInformationLength,
+	_Out_opt_ PULONG ReturnLength);
+
+//typedef enum _OBJECT_INFORMATION_CLASS {
+//	ObjectBasicInformation, // OBJECT_BASIC_INFORMATION
+//	ObjectNameInformation, // OBJECT_NAME_INFORMATION
+//	ObjectTypeInformation, // OBJECT_TYPE_INFORMATION
+//	ObjectTypesInformation, // OBJECT_TYPES_INFORMATION
+//	ObjectHandleFlagInformation, // OBJECT_HANDLE_FLAG_INFORMATION
+//	ObjectSessionInformation,
+//	ObjectSessionObjectInformation,
+//	MaxObjectInfoClass
+//} OBJECT_INFORMATION_CLASS;
+
+extern "C" NTSTATUS NTAPI NtQueryObject(
+	_In_opt_ HANDLE Handle,
+	_In_ OBJECT_INFORMATION_CLASS ObjectInformationClass,
+	_Out_writes_bytes_opt_(ObjectInformationLength) PVOID ObjectInformation,
+	_In_ ULONG ObjectInformationLength,
+	_Out_opt_ PULONG ReturnLength);
+
+#define ExtendedHandleInformation (64)

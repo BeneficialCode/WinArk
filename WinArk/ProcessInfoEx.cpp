@@ -48,7 +48,7 @@ const std::wstring& ProcessInfoEx::GetExecutablePath() const {
 	if (_executablePath.empty() && _pi->Id != 0) {
 		const auto& path = _pi->GetNativeImagePath();
 		if (path[0] == L'\\') {
-			_executablePath = WinSys::Helpers::GetDosNameFromNtName(path.c_str());
+			_executablePath = Helpers::GetDosNameFromNtName(path.c_str());
 		}
 		else {
 			_executablePath = path;

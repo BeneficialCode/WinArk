@@ -64,6 +64,10 @@ struct CVirtualListView {
 	}
 
 	LRESULT OnDoubleClick(int, LPNMHDR hdr, BOOL& handled) {
+		WCHAR className[16];
+		if (::GetClassName(hdr->hwndFrom, className, _countof(className)) && _wcsicmp(className, WC_LISTVIEW))
+			return 0;
+
 		CListViewCtrl lv(hdr->hwndFrom);
 		POINT pt;
 		::GetCursorPos(&pt);
@@ -73,7 +77,7 @@ struct CVirtualListView {
 		info.pt = pt;
 		lv.SubItemHitTest(&info);
 		auto pT = static_cast<T*>(this);
-		handled = pT->OnDoubleClickList(info.iItem, info.iSubItem, pt2);
+		handled = pT->OnDoubleClickList(lv, info.iItem, info.iSubItem, pt2);
 		return 0;
 	}
 
@@ -107,7 +111,7 @@ struct CVirtualListView {
 			LVHITTESTINFO info{};
 			info.pt = pt;
 			lv.SubItemHitTest(&info);
-			handled = pT->OnRightClickList(info.iItem, info.iSubItem, pt2);
+			handled = pT->OnRightClickList(hdr->hwndFrom,info.iItem, info.iSubItem, pt2);
 		}
 		return 0;
 	}
@@ -116,11 +120,11 @@ struct CVirtualListView {
 		return false;
 	}
 
-	bool OnRightClickList(int row, int col, POINT& pt) {
+	bool OnRightClickList(HWND, int row, int col, POINT& pt) {
 		return false;
 	}
 
-	bool OnDoubleClickList(int row, int col, POINT& pt) {
+	bool OnDoubleClickList(HWND, int row, int col, POINT& pt) {
 		return false;
 	}
 
@@ -189,7 +193,7 @@ protected:
 		return 0;
 	}
 
-	bool IsSortable(int) const {
+	bool IsSortable(HWND, int) const {
 		return true;
 	}
 
@@ -199,7 +203,7 @@ protected:
 		auto col = GetRealColumn(hdr->hwndFrom, lv->iSubItem);
 
 		auto p = static_cast<T*>(this);
-		if (!p->IsSortable(col))
+		if (!p->IsSortable(hdr->hwndFrom,col))
 			return 0;
 
 		auto si = FindById(hdr->idFrom);

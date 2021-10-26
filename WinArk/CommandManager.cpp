@@ -2,6 +2,14 @@
 #include "CommandManager.h"
 #include "AppCommandBase.h"
 
+void CommandManager::Enable(bool enable) {
+	_enabled = enable;
+}
+
+bool CommandManager::IsEnabled() const {
+	return _enabled;
+}
+
 bool CommandManager::CanUndo() const {
 	return !_undoList.empty();
 }
@@ -10,10 +18,13 @@ bool CommandManager::CanRedo() const {
 	return !_redoList.empty();
 }
 
-bool CommandManager::AddCommand(std::shared_ptr<AppCommandBase> command, bool execute) {
+bool CommandManager::AddCommand(std::shared_ptr<AppCommand> command, bool execute) {
 	if (execute)
 		if (!command->Execute())
 			return false;
+
+	if (!_enabled)
+		return true;
 
 	_undoList.push_back(command);
 	_redoList.clear();
@@ -51,10 +62,10 @@ void CommandManager::Clear() {
 	_redoList.clear();
 }
 
-AppCommandBase* CommandManager::GetUndoCommand() const {
+AppCommand* CommandManager::GetUndoCommand() const {
 	return _undoList.empty() ? nullptr : _undoList.back().get();
 }
 
-AppCommandBase* CommandManager::GetRedoCommand() const {
+AppCommand* CommandManager::GetRedoCommand() const {
 	return _redoList.empty() ? nullptr : _redoList.back().get();
 }

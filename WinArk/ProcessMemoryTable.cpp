@@ -4,10 +4,10 @@
 #include <algorithm>
 #include "SortHelper.h"
 #include "DriverHelper.h"
-#include <Helpers.h>
 #include "NtDll.h"
 #include <Psapi.h>
 #include <TlHelp32.h>
+#include "Helpers.h"
 
 LRESULT CProcessMemoryTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION);
@@ -253,7 +253,7 @@ CProcessMemoryTable::ItemDetails CProcessMemoryTable::GetDetails(const std::shar
 		if (mi->Type == MEM_IMAGE || mi->Type == MEM_MAPPED) {
 			WCHAR filename[MAX_PATH];
 			if (::GetMappedFileName(m_hProcess, mi->BaseAddress, filename, MAX_PATH) > 0) {
-				details.Details = WinSys::Helpers::GetDosNameFromNtName(filename).c_str();
+				details.Details = Helpers::GetDosNameFromNtName(filename).c_str();
 				details.Usage = mi->Type == MEM_IMAGE ? MemoryUsage::Image : MemoryUsage::Mapped;
 			}
 		}

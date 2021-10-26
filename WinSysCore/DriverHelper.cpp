@@ -65,8 +65,12 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 	if (!hScm)
 		return false;
 
-	wil::unique_schandle hService(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER,
-		SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr));
+	wil::unique_schandle hService(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS, 
+		SERVICE_KERNEL_DRIVER,
+		SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+		SERVICE_ERROR_NORMAL, // the error is logged to the event log service
+		path, // the full path to the executable to run for the service
+		nullptr, nullptr, nullptr, nullptr, nullptr));
 	auto success = hService != nullptr;
 	return success;
 }
@@ -194,4 +198,26 @@ HANDLE DriverHelper::OpenThread(DWORD tid, ACCESS_MASK access) {
 			&hThread, sizeof(hThread), &bytes, nullptr) ? hThread : nullptr;
 	}
 	return ::OpenThread(access, FALSE, tid);
+}
+
+HANDLE DriverHelper::OpenKey(PCWSTR name,ACCESS_MASK access) {
+	if (!OpenDevice())
+		return nullptr;
+
+	auto len = (ULONG)::wcslen(name);
+	DWORD size = len * sizeof(WCHAR) + sizeof(KeyData);
+	auto buffer = std::make_unique<BYTE[]>(size);
+	if (!buffer)
+		return nullptr;
+
+	auto data = reinterpret_cast<KeyData*>(buffer.get());
+	data->Access = access;
+	data->Length = len;
+	::wcscpy_s(data->Name, len + 1, name);
+
+	DWORD bytes;
+	HANDLE hObject = nullptr;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_KEY, data, size, &hObject, sizeof(hObject), &bytes, nullptr);
+
+	return hObject;
 }

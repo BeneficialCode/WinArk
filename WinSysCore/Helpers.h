@@ -1,7 +1,6 @@
 #pragma once
 
-namespace WinSys {
-	struct Helpers final abstract {
-		static std::wstring GetDosNameFromNtName(PCWSTR name);
-	};
-}
+
+struct Helpers abstract final {
+	static std::wstring GetDosNameFromNtName(PCWSTR name);
+};

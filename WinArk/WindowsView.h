@@ -16,7 +16,7 @@ public:
 
 	void OnActivate(bool activate);
 	void DoSort(const SortInfo* si);
-	bool IsSortable(int col) const;
+	bool IsSortable(HWND,int col) const;
 
 	//DWORD OnPrePaint(int, LPNMCUSTOMDRAW cd);
 	//DWORD OnItemPrePaint(int, LPNMCUSTOMDRAW cd);

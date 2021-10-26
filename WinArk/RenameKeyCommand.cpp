@@ -1,21 +1,35 @@
 #include "stdafx.h"
-#include "resource.h"
 #include "RenameKeyCommand.h"
-#include "RegistryManager.h"
-#include "RegHelper.h"
+#include "Registry.h"
 
-RenameKeyCommand::RenameKeyCommand(const CString& path, const CString& newname)
-	: AppCommandBase(L"Rename Key"), _path(path), _name(newname) {
+RenameKeyCommand::RenameKeyCommand(PCWSTR path, PCWSTR name, PCWSTR newName, AppCommandCallback<RenameKeyCommand> cb)
+	:RegAppCommandBase(L"Rename Key ", path, name, cb) {
 }
 
 bool RenameKeyCommand::Execute() {
-	auto index = _path.ReverseFind(L'\\');
-	CString parent = _path.Left(index);
-	auto success = RegistryManager::Get().RenameKey(_path, _name);
-	if (success == ERROR_SUCCESS) {
-		auto oldname = _name;
-		_name = _path.Mid(index + 1);
-		_path = parent + L"\\" + oldname;
+	auto key = Registry::OpenKey(_path, KEY_ALL_ACCESS);
+	if (!key)
+		return false;
+
+	if (Registry::RenameKey(key.Get(), _name, _newName)) {
+		if (!InvokeCallback(true))
+			return false;
+		std::swap(_name, _newName);
+		return true;
 	}
-	return success == ERROR_SUCCESS;
+
+	return false;
 }
+
+bool RenameKeyCommand::Undo() {
+	return Execute();
+}
+
+const CString& RenameKeyCommand::GetNewName() const {
+	return _newName;
+}
+
+CString RenameKeyCommand::GetCommandName() const {
+	return L"Rename Key " + GetName();
+}
+

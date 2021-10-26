@@ -13,7 +13,6 @@
 #include "SecurityInformation.h"
 
 #include "NewKeyDlg.h"
-#include "CreateNewKeyCommand.h"
 #include "RenameKeyCommand.h"
 
 
@@ -30,20 +29,6 @@ BOOL CMainDlg::OnIdle() {
 }
 
 void CMainDlg::UpdateUI() {
-	BOOL canDelete = m_AllowModify;
-	if (m_splitter.GetActivePane() == 0)
-		UIEnable(ID_EDIT_DELETE, canDelete && m_SelectedNode && m_SelectedNode->CanDelete());
-	else {
-		UIEnable(ID_EDIT_DELETE, canDelete && m_RegView.CanDeleteSelected());
-		UIEnable(ID_EDIT_MODIFYVALUE, m_AllowModify && m_RegView.CanEditValue());
-	}
-	UIEnable(ID_EDIT_CUT, canDelete);
-	UIEnable(ID_EDIT_PASTE, m_AllowModify && CanPaste());
-	UIEnable(ID_NEW_KEY, m_AllowModify && m_SelectedNode->GetNodeType() == TreeNodeType::RegistryKey);
-	UIEnable(ID_EDIT_RENAME, m_AllowModify && canDelete);
-	
-	for (int id = ID_NEW_DWORDVALUE; id <= ID_NEW_BINARYVALUE; id++)
-		UIEnable(id, m_AllowModify);
 
 	return;
 }
@@ -258,33 +243,10 @@ void CMainDlg::InitRegistryView() {
 	m_StatusBar.GetWindowRect(&rect);
 	clientRect.bottom -= rect.bottom - rect.top;
 
-	m_splitter.Create(m_hWnd, clientRect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_RegView.Create(m_hWnd, clientRect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 
-	m_treeview.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		TVS_HASLINES | // 各子项之间存在连线
-		TVS_LINESATROOT | // 在根项之间存在连线
-		TVS_HASBUTTONS | // 在父项左侧存在展开合拢控制按钮
-		TVS_SHOWSELALWAYS | // 即使在窗口失去输入焦点时仍然保持选中状态
-		TVS_EDITLABELS, // 可以控制鼠标单击修改树项的名称
-		WS_EX_CLIENTEDGE);
-	m_treeview.SetExtendedStyle(TVS_EX_DOUBLEBUFFER | 0 * TVS_EX_MULTISELECT, 0);
-	//m_treeview.SetImageList(m_SmallImages, TVSIL_NORMAL);
-
-	m_RegView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
-		LVS_SINGLESEL | // 只能选中一个
-		WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		LVS_REPORT | LVS_SHOWSELALWAYS | // 失去焦点时也显示选中项
-		LVS_OWNERDATA | // 虚拟列表
-		LVS_EDITLABELS, WS_EX_CLIENTEDGE);
-
-	m_RegMgr.BuildTreeView();
-	m_RegView.Init(&m_RegMgr, this);
-
-	m_splitter.SetSplitterPanes(m_treeview, m_RegView);
-	m_splitter.SetSplitterPosPct(25);
-
-	m_splitter.ShowWindow(SW_HIDE);
-	m_hwndArray[static_cast<int>(TabColumn::Registry)] = m_splitter.m_hWnd;
+	m_RegView.m_MainSplitter.ShowWindow(SW_SHOW);
+	m_hwndArray[static_cast<int>(TabColumn::Registry)] = m_RegView.m_MainSplitter.m_hWnd;
 }
 
 // 设备列表
@@ -318,7 +280,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
 	m_CmdBar.AttachMenu(GetMenu());
-	SetMenu(nullptr);
+	// SetMenu(nullptr);
 
 	UIAddMenu(IDR_CONTEXT);
 	//InitCommandBar();
@@ -383,8 +345,6 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 LRESULT CMainDlg::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	m_RegMgr.Destroy();
-	
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -427,7 +387,15 @@ LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 	int iY = rect.top + tabHeight;
 	int height = rect.bottom - tabHeight - statusHeight - rect.top;
 
-	::MoveWindow(m_hwndArray[_index], iX, iY, width, height, true);
+	if (_index == static_cast<int>(TabColumn::Registry)) {
+		::MoveWindow(m_RegView.m_hWnd, iX, iY, width, height, true);
+		CRect rc;
+		m_RegView.m_AddressBar.GetClientRect(&rc);
+		int editHeight = rc.Height();
+		::MoveWindow(m_hwndArray[_index], iX, iY, width, height - editHeight, true);
+	}
+	else
+		::MoveWindow(m_hwndArray[_index], iX, iY, width, height, true);
 
 	iY = rect.bottom - statusHeight;
 	::MoveWindow(m_StatusBar.m_hWnd, iX, iY, width, statusHeight, true);
@@ -461,7 +429,7 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	m_NetTable->ShowWindow(SW_HIDE);
 	m_KernelModuleTable->ShowWindow(SW_HIDE);
 	m_DriverTable->ShowWindow(SW_HIDE);
-	m_splitter.ShowWindow(SW_HIDE);
+	m_RegView.ShowWindow(SW_HIDE);
 	m_DevView.ShowWindow(SW_HIDE);
 	m_WinView.ShowWindow(SW_HIDE);
 	switch (static_cast<TabColumn>(index)) {
@@ -478,7 +446,7 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_DriverTable->ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Registry:
-			m_splitter.ShowWindow(SW_SHOW);
+			m_RegView.ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Device:
 			m_DevView.ShowWindow(SW_SHOW);
@@ -499,148 +467,18 @@ void CMainDlg::OnGetMinMaxInfo(LPMINMAXINFO lpMMI) {
 	lpMMI->ptMinTrackSize.y = 450;
 }
 
-LRESULT CMainDlg::OnTreeItemExpanding(int, LPNMHDR nmhdr, BOOL&) {
-	return m_RegMgr.HandleNotification(nmhdr);
-}
-
-LRESULT CMainDlg::OnTreeSelectionChanged(int, LPNMHDR nmhdr, BOOL&) {
-	auto item = reinterpret_cast<NMTREEVIEW*>(nmhdr);
-	auto node = reinterpret_cast<TreeNodeBase*>(m_treeview.GetItemData(item->itemNew.hItem));
-	m_SelectedNode = node;
-	m_RegView.Update(node);
-
-	return 0;
-}
-
 bool CMainDlg::CanPaste() const {
 	return false;
-}
-
-LRESULT CMainDlg ::OnNewKey(WORD, WORD, HWND, BOOL&) {
-	auto hItem = m_treeview.GetSelectedItem();
-	auto node = reinterpret_cast<TreeNodeBase*>(m_treeview.GetItemData(hItem));
-	ATLASSERT(node);
-
-	CNewKeyDlg dlg;
-	if (dlg.DoModal() == IDOK) {
-		if (node->FindChild(dlg.GetKeyName())) {
-			AtlMessageBox(m_hWnd, L"Key name already exists", IDR_MAINFRAME, MB_ICONERROR);
-			return 0;
-		}
-		auto cmd = std::make_shared<CreateNewKeyCommand>(node->GetFullPath(), dlg.GetKeyName());
-		if (!m_CmdMgr.AddCommand(cmd))
-			ShowCommandError(L"Failed to create key");
-
-	}
-
-	return 0;
-}
-
-void CMainDlg::ShowCommandError(PCWSTR message) {
-	AtlMessageBox(m_hWnd, message ? message : L"Error", IDR_MAINFRAME, MB_ICONERROR);
-}
-
-LRESULT CMainDlg::OnDelete(WORD, WORD, HWND, BOOL&) {
-	// delete key
-	ATLASSERT(m_SelectedNode && m_SelectedNode->GetNodeType() == TreeNodeType::RegistryKey);
-
-	return 0;
 }
 
 UINT CMainDlg::TrackPopupMenu(CMenuHandle menu, int x, int y) {
 	return (UINT)m_CmdBar.TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_RIGHTBUTTON, x, y);
 }
 
-LRESULT CMainDlg::OnCopyKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ATLASSERT(m_SelectedNode);
-	ClipboardHelper::CopyText(*this, m_SelectedNode->GetText());
-	return 0;
+void CMainDlg::SetStartKey(const CString& key) {
+	// m_RegView.SetStartKey(key);
 }
 
-LRESULT CMainDlg::OnCopyFullKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ATLASSERT(m_SelectedNode);
-	ClipboardHelper::CopyText(*this, m_SelectedNode->GetFullPath());
-	return 0;
-}
-
-LRESULT CMainDlg::OnEditPermissions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (m_SelectedNode == nullptr || m_SelectedNode->GetNodeType() != TreeNodeType::RegistryKey)
-		return 0;
-
-	auto node = static_cast<RegKeyTreeNode*>(m_SelectedNode);
-	CSecurityInformation info(*node->GetKey(), node->GetText(), !m_AllowModify);
-	::EditSecurity(m_hWnd, &info);
-
-	return 0;
-}
-
-LRESULT CMainDlg::OnEditRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	m_Edit = m_treeview.EditLabel(m_treeview.GetSelectedItem());
-
-	return 0;
-}
-
-LRESULT CMainDlg::OnBeginRename(int, LPNMHDR, BOOL&) {
-	if (!m_AllowModify)
-		return TRUE;
-
-	m_Edit = m_treeview.GetEditControl();
-	ATLASSERT(m_Edit.IsWindow());
-	return 0;
-}
-
-LRESULT CMainDlg::OnEndRename(int, LPNMHDR, BOOL&) {
-	ATLASSERT(m_Edit.IsWindow());
-	if (!m_Edit.IsWindow())
-		return 0;
-
-	CString newName;
-	m_Edit.GetWindowText(newName);
-
-	if (newName.CompareNoCase(m_SelectedNode->GetText()) == 0)
-		return 0;
-
-	auto cmd = std::make_shared<RenameKeyCommand>(m_SelectedNode->GetFullPath(), newName);
-	if (!m_CmdMgr.AddCommand(cmd))
-		ShowCommandError(L"Failed to rename key");
-	m_Edit.Detach();
-
-	return 0;
-}
-
-LRESULT CMainDlg::OnTreeDeleteItem(int, LPNMHDR nmhdr, BOOL&) {
-	auto item = reinterpret_cast<NMTREEVIEW*>(nmhdr);
-	auto node = reinterpret_cast<TreeNodeBase*>(m_treeview.GetItemData(item->itemOld.hItem));
-	if (node)
-		node->Delete();
-
-	return 0;
-}
-
-LRESULT CMainDlg::OnTreeContextMenu(int, LPNMHDR, BOOL&) {
-	POINT pt;
-	::GetCursorPos(&pt);
-	POINT screen(pt);
-	::ScreenToClient(m_treeview, &pt);
-	auto hItem = m_treeview.HitTest(pt, nullptr);
-	if (hItem == nullptr)
-		return 0;
-
-	auto current = reinterpret_cast<TreeNodeBase*>(m_treeview.GetItemData(hItem));
-	if (current == nullptr)
-		return 1;
-
-	auto index = current->GetContextMenuIndex();
-	if (index < 0)
-		return 0;
-
-	CMenu menu;
-	menu.LoadMenu(IDR_CONTEXT);
-	TrackPopupMenu(menu.GetSubMenu(index), screen.x, screen.y);
-
-	return 0;
-}
-
-bool CMainDlg::AddCommand(std::shared_ptr<AppCommandBase> cmd, bool execute) {
-	return m_CmdMgr.AddCommand(cmd, execute);
+void CMainDlg::SetStatusText(PCWSTR text) {
+	m_StatusBar.SetText(1, m_StatusText = text, SBT_NOBORDERS);
 }

@@ -40,7 +40,7 @@ BEGIN
             MENUITEM "Memory",                      ID_PROCESS_MEMORY
         END
     END
-    POPUP "tree"
+    POPUP "listdir"
     BEGIN
         POPUP "&New"
         BEGIN
@@ -53,15 +53,29 @@ BEGIN
             MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
         END
         MENUITEM SEPARATOR
-        MENUITEM "Copy Key Name",               ID_TREE_COPYKEYNAME
-        MENUITEM "Copy Full Key Name",          ID_TREE_COPYFULLKEYNAME
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Copy Key Name",               ID_COPY_NAME
+        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
+        MENUITEM SEPARATOR
         MENUITEM "Permissions...",              ID_EDIT_PERMISSIONS
     END
-    POPUP "list"
+    POPUP "listvalue"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Rename\tF2",                 ID_EDIT_RENAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_KEY_PROPERTIES
+    END
+    POPUP "listempty"
     BEGIN
         POPUP "&New"
         BEGIN
             MENUITEM "&Key",                        ID_NEW_KEY
+            MENUITEM SEPARATOR
             MENUITEM "&DWORD Value",                ID_NEW_DWORDVALUE
             MENUITEM "&QWORD Value",                ID_NEW_QWORDVALUE
             MENUITEM "&String Value",               ID_NEW_STRINGVALUE
@@ -69,13 +83,7 @@ BEGIN
             MENUITEM "&Expand String Value",        ID_NEW_EXPANDSTRINGVALUE
             MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
         END
-    END
-    POPUP "listselected"
-    BEGIN
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Rename\tF2",                 ID_EDIT_RENAME
-        MENUITEM "Modify &Value",               ID_EDIT_MODIFYVALUE
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
     END
     POPUP "win_tree"
     BEGIN
@@ -93,6 +101,49 @@ BEGIN
         END
         MENUITEM "&Properties...",              ID_WINDOW_PROPERTIES
         MENUITEM "Refresh",                     ID_WINDOW_REFRESH
+    END
+    POPUP "reg_tree"
+    BEGIN
+        MENUITEM "Create &Key",                 ID_NEW_KEY
+        MENUITEM SEPARATOR
+        MENUITEM "Re&name",                     ID_EDIT_RENAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Key Name",               ID_COPY_NAME
+        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
+        MENUITEM "&Paste",                      ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "&Refresh",                    ID_TREE_REFRESH
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Export...",                  ID_FILE_EXPORT
+        MENUITEM "&Import...",                  ID_FILE_IMPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Per&missions...",             ID_KEY_PERMISSIONS
+    END
+    POPUP "remote"
+    BEGIN
+        MENUITEM "&Disconnect",                 ID_FILE_DISCONNECT
+    END
+END
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About WinArk",               ID_APP_ABOUT
     END
 END
 
@@ -150,7 +201,7 @@ BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,28,355,215
 END
 
-IDD_TOKEN DIALOGEX 0, 0, 383, 415
+IDD_TOKEN DIALOGEX 0, 0, 409, 415
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -168,15 +219,15 @@ BEGIN
     LTEXT           "Static",IDC_INTEGRITY,296,26,35,8
     LTEXT           "Static",IDC_VIRT,296,40,33,8
     LTEXT           "Static",IDC_ELEVATED,296,53,40,8
-    LTEXT           "Static",IDC_LOGONSESSION,295,66,55,8
+    LTEXT           "Static",IDC_LOGONSESSION,295,66,98,8
     LTEXT           "Groups",IDC_GROUP_COUNT,11,67,69,8
-    CONTROL         "",IDC_GROUPS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,80,369,118
+    CONTROL         "",IDC_GROUPS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,80,395,118
     LTEXT           "Sid: ",IDC_STATIC,9,44,15,8
     EDITTEXT        IDC_USERSID,30,41,212,14,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Privileges: ",IDC_PRIV_COUNT,10,207,119,8
     CONTROL         "",IDC_PRIVILEGES,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,222,302,94
     LTEXT           "Capablities",IDC_CAPS_COUNT,10,327,61,8
-    LISTBOX         IDC_CAPS,7,340,369,68,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_CAPS,7,340,395,68,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_JOB DIALOGEX 0, 0, 453, 290
@@ -253,7 +304,7 @@ BEGIN
     IDD_TOKEN, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 376
+        RIGHTMARGIN, 402
         TOPMARGIN, 7
         BOTTOMMARGIN, 408
     END
@@ -368,6 +419,7 @@ END
 IDD_MAINDLG DIALOGEX 0, 0, 684, 297
 STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "WinArk"
+MENU IDR_MAINFRAME
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_TAB_VIEW,"SysTabControl32",0x0,7,7,662,12
@@ -626,12 +678,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "YuanOS Corporation"
-            VALUE "FileDescription", "WinArk Module"
+            VALUE "FileDescription", "WinArk Antirootkit"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "WinArk"
-            VALUE "LegalCopyright", "Copyright 2020"
+            VALUE "LegalCopyright", "Copyright ©2021"
             VALUE "OriginalFilename", "WinArk.exe"
-            VALUE "ProductName", "WinArk Module"
+            VALUE "ProductName", "Windows Antirootkit"
             VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END

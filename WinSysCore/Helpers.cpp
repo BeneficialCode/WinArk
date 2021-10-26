@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "Helpers.h"
 
-using namespace WinSys;
+#include "SecurityHelper.h"
+#include <wil\resource.h>
+
 
 std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
 	static std::vector<std::pair<std::wstring, std::wstring>> deviceNames;

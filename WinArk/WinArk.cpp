@@ -13,7 +13,7 @@
 CAppModule _Module;
 
 
-int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT) {
+int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
 
@@ -24,6 +24,11 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT) {
 	InitSchemSys();
 
 	CMainDlg dlgMain;
+
+	/*CString cmdLine(lpstrCmdLine);
+	cmdLine.Trim(L" \"");
+	if(!cmdLine.IsEmpty()&&cmdLine.Right(11).CompareNoCase(L"regedit.exe")!=0)*/
+		
 
 	if (dlgMain.Create(NULL) == NULL) {
 		ATLTRACE(_T("Main dialog creation failed!\n"));
@@ -71,15 +76,18 @@ bool CheckInstall(PCWSTR cmdLine) {
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
-	if (CheckInstall(lpstrCmdLine))
-		return 0;
-	HRESULT hRes = ::CoInitialize(NULL);
+	HRESULT hRes = ::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
 	ATLASSERT(SUCCEEDED(hRes));
-
-	AtlInitCommonControls(ICC_BAR_CLASSES);	// add flags to support other controls
+	// add flags to support other controls
+	AtlInitCommonControls(ICC_BAR_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES);
 	
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
+
+	::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+
+	if (CheckInstall(lpstrCmdLine))
+		return 0;
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

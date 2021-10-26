@@ -34,6 +34,9 @@
     <Filter Include="Ui">
       <UniqueIdentifier>{22d5f0e0-c055-4a9a-832f-ade66ad9649e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Controls">
+      <UniqueIdentifier>{615cba77-8723-4b7e-abeb-c4118eefa63e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -59,9 +62,6 @@
     </ClCompile>
     <ClCompile Include="Table.cpp">
       <Filter>Table</Filter>
-    </ClCompile>
-    <ClCompile Include="RegistryManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KernelModuleTable.cpp">
       <Filter>Table</Filter>
@@ -189,9 +189,6 @@
     <ClCompile Include="AppCommandBase.cpp">
       <Filter>Commands</Filter>
     </ClCompile>
-    <ClCompile Include="RegHelper.cpp">
-      <Filter>Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="DeleteKeyCommand.cpp">
       <Filter>Commands</Filter>
     </ClCompile>
@@ -204,7 +201,7 @@
     <ClCompile Include="CommandManager.cpp">
       <Filter>Commands</Filter>
     </ClCompile>
-    <ClCompile Include="CreateNewKeyCommand.cpp">
+    <ClCompile Include="CreateKeyCommand.cpp">
       <Filter>Commands</Filter>
     </ClCompile>
     <ClCompile Include="SecurityInformation.cpp">
@@ -237,16 +234,70 @@
     <ClCompile Include="ColumnManager.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
-    <ClCompile Include="TreeNode.cpp">
-      <Filter>Ui</Filter>
-    </ClCompile>
-    <ClCompile Include="TreeNodes.cpp">
-      <Filter>Ui</Filter>
-    </ClCompile>
     <ClCompile Include="ThemeSystem.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
     <ClCompile Include="ListCtrlHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ChangeValueCommand.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Registry.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistryKey.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyKeyCommand.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyValueCommand.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateValueCommand.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="HexControl.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryBuffer.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumString.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IniFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LocationManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistrySearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OwnerDrawnMenu.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Theme.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThemeHelper.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
+    <ClCompile Include="DeleteValueCommand.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ListViewHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
@@ -276,9 +327,6 @@
       <Filter>Table</Filter>
     </ClInclude>
     <ClInclude Include="SortedFilteredVector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RegistryManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Internals.h">
@@ -419,10 +467,7 @@
     <ClInclude Include="ChangeValueCommand.h">
       <Filter>Commands</Filter>
     </ClInclude>
-    <ClInclude Include="RegHelper.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="CreateNewValueCommand.h">
+    <ClInclude Include="CreateValueCommand.h">
       <Filter>Commands</Filter>
     </ClInclude>
     <ClInclude Include="DeleteKeyCommand.h">
@@ -437,7 +482,7 @@
     <ClInclude Include="CommandManager.h">
       <Filter>Commands</Filter>
     </ClInclude>
-    <ClInclude Include="CreateNewKeyCommand.h">
+    <ClInclude Include="CreateKeyCommand.h">
       <Filter>Commands</Filter>
     </ClInclude>
     <ClInclude Include="SecurityInformation.h">
@@ -467,16 +512,7 @@
     <ClInclude Include="ColumnManager.h">
       <Filter>Ui</Filter>
     </ClInclude>
-    <ClInclude Include="UICommon.h">
-      <Filter>Ui</Filter>
-    </ClInclude>
     <ClInclude Include="TreeViewManager.h">
-      <Filter>Ui</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeNodes.h">
-      <Filter>Ui</Filter>
-    </ClInclude>
-    <ClInclude Include="TreeNode.h">
       <Filter>Ui</Filter>
     </ClInclude>
     <ClInclude Include="ThemeSystem.h">
@@ -486,6 +522,75 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ListCtrlHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Registry.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistryKey.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyKeyCommand.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyValueCommand.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="HexControl.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryBuffer.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumStrings.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IniFile.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="FindOptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMainFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocationManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistrySearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomButton.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="OwnerDrawnMenu.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="SizeGrip.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="Theme.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThemeHelper.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="DeleteValueCommand.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ListViewHelper.h">
       <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>

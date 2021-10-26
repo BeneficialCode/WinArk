@@ -5,13 +5,13 @@
 
 namespace WinSys {
 	enum class ServiceTriggerType {
-		Custom = 20,
-		DeviceInterfaceArrival = 1,
-		DomainJoin = 3,
-		FirewallPortEvent = 4,
-		GroupPolicy = 5,
-		IpAddressAvailability = 2,
-		NetworkEndPoint = 6,
+		Custom = 20, // Custom event based on Event Tracing for Windows(ETW)
+		DeviceInterfaceArrival = 1,// Device arrival into the system
+		DomainJoin = 3,// Machine joined a domain
+		FirewallPortEvent = 4,// Firewall port open or closed
+		GroupPolicy = 5,// Machine policy or user policy changed
+		IpAddressAvailability = 2,// TCP/IP address available
+		NetworkEndPoint = 6, // Packet arrives on a particular network interface (Windows8+)
 		SystemStateChanged = 7,
 		Aggregate = 30
 	};
@@ -42,7 +42,7 @@ namespace WinSys {
 	public:
 		explicit Service(wil::unique_schandle) noexcept;
 
-		static std::unique_ptr<Service> Open(const std::wstring& name, ServiceAccessMask access) noexcept;
+		static std::unique_ptr<Service> Open(const std::wstring& name, WinSys::ServiceAccessMask access) noexcept;
 
 		ServiceStatusProcess GetStatus() const;
 		std::vector<ServiceTrigger> GetTriggers() const;

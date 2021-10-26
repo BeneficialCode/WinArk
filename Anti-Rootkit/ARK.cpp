@@ -281,6 +281,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			// 3.自身执行在过滤驱动或回调函数中的代码，如需要调用嵌套的api,考虑另起线程，
 			// 通过线程间通信把系统api调用的结果返回给最初线程。
 			// 4.避免在代码中使用递归，如果非要使用，注意递归深度
+
 			status = ZwOpenProcess((HANDLE*)data, data->AccessMask, &attr, &id);
 			len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
 			break;
@@ -394,6 +395,43 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			id.UniqueThread = UlongToHandle(data->Id);
 			status = ZwOpenThread((HANDLE*)data, data->AccessMask, &attr, &id);
 			len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
+			break;
+		}
+
+		case IOCTL_ARK_OPEN_KEY:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			auto data = static_cast<KeyData*>(Irp->AssociatedIrp.SystemBuffer);
+			if (dic.InputBufferLength < sizeof(KeyData) + ULONG((data->Length - 1) * 2)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			if (dic.OutputBufferLength < sizeof(HANDLE)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			if (data->Length > 2048) {
+				status = STATUS_BUFFER_OVERFLOW;
+				break;
+			}
+
+			UNICODE_STRING keyName;
+			keyName.Buffer = data->Name;
+			keyName.Length = keyName.MaximumLength = (USHORT)data->Length * sizeof(WCHAR);
+			OBJECT_ATTRIBUTES keyAttr;
+			InitializeObjectAttributes(&keyAttr, &keyName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+			HANDLE hKey{ nullptr };
+			status = ZwOpenKey(&hKey, data->Access, &keyAttr);
+			if (NT_SUCCESS(status)) {
+				*(HANDLE*)data = hKey;
+				len = sizeof(HANDLE);
+			}
 			break;
 		}
 	}

@@ -124,13 +124,43 @@
 #define ID_WINDOW_MAXIMIZE              32844
 #define ID_WIN_REFRESH                  32845
 #define ID_WINDOW_REFRESH               32846
+#define ID_FILE_RUNASADMINISTRATOR      32847
+#define ID_FILE_EXIT                    32848
+#define IDM_EXIT                        32849
+#define ID_FILE_RUNASADMIN              32850
+#define ID_OPTIONS_ALWAYSONTOP          32851
+#define ID_OPTIONS_DARKMODE             32852
+#define ID_HELP_ABOUTWINARK             32853
+#define ID_LISTEMPTY_PASTE              32854
+#define ID_KEY_PROPERTIES               32855
+#define ID_REG_CREATEKEY                32856
+#define ID_REG_RENAME                   32857
+#define ID_REG_COPY                     32858
+#define ID_REG_COPYKEYNAME              32859
+#define ID_COPY_NAME                    32860
+#define ID_REG_COPYFULLKEYNAME          32861
+#define ID_COPY_FULLNAME                32862
+#define ID_REG_PASTE                    32863
+#define ID_REG_REFRES                   32864
+#define ID_TREE_REFRESH                 32865
+#define ID_REG_DELETE                   32866
+#define ID_REG_EXPORT                   32867
+#define ID_FILE_EXPORT                  32868
+#define ID_REG_IMPORT                   32869
+#define ID_FILE_IMPORT                  32870
+#define ID_REG_PERMISSIONS              32871
+#define ID_KEY_PERMISSIONS              32872
+#define ID_LISTDIR_COPY                 32873
+#define ID_LISTDIR_DELETE               32874
+#define ID_REMOTE_DISCONNECT            32875
+#define ID_FILE_DISCONNECT              32876
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        225
-#define _APS_NEXT_COMMAND_VALUE         32847
+#define _APS_NEXT_RESOURCE_VALUE        226
+#define _APS_NEXT_COMMAND_VALUE         32877
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

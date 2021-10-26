@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 struct t_scheme { // 颜色主题
 	std::string	name;          // 主题名字
 	int  textcolor;            // 文本颜色

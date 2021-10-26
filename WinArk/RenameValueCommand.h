@@ -2,14 +2,16 @@
 
 #include "AppCommandBase.h"
 
-class RenameValueCommand : public AppCommandBase {
+class RenameValueCommand : public RegAppCommandBase<RenameValueCommand> {
 public:
-	RenameValueCommand(const CString& path, const CString& oldName, const CString& newName);
+	RenameValueCommand(PCWSTR path, PCWSTR name, PCWSTR newName, AppCommandCallback<RenameValueCommand> cb = nullptr);
 
 	bool Execute() override;
-	bool Undo() override {
-		return Execute();
-	}
+	bool Undo() override;
+
+	const CString& GetNewName() const;
+
+	CString GetCommandName() const;
 
 private:
 	CString _path, _oldName, _newName;

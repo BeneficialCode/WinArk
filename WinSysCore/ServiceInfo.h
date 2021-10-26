@@ -15,8 +15,8 @@ namespace WinSys {
 	DEFINE_ENUM_FLAG_OPERATORS(ServiceEnumType);
 
 	enum class ServiceEnumState {
-		Active = SERVICE_ACTIVE,
-		Inactive = SERVICE_INACTIVE,
+		Active = SERVICE_ACTIVE,// Running
+		Inactive = SERVICE_INACTIVE,// Stopped
 		All = Active|Inactive
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(ServiceEnumState);

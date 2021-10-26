@@ -152,7 +152,7 @@ void CWindowsView::DoSort(const SortInfo* si) {
 		});
 }
 
-bool CWindowsView::IsSortable(int col) const {
+bool CWindowsView::IsSortable(HWND,int col) const {
 	return col == 0;
 }
 

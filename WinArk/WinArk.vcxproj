@@ -88,8 +88,9 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -216,32 +217,45 @@
     <ClCompile Include="AccessMaskDecoder.cpp" />
     <ClCompile Include="AppCommandBase.cpp" />
     <ClCompile Include="BinaryValueDlg.cpp" />
+    <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
     <ClCompile Include="ColumnManager.cpp" />
     <ClCompile Include="CommandManager.cpp" />
-    <ClCompile Include="CreateNewKeyCommand.cpp" />
+    <ClCompile Include="CopyKeyCommand.cpp" />
+    <ClCompile Include="CopyValueCommand.cpp" />
+    <ClCompile Include="CreateKeyCommand.cpp" />
+    <ClCompile Include="CreateValueCommand.cpp" />
     <ClCompile Include="DeleteKeyCommand.cpp" />
+    <ClCompile Include="DeleteValueCommand.cpp" />
     <ClCompile Include="DeviceManagerView.cpp" />
     <ClCompile Include="DeviceObjectType.cpp" />
     <ClCompile Include="DriverTable.cpp" />
+    <ClCompile Include="EnumString.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
     <ClCompile Include="EventObjectType.cpp" />
     <ClCompile Include="FileManagerView.cpp" />
     <ClCompile Include="FileObjectType.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
+    <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="HexControl.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
+    <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="IntValueDlg.cpp" />
     <ClCompile Include="JobObjectType.cpp" />
     <ClCompile Include="JobPropertiesDlg.cpp" />
     <ClCompile Include="KeyObjectType.cpp" />
     <ClCompile Include="ListCtrlHelper.cpp" />
+    <ClCompile Include="ListViewHelper.cpp" />
+    <ClCompile Include="LocationManager.cpp" />
     <ClCompile Include="MainDlg.cpp" />
+    <ClCompile Include="MemoryBuffer.cpp" />
     <ClCompile Include="MultiStringValueDlg.cpp" />
     <ClCompile Include="MutexObjectType.cpp" />
     <ClCompile Include="NetworkTable.cpp" />
     <ClCompile Include="NewKeyDlg.cpp" />
     <ClCompile Include="ObjectType.cpp" />
     <ClCompile Include="ObjectTypeFactory.cpp" />
+    <ClCompile Include="OwnerDrawnMenu.cpp" />
     <ClCompile Include="ProcessHandleDlg.cpp" />
     <ClCompile Include="ProcessHandleTable.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
@@ -255,8 +269,9 @@
     <ClCompile Include="ProcessTable.cpp" />
     <ClCompile Include="ProcessThreadDlg.cpp" />
     <ClCompile Include="ProcessThreadTable.cpp" />
-    <ClCompile Include="RegHelper.cpp" />
-    <ClCompile Include="RegistryManager.cpp" />
+    <ClCompile Include="Registry.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
+    <ClCompile Include="RegistrySearcher.cpp" />
     <ClCompile Include="RenameKeyCommand.cpp" />
     <ClCompile Include="RenameValueCommand.cpp" />
     <ClCompile Include="SectionObjectType.cpp" />
@@ -264,6 +279,7 @@
     <ClCompile Include="SecurityInformation.cpp" />
     <ClCompile Include="SemaphoreObjectType.cpp" />
     <ClCompile Include="ServiceInfoEx.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SortHelpler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -275,13 +291,14 @@
     <ClCompile Include="StringValueDlg.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
     <ClCompile Include="Table.cpp" />
+    <ClCompile Include="Theme.cpp" />
+    <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeSystem.cpp" />
     <ClCompile Include="ThreadObjectType.cpp" />
     <ClCompile Include="TimerObjectType.cpp" />
     <ClCompile Include="TokenObjectType.cpp" />
     <ClCompile Include="TokenPropertiesDlg.cpp" />
-    <ClCompile Include="TreeNode.cpp" />
-    <ClCompile Include="TreeNodes.cpp" />
+    <ClCompile Include="TreeHelper.cpp" />
     <ClCompile Include="View.cpp" />
     <ClCompile Include="WinArk.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
@@ -293,30 +310,44 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
     <ClInclude Include="AppCommandBase.h" />
+    <ClInclude Include="AppSettings.h" />
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
     <ClInclude Include="ColumnManager.h" />
     <ClInclude Include="CommandManager.h" />
-    <ClInclude Include="CreateNewKeyCommand.h" />
-    <ClInclude Include="CreateNewValueCommand.h" />
+    <ClInclude Include="CopyKeyCommand.h" />
+    <ClInclude Include="CopyValueCommand.h" />
+    <ClInclude Include="CreateKeyCommand.h" />
+    <ClInclude Include="CreateValueCommand.h" />
+    <ClInclude Include="CustomButton.h" />
     <ClInclude Include="DeleteKeyCommand.h" />
+    <ClInclude Include="DeleteValueCommand.h" />
     <ClInclude Include="DeviceManagerView.h" />
     <ClInclude Include="DeviceObjectType.h" />
     <ClInclude Include="DriverTable.h" />
+    <ClInclude Include="EnumStrings.h" />
     <ClInclude Include="EnvironmentDlg.h" />
     <ClInclude Include="EventObjectType.h" />
     <ClInclude Include="FileManagerView.h" />
     <ClInclude Include="FileObjectType.h" />
+    <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="HexControl.h" />
     <ClInclude Include="ImageHelper.h" />
+    <ClInclude Include="IMainFrame.h" />
+    <ClInclude Include="IniFile.h" />
     <ClInclude Include="Internals.h" />
     <ClInclude Include="IntValueDlg.h" />
     <ClInclude Include="JobObjectType.h" />
     <ClInclude Include="JobPropertiesDlg.h" />
     <ClInclude Include="KeyObjectType.h" />
     <ClInclude Include="ListCtrlHelper.h" />
+    <ClInclude Include="ListViewHelper.h" />
+    <ClInclude Include="LocationManager.h" />
     <ClInclude Include="MainDlg.h" />
+    <ClInclude Include="MemoryBuffer.h" />
     <ClInclude Include="MultiStringValueDlg.h" />
     <ClInclude Include="MutexObjectType.h" />
     <ClInclude Include="NetworkTable.h" />
@@ -324,6 +355,7 @@
     <ClInclude Include="NtDll.h" />
     <ClInclude Include="ObjectType.h" />
     <ClInclude Include="ObjectTypeFactory.h" />
+    <ClInclude Include="OwnerDrawnMenu.h" />
     <ClInclude Include="ProcessHandleDlg.h" />
     <ClInclude Include="ProcessHandleTable.h" />
     <ClInclude Include="ProcessHelper.h" />
@@ -337,8 +369,9 @@
     <ClInclude Include="ProcessTable.h" />
     <ClInclude Include="ProcessThreadDlg.h" />
     <ClInclude Include="ProcessThreadTable.h" />
-    <ClInclude Include="RegHelper.h" />
-    <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="Registry.h" />
+    <ClInclude Include="RegistryKey.h" />
+    <ClInclude Include="RegistrySearcher.h" />
     <ClInclude Include="RenameKeyCommand.h" />
     <ClInclude Include="RenameValueCommand.h" />
     <ClInclude Include="resource.h" />
@@ -347,6 +380,8 @@
     <ClInclude Include="SecurityInformation.h" />
     <ClInclude Include="SemaphoreObjectType.h" />
     <ClInclude Include="ServiceInfoEx.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="SizeGrip.h" />
     <ClInclude Include="SortedFilteredVector.h" />
     <ClInclude Include="SortHelper.h" />
     <ClInclude Include="stdafx.h" />
@@ -354,15 +389,15 @@
     <ClInclude Include="StringValueDlg.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
     <ClInclude Include="Table.h" />
+    <ClInclude Include="Theme.h" />
+    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeSystem.h" />
     <ClInclude Include="ThreadObjectType.h" />
     <ClInclude Include="TimerObjectType.h" />
     <ClInclude Include="TokenObjectType.h" />
     <ClInclude Include="TokenPropertiesDlg.h" />
-    <ClInclude Include="TreeNode.h" />
-    <ClInclude Include="TreeNodes.h" />
+    <ClInclude Include="TreeHelper.h" />
     <ClInclude Include="TreeViewManager.h" />
-    <ClInclude Include="UICommon.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="VirtualListView.h" />
     <ClInclude Include="WindowHelper.h" />

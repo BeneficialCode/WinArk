@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include <algorithm>
-#include <unordered_map>
 #include "ProcessTable.h"
 #include "FormatHelper.h"
 #include "resource.h"

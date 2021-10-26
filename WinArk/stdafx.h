@@ -10,20 +10,23 @@
 #define _WIN32_WINNT	0x0601
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
+// 解决标准库std::min与min宏冲突
+#define NOMINMAX
+
+#ifndef __cpp_lib_format
+#define __cpp_lib_format
+#endif
 
 #include <atlbase.h>
 #include <atlapp.h>
-
-extern CAppModule _Module;
+#include <atlstr.h>
 
 #include <atlwin.h>
-
-#include <string>
-#include <unordered_map>
-#include <memory>
 #include <winternl.h>
 
-#include <atlstr.h>
+
+
+extern CAppModule _Module;
 
 #include <wil\resource.h>
 #include <atlframe.h>
@@ -40,11 +43,26 @@ extern CAppModule _Module;
 #include <atltime.h>
 #include <atlcoll.h>
 #include <atlsplit.h>
+#include <atltheme.h>
+#include <atltypes.h>
 
+#include <string>
+#include <unordered_map>
+#include <memory>
+#include <functional>
+#include <ranges>
+#include <algorithm>
+#include <map>
 
 #include "ThemeSystem.h"
 #include "WinSysCore.h"
 
+template<>
+struct std::hash<CString> {
+	size_t operator()(const CString& key) const {
+		return std::hash<std::wstring>()((LPCTSTR)key);
+	}
+};
 
 extern int g_AvHighFont;
 extern int g_AvWidthFont;

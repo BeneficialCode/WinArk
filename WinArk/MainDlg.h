@@ -7,8 +7,6 @@
 #include "View.h"
 #include "DeviceManagerView.h"
 #include "CommandManager.h"
-#include "RegistryManager.h"
-
 #include "ProcessTable.h"
 #include "NetworkTable.h"
 #include "KernelModuleTable.h"
@@ -33,23 +31,19 @@ class CMainDlg :
 	public CDialogImpl<CMainDlg>, 
 	public CAutoUpdateUI<CMainDlg>,
 	public CMessageFilter, 
-	public CIdleHandler,
-	public IMainApp
+	public CIdleHandler
 {
 public:
 	enum { IDD = IDD_MAINDLG };
 
-	CMainDlg() :m_RegMgr(m_treeview, m_RegView) {
-	}
-	// 如果类的的构造函数为引用类型，则必须初始化
+	// 如果类中有引用类型，则必须在构造函数中初始化
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 	void UpdateUI();
 
-	bool IsAllowModify() const override{
-		return m_AllowModify;
-	}
+	void SetStartKey(const CString& key);
+	void SetStatusText(PCWSTR text);
 
 	CUpdateUIBase* GetUIUpdate() {
 		return this;
@@ -62,19 +56,9 @@ public:
 	LRESULT OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTcnSelChange(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
 
-	LRESULT OnTreeContextMenu(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnTreeDeleteItem(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnTreeItemExpanding(int /*idCtrl*/, LPNMHDR nmhdr, BOOL& /*bHandled*/);
-	LRESULT OnTreeSelectionChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	void CloseDialog(int nVal);
 	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
-
-	LRESULT OnBeginRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT OnEndRename(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-
-	void ShowCommandError(PCWSTR message = nullptr) override;
-	bool AddCommand(std::shared_ptr<AppCommandBase> cmd, bool execute = true) override;
 
 	void InitProcessTable();
 	void InitNetworkTable();
@@ -90,26 +74,10 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
-		if (m_splitter.GetActivePane() == 1) { // 消息转发给m_view的消息节1
-			CHAIN_MSG_MAP_ALT_MEMBER(m_RegView,1)
-		}
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-		COMMAND_ID_HANDLER(ID_NEW_KEY,OnNewKey)
-		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnDelete)
-		COMMAND_ID_HANDLER(ID_EDIT_RENAME, OnEditRename)
-		COMMAND_ID_HANDLER(ID_EDIT_PERMISSIONS, OnEditPermissions)
-		COMMAND_ID_HANDLER(ID_TREE_COPYKEYNAME, OnCopyKeyName)
-		COMMAND_ID_HANDLER(ID_TREE_COPYFULLKEYNAME, OnCopyFullKeyName)
-		NOTIFY_CODE_HANDLER(TVN_DELETEITEM,OnTreeDeleteItem)
-		NOTIFY_CODE_HANDLER(TVN_ENDLABELEDIT, OnEndRename)
-		NOTIFY_CODE_HANDLER(TVN_BEGINLABELEDIT, OnBeginRename)
-		NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnTreeItemExpanding)
-		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelectionChanged)
-		NOTIFY_CODE_HANDLER(NM_RCLICK, OnTreeContextMenu)
 		NOTIFY_HANDLER(IDC_TAB_VIEW, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainDlg>)
-		CHAIN_MSG_MAP_ALT_MEMBER(m_RegView,2)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
@@ -125,13 +93,6 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT OnNewKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnEditRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnEditPermissions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnCopyKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnCopyFullKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 private:
 	CTabCtrl m_TabCtrl;
@@ -142,13 +103,11 @@ private:
 	CDriverTable* m_DriverTable{ nullptr };
 	CMultiPaneStatusBarCtrl m_StatusBar;
 
-	CTreeViewCtrl m_treeview;
-	CSplitterWindow m_splitter;
-	RegistryManager m_RegMgr;
-	TreeNodeBase* m_SelectedNode;
 	CRegistryManagerView m_RegView;
+
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
+	CString m_StatusText;
 
 	// table array
 	HWND m_hwndArray[16];

@@ -14,7 +14,10 @@ std::vector<ServiceInfo> ServiceManager::EnumServices(ServiceEnumType enumType, 
 	auto buffer = std::make_unique<BYTE[]>(1 << 18);
 	DWORD needed;
 	DWORD count;
-	auto ok = ::EnumServicesStatusEx(hScm.get(), SC_ENUM_PROCESS_INFO, static_cast<DWORD>(enumType), static_cast<DWORD>(enumState),
+	auto ok = ::EnumServicesStatusEx(hScm.get(), // SC_MANAGER_ENUMERATE_SERVICE
+		SC_ENUM_PROCESS_INFO, 
+		static_cast<DWORD>(enumType), 
+		static_cast<DWORD>(enumState),
 		buffer.get(), 1 << 18, &needed, &count, nullptr, nullptr);
 	if (!ok)
 		return services;
@@ -71,7 +74,8 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 	if (result->StartType == ServiceStartType::Auto) {
 		// check if delayed auto start
 		SERVICE_DELAYED_AUTO_START_INFO info;
-		auto ok = ::QueryServiceConfig2(hService.get(), SERVICE_CONFIG_DELAYED_AUTO_START_INFO,
+		auto ok = ::QueryServiceConfig2(hService.get(), 
+			SERVICE_CONFIG_DELAYED_AUTO_START_INFO,// Delayed auto start
 			(BYTE*)&info, sizeof(info), &len);
 		if (ok)
 			result->DeleayedAutoStart = info.fDelayedAutostart ? true : false;
@@ -108,7 +112,9 @@ std::wstring WinSys::ServiceManager::GetServiceDescription(const std::wstring& n
 		return L"";
 	BYTE buffer[1024];
 	DWORD len;
-	if (!::QueryServiceConfig2(hService.get(), SERVICE_CONFIG_DESCRIPTION, buffer,
+	if (!::QueryServiceConfig2(hService.get(), 
+		SERVICE_CONFIG_DESCRIPTION, // Service description
+		buffer,
 		sizeof(buffer), &len)) {
 		return L"";
 	}
@@ -167,7 +173,11 @@ std::unique_ptr<WinSys::Service> ServiceManager::Install(
 		displayName.c_str(), static_cast<DWORD>(desiredAccess),
 		static_cast<DWORD>(type), static_cast<DWORD>(startType),
 		static_cast<DWORD>(errorControl), imagePath.c_str(),
-		nullptr, nullptr, nullptr, nullptr, nullptr));
+		nullptr, // specifying the load order group this service belongs to
+		nullptr, // applies to kernel drivers
+		nullptr, // service/group
+		nullptr, // the account under the service process should execute
+		nullptr));// the password to use in case of a domain\user type of login
 	if (!hService)
 		return nullptr;
 
