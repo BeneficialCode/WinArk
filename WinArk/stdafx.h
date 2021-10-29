@@ -53,6 +53,7 @@ extern CAppModule _Module;
 #include <ranges>
 #include <algorithm>
 #include <map>
+#include <format>
 
 #include "ThemeSystem.h"
 #include "WinSysCore.h"

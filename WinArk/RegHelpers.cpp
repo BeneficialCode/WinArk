@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Helpers.h"
+#include "RegHelpers.h"
 #include "NtDll.h"
 #include "SecurityHelper.h"
 #include <wil\resource.h>
@@ -107,4 +107,16 @@ std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
 			return dosName + (name + ntName.size());
 	}
 	return L"";
+}
+
+CString Helpers::ToBinary(ULONGLONG value) {
+	CString svalue;
+
+	while (value) {
+		svalue = ((value & 1) ? L"1" : L"0") + svalue;
+		value >>= 1;
+	}
+	if (svalue.IsEmpty())
+		svalue = L"0";
+	return svalue;
 }

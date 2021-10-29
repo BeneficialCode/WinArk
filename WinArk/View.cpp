@@ -4,20 +4,24 @@
 #include "Internals.h"
 #include "SortHelper.h"
 
-#include "IntValueDlg.h"
+#include "NumberValueDlg.h"
 #include "ChangeValueCommand.h"
 #include "StringValueDlg.h"
 #include "MultiStringValueDlg.h"
 #include "BinaryValueDlg.h"
+#include "ExportDlg.h"
 #include "RenameValueCommand.h"
 #include "ClipboardHelper.h"
 #include "TreeHelper.h"
 #include "ListViewHelper.h"
-#include "Helpers.h"
+#include "RegHelpers.h"
 #include "CreateKeyCommand.h"
 #include "RenameKeyCommand.h"
 #include "CreateValueCommand.h"
-
+#include "CopyKeyCommand.h"
+#include "CopyValueCommand.h"
+#include "SecurityHelper.h"
+#include "RegExportImport.h"
 
 HWND CRegistryManagerView::GetHwnd() const {
 	return m_hWnd;
@@ -115,7 +119,7 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 		m_AutoCompleteStrings->CreateInstance(&m_AutoCompleteStrings);
 		CRect r(0, 0, 400, 20);
 		CEdit edit;
-		auto hEdit = edit.Create(m_hWnd, &r, nullptr, WS_CHILD | WS_VISIBLE | 
+		auto hEdit = edit.Create(m_hWnd, &r, nullptr, WS_CHILD | WS_VISIBLE |
 			ES_AUTOHSCROLL | ES_WANTRETURN | WS_CLIPSIBLINGS, WS_EX_WINDOWEDGE);
 		hr = spAC->Init(hEdit, m_AutoCompleteStrings->GetUnknown(), nullptr, nullptr);
 		if (SUCCEEDED(hr)) {
@@ -124,7 +128,7 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 			if (spAC2) {
 				spAC2->SetOptions(ACO_AUTOSUGGEST | ACO_USETAB | ACO_AUTOAPPEND);
 			}
-			
+
 			ATLVERIFY(m_AddressBar.SubclassWindow(hEdit));
 		}
 		else {
@@ -145,7 +149,7 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	m_List.Create(m_MainSplitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_EDITLABELS, WS_EX_CLIENTEDGE);
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
-	
+
 	auto cm = GetColumnManager(m_List);
 	cm->AddColumn(L"Name", LVCFMT_LEFT, 220, ColumnType::Name);
 	cm->AddColumn(L"Type", LVCFMT_LEFT, 110, ColumnType::Type);
@@ -203,14 +207,14 @@ CString CRegistryManagerView::GetColumnText(HWND h, int row, int col) const {
 				item.Size;
 				m_CurrentKey.QueryValue(item.Name, nullptr, nullptr, &item.Size);
 			}
-			text.Format(L"%u",item.Size);
+			text.Format(L"%u", item.Size);
 			break;
 
 		case ColumnType::TimeStamp:
 			if (item.TimeStamp.dwHighDateTime + item.TimeStamp.dwLowDateTime)
 				return CTime(item.TimeStamp).Format(L"%x %X");
 			break;
-		
+
 		case ColumnType::Details:
 			return item.Key ? GetKeyDetails(item) : GetValueDetails(item);
 	}
@@ -283,7 +287,7 @@ BOOL CRegistryManagerView::OnDoubleClickList(HWND, int row, int col, const POINT
 		return TRUE;
 	}
 	else {
-		
+
 	}
 	return FALSE;
 }
@@ -492,7 +496,7 @@ CString CRegistryManagerView::GetValueDetails(const RegistryItem& item) const {
 				static const CString paths[] = {
 					L"",
 					Helpers::GetSystemDir(),
-					Helpers::GetSystemDir()+CString(L"\\Drivers"),
+					Helpers::GetSystemDir() + CString(L"\\Drivers"),
 					Helpers::GetWindowsDir(),
 				};
 				for (auto& path : paths) {
@@ -606,7 +610,7 @@ void CRegistryManagerView::UpdateList(bool force) {
 	}
 
 	if (!m_CurrentPath.IsEmpty()) {
-		m_CurrentKey = Registry::OpenKey(m_CurrentPath, 
+		m_CurrentKey = Registry::OpenKey(m_CurrentPath,
 			KEY_QUERY_VALUE | (m_Settings.ShowKeysInList() ? KEY_ENUMERATE_SUB_KEYS : 0));
 		ATLASSERT(m_CurrentKey.IsValid());
 	}
@@ -640,7 +644,7 @@ void CRegistryManagerView::UpdateList(bool force) {
 			item.Size = size;
 			m_Items.push_back(item);
 			return true;
-		});
+			});
 	}
 
 	auto parentPath = GetFullParentNodePath(hItem);
@@ -910,7 +914,7 @@ LRESULT CRegistryManagerView::OnTreeKeyDown(int, LPNMHDR hdr, BOOL&) {
 			if (m_List.GetSelectedCount() == 0)
 				m_List.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
 			return TRUE;
-		
+
 		case VK_APPS:
 			CRect rc;
 			if (m_Tree.GetItemRect(m_Tree.GetSelectedItem(), &rc, TRUE)) {
@@ -937,7 +941,7 @@ LRESULT CRegistryManagerView::OnEditKeyDown(UINT, WPARAM wp, LPARAM, BOOL& handl
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnRunOnUIThread(UINT, WPARAM, LPARAM lp, BOOL&){
+LRESULT CRegistryManagerView::OnRunOnUIThread(UINT, WPARAM, LPARAM lp, BOOL&) {
 	auto f = reinterpret_cast<std::function<void()>*>(lp);
 	(*f)();
 	return 0;
@@ -995,6 +999,563 @@ LRESULT CRegistryManagerView::OnTreeContextMenu(int /*idCtrl*/, LPNMHDR /*pnmh*/
 			//hMenu.InsertMenu(0, MF_BYPOSITION, ID_KEY_JUMPTOHIVEFILE, L"Jump &Hive File...");
 		}
 		TrackPopupMenu(hMenu, 0, pt2.x, pt2.y, 0, m_hWnd, nullptr);
+	}
+	return 0;
+}
+
+void CRegistryManagerView::RefreshFull(HTREEITEM hItem) {
+	hItem = m_Tree.GetChildItem(hItem);
+	TreeHelper th(m_Tree);
+	while (hItem) {
+		auto state = m_Tree.GetItemState(hItem, TVIS_EXPANDED | TVIS_EXPANDEDONCE);
+		if (state) {
+			if (state == TVIS_EXPANDEDONCE) {
+				CString text;
+				if (m_Tree.GetChildItem(hItem) && m_Tree.GetItemText(m_Tree.GetChildItem(hItem), text) && text != L"\\\\") {
+					// not expanded now,delete all items and insert a dummy item
+					th.DeleteChildren(hItem);
+					m_Tree.InsertItem(L"\\\\", hItem, TVI_LAST);
+				}
+			}
+			else {
+				// really expanded
+				RefreshFull(hItem);
+				auto key = Registry::OpenKey(GetFullNodePath(hItem), KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS);
+				if (key) {
+					auto keys = th.GetChildItems(hItem);
+					Registry::EnumSubKeys(key.Get(), [&](auto name, const auto&) {
+						if (!th.FindChild(hItem, name)) {
+							// new sub key
+							auto hChild = InsertKeyItem(hItem, name);
+						}
+						else {
+							keys.erase(name);
+						}
+						return true;
+						});
+
+					for (auto& [name, h] : keys)
+						m_Tree.DeleteItem(h);
+
+					if (m_Tree.GetChildItem(hItem) == nullptr) {
+						// remove children indicator
+						TVITEM tvi;
+						tvi.hItem = hItem;
+						tvi.mask = TVIF_CHILDREN;
+						tvi.cChildren = 0;
+						m_Tree.SetItem(&tvi);
+					}
+					else {
+						m_Tree.SortChildren(hItem);
+					}
+				}
+			}
+		}
+		else if (m_Tree.GetChildItem(hItem) == nullptr && (GetNodeData(hItem) & NodeType::AccessDenied) == NodeType::None) {
+			// no children - check if new exist
+			auto key = Registry::OpenKey(GetFullNodePath(hItem), KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS);
+			if (Registry::GetSubKeyCount(key.Get()) > 0) {
+				m_Tree.InsertItem(L"\\\\", hItem, TVI_LAST);
+				TVITEM tvi;
+				tvi.hItem = hItem;
+				tvi.mask = TVIF_CHILDREN;
+				tvi.cChildren = 1;
+				m_Tree.SetItem(&tvi);
+			}
+		}
+		hItem = m_Tree.GetNextSiblingItem(hItem);
+	}
+}
+
+LRESULT CRegistryManagerView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
+	RefreshFull(m_hStdReg);
+	RefreshFull(m_hRealReg);
+	UpdateList();
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnNewKey(WORD, WORD, HWND, BOOL&) {
+	m_Tree.GetSelectedItem().Expand(TVE_EXPAND);
+	auto hItem = InsertKeyItem(m_Tree.GetSelectedItem(), L"(NewKey)");
+	hItem.EnsureVisible();
+	m_CurrentOperation = Operation::CreateKey;
+	m_Tree.EditLabel(hItem);
+	return 0;
+}
+
+bool CRegistryManagerView::RefreshItem(HTREEITEM hItem) {
+	auto expanded = m_Tree.GetItemState(hItem, TVIS_EXPANDED);
+	m_Tree.LockWindowUpdate();
+	m_Tree.Expand(hItem, TVE_COLLAPSE | TVE_COLLAPSERESET);
+	TreeHelper th(m_Tree);
+	th.DeleteChildren(hItem);
+	m_Tree.InsertItem(L"\\\\", hItem, TVI_LAST);
+	if (expanded)
+		m_Tree.Expand(hItem, TVE_EXPAND);
+	m_Tree.LockWindowUpdate(FALSE);
+	UpdateList(true);
+	return true;
+}
+
+
+LRESULT CRegistryManagerView::OnTreeRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	RefreshItem(m_Tree.GetSelectedItem());
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnNewValue(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DWORD type = REG_NONE;
+	switch (id)
+	{
+		case ID_NEW_BINARYVALUE:
+			type = REG_BINARY;
+			break;
+
+		case ID_NEW_DWORDVALUE:
+			type = REG_DWORD;
+			break;
+
+		case ID_NEW_QWORDVALUE:
+			type = REG_QWORD;
+			break;
+
+		case ID_NEW_STRINGVALUE:
+			type = REG_SZ;
+			break;
+
+		case ID_NEW_MULTIPLESTRINGVALUE:
+			type = REG_MULTI_SZ;
+			break;
+
+		case ID_NEW_EXPANDSTRINGVALUE:
+			type = REG_EXPAND_SZ;
+			break;
+	}
+
+	RegistryItem item;
+	item.Name = L"NewValue";
+	item.Type = type;
+	item.Key = false;
+	m_Items.push_back(item);
+	m_List.SetItemCountEx(m_List.GetItemCount() + 1, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+	m_CurrentOperation = Operation::CreateValue;
+	m_List.EditLabel((int)m_Items.size() - 1);
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&){
+	if (::GetFocus() == m_Tree) {
+		ClipboardItem item;
+		item.Key = true;
+		item.Path = GetFullParentNodePath(m_Tree.GetSelectedItem());
+		m_Tree.GetItemText(m_Tree.GetSelectedItem(), item.Name);
+		m_Clipboard.Items.clear();
+		m_Clipboard.Items.push_back(item);
+		m_Clipboard.Operation = ClipboardOperation::Copy;
+	}
+	else {
+		ATLASSERT(::GetFocus() == m_List);
+		auto count = m_List.GetSelectedCount();
+		ATLASSERT(count >= 1);
+		int index = -1;
+		auto path = GetFullNodePath(m_Tree.GetSelectedItem());
+		m_Clipboard.Items.clear();
+		CString text;
+		for (UINT i = 0; i < count; i++) {
+			index = m_List.GetNextItem(index, LVIS_SELECTED);
+			ATLASSERT(index >= 0);
+			text += ListViewHelper::GetRowAsString(m_List, index, L'\t') + L"\n";
+			ClipboardItem ci;
+			ci.Path = path;
+			auto& item = m_Items[index];
+			ci.Key = item.Key;
+			ci.Name = item.Name;
+			m_Clipboard.Items.push_back(ci);
+		}
+		ClipboardHelper::CopyText(m_hWnd, text);
+		m_Clipboard.Operation = ClipboardOperation::Copy;
+	}
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnEditCut(WORD code, WORD id, HWND hWndCtl, BOOL& bHandled) {
+	OnEditCopy(code, id, hWndCtl, bHandled);
+	if (m_Clipboard.Operation == ClipboardOperation::Copy)
+		m_Clipboard.Operation = ClipboardOperation::Cut;
+	return 0;
+}
+
+AppCommandCallback<DeleteKeyCommand> CRegistryManagerView::GetDeleteKeyCommandCallback() {
+	static const auto cb = [this](auto& cmd, bool execute) {
+		TreeHelper th(m_Tree);
+		auto real = cmd.GetPath()[0] == L'\\';
+		auto hParent = th.FindItem(real ? m_hRealReg : m_hStdReg, cmd.GetPath());
+		ATLASSERT(hParent);
+		if (execute) {
+			auto hItem = th.FindChild(hParent, cmd.GetName());
+			ATLASSERT(hItem);
+			m_Tree.DeleteItem(hItem);
+		}
+		else {
+			// create the item
+			auto hItem = InsertKeyItem(hParent, cmd.GetName());
+		}
+		return true;
+	};
+
+	return cb;
+}
+
+LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&){
+	ATLASSERT(!m_Clipboard.Items.empty());
+	auto cb = [this](auto& cmd, bool) {
+		RefreshItem(m_Tree.GetSelectedItem());
+		UpdateList();
+		return TRUE;
+	};
+
+	auto list = std::make_shared<AppCommandList>(nullptr, cb);
+	auto path = GetFullNodePath(m_Tree.GetSelectedItem());
+	for (auto& item : m_Clipboard.Items) {
+		std::shared_ptr<AppCommand> cmd;
+		if (item.Key)
+			cmd = std::make_shared<CopyKeyCommand>(item.Path, item.Name, path);
+		else
+			cmd = std::make_shared<CopyValueCommand>(item.Path, item.Name, path);
+		list->AddCommand(cmd);
+		if (m_Clipboard.Operation == ClipboardOperation::Cut) {
+			if (item.Key)
+				cmd = std::make_shared<DeleteKeyCommand>(item.Path, item.Name, GetDeleteKeyCommandCallback());
+			else
+				cmd = std::make_shared<DeleteValueCommand>(item.Path, item.Name);
+			list->AddCommand(cmd);
+		}
+	}
+	if (list->GetCount() == 1)
+		list->SetCommandName(list->GetCommand(0)->GetCommandName());
+	else
+		list->SetCommandName(L"Paste");
+	if (!m_CmdMgr.AddCommand(list))
+		DisplayError(L"Paste failed");
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnEditRename(WORD, WORD, HWND, BOOL&){
+	if (::GetFocus() == m_Tree) {
+		m_CurrentOperation = Operation::RenameKey;
+		m_Tree.EditLabel(m_Tree.GetSelectedItem());
+	}
+	else if (::GetFocus() == m_List) {
+		auto index = m_List.GetSelectionMark();
+		if (index >= 0) {
+			m_CurrentOperation = m_Items[index].Key ? Operation::RenameKey : Operation::RenameValue;
+			m_List.EditLabel(index);
+		}
+	}
+	
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnEditDelete(WORD, WORD, HWND, BOOL&){
+	if (::GetFocus() == m_Tree) {
+		auto hItem = m_Tree.GetSelectedItem();
+		auto path = GetFullParentNodePath(hItem);
+		CString name;
+		m_Tree.GetItemText(hItem, name);
+		auto cmd = std::make_shared<DeleteKeyCommand>(path, name, GetDeleteKeyCommandCallback());
+		if (!m_CmdMgr.AddCommand(cmd))
+			DisplayError(L"Failed to delete key");
+	}
+	else if (::GetFocus() == m_List) {
+		auto count = m_List.GetSelectedCount();
+		ATLASSERT(count >= 1);
+		int index = -1;
+		auto cb = [this](auto& cmd, auto) {
+			auto cmd0 = std::static_pointer_cast<DeleteValueCommand>(cmd.GetCommand(0));
+			if (GetFullNodePath(m_Tree.GetSelectedItem()) == cmd0->GetPath()) {
+				RefreshItem(m_Tree.GetSelectedItem());
+				UpdateList();
+			}
+			return true;
+		};
+
+		auto list = std::make_shared<AppCommandList>(L"", cb);
+		auto path = GetFullNodePath(m_Tree.GetSelectedItem());
+		for (UINT i = 0; i < count; i++) {
+			index = m_List.GetNextItem(index, LVIS_SELECTED);
+			ATLASSERT(index >= 0);
+			auto& item = m_Items[index];
+			if (item.Type == REG_KEY_UP) {
+				count--;
+				continue;
+			}
+			std::shared_ptr<AppCommand> cmd;
+			if (item.Key) {
+				cmd = std::make_shared<DeleteKeyCommand>(path, item.Name);
+			}
+			else {
+				cmd = std::make_shared<DeleteValueCommand>(path, item.Name);
+			}
+			list->AddCommand(cmd);
+		}
+		if (count == 1) // only up key selected
+			return 0;
+
+		if (count == 1)
+			list->SetCommandName(list->GetCommand(0)->GetCommandName());
+		else
+			list->SetCommandName(L"Delete");
+		if (!m_CmdMgr.AddCommand(list))
+			DisplayError(L"Delete failed.");
+	}
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnCopyFullKeyName(WORD, WORD, HWND, BOOL&){
+	ClipboardHelper::CopyText(m_hWnd, GetFullNodePath(m_Tree.GetSelectedItem()));
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnCopyKeyName(WORD, WORD, HWND, BOOL&){
+	CString text;
+	m_Tree.GetItemText(m_Tree.GetSelectedItem(), text);
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnKeyPermissions(WORD, WORD, HWND, BOOL&){
+	auto path = GetFullNodePath(m_Tree.GetSelectedItem());
+	SecurityHelper::EnablePrivilege(SE_TAKE_OWNERSHIP_NAME, true);
+	if (::GetFocus() == m_List) {
+		auto& item = m_Items[m_List.GetSelectionMark()];
+		ATLASSERT(item.Key);
+		path += L"\\" + item.Name;
+	}
+	auto readonly = m_ReadOnly;
+	auto key = Registry::OpenKey(path, READ_CONTROL | (readonly ? 0 : (WRITE_DAC | WRITE_OWNER)));
+	if (!key && ::GetLastError() == ERROR_ACCESS_DENIED) {
+		key = Registry::OpenKey(path, READ_CONTROL);
+		readonly = true;
+	}
+	if (!key && ::GetLastError() == ERROR_ACCESS_DENIED) {
+		key = Registry::OpenKey(path, MAXIMUM_ALLOWED);
+	}
+	if (!key) {
+		DisplayError(L"Failed to open key");
+	}
+	else {
+		CSecurityInformation si(key, path, readonly);
+		::EditSecurity(m_hWnd, &si);
+	}
+	SecurityHelper::EnablePrivilege(SE_TAKE_OWNERSHIP_NAME, false);
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnProperties(WORD, WORD, HWND, BOOL&){
+	if (::GetFocus() == m_List) {
+		auto index = m_List.GetSelectionMark();
+		if (index >= 0 && !m_Items[index].Key)
+			return (LRESULT)ShowValueProperties(m_Items[index], index);
+	}
+	return 0;
+}
+
+INT_PTR CRegistryManagerView::ShowValueProperties(RegistryItem& item, int index) {
+	auto cb = [this](auto& cmd, bool) {
+		if (GetFullNodePath(m_Tree.GetSelectedItem()) == cmd.GetPath()) {
+			int index = m_List.FindItem(cmd.GetName(), false);
+			ATLASSERT(index >= 0);
+			if (index >= 0) {
+				m_Items[index].Value.Empty();
+				m_Items[index].Size -= 1;
+				m_List.RedrawItems(index, index);
+				m_List.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
+			}
+		}
+		return true;
+	};
+	bool success = false;
+	bool result = false;
+	switch (item.Type)
+	{
+		case REG_LINK:
+			AtlMessageBox(m_hWnd, L"No special properties available for a symbolic link", IDS_TITLE, MB_ICONINFORMATION);
+			return 0;
+
+		case REG_SZ:
+		case REG_EXPAND_SZ:
+		{
+			CStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
+			result = dlg.DoModal() == IDOK && dlg.IsModified();
+			if (result) {
+				auto hItem = m_Tree.GetSelectedItem();
+				DWORD type = dlg.GetType();
+				CString value = dlg.GetValue();
+				LONG size = (1 + value.GetLength()) * sizeof(WCHAR);
+				auto cmd = std::make_shared<ChangeValueCommand>(GetFullNodePath(hItem), 
+					item.Name, type, (PVOID)(PCWSTR)value,size);
+				success = m_CmdMgr.AddCommand(cmd);
+				if (success) {
+					cmd->SetCallback(cb);
+					item.Value.Empty();
+					item.Size -= 1;
+					m_List.RedrawItems(index, index);
+				}
+			}
+			break;
+		}
+
+		case REG_MULTI_SZ:
+		{
+			CMultiStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
+			result = dlg.DoModal() == IDOK && dlg.IsModified();
+			if (result) {
+				auto hItem = m_Tree.GetSelectedItem();
+				auto value = dlg.GetValue();
+				// 清除的目标字符集合中的任一字符，直到遇到第一个不属于目标字符串子集的字符为止
+				value.TrimRight(L"\r\n");
+				value.Replace(L"\r\n", L"\n");
+				auto len = value.GetLength();
+				for (int i = 0; i < len; i++) {
+					if (value[i] == L'\n')
+						value.SetAt(i, 0);
+				}
+
+				auto cmd = std::make_shared<ChangeValueCommand>(
+					GetFullNodePath(hItem),item.Name,REG_MULTI_SZ,
+					(PVOID)(PCWSTR)value,
+					(1+len)*(LONG)sizeof(WCHAR));
+
+				success = m_CmdMgr.AddCommand(cmd);
+				if (success)
+					cmd->SetCallback(cb);
+			}
+			break;
+		}
+		case REG_DWORD:
+		case REG_QWORD:
+		{
+			CNumberValueDlg dlg(m_CurrentKey, item.Name, item.Type, m_ReadOnly);
+			result = dlg.DoModal() == IDOK && dlg.IsModified();
+			if (result) {
+				auto hItem = m_Tree.GetSelectedItem();
+				auto value = dlg.GetValue();
+				auto cmd = std::make_shared<ChangeValueCommand>(
+					GetFullNodePath(hItem), item.Name, item.Type, &value,
+					dlg.GetType() == REG_DWORD ? 4 : 8);
+				success = m_CmdMgr.AddCommand(cmd);
+				if (success)
+					cmd->SetCallback(cb);
+			}
+			break;
+		}
+		case REG_BINARY:
+		case REG_FULL_RESOURCE_DESCRIPTOR:
+		case REG_RESOURCE_REQUIREMENTS_LIST:
+		case REG_RESOURCE_LIST:
+		{
+			CBinaryValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly, this);
+			result = dlg.DoModal() == IDOK && dlg.IsModified();
+			if (result) {
+				auto hItem = m_Tree.GetSelectedItem();
+				auto cmd = std::make_shared<ChangeValueCommand>(
+					GetFullNodePath(hItem), item.Name, item.Type, (const PVOID)dlg.GetValue().data(),
+					(LONG)dlg.GetValue().size());
+				success = m_CmdMgr.AddCommand(cmd);
+				if (success) {
+					cmd->SetCallback(cb);
+					item.Size = (DWORD)dlg.GetValue().size();
+				}
+			}
+			break;
+		}
+	}
+	if (!result)
+		return 0;
+
+	if (!success)
+		DisplayError(L"Failed to changed value");
+	else {
+		item.Value.Empty();
+		auto index = m_List.GetSelectionMark();
+		m_List.RedrawItems(index, index);
+	}
+
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnImport(WORD, WORD, HWND, BOOL&) {
+	if (!SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, true) ||
+		!SecurityHelper::EnablePrivilege(SE_RESTORE_NAME, true)) {
+		AtlMessageBox(m_hWnd, L"Exporting, importing, and loading hives require the Backup/Restore privileges. \
+			Running elevated will allow it.", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	CSimpleFileDialog dlg(TRUE, L"dat", nullptr, OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER,
+		L"All Files\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto error = ::RegRestoreKey(m_CurrentKey.Get(), dlg.m_szFileName, REG_FORCE_RESTORE);
+		if (ERROR_SUCCESS != error) {
+			DisplayError(L"Failed to import file", nullptr, error);
+		}
+		else {
+			RefreshItem(m_Tree.GetSelectedItem());
+		}
+	}
+
+	SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, false);
+	SecurityHelper::EnablePrivilege(SE_RESTORE_NAME, false);
+
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnExport(WORD, WORD, HWND, BOOL&) {
+	CExportDlg dlg;
+	dlg.SetKeyPath(GetFullNodePath(m_Tree.GetSelectedItem()));
+	if (dlg.DoModal() == IDOK) {
+		auto filename = dlg.GetFileName();
+		const auto& path = dlg.GetSelectedKey();
+		if (filename.Right(4).CompareNoCase(L".reg") == 0) {
+			CWaitCursor wait;
+			RegExportImport reg;
+			if (reg.Export(path, filename))
+				AtlMessageBox(m_hWnd, L"Export successful.", IDS_TITLE, MB_ICONINFORMATION);
+			else
+				AtlMessageBox(m_hWnd, L"Export failed.", IDS_TITLE, MB_ICONERROR);
+			return 0;
+		}
+		if (!SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, true)) {
+			AtlMessageBox(m_hWnd, L"Exporting, importing, and loading hives require the Backup/Restore privileges. \
+			Running elevated will allow it.", IDS_TITLE, MB_ICONERROR);
+			return 0;
+		}
+
+		HKEY hKey;
+		if (path.IsEmpty())
+			hKey = Registry::OpenRealRegistryKey();
+		else {
+			auto key = Registry::OpenKey(path, KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS);
+			hKey = key.Detach();
+		}
+		if (!hKey)
+			DisplayError(L"Failed to open key to export");
+		else {
+			LSTATUS error;
+			CWaitCursor wait;
+			::DeleteFile(dlg.GetFileName());
+			if (path == "HKEY_CLASSES_ROOT")
+				error = ::RegSaveKey(hKey, filename, nullptr);
+			else
+				error = ::RegSaveKeyEx(hKey, filename, nullptr, REG_LATEST_FORMAT);
+			::SetLastError(error);
+			if (error != ERROR_SUCCESS)
+				DisplayError(L"Failed to export key");
+			else
+				AtlMessageBox(m_hWnd, L"Export successful.", IDS_TITLE, MB_ICONINFORMATION);
+			SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, false);
+			::RegCloseKey(hKey);
+		}
 	}
 	return 0;
 }

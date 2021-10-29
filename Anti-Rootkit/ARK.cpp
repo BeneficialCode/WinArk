@@ -123,7 +123,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		IoDeleteDevice(DeviceObject);
 		return status;
 	}
-
+	
 	// Create a symbolic link to the device object
 	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\AntiRootkit");
 	status = IoCreateSymbolicLink(&symLink, &devName);

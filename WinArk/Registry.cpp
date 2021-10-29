@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Registry.h"
 #include "NtDll.h"
-#include "Helpers.h"
+#include "RegHelpers.h"
 #include "DriverHelper.h"
 #include "ProcessHelper.h"
 

@@ -122,6 +122,7 @@ LRESULT CProcessTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /
 bool CProcessTable::CompareItems(const std::shared_ptr<WinSys::ProcessInfo>& p1, const std::shared_ptr<WinSys::ProcessInfo>& p2, int col,bool asc) {
 	switch (static_cast<ProcessColumn>(col)) {
 		case ProcessColumn::Name: return SortHelper::SortStrings(p1->GetImageName(), p2->GetImageName(), asc);
+		case ProcessColumn::Id: return SortHelper::SortNumbers(p1->Id, p2->Id, asc);
 	}
 	return false;
 }

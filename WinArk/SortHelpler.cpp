@@ -16,6 +16,13 @@ bool SortHelper::SortStrings(const std::wstring& s1, const std::wstring& s2, boo
 }
 
 bool SortHelper::SortStrings(PCWSTR s1, PCWSTR s2, bool ascending) {
+	if ((s1 == nullptr || *s1 == 0) && (s2 == nullptr || *s2 == 0))
+		return false;
+	if (s1 == nullptr || *s2 == 0)
+		return false;
+	if (s2 == nullptr || *s2 == 0)
+		return false;
+
 	auto compare = ::_wcsicmp(s2, s1);
 	return ascending ? compare > 0 : compare < 0;
 }

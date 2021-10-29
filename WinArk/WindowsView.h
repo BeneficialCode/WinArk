@@ -60,6 +60,7 @@ private:
 		WindowProc, UserData, ID, Rectangle,
 		ClassAtom, ClassStyle, ClassExtra, WindowExtra,
 	};
+
 	struct DataItem {
 		CString Property;
 		DataItemType Type;
@@ -100,7 +101,7 @@ private:
 	LRESULT OnWindowFlash(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowBringToFront(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	friend class CMainDlg;
+	friend class CMainFrame;
 	CSplitterWindow m_Splitter;
 	CListViewCtrl m_List;
 	CTreeViewCtrlEx m_Tree;

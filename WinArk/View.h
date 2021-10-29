@@ -11,6 +11,7 @@
 #include "LocationManager.h"
 #include "AppSettings.h"
 #include "Theme.h"
+#include "SecurityInformation.h"
 
 
 enum class NodeType {
@@ -41,7 +42,7 @@ class CRegistryManagerView :
 	public COwnerDraw<CRegistryManagerView>,
 	public IMainFrame {
 public:
-	DECLARE_FRAME_WND_CLASS(L"RegExpWndClass", IDR_MAINFRAME)
+	DECLARE_WND_CLASS(L"RegExpWndClass", IDR_MAINFRAME)
 	
 	CRegistryManagerView():m_AddressBar(this,2){}
 
@@ -102,6 +103,26 @@ public:
 		NOTIFY_CODE_HANDLER(LVN_BEGINLABELEDIT,OnListBeginEdit)
 		NOTIFY_CODE_HANDLER(LVN_KEYDOWN,OnListKeyDown)
 		//MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
+		COMMAND_ID_HANDLER(ID_VIEW_REFRESH,OnViewRefresh)
+		COMMAND_ID_HANDLER(ID_NEW_KEY,OnNewKey)
+		COMMAND_ID_HANDLER(ID_TREE_REFRESH,OnTreeRefresh)
+		COMMAND_ID_HANDLER(ID_NEW_DWORDVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_QWORDVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_MULTIPLESTRINGVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_BINARYVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_STRINGVALUE,OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_EXPANDSTRINGVALUE,OnNewValue)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY,OnEditCopy)
+		COMMAND_ID_HANDLER(ID_EDIT_CUT,OnEditCut)
+		COMMAND_ID_HANDLER(ID_EDIT_PASTE,OnEditPaste)
+		COMMAND_ID_HANDLER(ID_EDIT_RENAME,OnEditRename)
+		COMMAND_ID_HANDLER(ID_EDIT_DELETE,OnEditDelete)
+		COMMAND_ID_HANDLER(ID_COPY_FULLNAME,OnCopyFullKeyName)
+		COMMAND_ID_HANDLER(ID_COPY_NAME,OnCopyKeyName)
+		COMMAND_ID_HANDLER(ID_KEY_PERMISSIONS,OnKeyPermissions)
+		COMMAND_ID_HANDLER(ID_KEY_PROPERTIES, OnProperties)
+		COMMAND_ID_HANDLER(ID_FILE_IMPORT,OnImport)
+		COMMAND_ID_HANDLER(ID_FILE_EXPORT,OnExport)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CRegistryManagerView>)
 		CHAIN_MSG_MAP(CVirtualListView<CRegistryManagerView>)
 		REFLECT_NOTIFICATIONS_EX()
@@ -140,6 +161,35 @@ public:
 	LRESULT OnListEndEdit(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT OnListBeginEdit(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnListKeyDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
+	void RefreshFull(HTREEITEM hItem);
+	bool RefreshItem(HTREEITEM hItem);
+
+	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTreeRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+
+
+	LRESULT OnNewKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnNewValue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	AppCommandCallback<DeleteKeyCommand> GetDeleteKeyCommandCallback();
+
+	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditPaste(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCopyFullKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCopyKeyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnKeyPermissions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+
+	INT_PTR ShowValueProperties(RegistryItem& item, int index);
+
 
 
 	void ExpandItem(HTREEITEM hItem);
@@ -218,7 +268,6 @@ private:
 	bool m_ReadOnly{ true };
 	bool m_UpdateNoDelay{ false };
 	
-
 public:
 	CSplitterWindow m_MainSplitter;
 	CContainedWindowT<CEdit> m_AddressBar;

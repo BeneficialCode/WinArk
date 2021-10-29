@@ -11,32 +11,38 @@
 #include "NetworkTable.h"
 #include "KernelModuleTable.h"
 #include "DriverTable.h"
-
+#include "ServiceTable.h"
 
 #include "View.h"
 #include "DeviceManagerView.h"
 #include "WindowsView.h"
+#include "KernelHookView.h"
+
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
 enum class TabColumn :int {
 	Process, KernelModule, 
 	//Kernel, UserHook,
-	// KernelHook,
-	Network,Driver,Registry,Device,Windows
+	KernelHook,
+	Network,Driver,Registry,Device,Windows,Service
 };
+
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
 
 
-class CMainDlg : 
-	public CDialogImpl<CMainDlg>, 
-	public CAutoUpdateUI<CMainDlg>,
+class CMainFrame : 
+	public CFrameWindowImpl<CMainFrame>,
+	public CAutoUpdateUI<CMainFrame>,
 	public CMessageFilter, 
 	public CIdleHandler
 {
 public:
-	enum { IDD = IDD_MAINDLG };
+	DECLARE_FRAME_WND_CLASS(nullptr,IDR_MAINFRAME)
 
+	CMainFrame() :m_TabCtrl(this) {};
 	// 如果类中有引用类型，则必须在构造函数中初始化
+
+	const UINT TabId = 1234;
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
@@ -53,9 +59,7 @@ public:
 
 	bool CanPaste() const;
 
-	LRESULT OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTcnSelChange(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
-
 
 	void CloseDialog(int nVal);
 	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
@@ -64,20 +68,22 @@ public:
 	void InitNetworkTable();
 	void InitKernelModuleTable();
 	void InitDriverTable();
+	void InitServiceTable();
 	void InitDriverInterface();
 	void InitRegistryView();
 	void InitDeviceView();
 	void InitWindowsView();
+	void InitKernelHookView();
 
-	BEGIN_MSG_MAP_EX(CMainDlg)
+	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
-		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
-		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-		NOTIFY_HANDLER(IDC_TAB_VIEW, TCN_SELCHANGE, OnTcnSelChange)
-		CHAIN_MSG_MAP(CAutoUpdateUI<CMainDlg>)
+		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
+		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
+		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
@@ -89,24 +95,29 @@ public:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 public:
 
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 private:
-	CTabCtrl m_TabCtrl;
+	CContainedWindowT<CTabCtrl> m_TabCtrl;
+	// CTabCtrl m_TabCtrl;
 	
 	CProcessTable* m_ProcTable{ nullptr };
 	CNetwrokTable* m_NetTable{ nullptr };
 	CKernelModuleTable* m_KernelModuleTable{ nullptr };
 	CDriverTable* m_DriverTable{ nullptr };
+	CServiceTable* m_ServiceTable{ nullptr };
+	
 	CMultiPaneStatusBarCtrl m_StatusBar;
 
 	CRegistryManagerView m_RegView;
-
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
+	CKernelHookView m_KernelHookView;
+
+
 	CString m_StatusText;
 
 	// table array

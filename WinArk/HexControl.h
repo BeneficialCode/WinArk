@@ -111,6 +111,7 @@ public:
 		MESSAGE_HANDLER(WM_KILLFOCUS, OnKillFocus)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDialogCode)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, OnContextMenu)
+		CHAIN_MSG_MAP(CBufferedPaintWindowImpl<CHexControl>)
 	END_MSG_MAP()
 
 	void DoPaint(CDCHandle dc, RECT& rect);

@@ -1,44 +1,57 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "MultiStringValueDlg.h"
+#include "RegHelpers.h"
 
-void CMultiStringValueDlg::SetName(const CString& name, bool isReadOnly) {
-	m_Name = name;
-	m_ReadOnlyName = isReadOnly;
+CMultiStringValueDlg::CMultiStringValueDlg(RegistryKey& key, PCWSTR name, bool readOnly) :
+	m_Key(key), m_Name(name), m_ReadOnly(readOnly) {
 }
 
-LRESULT CMultiStringValueDlg::OnTextChanged(WORD, WORD, HWND, BOOL&) {
-	GetDlgItem(IDOK).EnableWindow(
-		GetDlgItem(IDC_VALUE).GetWindowTextLength() > 0 &&
-		GetDlgItem(IDC_NAME).GetWindowTextLength() > 0);
-	return 0;
+const CString& CMultiStringValueDlg::GetValue() const {
+	return m_Value;
+}
+
+bool CMultiStringValueDlg::IsModified() const {
+	return m_Modified;
 }
 
 LRESULT CMultiStringValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
-	
-
-	DoDataExchange(FALSE);
-	if (!m_CanModify)
-		GetDlgItem(IDC_VALUE).SendMessage(EM_SETREADONLY, TRUE);
-	else {
-		GetDlgItem(IDC_VALUE).SendMessage(EM_SETSEL, 0, -1);
-		GetDlgItem(IDC_VALUE).SetFocus();
+	ULONG chars = 0;
+	m_Key.QueryMultiStringValue(m_Name, nullptr, &chars);
+	if (chars) {
+		chars++;
+		auto buffer = std::make_unique<WCHAR[]>(chars);
+		ZeroMemory(buffer.get(), chars * sizeof(WCHAR));
+		DWORD type;
+		auto len = chars * 2;
+		if (ERROR_SUCCESS != ::RegQueryValueEx(m_Key.Get(), m_Name, nullptr, &type, (PBYTE)buffer.get(), &len)) {
+			EndDialog(IDRETRY);
+			return 0;
+		}
+		std::for_each(buffer.get(), buffer.get() + chars - 1, [](auto& ch) {
+			if (ch == 0)
+				ch = L'\n';
+			});
+		m_Value = buffer.get();
+		m_Value.Replace(L"\n", L"\r\n");
+		SetDlgItemText(IDC_VALUE, m_Value);
 	}
-
-	if (m_ReadOnlyName)
-		GetDlgItem(IDC_NAME).SendMessage(EM_SETREADONLY, TRUE);
-
+	if (m_ReadOnly) {
+		((CEdit)GetDlgItem(IDC_VALUE)).SetReadOnly(TRUE);
+	}
+	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? Helpers::DefaultValueName : m_Name);
 
 	return TRUE;
 }
 
-LRESULT CMultiStringValueDlg::OnCloseCmd(WORD, WORD wID, HWND, BOOL&) {
-	if (wID == IDCANCEL) {
-		EndDialog(IDCANCEL);
+LRESULT CMultiStringValueDlg::OnCloseCmd(WORD, WORD id, HWND, BOOL&) {
+	if (id == IDOK) {
+		CString text;
+		GetDlgItemText(IDC_VALUE, text);
+		m_Modified = text != m_Value;
+		if (m_Modified)
+			m_Value = text;
 	}
-	else {
-		DoDataExchange(TRUE);
-		EndDialog(IDOK);
-	}
+	EndDialog(id);
 	return 0;
 }

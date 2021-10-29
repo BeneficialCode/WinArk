@@ -1,4 +1,4 @@
-// MainDlg.cpp : implementation of the CMainDlg class
+// MainDlg.cpp : implementation of the CMainFrame class
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -6,34 +6,33 @@
 #include "resource.h"
 
 #include "aboutdlg.h"
-#include "MainDlg.h"
+#include "MainFrame.h"
 #include "DriverHelper.h"
 #include "SecurityHelper.h"
 #include "ClipboardHelper.h"
 #include "SecurityInformation.h"
-
 #include "NewKeyDlg.h"
 #include "RenameKeyCommand.h"
 
 
 #define IDC_VIEW_PROCESS 0xDAD
 
-BOOL CMainDlg::PreTranslateMessage(MSG* pMsg) {
-	return CWindow::IsDialogMessage(pMsg);
+BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
+	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
 
-BOOL CMainDlg::OnIdle() {
+BOOL CMainFrame::OnIdle() {
 	UpdateUI();
 	UIUpdateChildWindows();
 	return FALSE;
 }
 
-void CMainDlg::UpdateUI() {
+void CMainFrame::UpdateUI() {
 
 	return;
 }
 
-void CMainDlg::InitProcessTable() {
+void CMainFrame::InitProcessTable() {
 	BarDesc bars[] = {
 		{19,"进程名",0},
 		{19,"进程ID",0},
@@ -77,7 +76,7 @@ void CMainDlg::InitProcessTable() {
 	m_hwndArray[static_cast<int>(TabColumn::Process)] = m_ProcTable->m_hWnd;
 }
 
-void CMainDlg::InitNetworkTable() {
+void CMainFrame::InitNetworkTable() {
 	BarDesc bars[] = {
 		{20,"进程名",0},
 		{20,"进程ID",0},
@@ -116,7 +115,7 @@ void CMainDlg::InitNetworkTable() {
 	m_hwndArray[static_cast<int>(TabColumn::Network)] = m_NetTable->m_hWnd;
 }
 
-void CMainDlg::InitKernelModuleTable() {
+void CMainFrame::InitKernelModuleTable() {
 	BarDesc bars[] = {
 		{20,"驱动名",0},
 		{20,"映像基址",0},
@@ -147,10 +146,9 @@ void CMainDlg::InitKernelModuleTable() {
 	rect.bottom -= height;
 	m_KernelModuleTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
 	m_hwndArray[static_cast<int>(TabColumn::KernelModule)] = m_KernelModuleTable->m_hWnd;
-
 }
 
-void CMainDlg::InitDriverTable() {
+void CMainFrame::InitDriverTable() {
 	BarDesc bars[] = {
 		{20,"驱动名",0},
 		{20,"显示名称",0},
@@ -183,10 +181,54 @@ void CMainDlg::InitDriverTable() {
 	rect.bottom -= height;
 	m_DriverTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
 	m_hwndArray[static_cast<int>(TabColumn::Driver)] = m_DriverTable->m_hWnd;
-
 }
 
-void CMainDlg::InitDriverInterface() {
+void CMainFrame::InitServiceTable() {
+	BarDesc bars[] = {
+		{20,"服务名",0},
+		{20,"显示名称",0},
+		{10,"状态",0},
+		{20,"服务类型",0},
+		{20,"进程ID"},
+		{30,"进程名"},
+		{20,"启动类型",0},
+		{260,"二进制路径",0},
+		{30,"账户名",0},
+		{20,"错误控制",0},
+		{50,"描述",0},
+		{50,"服务权限",0},
+		{20,"触发器",0},
+		{20,"依赖",0},
+		{50,"接受的控制",0},
+		{30,"安全标识符",0},
+		{20,"Security ID类型"}
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_ServiceTable = new CServiceTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_ServiceTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::Service)] = m_ServiceTable->m_hWnd;
+}
+
+void CMainFrame::InitDriverInterface() {
 	// 定位驱动二进制文件，提取到系统目录，然后安装
 	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_DRIVER), L"BIN");
 	if (!hRes)
@@ -234,7 +276,7 @@ void CMainDlg::InitDriverInterface() {
 	::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 }
 
-void CMainDlg::InitRegistryView() {
+void CMainFrame::InitRegistryView() {
 	// 注册表
 	RECT clientRect, rect;
 	GetClientRect(&clientRect);
@@ -250,7 +292,7 @@ void CMainDlg::InitRegistryView() {
 }
 
 // 设备列表
-void CMainDlg::InitDeviceView() {
+void CMainFrame::InitDeviceView() {
 	RECT rect;
 	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
 	int height = rect.bottom - rect.top;
@@ -262,7 +304,7 @@ void CMainDlg::InitDeviceView() {
 }
 
 // 窗口视图
-void CMainDlg::InitWindowsView() {
+void CMainFrame::InitWindowsView() {
 	RECT rect;
 	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
 	int height = rect.bottom - rect.top;
@@ -275,13 +317,26 @@ void CMainDlg::InitWindowsView() {
 	m_hwndArray[static_cast<int>(TabColumn::Windows)] = m_WinView.m_hWnd;
 }
 
-LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+void CMainFrame::InitKernelHookView() {
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height + 5;
+	rect.bottom -= height;
+
+	HWND hWnd = m_KernelHookView.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::KernelHook)] = m_KernelHookView.m_hWnd;
+}
+
+LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
-	m_CmdBar.AttachMenu(GetMenu());
-	// SetMenu(nullptr);
+	/*m_CmdBar.AttachMenu(GetMenu());
+	SetMenu(nullptr);*/
 
+	UIAddMenu(IDR_MAINFRAME);
 	UIAddMenu(IDR_CONTEXT);
 	//InitCommandBar();
 
@@ -299,7 +354,14 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	m_StatusBar.SetParts(_countof(parts), parts);
 	m_StatusBar.ShowWindow(SW_SHOW);
 
-	m_TabCtrl.Attach(GetDlgItem(IDC_TAB_VIEW));
+	CTabCtrl tabCtrl;
+	CRect r;
+	GetClientRect(&r);
+	r.bottom = 25;
+	auto hTabCtrl = tabCtrl.Create(m_hWnd, &r, nullptr, WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS
+		| TCS_HOTTRACK | TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TABS,
+		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY, TabId);
+	m_TabCtrl.SubclassWindow(hTabCtrl);
 	// 初始化选择夹
 	struct {
 		PCWSTR Name;
@@ -307,13 +369,14 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		L"进程",
 		L"内核模块",
 		//L"内核",
-		// L"内核钩子",
+		L"内核钩子",
 		//L"应用层钩子",
 		L"网络",
 		L"驱动",
 		L"注册表",
 		L"设备",
 		L"窗口",
+		L"服务",
 	};
 
 	int i = 0;
@@ -329,9 +392,12 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	InitNetworkTable();
 	InitKernelModuleTable();
 	InitDriverTable();
+	InitServiceTable();
+
 	InitRegistryView();
 	InitDeviceView();
 	InitWindowsView();
+	InitKernelHookView();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -344,42 +410,37 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	return TRUE;
 }
 
-LRESULT CMainDlg::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
 
+	bHandled = false;
 	return 0;
 }
 
-LRESULT CMainDlg::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CAboutDlg dlg;
 	dlg.DoModal();
 	return 0;
 }
 
-LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CloseDialog(wID);
-	return 0;
-}
-
-void CMainDlg::CloseDialog(int nVal) {
+void CMainFrame::CloseDialog(int nVal) {
 	DestroyWindow();
 	::PostQuitMessage(nVal);
 }
 
-LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	RECT rect, statusRect, tabRect;
 	GetClientRect(&rect);
 	int iHorizontalUnit = LOWORD(GetDialogBaseUnits());
 	int iVerticalUnit = HIWORD(GetDialogBaseUnits());
-	GetDlgItem(IDC_TAB_VIEW).GetClientRect(&tabRect);
+	m_TabCtrl.GetClientRect(&tabRect);
 	m_StatusBar.GetClientRect(&statusRect);
 	int statusHeight = statusRect.bottom - statusRect.top;
 
-	
 	int width = rect.right - rect.left;
 	int tabHeight = tabRect.bottom - tabRect.top;
 	::MoveWindow(m_TabCtrl.m_hWnd, rect.left, rect.top, width, tabHeight, true);
@@ -421,7 +482,7 @@ LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 	return TRUE;
 }
 
-LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
+LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 
 	index = m_TabCtrl.GetCurSel();
@@ -429,6 +490,7 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	m_NetTable->ShowWindow(SW_HIDE);
 	m_KernelModuleTable->ShowWindow(SW_HIDE);
 	m_DriverTable->ShowWindow(SW_HIDE);
+	m_ServiceTable->ShowWindow(SW_HIDE);
 	m_RegView.ShowWindow(SW_HIDE);
 	m_DevView.ShowWindow(SW_HIDE);
 	m_WinView.ShowWindow(SW_HIDE);
@@ -454,6 +516,12 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::Windows:
 			m_WinView.ShowWindow(SW_SHOW);
 			break;
+		case TabColumn::KernelHook:
+			m_KernelHookView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Service:
+			m_ServiceTable->ShowWindow(SW_SHOW);
+			break;
 		default:
 			break;
 	}
@@ -462,23 +530,23 @@ LRESULT CMainDlg::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	return 0;
 }
 
-void CMainDlg::OnGetMinMaxInfo(LPMINMAXINFO lpMMI) {
+void CMainFrame::OnGetMinMaxInfo(LPMINMAXINFO lpMMI) {
 	lpMMI->ptMinTrackSize.x = 550;
 	lpMMI->ptMinTrackSize.y = 450;
 }
 
-bool CMainDlg::CanPaste() const {
+bool CMainFrame::CanPaste() const {
 	return false;
 }
 
-UINT CMainDlg::TrackPopupMenu(CMenuHandle menu, int x, int y) {
+UINT CMainFrame::TrackPopupMenu(CMenuHandle menu, int x, int y) {
 	return (UINT)m_CmdBar.TrackPopupMenu(menu, TPM_LEFTALIGN | TPM_RIGHTBUTTON, x, y);
 }
 
-void CMainDlg::SetStartKey(const CString& key) {
+void CMainFrame::SetStartKey(const CString& key) {
 	// m_RegView.SetStartKey(key);
 }
 
-void CMainDlg::SetStatusText(PCWSTR text) {
+void CMainFrame::SetStatusText(PCWSTR text) {
 	m_StatusBar.SetText(1, m_StatusText = text, SBT_NOBORDERS);
 }

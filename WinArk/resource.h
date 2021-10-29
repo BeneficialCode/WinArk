@@ -4,7 +4,6 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
-#define IDD_MAINDLG                     129
 #define IDS_TITLE                       129
 #define IDR_CONTEXT                     202
 #define IDR_BIN1                        204
@@ -20,10 +19,10 @@
 #define IDD_MEMORY                      219
 #define IDD_STRINGVALUE                 220
 #define IDD_NEWKEY                      221
-#define IDD_INTVALUE                    222
+#define IDD_NUMBERVALUE                 222
 #define IDD_BINVALUE                    223
 #define IDI_WINDOW                      224
-#define IDC_TAB_VIEW                    1000
+#define IDD_EXPORT                      226
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
 #define IDC_HEX                         1002
@@ -65,7 +64,14 @@
 #define IDC_IO                          1044
 #define IDC_SILO                        1045
 #define IDC_DEC                         1046
+#define IDC_BUFFERSIZE                  1046
 #define IDC_PID                         1047
+#define IDC_EXPORT_REAL                 1047
+#define IDC_EXPORTKEY                   1048
+#define IDC_KEY                         1049
+#define IDC_EDIT2                       1050
+#define IDC_PATH                        1050
+#define IDC_BROWSE                      1051
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -159,9 +165,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        226
+#define _APS_NEXT_RESOURCE_VALUE        228
 #define _APS_NEXT_COMMAND_VALUE         32877
-#define _APS_NEXT_CONTROL_VALUE         1046
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -48,7 +48,7 @@ private:
 	LRESULT GetDeviceInfo(LVITEM& item) const;
 	static bool CompareItems(const CString& i1, const CString& i2, bool asc);
 
-	friend class CMainDlg;
+	friend class CMainFrame;
 private:
 	std::unique_ptr<WinSys::DeviceManager> m_DevMgr;
 	std::vector<WinSys::DeviceInfo> m_Devices;

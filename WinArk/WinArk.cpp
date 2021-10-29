@@ -7,7 +7,7 @@
 #include "Table.h"
 
 #include "aboutdlg.h"
-#include "MainDlg.h"
+#include "MainFrame.h"
 #include "DriverHelper.h"
 
 CAppModule _Module;
@@ -23,19 +23,19 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	InitBrushSys();
 	InitSchemSys();
 
-	CMainDlg dlgMain;
+	CMainFrame wndMain;
 
 	/*CString cmdLine(lpstrCmdLine);
 	cmdLine.Trim(L" \"");
 	if(!cmdLine.IsEmpty()&&cmdLine.Right(11).CompareNoCase(L"regedit.exe")!=0)*/
 		
-
-	if (dlgMain.Create(NULL) == NULL) {
+	// CreateEx才会加载 IDR_MAINFRAME相关的资源
+	if (wndMain.CreateEx(NULL) == NULL) {
 		ATLTRACE(_T("Main dialog creation failed!\n"));
 		return 0;
 	}
 
-	dlgMain.ShowWindow(nCmdShow);
+	wndMain.ShowWindow(nCmdShow);
 
 	int nRet = theLoop.Run();
 

@@ -9,4 +9,5 @@ struct Helpers abstract final {
 	static PCWSTR GetSystemDir();
 	static PCWSTR GetWindowsDir();
 	static std::wstring GetDosNameFromNtName(PCWSTR name);
+	static CString ToBinary(ULONGLONG value);
 };

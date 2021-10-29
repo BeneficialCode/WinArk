@@ -102,9 +102,6 @@
     <ClCompile Include="JobPropertiesDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="MainDlg.cpp">
-      <Filter>Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="ProcessThreadDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
@@ -207,7 +204,7 @@
     <ClCompile Include="SecurityInformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IntValueDlg.cpp">
+    <ClCompile Include="NumberValueDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="StringValueDlg.cpp">
@@ -249,7 +246,7 @@
     <ClCompile Include="RegistryKey.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="Helpers.cpp">
+    <ClCompile Include="RegHelpers.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="CopyKeyCommand.cpp">
@@ -299,6 +296,21 @@
     </ClCompile>
     <ClCompile Include="ListViewHelper.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelHookView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExportDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="RegExportImport.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ServiceTable.cpp">
+      <Filter>Table</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -372,9 +384,6 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="JobPropertiesDlg.h">
-      <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="MainDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ProcessThreadDlg.h">
@@ -488,7 +497,7 @@
     <ClInclude Include="SecurityInformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IntValueDlg.h">
+    <ClInclude Include="NumberValueDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="StringValueDlg.h">
@@ -530,7 +539,7 @@
     <ClInclude Include="RegistryKey.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="Helpers.h">
+    <ClInclude Include="RegHelpers.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="CopyKeyCommand.h">
@@ -592,6 +601,21 @@
     </ClInclude>
     <ClInclude Include="ListViewHelper.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelHookView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExportDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="RegExportImport.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ServiceTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

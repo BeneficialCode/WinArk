@@ -1,45 +1,54 @@
 #pragma once
 
-#include "..\HexControl\HexControl.h"
-#include "..\HexControl\InMemoryBuffer.h"
+#include "HexControl.h"
+#include "MemoryBuffer.h"
+#include "RegistryKey.h"
+#include "IMainFrame.h"
 
 
 class CBinaryValueDlg :
 	public CDialogImpl<CBinaryValueDlg>,
-	public CWinDataExchange<CBinaryValueDlg> {
+	public CWinDataExchange<CBinaryValueDlg>,
+	public CAutoUpdateUI<CBinaryValueDlg> {
 public:
 	enum { IDD = IDD_BINVALUE };
 
+	enum { ID_DATA_BYTE = 500, ID_LINE = 520 };
 
-	CBinaryValueDlg(bool canModify) : m_CanModify(canModify) {}
+	CBinaryValueDlg(RegistryKey& key, PCWSTR name, bool readOnly, IMainFrame* frame);
 
-	void SetName(const CString& name, bool readonly);
-	const CString& GetName() const {
-		return m_Name;
-	}
-	void SetBuffer(IBufferManager* buffer);
+	const std::vector<BYTE>& GetValue() const;
+	bool IsModified() const;
 
-	BEGIN_MSG_MAP(CBinValueDlg)
+	BEGIN_MSG_MAP(CBinaryValueDlg)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		COMMAND_CODE_HANDLER(EN_CHANGE, OnTextChanged)
-		FORWARD_NOTIFICATIONS()
+		NOTIFY_CODE_HANDLER(HCN_SIZECHANGED, OnHexBufferSizeChanged)
+		CHAIN_MSG_MAP(CAutoUpdateUI<CBinaryValueDlg>)
+		REFLECT_NOTIFICATIONS_EX()
 	END_MSG_MAP()
 
-	BEGIN_DDX_MAP(CBinValueDlg)
-		DDX_TEXT_LEN(IDC_NAME, m_Name, 64)
-		DDX_TEXT(IDC_NAME, m_Name)
-	END_DDX_MAP()
+private:
 
-protected:
-	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnHexBufferSizeChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
+	void UpdateBufferSize();
 
 private:
-	CHexControl m_HexEdit;
+
+	RegistryKey& m_Key;
 	CString m_Name;
-	bool m_ReadOnlyName{ false };
-	bool m_CanModify;
+	CHexControl m_Hex;
+	MemoryBuffer m_Buffer;
+	std::vector<BYTE> m_Value;
+	DWORD m_Type{ 0 };
+	IMainFrame* m_pFrame;
+	bool m_ReadOnly;
+	bool m_Modified{ false };
 };

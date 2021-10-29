@@ -75,12 +75,13 @@ void CHexControl::DoPaint(CDCHandle dc, RECT& rect) {
 	dc.SetBkColor(m_Colors.Background);
 	x = 0;
 	m_Text.clear();
-	int nlines = std::max<int>(1, lines);
+	int nlines = std::max(1, lines);
 	m_Text.resize(nlines);
 	for (int y = 0; y < nlines; y++) {
 		std::wstring text;
 		::StringCchPrintf(str, _countof(str), addrFormat.c_str(), m_StartOffset + y * m_BytesPerLine);
 		text = str;
+
 		auto& p = poly[y];
 		p.x = x + xstart;
 		p.y = y * m_CharHeight;
@@ -125,7 +126,7 @@ void CHexControl::DoPaint(CDCHandle dc, RECT& rect) {
 
 LRESULT CHexControl::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
 	CreateSolidCaret(m_InsertMode ? 2 : m_CharWidth, m_CharHeight);
-	// 插入符
+	// 显示插入符
 	ShowCaret();
 	UpdateCaret();
 
@@ -168,9 +169,10 @@ LRESULT CHexControl::OnKeyDown(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	bool redraw = false;
 
 	if (shift) {
-		if (m_Selection.IsEmpty())
+		if (m_Selection.IsEmpty()) {
 			// 锚点
 			m_Selection.SetAnchor(m_CaretOffset);
+		}
 	}
 
 	switch (wParam) {
@@ -244,7 +246,7 @@ LRESULT CHexControl::OnKeyDown(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	}
 	if (shift && m_CaretOffset != current) {
 		if (alt) {
-			m_Selection.SetBox(std::min<int64_t>(m_CaretOffset, m_Selection.GetAnchor()),
+			m_Selection.SetBox(std::min(m_CaretOffset, m_Selection.GetAnchor()),
 				m_BytesPerLine,
 				(m_CaretOffset - m_Selection.GetAnchor()) % m_BytesPerLine,
 				(int)(m_CaretOffset - m_Selection.GetAnchor()) / m_BytesPerLine);
@@ -576,7 +578,7 @@ LRESULT CHexControl::OnMouseWheel(UINT, WPARAM wParam, LPARAM, BOOL&) {
 			while ((delta += scroll) <= 0)
 				SendMessage(WM_VSCROLL, SB_LINEDOWN);
 	}
-	else if (keys == MK_CONTROL) { // 放大
+	else if (keys == MK_CONTROL) { // 放大或者缩小
 		auto oldSize = m_FontPointSize;
 		// change font size
 		m_FontPointSize = static_cast<int>(m_FontPointSize * (delta > 0 ? 1.1 : (1 / 1.1)));

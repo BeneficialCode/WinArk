@@ -82,6 +82,7 @@ LRESULT CDriverTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 }
 
 void CDriverTable::Refresh() {
+	
 	m_ServicesEx.clear();
 	m_Table.data.info = WinSys::ServiceManager::EnumServices(ServiceEnumType::AllDrivers);
 	m_Table.data.n = m_Table.data.info.size();
@@ -161,7 +162,7 @@ CString CDriverTable::TriggerToText(const WinSys::ServiceTrigger& trigger) {
 	using namespace WinSys;
 	switch (trigger.Type) {
 		case ServiceTriggerType::Custom:return L"Custom";
-		case ServiceTriggerType::DeviceInterfaceArrival:return "Device Arrival";
+		case ServiceTriggerType::DeviceInterfaceArrival:return L"Device Arrival";
 		case ServiceTriggerType::DomainJoin:return L"Domain Join";
 		case ServiceTriggerType::FirewallPortEvent:return L"Firewall Port Event";
 		case ServiceTriggerType::GroupPolicy:return L"Group Policy";
