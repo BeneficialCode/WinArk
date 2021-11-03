@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -285,6 +285,7 @@
     <ClCompile Include="ServiceTable.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SortHelpler.cpp" />
+    <ClCompile Include="SSDTHookTable.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -294,6 +295,7 @@
     <ClCompile Include="KernelModuleTable.cpp" />
     <ClCompile Include="StringValueDlg.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
+    <ClCompile Include="SymbolInfo.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
@@ -392,10 +394,12 @@
     <ClInclude Include="SizeGrip.h" />
     <ClInclude Include="SortedFilteredVector.h" />
     <ClInclude Include="SortHelper.h" />
+    <ClInclude Include="SSDTHookTable.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="KernelModuleTable.h" />
     <ClInclude Include="StringValueDlg.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
+    <ClInclude Include="SymbolInfo.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Theme.h" />
     <ClInclude Include="ThemeHelper.h" />
@@ -425,6 +429,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PEParser\PEParser.vcxproj">
+      <Project>{cc899776-2282-4442-bc9d-f21130c80fe1}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\WinSysCore\WinSysCore.vcxproj">
       <Project>{38942b29-a5a3-49c3-a922-0c1082db33c0}</Project>
     </ProjectReference>

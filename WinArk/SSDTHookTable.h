@@ -1,21 +1,29 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
-#include "ServiceInfo.h"
-#include "ServiceManager.h"
-#include "Service.h"
-#include "ServiceInfoEx.h"
 
-class CDriverTable :
-	public CTable<WinSys::ServiceInfo>,
-	public CWindowImpl<CDriverTable> {
+struct SystemServiceInfo {
+	DWORD ServiceNumber;
+	std::string ServiceFunctionName;
+	uintptr_t OrginalAddress;
+	std::string HookType;
+	uintptr_t CurrentAddress;
+	std::string TargetModule;
+};
+
+class CSSDTHookTable :
+	public CTable<SystemServiceInfo>,
+	public CWindowImpl<CSSDTHookTable>{
+
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
 
-	CDriverTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, WinSys::ServiceInfo& info, int column);
-	
-	BEGIN_MSG_MAP(CDriverTable)
+
+	CSSDTHookTable(BarInfo& bars, TableInfo& table);
+	int ParseTableEntry(CString& s, char& mask, int& select, SystemServiceInfo& info, int column);
+	bool CompareItems(const SystemServiceInfo& s1, const SystemServiceInfo& s2, int col, bool asc);
+
+	BEGIN_MSG_MAP(CServiceTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -32,7 +40,6 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -52,17 +59,13 @@ public:
 	LRESULT OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	void Refresh();
-	static PCWSTR ServiceStateToString(WinSys::ServiceState state);
-	static CString ServiceTypeToString(WinSys::ServiceType type);
-	static CString TriggerToText(const WinSys::ServiceTrigger& trigger);
-	static CString DependenciesToString(const std::vector<std::wstring>& deps);
-	static CString ServiceStartTypeToString(const WinSys::ServiceConfiguration& config);
-
-	ServiceInfoEx& GetServiceInfoEx(const std::wstring& name) const;
+	
 
 private:
-	mutable std::unordered_map<std::wstring, ServiceInfoEx> m_ServicesEx;
+	enum class HookColumn {
+		Index, Name, OrgAddress, HookType, CurAddress, TargetModule
+	};
+
+
 };

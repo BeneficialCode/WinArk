@@ -9,13 +9,41 @@
 #include "aboutdlg.h"
 #include "MainFrame.h"
 #include "DriverHelper.h"
+#include "SymbolInfo.h"
+#include "PEParser.h"
+#include <filesystem>
 
 CAppModule _Module;
 
+void InitSymbols(std::wstring fileName) {
+	WCHAR path[MAX_PATH];
+	::GetSystemDirectory(path, MAX_PATH);
+	wcscat_s(path, L"\\");
+	wcscat_s(path, fileName.c_str());
+	PEParser parser(path);
+	auto dir = parser.GetDataDirectory(IMAGE_DIRECTORY_ENTRY_DEBUG);
+	SymbolInfo info;
+	auto entry = static_cast<PIMAGE_DEBUG_DIRECTORY>(parser.GetAddress(dir->VirtualAddress));
+	ULONG_PTR VA = reinterpret_cast<ULONG_PTR>(parser.GetBaseAddress());
+	info.GetPdbSignature(VA, entry);
+	::GetCurrentDirectory(MAX_PATH, path);
+	wcscat_s(path, L"\\Symbols");
+	std::filesystem::create_directory(path);
+	info.SymDownloadSymbol(path);
+}
 
 int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
+
+	HANDLE hThread = ::CreateThread(nullptr, 0, [](auto param)->DWORD {
+		InitSymbols(L"ntoskrnl.exe");
+		InitSymbols(L"user32.dll");
+		InitSymbols(L"ntdll.dll");
+		return 0;
+		}, nullptr, 0, nullptr);
+
+	::CloseHandle(hThread);
 
 	InitColorSys();
 	InitFontSys();

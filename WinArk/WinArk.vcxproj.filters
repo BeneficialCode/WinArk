@@ -312,6 +312,12 @@
     <ClCompile Include="ServiceTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="SSDTHookTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -616,6 +622,12 @@
     </ClInclude>
     <ClInclude Include="ServiceTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="SSDTHookTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolInfo.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

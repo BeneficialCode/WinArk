@@ -49,7 +49,7 @@ bool RegExportImport::ExportKey(HKEY hKey, HANDLE hFile, PCWSTR section) const {
 		switch (type)
 		{
 			case REG_DWORD:
-				// c++20
+				// c++20 https://www.modernescpp.com/index.php/std-format-in-c-20
 				WriteString(hFile, sname + (L"=dword:" + std::format(L"{:08x}\n", *(DWORD*)data.get())).c_str());
 				break;
 

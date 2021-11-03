@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinArk", "WinArk\WinArk.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinSysCore", "WinSysCore\WinSysCore.vcxproj", "{38942B29-A5A3-49C3-A922-0C1082DB33C0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PEParser", "PEParser\PEParser.vcxproj", "{CC899776-2282-4442-BC9D-F21130C80FE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -70,6 +72,18 @@ Global
 		{38942B29-A5A3-49C3-A922-0C1082DB33C0}.Release|x64.Build.0 = Release|x64
 		{38942B29-A5A3-49C3-A922-0C1082DB33C0}.Release|x86.ActiveCfg = Release|Win32
 		{38942B29-A5A3-49C3-A922-0C1082DB33C0}.Release|x86.Build.0 = Release|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|ARM.ActiveCfg = Debug|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|x64.ActiveCfg = Debug|x64
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|x64.Build.0 = Debug|x64
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|x86.ActiveCfg = Debug|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Debug|x86.Build.0 = Debug|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|ARM.ActiveCfg = Release|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|ARM64.ActiveCfg = Release|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|x64.ActiveCfg = Release|x64
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|x64.Build.0 = Release|x64
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|x86.ActiveCfg = Release|Win32
+		{CC899776-2282-4442-BC9D-F21130C80FE1}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

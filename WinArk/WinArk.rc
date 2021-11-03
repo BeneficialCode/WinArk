@@ -692,7 +692,7 @@ BEGIN
             VALUE "InternalName", "WinArk"
             VALUE "LegalCopyright", "Copyright ©2021"
             VALUE "OriginalFilename", "WinArk.exe"
-            VALUE "ProductName", "Windows Antirootkit"
+            VALUE "ProductName", "Windows Ark Tool"
             VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END

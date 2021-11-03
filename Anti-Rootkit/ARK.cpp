@@ -30,11 +30,6 @@ DRIVER_DISPATCH AntiRootkitDeviceControl, AntiRootkitCreateClose;
 DRIVER_DISPATCH AntiRootkitRead, AntiRootkitWrite, AntiRootkitShutdown;
 
 
-
-
-
-
-
 extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
 	_In_ HANDLE ProcessHandle,
 	_In_ PROCESSINFOCLASS ProcessInformationClass,
