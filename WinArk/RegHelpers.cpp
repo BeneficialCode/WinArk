@@ -9,7 +9,7 @@
 
 
 
-USHORT Helpers::GetKeyObjectTypeIndex() {
+USHORT RegHelpers::GetKeyObjectTypeIndex() {
 	static USHORT keyIndex = 0;
 	if (keyIndex == 0) {
 		const ULONG len = 1 << 14; // 16k
@@ -34,7 +34,7 @@ USHORT Helpers::GetKeyObjectTypeIndex() {
 	return keyIndex;
 }
 
-CString Helpers::GetObjectName(HANDLE hObeject, DWORD pid) {
+CString RegHelpers::GetObjectName(HANDLE hObeject, DWORD pid) {
 	auto h = SecurityHelper::DupHandle(hObeject, pid, KEY_QUERY_VALUE);
 	if (h) {
 		BYTE buffer[2048];
@@ -51,7 +51,7 @@ CString Helpers::GetObjectName(HANDLE hObeject, DWORD pid) {
 }
 
 
-CString Helpers::GetErrorText(DWORD error) {
+CString RegHelpers::GetErrorText(DWORD error) {
 	ATLASSERT(error);
 	PWSTR buffer;
 	CString msg;
@@ -65,7 +65,7 @@ CString Helpers::GetErrorText(DWORD error) {
 	return msg;
 }
 
-PCWSTR Helpers::GetSystemDir() {
+PCWSTR RegHelpers::GetSystemDir() {
 	static WCHAR dir[MAX_PATH];
 	if (dir[0] == 0)
 		::GetSystemDirectory(dir, _countof(dir));
@@ -73,14 +73,14 @@ PCWSTR Helpers::GetSystemDir() {
 	return dir;
 }
 
-PCWSTR Helpers::GetWindowsDir() {
+PCWSTR RegHelpers::GetWindowsDir() {
 	static WCHAR dir[MAX_PATH];
 	if (dir[0] == 0)
 		::GetWindowsDirectory(dir, _countof(dir));
 	return dir;
 }
 
-std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
+std::wstring RegHelpers::GetDosNameFromNtName(PCWSTR name) {
 	static std::vector<std::pair<std::wstring, std::wstring>> deviceNames;
 	static bool first = true;
 	if (first) {
@@ -109,7 +109,7 @@ std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
 	return L"";
 }
 
-CString Helpers::ToBinary(ULONGLONG value) {
+CString RegHelpers::ToBinary(ULONGLONG value) {
 	CString svalue;
 
 	while (value) {

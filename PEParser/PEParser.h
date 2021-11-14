@@ -177,7 +177,12 @@ public:
 	const IMAGE_DOS_HEADER& GetDosHeader() const;
 	void* GetBaseAddress() const;
 
+	ULONGLONG GetImageBase() const;
+
 	CString GetSectionName(ULONG section) const;
+
+	void* RVA2FA(unsigned rva) const;
+
 
 	std::vector<ExportedSymbol> GetExports() const;
 	std::vector<ImportedLibrary> GetImports() const;
@@ -202,7 +207,7 @@ public:
 		return *_opt32;
 	}
 
-	IMAGE_COR20_HEADER* GetCLRHeader() const;
+	//IMAGE_COR20_HEADER* GetCLRHeader() const;
 	//CLRMetadataParser* GetCLRParser() const;
 	//std::vector<std::pair<DWORD, WIN_CERTIFICATE>> EnumCertificates() const;
 	//const IMAGE_LOAD_CONFIG_DIRECTORY64* GetLoadConfiguration64() const;

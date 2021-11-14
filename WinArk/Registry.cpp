@@ -461,7 +461,7 @@ std::vector<HandleInfo> Registry::EnumKeyHandles(bool hideInaccessible) {
 
 	auto p = (PSYSTEM_HANDLE_INFORMATION_EX)buffer;
 	handles.reserve(p->NumberOfHandles / 5);
-	auto keyType = Helpers::GetKeyObjectTypeIndex();
+	auto keyType = RegHelpers::GetKeyObjectTypeIndex();
 	for (ULONG i = 0; i < p->NumberOfHandles; i++) {
 		auto& hi = p->Handles[i];
 		if (hi.ObjectTypeIndex != keyType)
@@ -473,11 +473,11 @@ std::vector<HandleInfo> Registry::EnumKeyHandles(bool hideInaccessible) {
 		info.Handle = static_cast<ULONG>(hi.HandleValue);
 		info.ProcessId = static_cast<ULONG>(hi.UniqueProcessId);
 		info.Attributes = hi.HandleAttributes;
-		info.Name = Helpers::GetObjectName(ULongToHandle(info.Handle), info.ProcessId);
+		info.Name = RegHelpers::GetObjectName(ULongToHandle(info.Handle), info.ProcessId);
 		if (info.Name.IsEmpty()) {
 			if (hideInaccessible)
 				continue;
-			info.Name = L"<" + Helpers::GetErrorText() + L">";
+			info.Name = L"<" + RegHelpers::GetErrorText() + L">";
 		}
 		info.ProcessName = ProcessHelper::GetProcessName(info.ProcessId);
 		handles.push_back(std::move(info));

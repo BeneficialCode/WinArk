@@ -35,6 +35,36 @@ std::vector<ServiceInfo> ServiceManager::EnumServices(ServiceEnumType enumType, 
 	return services;
 }
 
+std::vector<DriverInfo> ServiceManager::EnumServices(ServiceEnumType enumType, ServiceEnumState enumState,bool service) {
+	std::vector<DriverInfo> services;
+	wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE));
+	if (!hScm)
+		return services;
+
+	auto buffer = std::make_unique<BYTE[]>(1 << 18);
+	DWORD needed;
+	DWORD count;
+	auto ok = ::EnumServicesStatusEx(hScm.get(), // SC_MANAGER_ENUMERATE_SERVICE
+		SC_ENUM_PROCESS_INFO,
+		static_cast<DWORD>(enumType),
+		static_cast<DWORD>(enumState),
+		buffer.get(), 1 << 18, &needed, &count, nullptr, nullptr);
+	if (!ok)
+		return services;
+
+	services.reserve(count);
+	for (size_t i = 0; i < count; i++) {
+		auto data = (ENUM_SERVICE_STATUS_PROCESS*)buffer.get() + i;
+		DriverInfo svc;
+		svc._name = data->lpServiceName;
+		svc._displayName = data->lpDisplayName;
+		::memcpy(&svc._status, &data->ServiceStatusProcess, sizeof(SERVICE_STATUS_PROCESS));
+
+		services.push_back(std::move(svc));
+	}
+	return services;
+}
+
 std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(const std::wstring& serviceName) {
 	auto hService(OpenServiceHandle(serviceName));
 	if (!hService)

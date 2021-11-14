@@ -3,14 +3,9 @@
 #include<intrin.h>
 #include"util.h"
 #include"AntiRootkit.h"
-#include"kstring.h"
-#include"FileManager.h"
 #include"RegManager.h"
 #include"ProcManager.h"
-#include"khook.h"
-#include"RecoverHook.h"
-
-
+#include "..\KernelLibrary\khook.h"
 
 // define a tag (because of little endianess, viewed in PoolMon as 'arkv'
 #define DRIVER_TAG 'vkra'
@@ -148,7 +143,6 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 }
 
 void AntiRootkitUnload(_In_ PDRIVER_OBJECT DriverObject) {
-	//UnHookSSDT();
 	ExFreePool(g_RegisterPath.Buffer);
 	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\AntiRootkit");
 	// delete symbolic link
@@ -225,19 +219,109 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
-		case IOCTL_GET_SERVICE_TABLE:
+		case IOCTL_ARK_GET_SERVICE_TABLE:
 		{
-			/*auto KiServiceTable = GetKiServiceTable();
-			memcpy(data, &KiServiceTable, 8);*/
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(PULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook hook;
+			bool success = hook.GetKernelAndWin32kBase();
+			if (!success) {
+				status = STATUS_UNSUCCESSFUL;
+				break;
+			}
+			success = hook.GetSystemServiceTable();
+			if (success) {
+				*(PULONG*)Irp->AssociatedIrp.SystemBuffer = hook._ntTable->ServiceTableBase;
+				len = sizeof(PULONG);
+				status = STATUS_SUCCESS;
+			}
 			break;
 		}
 
-		case IOCTL_GET_FUNCTION_ADDR:
+		case IOCTL_ARK_GET_SHADOW_SERVICE_TABLE:
 		{
-			/*ULONG index;
-			memcpy(&index, data, 4);
-			auto CurAddr = GetSSDTFuncCurAddr(index);
-			memcpy(data, &CurAddr, 8);*/
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(PULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook hook;
+			bool success = hook.GetKernelAndWin32kBase();
+			if (!success) {
+				status = STATUS_UNSUCCESSFUL;
+				break;
+			}
+			success = hook.GetShadowSystemServiceTable();
+			if (success) {
+				*(PULONG*)Irp->AssociatedIrp.SystemBuffer = hook._win32kTable->ServiceTableBase;
+				len = sizeof(PULONG);
+				status = STATUS_SUCCESS;
+			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_SSDT_API_ADDR:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(void*)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook hook;
+			PVOID address;
+			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = hook.GetApiAddress(number,&address);
+			if (success) {
+				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
+				len = sizeof(address);
+				status = STATUS_SUCCESS;
+			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_SHADOW_SSDT_API_ADDR:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(void*)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook hook;
+			PVOID address;
+			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = hook.GetApiAddress(number, &address);
+			if (success) {
+				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
+				len = sizeof(address);
+				status = STATUS_SUCCESS;
+			}
 			break;
 		}
 

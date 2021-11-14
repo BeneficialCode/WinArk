@@ -124,7 +124,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,7 +156,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -188,7 +188,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -284,6 +284,7 @@
     <ClCompile Include="ServiceInfoEx.cpp" />
     <ClCompile Include="ServiceTable.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="ShadowSSDTTable.cpp" />
     <ClCompile Include="SortHelpler.cpp" />
     <ClCompile Include="SSDTHookTable.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -391,6 +392,7 @@
     <ClInclude Include="ServiceInfoEx.h" />
     <ClInclude Include="ServiceTable.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="ShadowSSDTTable.h" />
     <ClInclude Include="SizeGrip.h" />
     <ClInclude Include="SortedFilteredVector.h" />
     <ClInclude Include="SortHelper.h" />
@@ -425,8 +427,11 @@
     <Image Include="res\window.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Debug\AntiRootkit.sys" />
     <None Include="..\x64\Debug\AntiRootkit.sys" />
     <None Include="packages.config" />
+    <None Include="res\bin2.bin" />
+    <None Include="res\driver1.bin" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PEParser\PEParser.vcxproj">

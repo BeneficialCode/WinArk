@@ -72,6 +72,10 @@ namespace WinSys {
 		friend class Service;
 	public:
 		static std::vector<ServiceInfo> EnumServices(ServiceEnumType enumType, ServiceEnumState enumState = ServiceEnumState::All);
+		
+		static std::vector<DriverInfo> EnumServices(ServiceEnumType enumType, ServiceEnumState enumState, bool service = false);
+
+
 		static std::unique_ptr<ServiceConfiguration> GetServiceConfiguration(const std::wstring& serviceName);
 		static std::wstring GetServiceDescription(const std::wstring& name);
 		static ServiceState GetServiceState(const std::wstring& name);

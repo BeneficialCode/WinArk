@@ -102,4 +102,24 @@ namespace WinSys {
 		std::wstring _name, _displayName;
 		ServiceStatusProcess _status;
 	};
+
+	struct DriverInfo {
+		friend class ServiceManager;
+		friend class Service;
+
+		const std::wstring& GetName() const {
+			return _name;
+		}
+
+		const std::wstring& GetDisplayName() const {
+			return _displayName;
+		}
+
+		const ServiceStatusProcess& GetStatusProcess() const {
+			return _status;
+		}
+	private:
+		std::wstring _name, _displayName;
+		ServiceStatusProcess _status;
+	};
 }

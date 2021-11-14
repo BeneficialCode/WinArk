@@ -67,7 +67,7 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "CompanyName", "YuanOs Corporation"
+            VALUE "CompanyName", "YuanOS Corporation"
             VALUE "FileDescription", "Anti-RootKit Driver"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "TODO: <ÄÚ²¿Ãû³Æ>"

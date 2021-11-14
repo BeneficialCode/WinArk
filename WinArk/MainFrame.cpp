@@ -230,7 +230,11 @@ void CMainFrame::InitServiceTable() {
 
 void CMainFrame::InitDriverInterface() {
 	// 定位驱动二进制文件，提取到系统目录，然后安装
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_DRIVER), L"BIN");
+#ifdef __WIN64
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X64_DRIVER), L"BIN");
+#else
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X86_DRIVER), L"BIN");
+#endif // __WIN64
 	if (!hRes)
 		return;
 
@@ -383,6 +387,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	for (auto& col : columns) {
 		m_TabCtrl.InsertItem(i++, col.Name);
 	}
+	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
+	m_TabCtrl.SetFont(hFont, true);
+	::DeleteObject(hFont);
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 	SetLayeredWindowAttributes(m_hWnd, 0xffffff, 220, LWA_ALPHA);
@@ -405,7 +412,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	UIAddChildWindowContainer(m_hWnd);
+	// UIAddChildWindowContainer(m_hWnd);
 
 	return TRUE;
 }

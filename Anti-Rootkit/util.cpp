@@ -36,6 +36,7 @@ void OnTimerExpired(KDPC* Dpc, PVOID context, PVOID, PVOID) {
 	// handle timer expiration
 	KdPrint(("DPC's IRQL: %d\n", KeGetCurrentIrql()));
 }
+
 void WriteProtectOff()
 {
 	KIRQL oldIrql;

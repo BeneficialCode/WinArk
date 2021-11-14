@@ -1,6 +1,6 @@
 #pragma once
 #include "SSDTHookTable.h"
-
+#include "ShadowSSDTTable.h"
 
 class CKernelHookView:
 	public CWindowImpl<CKernelHookView>{
@@ -22,6 +22,7 @@ public:
 	LRESULT OnTcnSelChange(int, LPNMHDR hdr, BOOL&);
 
 	void InitSSDTHookTable();
+	void InitShadowSSDTHookTable();
 
 	enum class TabColumn : int {
 		SSDT,ShadowSSDT,ObjectCallback
@@ -31,6 +32,8 @@ private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 
 	CSSDTHookTable* m_SSDTHookTable;
+	CShadowSSDTHookTable* m_ShadowSSDTHookTable;
+
 	HWND m_hwndArray[16];
 	int _index = 0;
 };

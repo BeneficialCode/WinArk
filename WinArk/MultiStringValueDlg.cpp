@@ -39,7 +39,7 @@ LRESULT CMultiStringValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	if (m_ReadOnly) {
 		((CEdit)GetDlgItem(IDC_VALUE)).SetReadOnly(TRUE);
 	}
-	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? Helpers::DefaultValueName : m_Name);
+	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? RegHelpers::DefaultValueName : m_Name);
 
 	return TRUE;
 }

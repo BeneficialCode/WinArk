@@ -1,8 +1,8 @@
-#include<ntddk.h>
-#include"Mutex.h"
+#include "pch.h"
+#include "Mutex.h"
 
 void Mutex::Init() {
-	KeInitializeMutex(&_mutex, 0);
+	KeInitializeMutex(&_mutex,0);
 }
 
 void Mutex::Lock() {

@@ -31,7 +31,7 @@ LRESULT CNumberValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	}
 	ATLASSERT(m_Type == type);
 	SetWindowText(m_Type == REG_DWORD ? L"DWORD Value" : L"QWORD Value");
-	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? Helpers::DefaultValueName : m_Name);
+	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? RegHelpers::DefaultValueName : m_Name);
 	DisplayValue(m_Value);
 
 	if (m_ReadOnly)
@@ -122,7 +122,7 @@ void CNumberValueDlg::DisplayValue(DWORD64 value, bool checkRadio) {
 			break;
 
 		case ValueFormat::Binary:
-			text = Helpers::ToBinary(value);
+			text = RegHelpers::ToBinary(value);
 			if (checkRadio)
 				CheckDlgButton(IDC_BIN, TRUE);
 			break;

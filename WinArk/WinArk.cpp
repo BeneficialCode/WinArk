@@ -12,6 +12,7 @@
 #include "SymbolInfo.h"
 #include "PEParser.h"
 #include <filesystem>
+#include <Helpers.h>
 
 CAppModule _Module;
 
@@ -37,9 +38,12 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	_Module.AddMessageLoop(&theLoop);
 
 	HANDLE hThread = ::CreateThread(nullptr, 0, [](auto param)->DWORD {
-		InitSymbols(L"ntoskrnl.exe");
+		std::string name = Helpers::GetNtosFileName();
+		std::wstring osFileName(name.begin(), name.end());
+		InitSymbols(osFileName.c_str());
 		InitSymbols(L"user32.dll");
 		InitSymbols(L"ntdll.dll");
+		InitSymbols(L"win32k.sys");
 		return 0;
 		}, nullptr, 0, nullptr);
 
@@ -73,7 +77,12 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 
 bool CheckInstall(PCWSTR cmdLine) {
 	bool parse = false, success = false;
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_DRIVER), L"BIN");
+#ifdef __WIN64
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X64_DRIVER), L"BIN");
+#else
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X86_DRIVER), L"BIN");
+#endif // __WIN64
+	
 	if (!hRes)
 		return false;
 

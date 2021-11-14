@@ -26,7 +26,8 @@ typedef struct _GDI_HANDLE_ENTRY {
 } GDI_HANDLE_ENTRY, * PGDI_HANDLE_ENTRY;
 #pragma pack(pop)
 
-static_assert(sizeof(GDI_HANDLE_ENTRY) == 24);
+// static_assert(sizeof(GDI_HANDLE_ENTRY) == 24);
+
 
 #define GDI_HANDLE_INDEX_BITS 16
 #define GDI_MAKE_HANDLE(Index, Unique) ((ULONG)(((ULONG)(Unique) << GDI_HANDLE_INDEX_BITS) | (ULONG)(Index)))

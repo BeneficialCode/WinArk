@@ -1,5 +1,5 @@
-#include<ntddk.h>
-#include"FastMutex.h"
+#include "pch.h"
+#include "FastMutex.h"
 
 void FastMutex::Init() {
 	ExInitializeFastMutex(&_mutex);

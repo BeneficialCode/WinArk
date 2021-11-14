@@ -2,13 +2,16 @@
 #include "Table.h"
 #include "resource.h"
 
+#define SystemModuleInformation 11
+
 struct SystemServiceInfo {
 	DWORD ServiceNumber;
 	std::string ServiceFunctionName;
-	uintptr_t OrginalAddress;
+	uintptr_t OriginalAddress;
 	std::string HookType;
 	uintptr_t CurrentAddress;
 	std::string TargetModule;
+	bool Hooked;
 };
 
 class CSSDTHookTable :
@@ -17,7 +20,6 @@ class CSSDTHookTable :
 
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
-
 
 	CSSDTHookTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, SystemServiceInfo& info, int column);
@@ -61,11 +63,29 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
 	
+	void Refresh();
+private:
+
+	ULONG_PTR GetOrignalAddress(DWORD number);
+	
+	struct SSDTEntry {
+		int Number;
+		std::string Name;
+		void* Original;
+		void* Current;
+	};
+
+	void GetSSDTEntry();
 
 private:
 	enum class HookColumn {
-		Index, Name, OrgAddress, HookType, CurAddress, TargetModule
+		Number, Name, OrgAddress, HookType, CurAddress, TargetModule
 	};
 
-
+	PVOID _kernelBase;
+	PVOID _fileMapVA;
+	PULONG _KiServiceTable;
+	ULONGLONG _imageBase;
+	std::vector<SSDTEntry> _entries;
+	int _total = 0;
 };

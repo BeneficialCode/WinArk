@@ -1,12 +1,13 @@
 #pragma once
 
-
-struct FastMutex {
+struct QueuedSpinLock {
 public:
 	void Init();
 
 	void Lock();
 	void Unlock();
+
 private:
-	FAST_MUTEX _mutex;
+	KSPIN_LOCK _lock;
+	KLOCK_QUEUE_HANDLE _handle;
 };

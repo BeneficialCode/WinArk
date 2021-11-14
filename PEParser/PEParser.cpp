@@ -353,3 +353,14 @@ ULONG PEParser::GetExportByName(PCSTR exportName) {
 IMAGE_SECTION_HEADER* PEParser::GetSections() {
 	return _sections;
 }
+
+void* PEParser::RVA2FA(unsigned rva) const {
+	if (!IsValid())
+		return nullptr;
+
+	return _address + RvaToFileOffset(rva);
+}
+
+ULONGLONG PEParser::GetImageBase() const {
+	return IsPe64() ? GetOptionalHeader64().ImageBase : GetOptionalHeader32().ImageBase;
+}

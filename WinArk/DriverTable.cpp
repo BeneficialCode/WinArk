@@ -82,14 +82,13 @@ LRESULT CDriverTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 }
 
 void CDriverTable::Refresh() {
-	
 	m_ServicesEx.clear();
-	m_Table.data.info = WinSys::ServiceManager::EnumServices(ServiceEnumType::AllDrivers);
+	m_Table.data.info = WinSys::ServiceManager::EnumServices(ServiceEnumType::AllDrivers, ServiceEnumState::All, false);;
 	m_Table.data.n = m_Table.data.info.size();
 	m_ServicesEx.reserve(m_Table.data.n);
 }
 
-int CDriverTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::ServiceInfo& info, int column) {
+int CDriverTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::DriverInfo& info, int column) {
 	auto& pdata = info.GetStatusProcess();
 	auto& svcex = GetServiceInfoEx(info.GetName());
 	auto config = svcex.GetConfiguration();

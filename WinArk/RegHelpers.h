@@ -1,7 +1,7 @@
 #pragma once
 
 
-struct Helpers abstract final {
+struct RegHelpers abstract final {
 	static USHORT GetKeyObjectTypeIndex();
 	static CString GetObjectName(HANDLE hObject, DWORD pid);
 	static CString GetErrorText(DWORD error = ::GetLastError());

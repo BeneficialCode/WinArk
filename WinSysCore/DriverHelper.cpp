@@ -71,6 +71,9 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 		SERVICE_ERROR_NORMAL, // the error is logged to the event log service
 		path, // the full path to the executable to run for the service
 		nullptr, nullptr, nullptr, nullptr, nullptr));
+	if (ERROR_SERVICE_EXISTS == GetLastError()) {
+		return true;
+	}
 	auto success = hService != nullptr;
 	return success;
 }
@@ -161,6 +164,7 @@ USHORT DriverHelper::GetVersion() {
 	return version;
 }
 
+
 USHORT DriverHelper::GetCurrentVersion() {
 	return DRIVER_CURRENT_VERSION;
 }
@@ -220,4 +224,25 @@ HANDLE DriverHelper::OpenKey(PCWSTR name,ACCESS_MASK access) {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_KEY, data, size, &hObject, sizeof(hObject), &bytes, nullptr);
 
 	return hObject;
+}
+
+PULONG DriverHelper::GetKiServiceTable() {
+	PULONG address = 0;
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SERVICE_TABLE, nullptr, 0, &address, sizeof(address), &bytes, nullptr);
+	return address;
+}
+
+PVOID DriverHelper::GetSSDTApiAddress(ULONG number) {
+	if (!OpenDevice())
+		return nullptr;
+
+	PVOID address = nullptr;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SSDT_API_ADDR, &number, sizeof(number),
+		&address, sizeof(address), &bytes, nullptr);
+	return address;
 }

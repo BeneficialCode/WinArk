@@ -178,7 +178,7 @@ CString CRegistryManagerView::GetCurrentKeyPath() {
 
 void CRegistryManagerView::DisplayError(PCWSTR msg, HWND hWnd, DWORD error) const {
 	CString text;
-	text.Format(L"%s (%s)", msg, (PCWSTR)Helpers::GetErrorText(error));
+	text.Format(L"%s (%s)", msg, (PCWSTR)RegHelpers::GetErrorText(error));
 	AtlMessageBox(hWnd ? hWnd : m_hWnd, (PCWSTR)text, IDS_TITLE, MB_ICONERROR);
 }
 
@@ -188,7 +188,7 @@ CString CRegistryManagerView::GetColumnText(HWND h, int row, int col) const {
 	switch (static_cast<ColumnType>(GetColumnManager(h)->GetColumnTag(col)))
 	{
 		case ColumnType::Name:
-			return item.Name.IsEmpty() ? CString(Helpers::DefaultValueName) : item.Name;
+			return item.Name.IsEmpty() ? CString(RegHelpers::DefaultValueName) : item.Name;
 
 		case ColumnType::Type:
 			return Registry::GetRegTypeAsString(item.Type);
@@ -495,9 +495,9 @@ CString CRegistryManagerView::GetValueDetails(const RegistryItem& item) const {
 			if (item.Value[0] == L'@') {
 				static const CString paths[] = {
 					L"",
-					Helpers::GetSystemDir(),
-					Helpers::GetSystemDir() + CString(L"\\Drivers"),
-					Helpers::GetWindowsDir(),
+					RegHelpers::GetSystemDir(),
+					RegHelpers::GetSystemDir() + CString(L"\\Drivers"),
+					RegHelpers::GetWindowsDir(),
 				};
 				for (auto& path : paths) {
 					if (ERROR_FILE_NOT_FOUND != ::RegLoadMUIString(m_CurrentKey.Get(),
