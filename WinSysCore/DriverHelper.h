@@ -16,6 +16,9 @@ struct DriverHelper final {
 	static HANDLE OpenKey(PCWSTR name, ACCESS_MASK access);
 	static PULONG GetKiServiceTable();
 	static PVOID GetSSDTApiAddress(ULONG number);
+	static PVOID GetShadowSSDTApiAddress(ULONG number);
+	static PULONG GetShadowServiceTable();
+	static ULONG GetShadowServiceLimit();
 
 private:
 	static bool OpenDevice();

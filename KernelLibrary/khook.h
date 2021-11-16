@@ -397,6 +397,7 @@ public:
 
 	bool GetSystemServiceTable();
     bool GetShadowSystemServiceTable();
+    ULONG GetShadowServiceLimit();
 
 	bool HookSSDT(const char* apiName,void* newfunc);
     bool UnhookSSDT();

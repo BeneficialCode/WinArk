@@ -230,7 +230,7 @@ void CMainFrame::InitServiceTable() {
 
 void CMainFrame::InitDriverInterface() {
 	// 定位驱动二进制文件，提取到系统目录，然后安装
-#ifdef __WIN64
+#ifdef _WIN64
 	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X64_DRIVER), L"BIN");
 #else
 	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X86_DRIVER), L"BIN");

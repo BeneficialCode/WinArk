@@ -1438,7 +1438,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 									SetTimer(hw, 1, 50, NULL);
 								}
 								m_Bar.active = -1;
-								if (client.top - 48 < yPos) {
+								if (client.top - 48 > yPos) {
 									m_Bar.active -= (client.top - 48 - yPos) / 16;
 								}
 							}

@@ -74,10 +74,10 @@ private:
 	void GetShadowSSDTEntry();
 	ULONG_PTR GetOrignalAddress(DWORD number);
 
-	PVOID _win32kBase;
-	PULONG _serviceTableBase;
-	ULONGLONG _imageBase;
-	PVOID _fileMapVA;
+	PVOID _win32kBase{ nullptr };
+	PULONG _serviceTableBase = 0;
+	ULONGLONG _imageBase = 0;
+	PVOID _fileMapVA = nullptr;
 	ULONG _limit;
 	int _total = 0;
 };

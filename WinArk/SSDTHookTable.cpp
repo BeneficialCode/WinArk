@@ -17,7 +17,7 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	osFileName = L"\\" + osFileName;
 	::wcscat_s(path, osFileName.c_str());
 	PEParser parser(path);
-	_imageBase = parser.IsPe64() ? parser.GetOptionalHeader64().ImageBase : parser.GetOptionalHeader32().ImageBase;
+	_imageBase = parser.GetImageBase();
 	GetSSDTEntry();
 	Refresh();
 }

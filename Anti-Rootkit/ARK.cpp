@@ -316,7 +316,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			khook hook;
 			PVOID address;
 			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = hook.GetApiAddress(number, &address);
+			bool success = hook.GetShadowApiAddress(number, &address);
 			if (success) {
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
 				len = sizeof(address);
@@ -511,6 +511,25 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				*(HANDLE*)data = hKey;
 				len = sizeof(HANDLE);
 			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook hook;
+			hook.GetShadowSystemServiceTable();
+
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = hook._win32kTable->NumberOfServices;
+			len = sizeof(ULONG);
+			status = STATUS_SUCCESS;
 			break;
 		}
 	}

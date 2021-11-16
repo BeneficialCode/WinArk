@@ -13,150 +13,69 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Chinese (Simplified) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
+#pragma code_page(936)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 321, 168
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 9, "Segoe UI", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,264,147,50,14
+    CTEXT           "WinArk Application v1.0\n\n(c) Copyright 2020",IDC_STATIC,25,57,78,32
+    ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
+    GROUPBOX        "",IDC_STATIC,7,7,115,154
+    LTEXT           "ÖÂÐ»:\n\nÔ´¸ç£»´æ¸ç£»¿³ÀÏ°å£»Ð¡Â·¸ç¸ç :)\n\n²¼Ä«£»»ý»ý£»Ç¹ÊÖ£»Pizza!\n\nÕð¸ç£»ÈÙ²©Ê¿£»Ïè¸ç£»ÀèÊå£»\n\n´üÊó£»2st£»Ðñ½´£»Adolph Savage£»\n\nÎÞÃûÏÀ\n\n<ÒÔÉÏÅÅÃû²»·ÖÏÈºó>",IDC_STATIC,138,18,124,106
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 314
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 161
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Chinese (Simplified) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 #pragma code_page(936)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_CONTEXT MENU
-BEGIN
-    POPUP "process"
-    BEGIN
-        MENUITEM "Refresh",                     ID_PROCESS_REFRESH
-        MENUITEM "&Kill",                       ID_PROCESS_KILL
-        MENUITEM "Properties",                  ID_PROCESS_PROPERTIES
-        MENUITEM "Go to File Location",         ID_PROCESS_GOTOFILELOCATION
-        POPUP "Details"
-        BEGIN
-            MENUITEM "Modules",                     ID_PROCESS_MODULES
-            MENUITEM "Threads",                     ID_PROCESS_THREADS
-            MENUITEM "Handles",                     ID_PROCESS_HANDLES
-            MENUITEM "Memory",                      ID_PROCESS_MEMORY
-        END
-    END
-    POPUP "listdir"
-    BEGIN
-        POPUP "&New"
-        BEGIN
-            MENUITEM "&Key",                        ID_NEW_KEY
-            MENUITEM "&DWORD Value",                ID_NEW_DWORDVALUE
-            MENUITEM "&QWORD Value",                ID_NEW_QWORDVALUE
-            MENUITEM "&String Value",               ID_NEW_STRINGVALUE
-            MENUITEM "&Multiple String Value",      ID_NEW_MULTIPLESTRINGVALUE
-            MENUITEM "&Expand String Value",        ID_NEW_EXPANDSTRINGVALUE
-            MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "Copy Key Name",               ID_COPY_NAME
-        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete",                     ID_EDIT_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "Permissions...",              ID_EDIT_PERMISSIONS
-    END
-    POPUP "listvalue"
-    BEGIN
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Rename\tF2",                 ID_EDIT_RENAME
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "&Properties...\tAlt+Enter",   ID_KEY_PROPERTIES
-    END
-    POPUP "listempty"
-    BEGIN
-        POPUP "&New"
-        BEGIN
-            MENUITEM "&Key",                        ID_NEW_KEY
-            MENUITEM SEPARATOR
-            MENUITEM "&DWORD Value",                ID_NEW_DWORDVALUE
-            MENUITEM "&QWORD Value",                ID_NEW_QWORDVALUE
-            MENUITEM "&String Value",               ID_NEW_STRINGVALUE
-            MENUITEM "&Multiple Strings Value",     ID_NEW_MULTIPLESTRINGVALUE
-            MENUITEM "&Expand String Value",        ID_NEW_EXPANDSTRINGVALUE
-            MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
-        END
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-    END
-    POPUP "win_tree"
-    BEGIN
-        POPUP "&State"
-        BEGIN
-            MENUITEM "&Show",                       ID_WINDOW_SHOW
-            MENUITEM "&Hide",                       ID_WINDOW_HIDE
-            MENUITEM "&Highlight",                  ID_WINDOW_HIGHLIGHT
-            MENUITEM "&Minimize",                   ID_WINDOW_MINIMIZE
-            MENUITEM "Ma&ximize",                   ID_WINDOW_MAXIMIZE
-            MENUITEM "&Restore",                    ID_WINDOW_RESTORE
-            MENUITEM "&Bring To Front",             ID_WINDOW_BRINGTOFRONT
-            MENUITEM "&Close",                      ID_STATE_CLOSE
-            MENUITEM "&Flash",                      ID_STATE_FLASH
-        END
-        MENUITEM "&Properties...",              ID_WINDOW_PROPERTIES
-        MENUITEM "Refresh",                     ID_WINDOW_REFRESH
-    END
-    POPUP "reg_tree"
-    BEGIN
-        MENUITEM "Create &Key",                 ID_NEW_KEY
-        MENUITEM SEPARATOR
-        MENUITEM "Re&name",                     ID_EDIT_RENAME
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM SEPARATOR
-        MENUITEM "Copy Key Name",               ID_COPY_NAME
-        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
-        MENUITEM "&Paste",                      ID_EDIT_PASTE
-        MENUITEM SEPARATOR
-        MENUITEM "&Refresh",                    ID_TREE_REFRESH
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete",                     ID_EDIT_DELETE
-        MENUITEM SEPARATOR
-        MENUITEM "&Export...",                  ID_FILE_EXPORT
-        MENUITEM "&Import...",                  ID_FILE_IMPORT
-        MENUITEM SEPARATOR
-        MENUITEM "Per&missions...",             ID_KEY_PERMISSIONS
-    END
-    POPUP "remote"
-    BEGIN
-        MENUITEM "&Disconnect",                 ID_FILE_DISCONNECT
-    END
-END
-
-IDR_MAINFRAME MENU
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
-        MENUITEM "E&xit",                       IDM_EXIT
-    END
-    POPUP "&Options"
-    BEGIN
-        MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
-        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&About WinArk",               ID_APP_ABOUT
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BIN
-//
-
-IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys"
-
-IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -421,6 +340,145 @@ BEGIN
     0
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CONTEXT MENU
+BEGIN
+    POPUP "process"
+    BEGIN
+        MENUITEM "Refresh",                     ID_PROCESS_REFRESH
+        MENUITEM "&Kill",                       ID_PROCESS_KILL
+        MENUITEM "Properties",                  ID_PROCESS_PROPERTIES
+        MENUITEM "Go to File Location",         ID_PROCESS_GOTOFILELOCATION
+        POPUP "Details"
+        BEGIN
+            MENUITEM "Modules",                     ID_PROCESS_MODULES
+            MENUITEM "Threads",                     ID_PROCESS_THREADS
+            MENUITEM "Handles",                     ID_PROCESS_HANDLES
+            MENUITEM "Memory",                      ID_PROCESS_MEMORY
+        END
+    END
+    POPUP "listdir"
+    BEGIN
+        POPUP "&New"
+        BEGIN
+            MENUITEM "&Key",                        ID_NEW_KEY
+            MENUITEM "&DWORD Value",                ID_NEW_DWORDVALUE
+            MENUITEM "&QWORD Value",                ID_NEW_QWORDVALUE
+            MENUITEM "&String Value",               ID_NEW_STRINGVALUE
+            MENUITEM "&Multiple String Value",      ID_NEW_MULTIPLESTRINGVALUE
+            MENUITEM "&Expand String Value",        ID_NEW_EXPANDSTRINGVALUE
+            MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Copy Key Name",               ID_COPY_NAME
+        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Permissions...",              ID_EDIT_PERMISSIONS
+    END
+    POPUP "listvalue"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Rename\tF2",                 ID_EDIT_RENAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_KEY_PROPERTIES
+    END
+    POPUP "listempty"
+    BEGIN
+        POPUP "&New"
+        BEGIN
+            MENUITEM "&Key",                        ID_NEW_KEY
+            MENUITEM SEPARATOR
+            MENUITEM "&DWORD Value",                ID_NEW_DWORDVALUE
+            MENUITEM "&QWORD Value",                ID_NEW_QWORDVALUE
+            MENUITEM "&String Value",               ID_NEW_STRINGVALUE
+            MENUITEM "&Multiple Strings Value",     ID_NEW_MULTIPLESTRINGVALUE
+            MENUITEM "&Expand String Value",        ID_NEW_EXPANDSTRINGVALUE
+            MENUITEM "&Binary Value",               ID_NEW_BINARYVALUE
+        END
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "win_tree"
+    BEGIN
+        POPUP "&State"
+        BEGIN
+            MENUITEM "&Show",                       ID_WINDOW_SHOW
+            MENUITEM "&Hide",                       ID_WINDOW_HIDE
+            MENUITEM "&Highlight",                  ID_WINDOW_HIGHLIGHT
+            MENUITEM "&Minimize",                   ID_WINDOW_MINIMIZE
+            MENUITEM "Ma&ximize",                   ID_WINDOW_MAXIMIZE
+            MENUITEM "&Restore",                    ID_WINDOW_RESTORE
+            MENUITEM "&Bring To Front",             ID_WINDOW_BRINGTOFRONT
+            MENUITEM "&Close",                      ID_STATE_CLOSE
+            MENUITEM "&Flash",                      ID_STATE_FLASH
+        END
+        MENUITEM "&Properties...",              ID_WINDOW_PROPERTIES
+        MENUITEM "Refresh",                     ID_WINDOW_REFRESH
+    END
+    POPUP "reg_tree"
+    BEGIN
+        MENUITEM "Create &Key",                 ID_NEW_KEY
+        MENUITEM SEPARATOR
+        MENUITEM "Re&name",                     ID_EDIT_RENAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Key Name",               ID_COPY_NAME
+        MENUITEM "Copy Full Key Name",          ID_COPY_FULLNAME
+        MENUITEM "&Paste",                      ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "&Refresh",                    ID_TREE_REFRESH
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Export...",                  ID_FILE_EXPORT
+        MENUITEM "&Import...",                  ID_FILE_IMPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Per&missions...",             ID_KEY_PERMISSIONS
+    END
+    POPUP "remote"
+    BEGIN
+        MENUITEM "&Disconnect",                 ID_FILE_DISCONNECT
+    END
+END
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About WinArk",               ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BIN
+//
+
+IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys"
+
+IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
+
 #endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -436,18 +494,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 // Dialog
 //
-
-IDD_ABOUTBOX DIALOGEX 0, 0, 317, 140
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About"
-FONT 9, "Segoe UI", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,260,119,50,14
-    CTEXT           "WinArk Application v1.0\n\n(c) Copyright 2020",IDC_STATIC,25,57,78,32
-    ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
-    GROUPBOX        "",IDC_STATIC,7,7,115,126
-    LTEXT           "Thanks:\n ???,??,??,??",IDC_STATIC,138,18,122,39
-END
 
 IDD_STRINGVALUE DIALOGEX 0, 0, 310, 141
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -528,14 +574,6 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 310
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 133
-    END
-
     IDD_STRINGVALUE, DIALOG
     BEGIN
     END
@@ -601,11 +639,6 @@ BEGIN
 END
 
 IDD_BINVALUE AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-IDD_ABOUTBOX AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -698,7 +731,7 @@ BEGIN
             VALUE "FileDescription", "WinArk Antirootkit"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "WinArk"
-            VALUE "LegalCopyright", "Copyright ©2021"
+            VALUE "LegalCopyright", "Copyright ?021"
             VALUE "OriginalFilename", "WinArk.exe"
             VALUE "ProductName", "Windows Ark Tool"
             VALUE "ProductVersion", "1, 0, 0, 1"

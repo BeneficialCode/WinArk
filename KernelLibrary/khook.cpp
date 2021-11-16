@@ -832,7 +832,6 @@ bool khook::GetApiAddress(ULONG index,PVOID* address) {
 	if (!base) {
 		return false;
 	}
-	
 	if (success) {
 		if (index >= _ntTable->NumberOfServices) {
 			return false;
@@ -851,5 +850,55 @@ bool khook::GetApiAddress(ULONG index,PVOID* address) {
 }
 
 bool khook::GetShadowApiAddress(ULONG index, PVOID* address) {
+	bool success = GetShadowSystemServiceTable();
+	if (!success)
+		return false;
 
+	// Get the process id of the "winlogon.exe" process
+	success = SearchSessionProcess();
+	if (!success)
+		return false;
+
+	PEPROCESS Process;
+	NTSTATUS status = PsLookupProcessByProcessId(_pid, &Process);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	// 此处必须配对
+	KAPC_STATE apcState;
+	KeStackAttachProcess(Process, &apcState);
+	do
+	{
+		ULONG_PTR base = (ULONG_PTR)_win32kTable->ServiceTableBase;
+		if (!base) {
+			success = false;
+			break;
+		}
+		if (success) {
+			if (index > _win32kTable->NumberOfServices) {
+				success = false;
+				break;
+			}
+
+			LONG oldValue = _win32kTable->ServiceTableBase[index];
+#ifdef _WIN64
+			*address = (PVOID)((oldValue >> 4) + base);
+#else
+			*address = (PVOID)oldValue;
+#endif // _WIN64
+
+			success = true;
+		}
+	} while (false);
+
+	KeUnstackDetachProcess(&apcState);
+	ObDereferenceObject(Process);
+	return success ? true : false;
+}
+
+ULONG khook::GetShadowServiceLimit() {
+	if (!_win32kTable)
+		return 0;
+
+	return _win32kTable->NumberOfServices;
 }

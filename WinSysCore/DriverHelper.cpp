@@ -72,7 +72,17 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 		path, // the full path to the executable to run for the service
 		nullptr, nullptr, nullptr, nullptr, nullptr));
 	if (ERROR_SERVICE_EXISTS == GetLastError()) {
-		return true;
+		hService.reset(::OpenService(hScm.get(), L"AntiRootkit", SERVICE_ALL_ACCESS));
+		if (!hService)
+			return false;
+		if (!DeleteService(hService.get()))
+			return false;
+		hService.reset(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS,
+			SERVICE_KERNEL_DRIVER,
+			SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+			SERVICE_ERROR_NORMAL, // the error is logged to the event log service
+			path, // the full path to the executable to run for the service
+			nullptr, nullptr, nullptr, nullptr, nullptr));
 	}
 	auto success = hService != nullptr;
 	return success;
@@ -236,6 +246,16 @@ PULONG DriverHelper::GetKiServiceTable() {
 	return address;
 }
 
+PULONG DriverHelper::GetShadowServiceTable() {
+	PULONG address = 0;
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_TABLE, nullptr, 0, &address, sizeof(address), &bytes, nullptr);
+	return address;
+}
+
 PVOID DriverHelper::GetSSDTApiAddress(ULONG number) {
 	if (!OpenDevice())
 		return nullptr;
@@ -245,4 +265,26 @@ PVOID DriverHelper::GetSSDTApiAddress(ULONG number) {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SSDT_API_ADDR, &number, sizeof(number),
 		&address, sizeof(address), &bytes, nullptr);
 	return address;
+}
+
+PVOID DriverHelper::GetShadowSSDTApiAddress(ULONG number) {
+	if (!OpenDevice())
+		return nullptr;
+
+	PVOID address = nullptr;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SSDT_API_ADDR, &number, sizeof(number),
+		&address, sizeof(address), &bytes, nullptr);
+	return address;
+}
+
+ULONG DriverHelper::GetShadowServiceLimit() {
+	if (!OpenDevice())
+		return 0;
+
+	ULONG limit = 0;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT, nullptr, 0, 
+		&limit, sizeof(limit),&bytes, nullptr);
+	return limit;
 }
