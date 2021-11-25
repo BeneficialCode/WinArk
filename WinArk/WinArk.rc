@@ -30,10 +30,10 @@ CAPTION "About"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,264,147,50,14
-    CTEXT           "WinArk Application v1.0\n\n(c) Copyright 2020",IDC_STATIC,25,57,78,32
+    CTEXT           "WinArk Application v1.0\n\n(c) Copyright 2021",IDC_STATIC,25,57,78,32
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
     GROUPBOX        "",IDC_STATIC,7,7,115,154
-    LTEXT           "致谢:\n\n源哥；存哥；砍老板；小路哥哥 :)\n\n布墨；积积；枪手；Pizza!\n\n震哥；荣博士；翔哥；黎叔；\n\n袋鼠；2st；旭酱；Adolph Savage；\n\n无名侠\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,106
+    LTEXT           "致谢:\n\nL0x1c；Pepsi；砍老板；小路哥哥 :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；黎叔；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,106
 END
 
 
@@ -206,6 +206,16 @@ BEGIN
     PUSHBUTTON      "...",IDC_BROWSE,350,98,40,14
 END
 
+IDD_PROGRESS DIALOGEX 0, 0, 301, 97
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "WinArk"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,114,70,50,14
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",WS_BORDER,25,39,250,14
+    LTEXT           "Static",IDC_MESSAGE,25,18,247,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -286,6 +296,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 149
     END
+
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 294
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 90
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -336,6 +354,11 @@ BEGIN
 END
 
 IDD_EXPORT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROGRESS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

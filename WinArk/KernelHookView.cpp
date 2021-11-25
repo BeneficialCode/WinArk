@@ -20,7 +20,7 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	}columns[] = {
 		L"SSDT",
 		L"Shadow SSDT",
-		L"Object Callback"
+		L"Kernel Notifications"
 	};
 
 	int i = 0;
@@ -30,6 +30,7 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	InitSSDTHookTable();
 	InitShadowSSDTHookTable();
+	InitKernelNotifyTable();
 
 	return 0;
 }
@@ -129,16 +130,56 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	index = m_TabCtrl.GetCurSel();
 	m_SSDTHookTable->ShowWindow(SW_HIDE);
 	m_ShadowSSDTHookTable->ShowWindow(SW_HIDE);
+	m_KernelNotifyTable->ShowWindow(SW_HIDE);
 
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::SSDT:
 			m_SSDTHookTable->ShowWindow(SW_SHOW);
+			m_SSDTHookTable->SetFocus();
 			break;
 		case TabColumn::ShadowSSDT:
 			m_ShadowSSDTHookTable->ShowWindow(SW_SHOW);
+			m_ShadowSSDTHookTable->SetFocus();
+			break;
+		case TabColumn::ObjectCallback:
+			m_KernelNotifyTable->ShowWindow(SW_SHOW);
+			m_KernelNotifyTable->SetFocus();
 			break;
 	}
 	_index = index;
 	::PostMessage(m_hWnd, WM_SIZE, 0, 0);
 	return 0;
+}
+
+void CKernelHookView::InitKernelNotifyTable() {
+	BarDesc bars[] = {
+		{20,"回调函数地址",0},
+		{20,"回调类型",0},
+		{30,"所在模块",0},
+		{20,"文件厂商",0}
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_KernelNotifyTable = new CKernelNotifyTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_KernelNotifyTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::ObjectCallback)] = m_KernelNotifyTable->m_hWnd;
+	m_KernelNotifyTable->ShowWindow(SW_HIDE);
 }

@@ -11,7 +11,7 @@ Still, Microsoft's documentation specifies that values for 3rd parties should st
 /*
 Function - an ascending number indicating a specific operation. 
 If nothing else, this number must be different between different control codes for the same driver. 
-Again, any number will do, but the official documentation says 3rd party drivers should start with0x800.
+Again, any number will do, but the official documentation says 3rd party drivers should start with 0x800.
 */
 
 /*
@@ -44,22 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x0E
-
-#define IOCTL_CLEAR_SSDT_HOOK CTL_CODE(FILE_DEVICE_UNKNOWN,\
-	0x800,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
-#define IOCTL_GET_SERVICE_TABLE CTL_CODE(FILE_DEVICE_UNKNOWN,\
-	0x801,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
-#define IOCTL_GET_FUNCTION_ADDR CTL_CODE(FILE_DEVICE_UNKNOWN,\
-	0x802,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
-#define IOCTL_HOOK_SHADOW_SSDT CTL_CODE(FILE_DEVICE_UNKNOWN,\
-	0x803,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
-#define IOCTL_UNHOOK_SHADOW_SSDT CTL_CODE(FILE_DEVICE_UNKNOWN,\
-	0x804,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define DRIVER_CURRENT_VERSION 0x10
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -77,6 +62,10 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_GET_SHADOW_SERVICE_TABLE	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x808,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_SHADOW_SSDT_API_ADDR	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x809,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80A,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_PROCESS_NOTIFY		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80B,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_GET_PROCESS_NOTIFY_COUNT	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80C,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
+
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer
@@ -108,4 +97,19 @@ struct KeyData {
 	ULONG Length;
 	ULONG Access;
 	WCHAR Name[1];
+};
+
+struct ProcessNotifyCountData {
+	PULONG pCount;
+	PULONG pExCount;
+};
+
+struct NotifyInfo {
+	void* pRoutine;
+	ULONG Count;
+};
+
+struct KernelCallbackInfo {
+	ULONG Count;
+	void* Address[ANYSIZE_ARRAY];
 };

@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "DriverHelper.h"
 #include "SecurityHelper.h"
-#include "..\Anti-Rootkit\AntiRootkit.h"
 
 HANDLE DriverHelper::_hDevice;
+
+
 
 bool DriverHelper::LoadDriver(bool load) {
 	if (_hDevice) {
@@ -287,4 +288,26 @@ ULONG DriverHelper::GetShadowServiceLimit() {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT, nullptr, 0, 
 		&limit, sizeof(limit),&bytes, nullptr);
 	return limit;
+}
+
+ULONG DriverHelper::GetProcessNotifyCount(ProcessNotifyCountData *pData) {
+	if (!OpenDevice())
+		return 0;
+
+	ULONG count = 0;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_PROCESS_NOTIFY_COUNT, pData, sizeof(ProcessNotifyCountData),
+		&count, sizeof(count), &bytes, nullptr);
+	return count;
+}
+
+bool DriverHelper::EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PROCESS_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
+		pCallbackInfo, size, &bytes, nullptr);
+	return true;
 }

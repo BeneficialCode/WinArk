@@ -5,8 +5,12 @@
 
 #pragma comment(lib,"Wininet.lib")
 
+SymbolInfo::SymbolInfo() {
+	_dlg.ShowCancelButton(false);
+}
+
 bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
-	std::string url = "https://msdl.microsoft.com/download/symbols";
+	std::string url = "http://msdl.microsoft.com/download/symbols";
 
 	if (url.back() != '/')
 		url += '/';
@@ -18,15 +22,27 @@ bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
 	bool isExist = std::filesystem::is_regular_file(fileName);
 	if (isExist)
 		return true;
+	
+
+	_dlg.SetMessageText(L"Starting download " + _pdbFile);
+
+	wil::unique_handle hThread(::CreateThread(nullptr, 0, [](auto params)->DWORD {
+		SymbolInfo* info = (SymbolInfo*)params;
+		info->_dlg.DoModal();
+		return 0;
+		}, this, 0, nullptr));
+
 	auto result = Download(url, fileName, "WinArk", 1000, 
 		[](void* userdata,unsigned long long readBytes,unsigned long long totalBytes) {
+			CProgressDlg* pDlg = (CProgressDlg*)userdata;
 			if (totalBytes) {
-				auto progress = (double)readBytes / (double)totalBytes;
+				pDlg->UpdateProgress(readBytes);
 			}
 			return true;
 		}, 
-		(void*)localPath.c_str());
-	return true;
+		(void*)&_dlg);
+	_dlg.EndDialog(IDCANCEL);
+	return result == downslib_error::ok ? true : false;
 }
 
 bool SymbolInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry) {
@@ -114,9 +130,11 @@ downslib_error SymbolInfo::Download(std::string url, std::wstring fileName, std:
 	DWORD len = sizeof(buffer);
 	unsigned long long totalBytes = 0;
 	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_CONTENT_LENGTH, buffer, &len, 0)) {
-		if (scanf_s(buffer, "%llu", &totalBytes) != 1)
+		if (sscanf_s(buffer, "%llu", &totalBytes) != 1)
 			totalBytes = 0;
 	}
+
+	_dlg.SetProgressRange(totalBytes);
 
 	// Get HTTP status code
 	len = sizeof(buffer);
@@ -129,16 +147,18 @@ downslib_error SymbolInfo::Download(std::string url, std::wstring fileName, std:
 			return downslib_error::statuscode;
 		}
 	}
-
+	
 	DWORD read = 0;
 	DWORD written = 0;
 	unsigned long long readBytes = 0;
 	while (::InternetReadFile(hUrl, buffer, sizeof(buffer), &read)) {
 		readBytes += read;
 
+		// We are done if nothing more to read, so now we can report total size in our final cb call
 		if (read == 0)
 			totalBytes = readBytes;
 
+		// Call the callback to report progress and cancellation
 		if (cb && !cb(userdata, readBytes, totalBytes)) {
 			::SetLastError(ERROR_OPERATION_ABORTED);
 			return downslib_error::cancel;

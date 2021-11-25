@@ -2,6 +2,7 @@
 #include "ObjectManager.h"
 #include <assert.h>
 #include "DriverHelper.h"
+#include <VersionHelpers.h>
 
 using namespace WinSys;
 
@@ -62,6 +63,10 @@ int ObjectManager::EnumTypes() {
 	_totalHandles = _totalObjects = 0;
 
 	for (ULONG i = 0; i < count; i++) {
+		if (!IsWindows8OrGreater()) {
+			// TypeIndex is only suported since Win8,Uses the fake index for previous OS.
+			raw->TypeIndex = static_cast<decltype(raw->TypeIndex)>(i);
+		}
 		auto type = empty ? std::make_shared<ObjectTypeInfo>() : _typesMap[raw->TypeIndex];
 		if (empty) {
 			type->GenericMapping = raw->GenericMapping;

@@ -6,6 +6,7 @@
 #include"RegManager.h"
 #include"ProcManager.h"
 #include "..\KernelLibrary\khook.h"
+#include "..\KernelLibrary\SysMon.h"
 
 // define a tag (because of little endianess, viewed in PoolMon as 'arkv'
 #define DRIVER_TAG 'vkra'
@@ -212,13 +213,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	//UNHOOK_SSDT64 unhookssdt;
 
 	switch (dic.IoControlCode) {
-		case IOCTL_CLEAR_SSDT_HOOK:
-		{	// do the work
-			/*memcpy(&unhookssdt, data, sizeof(UNHOOK_SSDT64));
-			RecoverSSDT(unhookssdt.index, unhookssdt.Address, unhookssdt.ParamCount);*/
-			break;
-		}
-
 		case IOCTL_ARK_GET_SERVICE_TABLE:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
@@ -322,18 +316,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				len = sizeof(address);
 				status = STATUS_SUCCESS;
 			}
-			break;
-		}
-
-		case IOCTL_HOOK_SHADOW_SSDT:
-		{
-			//HookShadowSSDT();
-			break;
-		}
-
-		case IOCTL_UNHOOK_SHADOW_SSDT:
-		{
-			//UnhookShadowSSDT();
 			break;
 		}
 		
@@ -532,6 +514,57 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = STATUS_SUCCESS;
 			break;
 		}
+
+		case IOCTL_ARK_GET_PROCESS_NOTIFY_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ProcessNotifyCountData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto info = (ProcessNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = 0;
+			if (info->pCount) {
+				count = *info->pCount;
+			}
+			if (info->pExCount) {
+				count += *info->pExCount;
+			}
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			status = STATUS_SUCCESS;
+			len = sizeof(count);
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_PROCESS_NOTIFY:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			if (dic.InputBufferLength < sizeof(NotifyInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto info = (NotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+			if (dic.OutputBufferLength < sizeof(void*) * info->Count) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			
+			EnumProcessNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			status = STATUS_SUCCESS;
+			len = sizeof(void*) * info->Count;
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;
@@ -612,5 +645,34 @@ void test() {
 	/*ExFreePool(pkvi);*/
 }
 
+//typedef struct _CALLBACK_ENTRY_ITEM {
+//	LIST_ENTRY EntryItemList;
+//	OB_OPERATION Operations;
+//	CALLBACK_ENTRY* CallbackEntry; // Points to the CALLBACK_ENTRY which we use for ObUnRegisterCallback
+//	POBJECT_TYPE ObjectType;
+//	POB_PRE_OPERATION_CALLBACK PreOperation;
+//	POB_POST_OPERATION_CALLBACK PostOperation;
+//	__int64 unk;
+//}CALLBACK_ENTRY_ITEM, * PCALLBACK_ENTRY_ITEM;
+//
+//typedef struct _CALLBACK_ENTRY {
+//	__int16 Version;
+//	char buffer1[6];
+//	POB_OPERATION_REGISTRATION RegistrationContext;
+//	__int16 AltitudeLength1;
+//	__int16 AltitudeLength2;
+//	char buffer2[4];
+//	WCHAR* AltitudeString;
+//	CALLBACK_ENTRY_ITEM Items; // Is actually an array of CALLBACK_ENTRY_ITEMs that are also in a doubly linked list
+//}CALLBACK_ENTRY, * PCALLBACK_ENTRY;
+//
+//typedef struct _OB_CALLBACK {
+//	LIST_ENTRY  ListEntry;
+//	ULONG64     Unknown;
+//	ULONG64     ObHandle;
+//	ULONG64     ObjTypeAddr;
+//	ULONG64     PreCall;
+//	ULONG64     PostCall;
+//} OB_CALLBACK, * POB_CALLBACK;
 
 

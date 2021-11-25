@@ -127,9 +127,18 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 	uintptr_t rva = (uintptr_t)_serviceTableBase - (uintptr_t)_win32kBase;
 
 #ifdef _WIN64
-	auto pEntry = (char*)_fileMapVA + rva + 4 * number;
-	auto entry = *(ULONG*)pEntry;
-	rva = entry;
+	auto pEntry = (char*)_fileMapVA + rva + 8 * number;
+	// 0xFFFFFFFF00000000
+	ULONGLONG value = *(ULONGLONG*)pEntry;
+
+	if ((value & 0xFFFFFFFF00000000) == (_imageBase & 0xFFFFFFFF00000000)) {
+		rva = *(ULONGLONG*)pEntry - _imageBase;
+	}
+	else {
+		pEntry = (char*)_fileMapVA + rva + 4 * number;
+		auto entry = *(ULONG*)pEntry;
+		rva = entry;
+	}
 #else
 	auto pEntry = (char*)_fileMapVA + (DWORD)rva + sizeof(ULONG) * number;
 	auto entry = *(ULONG*)pEntry;

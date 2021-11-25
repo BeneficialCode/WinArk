@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -124,7 +124,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,7 +156,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -188,7 +188,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -237,6 +237,8 @@
     <ClCompile Include="FileManagerView.cpp" />
     <ClCompile Include="FileObjectType.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
+    <ClCompile Include="KernelNotifyTable.cpp" />
+    <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="RegExportImport.cpp" />
     <ClCompile Include="RegHelpers.cpp" />
     <ClCompile Include="HexControl.cpp" />
@@ -341,6 +343,8 @@
     <ClInclude Include="FileObjectType.h" />
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="KernelNotifyTable.h" />
+    <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="RegExportImport.h" />
     <ClInclude Include="RegHelpers.h" />
     <ClInclude Include="HexControl.h" />
@@ -430,10 +434,11 @@
     <None Include="..\Debug\AntiRootkit.sys" />
     <None Include="..\x64\Debug\AntiRootkit.sys" />
     <None Include="packages.config" />
-    <None Include="res\bin2.bin" />
-    <None Include="res\driver1.bin" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PdbParser\PdbParser.vcxproj">
+      <Project>{e0e3d364-abf7-407d-a67c-fdddb58687f3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PEParser\PEParser.vcxproj">
       <Project>{cc899776-2282-4442-bc9d-f21130c80fe1}</Project>
     </ProjectReference>

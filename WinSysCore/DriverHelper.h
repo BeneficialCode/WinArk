@@ -1,4 +1,7 @@
 #pragma once
+#include "..\Anti-Rootkit\AntiRootkit.h"
+
+
 
 struct DriverHelper final {
 	static bool LoadDriver(bool load = true);
@@ -19,6 +22,8 @@ struct DriverHelper final {
 	static PVOID GetShadowSSDTApiAddress(ULONG number);
 	static PULONG GetShadowServiceTable();
 	static ULONG GetShadowServiceLimit();
+	static ULONG GetProcessNotifyCount(ProcessNotifyCountData* pData);
+	static bool EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
 
 private:
 	static bool OpenDevice();

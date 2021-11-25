@@ -4,6 +4,7 @@
 #include "AutoLock.h"
 #include "PEParser.h"
 
+
 ULONG	PspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
@@ -337,7 +338,7 @@ VOID PsCallImageNotifyRoutines(
 	KeLeaveCriticalRegion();
 }
 
-bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count) {
+bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info) {
 	if (!callback) 
 		return false;
 
@@ -346,7 +347,8 @@ bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count) {
 			break;
 		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
 		if (block != nullptr) {
-			KdPrint(("ProcessNotifyFunc: 0x%p\n", (ULONG64)block->Function));
+			// KdPrint(("ProcessNotifyFunc: 0x%p\n", (ULONG64)block->Function));
+			info->Address[i] = block->Function;
 			ExDereferenceCallBackBlock(callback, block);
 		}
 		callback++;

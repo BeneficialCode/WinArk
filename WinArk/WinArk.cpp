@@ -16,6 +16,8 @@
 
 CAppModule _Module;
 
+bool g_hasSymbol = true;
+
 void InitSymbols(std::wstring fileName) {
 	WCHAR path[MAX_PATH];
 	::GetSystemDirectory(path, MAX_PATH);
@@ -30,7 +32,9 @@ void InitSymbols(std::wstring fileName) {
 	::GetCurrentDirectory(MAX_PATH, path);
 	wcscat_s(path, L"\\Symbols");
 	std::filesystem::create_directory(path);
-	info.SymDownloadSymbol(path);
+	bool success = info.SymDownloadSymbol(path);
+	if (!success)
+		g_hasSymbol = false;
 }
 
 int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
@@ -47,6 +51,11 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		return 0;
 		}, nullptr, 0, nullptr);
 
+	if (!g_hasSymbol) {
+		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...", L"WinArk", MB_ICONERROR);
+		return 0;
+	}
+	::WaitForSingleObject(hThread, INFINITE);
 	::CloseHandle(hThread);
 
 	InitColorSys();

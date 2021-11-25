@@ -4,6 +4,7 @@
 #include "ProcessInfo.h"
 #include "ThreadInfo.h"
 #include "Processes.h"
+#include <VersionHelpers.h>
 
 using namespace WinSys;
 
@@ -206,7 +207,7 @@ size_t ProcessManager::Impl::EnumProcesses(bool includeThreads, uint32_t pid) {
 
 	NTSTATUS status;
 	bool extended;
-	if (_isElevated) {
+	if (_isElevated && IsWindows8OrGreater()) {
 		status = NtQuerySystemInformation(SystemFullProcessInformation, buffer.get(), size, &len);
 		if (status == STATUS_INVALID_INFO_CLASS) {
 			status = NtQuerySystemInformation(SystemExtendedProcessInformation, buffer.get(), size, &len);

@@ -321,6 +321,12 @@
     <ClCompile Include="ShadowSSDTTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="ProgressDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelNotifyTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -635,6 +641,12 @@
     <ClInclude Include="ShadowSSDTTable.h">
       <Filter>Table</Filter>
     </ClInclude>
+    <ClInclude Include="ProgressDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelNotifyTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -652,12 +664,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="..\x64\Debug\AntiRootkit.sys" />
-    <None Include="res\bin2.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\Debug\AntiRootkit.sys" />
-    <None Include="res\driver1.bin">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

@@ -21,6 +21,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
 
+
 BOOL CMainFrame::OnIdle() {
 	UpdateUI();
 	UIUpdateChildWindows();
@@ -504,15 +505,19 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
 			m_ProcTable->ShowWindow(SW_SHOW);
+			m_ProcTable->SetFocus();
 			break;
 		case TabColumn::Network:
 			m_NetTable->ShowWindow(SW_SHOW);
+			m_NetTable->SetFocus();
 			break;
 		case TabColumn::KernelModule:
 			m_KernelModuleTable->ShowWindow(SW_SHOW);
+			m_KernelModuleTable->SetFocus();
 			break;
 		case TabColumn::Driver:
 			m_DriverTable->ShowWindow(SW_SHOW);
+			m_DriverTable->SetFocus();
 			break;
 		case TabColumn::Registry:
 			m_RegView.ShowWindow(SW_SHOW);
@@ -528,6 +533,7 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::Service:
 			m_ServiceTable->ShowWindow(SW_SHOW);
+			m_ServiceTable->SetFocus();
 			break;
 		default:
 			break;

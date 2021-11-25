@@ -6,7 +6,7 @@
 
 using namespace WinSys;
 
-const CString AccessDenied(L"(<access denied>");
+const CString AccessDenied(L"<access denied>");
 
 CServiceTable::CServiceTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {

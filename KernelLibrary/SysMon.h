@@ -4,7 +4,7 @@
 #define SYSMON_PREFIX "SysMon: "
 #define SYSMON_TAG 'nmys'
 #define PSP_MAX_LOAD_IMAGE_NOTIFY	0x40
-
+#include "..\Anti-Rootkit\AntiRootkit.h"
 
 
 /*
@@ -70,6 +70,11 @@ typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
 	LIST_ENTRY		ObjectContextListHead;
 } CM_CALLBACK_CONTEXT_BLOCKEX, * PCM_CALLBACK_CONTEXT_BLOCKEX;
 
+//struct CallbackInfo {
+//	ULONG Count;
+//	void* Address[ANYSIZE_ARRAY];
+//};
+
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;
 
@@ -88,7 +93,7 @@ VOID PsCallImageNotifyRoutines(
 	_Out_ PIMAGE_INFO_EX ImageInfoEx
 );
 
-bool EnumProcessNotify(PEX_CALLBACK callback, ULONG count);
+bool EnumProcessNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumThreadNotify(PEX_CALLBACK callback, ULONG count);
 bool EnumImageNotify(PEX_CALLBACK callback, ULONG count);
 
