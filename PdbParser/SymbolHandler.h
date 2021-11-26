@@ -147,25 +147,49 @@ enum class SymbolFlags : unsigned {
 	PublicCode = 0x400000
 };
 
-struct SymbolInfo : SYMBOL_INFO {
-	// member name cannot be larger than this (docs says 2000, but seems wasteful in practice)
-	//const int MaxSymbolLen = 500;
+class SymbolInfo {
+public:
+	SymbolInfo();
+	~SymbolInfo();
 
+	operator PSYMBOL_INFO() const {
+		return m_Symbol;
+	}
+
+	SYMBOL_INFO* GetSymbolInfo() const {
+		return m_Symbol;
+	}
+
+	IMAGEHLP_MODULE ModuleInfo;
+
+private:
+	SYMBOL_INFO* m_Symbol;
 };
 
 class SymbolHandler final{
 public:
-	SymbolHandler(HANDLE hProcess, bool ownHandle);
+	SymbolHandler(HANDLE hProcess = ::GetCurrentProcess(), PCSTR searchPath = nullptr,DWORD symOptions = 
+		SYMOPT_UNDNAME | SYMOPT_CASE_INSENSITIVE | 
+		SYMOPT_AUTO_PUBLICS | SYMOPT_INCLUDE_32BIT_MODULES | 
+		SYMOPT_OMAP_FIND_NEAREST | SYMOPT_DEFERRED_LOADS);
+	~SymbolHandler();
 
-	void LoadSymbolsForModule(std::string imageName,DWORD64 dllBase = 0,HANDLE hFile = nullptr);
-	void EnumSymbols(std::string mask = "*!*");
+	HANDLE GetHandle() const;
+	ULONG64 LoadSymbolsForModule(PCSTR moduleName, DWORD64 baseAddress = 0, DWORD dllSize = 0);
+	
+	std::unique_ptr<SymbolInfo> GetSymbolFromName(PCSTR name);
+	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
+	
+	static std::unique_ptr<SymbolHandler> CreateForProcess(DWORD pid, PCSTR searchPath = nullptr);
+	/*void EnumSymbols(std::string mask = "*!*");
+	void EnumTypes(std::string mask = "*");*/
 
-	void EnumTypes(std::string mask = "*");
-	ULONG64 GetSymbolAddressFromName(std::string name);
 	DWORD GetStructMemberOffset(std::string name,std::string memberName);
+	DWORD64 LoadKernelModule(DWORD64 address);
 
 private:
-	HANDLE _hProcess;
-	bool _ownHandle;
-	DWORD64 _baseAddress = 0;
+	BOOL Callback(ULONG code, ULONG64 data);
+
+	HANDLE m_hProcess;
+	DWORD64 _address;
 };

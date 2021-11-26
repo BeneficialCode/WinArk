@@ -92,6 +92,7 @@ void CKernelHookView::InitSSDTHookTable() {
 void CKernelHookView::InitShadowSSDTHookTable() {
 	BarDesc bars[] = {
 		{15,"服务号",0},
+		{55,"服务函数名",0},
 		{20,"原始函数地址",0},
 		{10,"Hook 类型",0},
 		{20,"当前函数地址",0},

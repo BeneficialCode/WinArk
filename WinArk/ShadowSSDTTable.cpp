@@ -3,6 +3,8 @@
 #include <Helpers.h>
 #include <PEParser.h>
 #include <DriverHelper.h>
+#include <SymbolHandler.h>
+#include <filesystem>
 
 CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -97,15 +99,18 @@ int CShadowSSDTHookTable::ParseTableEntry(CString& s, char& mask, int& select, S
 			s.Format(L"%d (0x%-x)", info.ServiceNumber, info.ServiceNumber);
 			break;
 		case 1:
-			s.Format(L"0x%p", info.OriginalAddress);
+			s = std::wstring(info.ServiceFunctionName.begin(), info.ServiceFunctionName.end()).c_str();
 			break;
 		case 2:
-			s = std::wstring(info.HookType.begin(), info.HookType.end()).c_str();
+			s.Format(L"0x%p", info.OriginalAddress);
 			break;
 		case 3:
-			s.Format(L"0x%p", info.CurrentAddress);
+			s = std::wstring(info.HookType.begin(), info.HookType.end()).c_str();
 			break;
 		case 4:
+			s.Format(L"0x%p", info.CurrentAddress);
+			break;
+		case 5:
 			s = std::wstring(info.TargetModule.begin(), info.TargetModule.end()).c_str();
 			break;
 	}
@@ -149,6 +154,25 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 }
 
 void CShadowSSDTHookTable::GetShadowSSDTEntry() {
+	void* win32kBase = Helpers::GetWin32kBase();
+	DWORD size = Helpers::GetWin32kImageSize();
+	char symPath[MAX_PATH];
+	::GetCurrentDirectoryA(MAX_PATH, symPath);
+	std::string pdbPath = "\\Symbols";
+	std::string name;
+	pdbPath = symPath + pdbPath;
+
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("win32") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	std::string pdbFile = pdbPath + "\\" + name;
+	SymbolHandler handler;
+	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)win32kBase, size);
+
 	for (decltype(_limit) i = 0; i < _limit; i++) {
 		ShadowSystemServiceInfo info;
 		info.ServiceNumber = i;
@@ -156,7 +180,13 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		info.OriginalAddress = address;
 		address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
 		info.CurrentAddress = address;
-		info.ServiceFunctionName = "NtUnknown";
+		DWORD64 offset = 0;
+		auto symbol = handler.GetSymbolFromAddress(info.OriginalAddress, &offset);
+		if (symbol != nullptr) {
+			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
+		}
+		else
+			info.ServiceFunctionName = "NtUnknown";
 		info.HookType = "   ---   ";
 		if (info.OriginalAddress != info.CurrentAddress) {
 			info.Hooked = true;

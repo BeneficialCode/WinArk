@@ -315,7 +315,7 @@
     <ClCompile Include="SSDTHookTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
-    <ClCompile Include="SymbolInfo.cpp">
+    <ClCompile Include="SymbolFileInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShadowSSDTTable.cpp">
@@ -635,7 +635,7 @@
     <ClInclude Include="SSDTHookTable.h">
       <Filter>Table</Filter>
     </ClInclude>
-    <ClInclude Include="SymbolInfo.h">
+    <ClInclude Include="SymbolFileInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShadowSSDTTable.h">

@@ -396,3 +396,13 @@ bool EnumRegistryNotify(PEXT_CALLBACK callback) {
 	
 }
 
+bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset) {
+	PLIST_ENTRY callbackListHead = nullptr;
+	PLIST_ENTRY nextEntry = nullptr;
+	POB_CALLBACK_ENTRY callbackEntry = nullptr;
+	ULONG count = 0;
+
+
+	return false;
+}
+

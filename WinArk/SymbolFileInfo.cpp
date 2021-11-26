@@ -1,11 +1,11 @@
 #include "stdafx.h"
-#include "SymbolInfo.h"
+#include "SymbolFileInfo.h"
 #include <WinInet.h>
 #include <filesystem>
 
 #pragma comment(lib,"Wininet.lib")
 
-bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
+bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::string url = "http://msdl.microsoft.com/download/symbols";
 
 	_dlg.ShowCancelButton(false);
@@ -34,7 +34,7 @@ bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
 	_dlg.SetMessageText(L"Starting download " + _pdbFile);
 
 	wil::unique_handle hThread(::CreateThread(nullptr, 0, [](auto params)->DWORD {
-		SymbolInfo* info = (SymbolInfo*)params;
+		SymbolFileInfo* info = (SymbolFileInfo*)params;
 		info->_dlg.DoModal();
 		return 0;
 		}, this, 0, nullptr));
@@ -52,7 +52,7 @@ bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
 	return result == downslib_error::ok ? true : false;
 }
 
-bool SymbolInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry) {
+bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry) {
 	if (entry->SizeOfData < sizeof(CV_INFO_PDB20))
 		return false;
 
@@ -86,7 +86,7 @@ bool SymbolInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entr
 	return true;
 }
 
-downslib_error SymbolInfo::Download(std::string url, std::wstring fileName, std::string userAgent, 
+downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, std::string userAgent,
 	unsigned int timeout,downslib_cb cb, void* userdata){
 	HINTERNET hInternet = nullptr;
 	HINTERNET hUrl = nullptr;

@@ -39,7 +39,7 @@ public:
 	~Cleanup() { fn(); }
 };
 
-struct SymbolInfo {
+struct SymbolFileInfo {
 	bool SymDownloadSymbol(std::wstring localFile);
 	bool GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry);
 	downslib_error Download(std::string url, std::wstring fileName, 

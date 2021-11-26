@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "KernelNotifyTable.h"
 #include "DriverHelper.h"
-#include <PdbParser.h>
+#include <SymbolManager.h>
 #include "Helpers.h"
 #include <filesystem>
 
@@ -120,8 +120,9 @@ bool CKernelNotifyTable::CompareItems(const CallbackInfo& s1, const CallbackInfo
 }
 
 void CKernelNotifyTable::Refresh() {
-	SymbolHandler handler(::GetCurrentProcess(), false);
+	SymbolHandler handler;
 	void* kernelBase = Helpers::GetKernelBase();
+	DWORD size = Helpers::GetKernelImageSize();
 	CHAR path[MAX_PATH];
 	::GetCurrentDirectoryA(MAX_PATH, path);
 	std::string pdbPath = "\\Symbols";
@@ -136,17 +137,24 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 	std::string pdbFile = pdbPath + "\\" + name;
-	handler.LoadSymbolsForModule(pdbFile, (DWORD64)kernelBase);
+	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
 
 	ULONG count;
 	ProcessNotifyCountData data;
-	data.pCount = (PULONG)handler.GetSymbolAddressFromName("PspCreateProcessNotifyRoutineCount");
-	data.pExCount = (PULONG)handler.GetSymbolAddressFromName("PspCreateProcessNotifyRoutineExCount");
+
+	auto symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutineCount");
+	data.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutineExCount");
+
+	data.pExCount = (PULONG)symbol->GetSymbolInfo()->Address;
 	count = DriverHelper::GetProcessNotifyCount(&data);
 	NotifyInfo info;
 	info.Count = count;
-	info.pRoutine = (void*)handler.GetSymbolAddressFromName("PspCreateProcessNotifyRoutine");
+	symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutine");
+	info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
 	
+	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
 	
 	KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();

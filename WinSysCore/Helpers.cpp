@@ -51,6 +51,21 @@ PVOID Helpers::GetKernelBase() {
 	return info->Modules[0].ImageBase;
 }
 
+DWORD Helpers::GetKernelImageSize() {
+	ULONG size = 1 << 18;
+	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+
+	NTSTATUS status;
+	status = ::NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemModuleInformation),
+		buffer.get(), size, nullptr);
+	if (!NT_SUCCESS(status)) {
+		return 0;
+	}
+
+	auto info = (RTL_PROCESS_MODULES*)buffer.get();
+	return info->Modules[0].ImageSize;
+}
+
 std::string Helpers::GetNtosFileName() {
 	ULONG size = 1 << 18;
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
@@ -97,6 +112,36 @@ PVOID Helpers::GetWin32kBase() {
 	}
 
 	return nullptr;
+}
+
+DWORD Helpers::GetWin32kImageSize() {
+	ULONG size = 1 << 18;
+	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+
+	NTSTATUS status;
+	status = ::NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemModuleInformation),
+		buffer.get(), size, nullptr);
+	if (!NT_SUCCESS(status)) {
+		return 0;
+	}
+
+	auto info = (RTL_PROCESS_MODULES*)buffer.get();
+	auto entry = info->Modules;
+	std::string win32kName = "win32k.sys";
+	for (;;) {
+		if (entry->ImageBase == 0)
+			break;
+		std::string name;
+		name = std::string((PCSTR)((BYTE*)entry->FullPathName + entry->OffsetToFileName));
+		if (name == win32kName) {
+			return entry->ImageSize;
+		}
+		entry += 1;
+		if (entry == nullptr)
+			break;
+	}
+
+	return 0;
 }
 
 std::string Helpers::GetModuleByAddress(ULONG_PTR address) {

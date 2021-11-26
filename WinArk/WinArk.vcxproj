@@ -298,7 +298,7 @@
     <ClCompile Include="KernelModuleTable.cpp" />
     <ClCompile Include="StringValueDlg.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
-    <ClCompile Include="SymbolInfo.cpp" />
+    <ClCompile Include="SymbolFileInfo.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
@@ -405,7 +405,7 @@
     <ClInclude Include="KernelModuleTable.h" />
     <ClInclude Include="StringValueDlg.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
-    <ClInclude Include="SymbolInfo.h" />
+    <ClInclude Include="SymbolFileInfo.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Theme.h" />
     <ClInclude Include="ThemeHelper.h" />

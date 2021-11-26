@@ -70,10 +70,27 @@ typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
 	LIST_ENTRY		ObjectContextListHead;
 } CM_CALLBACK_CONTEXT_BLOCKEX, * PCM_CALLBACK_CONTEXT_BLOCKEX;
 
-//struct CallbackInfo {
-//	ULONG Count;
-//	void* Address[ANYSIZE_ARRAY];
-//};
+
+typedef struct _OB_CALLBACK_ENTRY {
+	LIST_ENTRY EntryItemList;
+	OB_OPERATION Operations;
+	ULONG Flags;
+	PVOID CallbackEntry; // Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
+	POBJECT_TYPE ObjectType;
+	POB_PRE_OPERATION_CALLBACK PreOperation;
+	POB_POST_OPERATION_CALLBACK PostOperation;
+	ULONG_PTR Reserved;
+}OB_CALLBACK_ENTRY, * POB_CALLBACK_ENTRY;
+
+// x86 0x10	0x24	16	36
+// x64 0x20 0x40	32	64
+typedef struct _OB_CALLBACK_BLOCK {
+	USHORT Version;
+	USHORT Count;
+	POB_OPERATION_REGISTRATION RegistrationContext;
+	UNICODE_STRING Altitude;
+	OB_CALLBACK_ENTRY Items[ANYSIZE_ARRAY]; // Callback array
+}OB_CALLBACK_BLOCK, * POB_CALLBACK_BLOCK;
 
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;
@@ -96,6 +113,8 @@ VOID PsCallImageNotifyRoutines(
 bool EnumProcessNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumThreadNotify(PEX_CALLBACK callback, ULONG count);
 bool EnumImageNotify(PEX_CALLBACK callback, ULONG count);
+bool EnumObCallbackNotify(POBJECT_TYPE objectType);
+
 
 extern "C" {
 	NTKERNELAPI UCHAR* NTAPI PsGetProcessImageFileName(_In_ PEPROCESS Process);

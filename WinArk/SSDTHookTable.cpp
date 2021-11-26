@@ -3,7 +3,8 @@
 #include "Helpers.h"
 #include "DriverHelper.h"
 #include "PEParser.h"
-
+#include "SymbolHandler.h"
+#include <filesystem>
 
 CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -232,6 +233,25 @@ void CSSDTHookTable::GetSSDTEntry() {
 			});
 	}
 
+	void* kernelBase = Helpers::GetKernelBase();
+	DWORD size = Helpers::GetKernelImageSize();
+	char symPath[MAX_PATH];
+	::GetCurrentDirectoryA(MAX_PATH, symPath);
+	std::string pdbPath = "\\Symbols";
+	std::string name;
+	pdbPath = symPath + pdbPath;
+
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("ntk") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	std::string pdbFile = pdbPath + "\\" + name;
+	SymbolHandler handler;
+	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+	
 	for (auto& entry : _entries) {
 		ULONG_PTR address = GetOrignalAddress(entry.Number);
 		entry.Original = (void*)address;
@@ -240,7 +260,13 @@ void CSSDTHookTable::GetSSDTEntry() {
 		SystemServiceInfo sysService;
 		sysService.ServiceNumber = entry.Number;
 		sysService.OriginalAddress = (uintptr_t)entry.Original;
-		sysService.ServiceFunctionName = entry.Name;
+		DWORD64 offset = 0;
+		auto symbol = handler.GetSymbolFromAddress(sysService.OriginalAddress, &offset);
+		if (symbol != nullptr) {
+			sysService.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
+		}
+		else
+			sysService.ServiceFunctionName = entry.Name;
 		sysService.CurrentAddress = (uintptr_t)entry.Current;
 		sysService.HookType = "   ---   ";
 		if (entry.Original != entry.Current) {

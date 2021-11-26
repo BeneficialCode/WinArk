@@ -9,7 +9,7 @@
 #include "aboutdlg.h"
 #include "MainFrame.h"
 #include "DriverHelper.h"
-#include "SymbolInfo.h"
+#include "SymbolFileInfo.h"
 #include "PEParser.h"
 #include <filesystem>
 #include <Helpers.h>
@@ -25,7 +25,7 @@ void InitSymbols(std::wstring fileName) {
 	wcscat_s(path, fileName.c_str());
 	PEParser parser(path);
 	auto dir = parser.GetDataDirectory(IMAGE_DIRECTORY_ENTRY_DEBUG);
-	SymbolInfo info;
+	SymbolFileInfo info;
 	auto entry = static_cast<PIMAGE_DEBUG_DIRECTORY>(parser.GetAddress(dir->VirtualAddress));
 	ULONG_PTR VA = reinterpret_cast<ULONG_PTR>(parser.GetBaseAddress());
 	info.GetPdbSignature(VA, entry);
