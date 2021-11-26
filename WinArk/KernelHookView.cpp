@@ -155,8 +155,8 @@ void CKernelHookView::InitKernelNotifyTable() {
 	BarDesc bars[] = {
 		{20,"回调函数地址",0},
 		{20,"回调类型",0},
-		{30,"所在模块",0},
-		{20,"文件厂商",0}
+		{50,"所在模块",0},
+		{25,"文件厂商",0}
 	};
 
 	TableInfo table = {

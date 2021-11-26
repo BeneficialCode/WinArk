@@ -4,6 +4,7 @@
 #include "DriverHelper.h"
 #include "PEParser.h"
 
+
 CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
@@ -246,6 +247,7 @@ void CSSDTHookTable::GetSSDTEntry() {
 			sysService.Hooked = true;
 			sysService.HookType = "hooked";
 		}
+		sysService.TargetModule = Helpers::GetModuleByAddress(sysService.CurrentAddress);
 		m_Table.data.info.push_back(sysService);
 		m_Table.data.n = m_Table.data.info.size();
 	}

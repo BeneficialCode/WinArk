@@ -107,7 +107,7 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 			s = std::wstring(info.Module.begin(), info.Module.end()).c_str();
 			break;
 		case 3:
-			s = std::wstring(info.Company.begin(), info.Company.end()).c_str();
+			s = info.Company.c_str();
 			break;
 	}
 
@@ -159,9 +159,28 @@ void CKernelNotifyTable::Refresh() {
 		CallbackInfo info;
 		info.Routine = p->Address[i];
 		info.Type = CallbackType::CreateProcessNotify;
+		info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+		std::wstring path(info.Module.begin(), info.Module.end());
+		info.Company = GetCompanyName(path);
 		m_Table.data.info.push_back(std::move(info));
 	}
 	m_Table.data.n = m_Table.data.info.size();
 }
 
+std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) { 
+	BYTE buffer[1 << 12];
+	WCHAR* companyName = nullptr;
+	if (::GetFileVersionInfo(path.c_str(), 0, sizeof(buffer), buffer)) {
+		WORD* langAndCodePage;
+		UINT len;
+		if (::VerQueryValue(buffer, L"\\VarFileInfo\\Translation", (void**)&langAndCodePage, &len)) {
+			CString text;
+			text.Format(L"\\StringFileInfo\\%04x%04x\\CompanyName", langAndCodePage[0], langAndCodePage[1]);
+			
+			if (::VerQueryValue(buffer, text, (void**)&companyName, &len))
+				return companyName;
+		}
+	}
+	return companyName;
+}
 

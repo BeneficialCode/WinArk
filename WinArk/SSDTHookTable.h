@@ -1,6 +1,7 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
+#include <KernelModuleTracker.h>
 
 #define SystemModuleInformation 11
 

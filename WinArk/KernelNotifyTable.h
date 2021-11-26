@@ -10,7 +10,7 @@ struct CallbackInfo {
 	void* Routine;
 	CallbackType Type;
 	std::string Module;
-	std::string Company;
+	std::wstring Company;
 };
 
 class CKernelNotifyTable :
@@ -59,6 +59,8 @@ public:
 	LRESULT OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+
+	std::wstring GetCompanyName(std::wstring path);
 
 private:
 	void Refresh();

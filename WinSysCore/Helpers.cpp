@@ -3,6 +3,7 @@
 
 #include "SecurityHelper.h"
 #include <wil\resource.h>
+#include "KernelModuleTracker.h"
 
 
 std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
@@ -96,4 +97,19 @@ PVOID Helpers::GetWin32kBase() {
 	}
 
 	return nullptr;
+}
+
+std::string Helpers::GetModuleByAddress(ULONG_PTR address) {
+	WinSys::KernelModuleTracker m_Tracker;
+
+	auto count = m_Tracker.EnumModules();
+	auto modules = m_Tracker.GetModules();
+	for (int i = 0; i < count; i++) {
+		auto m = modules[i];
+		ULONG_PTR limit = (ULONG_PTR)((char*)m->ImageBase + m->ImageSize);
+		if (address > (ULONG_PTR)m->ImageBase && address < limit) {
+			return m->FullPath;
+		}
+	}
+	return "";
 }
