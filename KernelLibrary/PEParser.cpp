@@ -160,3 +160,10 @@ void* PEParser::GetBaseAddress() const {
 void* PEParser::GetAddressEntryPoint() const {
 	return _opt64->AddressOfEntryPoint + _address;
 }
+
+const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
+	if (!IsValid() || section >= _fileHeader->NumberOfSections)
+		return nullptr;
+
+	return _sections + section;
+}

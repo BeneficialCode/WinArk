@@ -21,6 +21,8 @@ public:
 
 	int GetSectionCount() const;
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
+	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
+
 
 	bool IsObjectPe64() const;
 	void CheckValidity();

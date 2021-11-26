@@ -115,24 +115,36 @@ bool khook::GetShadowSystemServiceTable() {
 		_win32kTable = (SystemServiceTable*)((ULONG_PTR)_ntTable + 0x50);
 #else
 		// x64 code
-		// Find KiSystemServiceStart
-		UCHAR pattern[] = { 0x8B, 0xF8, 0xC1, 0xEF, 0x07, 0x83, 0xE7, 0x20, 0x25, 0xFF, 0x0F, 0x00, 0x00 };
-		ULONG_PTR label = Helpers::SearchSignature((ULONG_PTR)_kernelImageBase,
-			pattern, sizeof(pattern), _kernelImageSize);
-		if (label == 0)
-			return false;
-		ULONG_PTR searchAddr = label + sizeof(pattern);
-		UCHAR signature[] = { 0x4c,0x8d,0x1d };
-		ULONG_PTR addr = Helpers::SearchSignature(searchAddr, signature, sizeof(signature),_kernelImageSize);
-		if (addr == 0)
-			return false;
-		ULONG_PTR offsetAddr = addr + sizeof(signature);
-		ULONG_PTR offset = 0;
-		memcpy(&offset, (void*)offsetAddr, 4);
-		if (offset == 0) {
-			return false;
+		PEParser parser(_kernelImageBase);
+		for (int i = 0; parser.GetSectionCount(); i++) {
+			auto pSec = parser.GetSectionHeader(i);
+			if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
+				pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
+				!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
+				(*(PULONG)pSec->Name != 'TINI') &&
+				(*(PULONG)pSec->Name != 'EGAP')) {
+				ULONG_PTR searchAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+				ULONG_PTR maxAddress = searchAddr + pSec->Misc.VirtualSize;
+				// Find KiSystemServiceStart
+				UCHAR pattern[] = { 0x8B, 0xF8, 0xC1, 0xEF, 0x07, 0x83, 0xE7, 0x20, 0x25, 0xFF, 0x0F, 0x00, 0x00 };
+				ULONG_PTR label = Helpers::SearchSignature(searchAddr, pattern, sizeof(pattern), pSec->Misc.VirtualSize);
+				if (label == 0)
+					return false;
+				searchAddr = label + sizeof(pattern);
+				UCHAR signature[] = { 0x4c,0x8d,0x1d };
+				ULONG size = maxAddress - searchAddr;
+				ULONG_PTR addr = Helpers::SearchSignature(searchAddr, signature, sizeof(signature), size);
+				if (addr == 0)
+					return false;
+				ULONG_PTR offsetAddr = addr + sizeof(signature);
+				ULONG_PTR offset = 0;
+				memcpy(&offset, (void*)offsetAddr, 4);
+				if (offset == 0) {
+					return false;
+				}
+				_win32kTable = (SystemServiceTable*)(addr + offset + 7) + 1;
+			}
 		}
-		_win32kTable = (SystemServiceTable*)(addr + offset + 7) + 1;
 #endif // 
 	}
 
@@ -148,26 +160,38 @@ bool khook::GetSystemServiceTable() {
 		_ntTable = (SystemServiceTable*)MmGetSystemRoutineAddress(&name);
 #else
 		// x64 code
-		UCHAR pattern[] = { 0x8B, 0xF8, 0xC1, 0xEF, 0x07, 0x83, 0xE7, 0x20, 0x25, 0xFF, 0x0F, 0x00, 0x00 };
-		ULONG_PTR label = Helpers::SearchSignature((ULONG_PTR)_kernelImageBase, 
-			pattern, sizeof(pattern), _kernelImageSize);
-		if (label == 0)
-			return false;
-		ULONG_PTR searchAddr = label + sizeof(pattern);
-		UCHAR signature[] = { 0x4c,0x8d,0x15 };
-		// IA32_LSTAR 0xC0000082H
-		// 微软补丁，打了个向上的跳转，导致搜索不到，所以__readmsr不好使了。
-		ULONG_PTR addr = Helpers::SearchSignature(searchAddr, signature, sizeof(signature),_kernelImageSize);
-		if (addr == 0)
-			return false;
-		ULONG_PTR offsetAddr = addr + sizeof(signature);
-		ULONG_PTR offset = 0;
-		memcpy(&offset, (void*)offsetAddr, 4);
-		if (offset == 0) {
-			return false;
+		PEParser parser(_kernelImageBase);
+		for (int i = 0; parser.GetSectionCount(); i++) {
+			auto pSec = parser.GetSectionHeader(i);
+			if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
+				pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
+				!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
+				(*(PULONG)pSec->Name != 'TINI') &&
+				(*(PULONG)pSec->Name != 'EGAP')) {
+				ULONG_PTR searchAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+				ULONG_PTR maxAddress = searchAddr + pSec->Misc.VirtualSize;
+				UCHAR pattern[] = { 0x8B, 0xF8, 0xC1, 0xEF, 0x07, 0x83, 0xE7, 0x20, 0x25, 0xFF, 0x0F, 0x00, 0x00 };
+				ULONG_PTR label = Helpers::SearchSignature(searchAddr,pattern, sizeof(pattern), pSec->Misc.VirtualSize);
+				if (label == 0)
+					return false;
+				searchAddr = label + sizeof(pattern);
+				UCHAR signature[] = { 0x4c,0x8d,0x15 };
+				// IA32_LSTAR 0xC0000082H
+				// 微软补丁，打了个向上的跳转，导致搜索不到，所以__readmsr不好使了。
+				ULONG size = maxAddress - searchAddr;
+				ULONG_PTR addr = Helpers::SearchSignature(searchAddr, signature, sizeof(signature), size);
+				if (addr == 0)
+					return false;
+				ULONG_PTR offsetAddr = addr + sizeof(signature);
+				ULONG_PTR offset = 0;
+				memcpy(&offset, (void*)offsetAddr, 4);
+				if (offset == 0) {
+					return false;
+				}
+				// 7为指令长度
+				_ntTable = (SystemServiceTable*)(addr + offset + 7);
+			}
 		}
-		// 7为指令长度
-		_ntTable = (SystemServiceTable*)(addr + offset + 7);
 #endif // !_WIN64
 	}
 	return true;

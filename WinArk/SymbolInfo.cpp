@@ -5,12 +5,10 @@
 
 #pragma comment(lib,"Wininet.lib")
 
-SymbolInfo::SymbolInfo() {
-	_dlg.ShowCancelButton(false);
-}
-
 bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::string url = "http://msdl.microsoft.com/download/symbols";
+
+	_dlg.ShowCancelButton(false);
 
 	if (url.back() != '/')
 		url += '/';
@@ -18,11 +16,20 @@ bool SymbolInfo::SymDownloadSymbol(std::wstring localPath) {
 	CString temp = _pdbFile + L"/" + _pdbSignature + L"/" + _pdbFile;
 	std::wstring symbolUrl = temp.GetBuffer();
 	url+= std::string(symbolUrl.begin(), symbolUrl.end());
-	std::wstring fileName = localPath + L"\\" + _pdbFile.GetBuffer();
+	std::wstring oldFileName = _pdbFile.GetBuffer();
+	std::string deleteFile(oldFileName.begin(), oldFileName.end());
+	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
 	bool isExist = std::filesystem::is_regular_file(fileName);
 	if (isExist)
 		return true;
 	
+	for (auto& iter : std::filesystem::directory_iterator(localPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find(deleteFile.c_str()) != std::string::npos) {
+			std::filesystem::remove(iter.path());
+			break;
+		}
+	}
 
 	_dlg.SetMessageText(L"Starting download " + _pdbFile);
 
