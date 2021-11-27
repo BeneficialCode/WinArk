@@ -137,6 +137,7 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 	std::string pdbFile = pdbPath + "\\" + name;
+	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
 
 	ULONG count;
