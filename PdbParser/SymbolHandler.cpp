@@ -174,3 +174,11 @@ std::unique_ptr<SymbolHandler> SymbolHandler::CreateForProcess(DWORD pid, PCSTR 
 		return nullptr;
 	return std::make_unique<SymbolHandler>(hProcess, searchPath);
 }
+
+ULONG SymbolHandler::GetStructSize(std::string name) {
+	auto symbol = std::make_unique<SymbolInfo>();
+	auto info = symbol->GetSymbolInfo();
+	SymGetTypeFromName(m_hProcess, _address, name.c_str(), info);
+
+	return info->Size;
+}

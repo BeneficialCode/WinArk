@@ -187,6 +187,9 @@ public:
 	DWORD GetStructMemberOffset(std::string name,std::string memberName);
 	DWORD64 LoadKernelModule(DWORD64 address);
 
+	ULONG GetStructSize(std::string name);
+
+
 private:
 	BOOL Callback(ULONG code, ULONG64 data);
 

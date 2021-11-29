@@ -23,7 +23,10 @@ struct DriverHelper final {
 	static PULONG GetShadowServiceTable();
 	static ULONG GetShadowServiceLimit();
 	static ULONG GetProcessNotifyCount(ProcessNotifyCountData* pData);
+	static ULONG GetThreadNotifyCount(ThreadNotifyCountData* pData);
 	static bool EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
+	static bool EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
+
 
 private:
 	static bool OpenDevice();

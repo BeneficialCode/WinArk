@@ -301,6 +301,17 @@ ULONG DriverHelper::GetProcessNotifyCount(ProcessNotifyCountData *pData) {
 	return count;
 }
 
+ULONG DriverHelper::GetThreadNotifyCount(ThreadNotifyCountData* pData) {
+	if (!OpenDevice())
+		return 0;
+
+	ULONG count = 0;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_THREAD_NOTIFY_COUNT, pData, sizeof(ThreadNotifyCountData),
+		&count, sizeof(count), &bytes, nullptr);
+	return count;
+}
+
 bool DriverHelper::EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo) {
 	if (!OpenDevice())
 		return false;
@@ -308,6 +319,17 @@ bool DriverHelper::EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo
 	DWORD bytes;
 	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PROCESS_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
+		pCallbackInfo, size, &bytes, nullptr);
+	return true;
+}
+
+bool DriverHelper::EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_THREAD_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
 }

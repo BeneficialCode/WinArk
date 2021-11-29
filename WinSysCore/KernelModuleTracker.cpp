@@ -20,6 +20,7 @@ uint32_t WinSys::KernelModuleTracker::EnumModules() {
 	CHAR winDir[MAX_PATH];
 	::GetWindowsDirectoryA(winDir, _countof(winDir));
 	static const std::string root("\\SystemRoot\\");
+	static const std::string global("\\??\\");
 
 	for (;;) {
 		if (p->BaseInfo.ImageBase == 0)
@@ -27,6 +28,8 @@ uint32_t WinSys::KernelModuleTracker::EnumModules() {
 		auto m = std::make_shared<KernelModuleInfo>();
 		m->Flags = p->BaseInfo.Flags;
 		m->FullPath = (const char*)p->BaseInfo.FullPathName;
+		if (m->FullPath.find(global) == 0)
+			m->FullPath = m->FullPath.substr(global.size());
 		if (m->FullPath.find(root) == 0)
 			m->FullPath = winDir + m->FullPath.substr(root.size() - 1);
 		m->ImageBase = p->BaseInfo.ImageBase;

@@ -543,6 +543,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
+		case IOCTL_ARK_ENUM_THREAD_NOTIFY:
 		case IOCTL_ARK_ENUM_PROCESS_NOTIFY:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
@@ -563,6 +564,34 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			EnumProcessNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			status = STATUS_SUCCESS;
 			len = sizeof(void*) * info->Count;
+			break;
+		}
+
+		case IOCTL_ARK_GET_THREAD_NOTIFY_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ThreadNotifyCountData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto info = (ThreadNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = 0;
+			if (info->pCount) {
+				count = *info->pCount;
+			}
+			if (info->pNonSystemCount) {
+				count += *info->pNonSystemCount;
+			}
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			status = STATUS_SUCCESS;
+			len = sizeof(count);
 			break;
 		}
 	}

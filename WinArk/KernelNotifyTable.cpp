@@ -155,31 +155,64 @@ void CKernelNotifyTable::Refresh() {
 	info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
 	
 	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	if (count > 0) {
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
 
-	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
-	
-	KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
-	p->Count = count;
-	DriverHelper::EnumProcessNotify(&info, p);
+		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
+		p->Count = count;
+		DriverHelper::EnumProcessNotify(&info, p);
 
-	m_Table.data.info.clear();
-	m_Table.data.n = 0;
-	for (int i = 0; i < count; i++) {
-		CallbackInfo info;
-		info.Routine = p->Address[i];
-		info.Type = CallbackType::CreateProcessNotify;
-		info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-		std::wstring path(info.Module.begin(), info.Module.end());
-		info.Company = GetCompanyName(path);
-		m_Table.data.info.push_back(std::move(info));
+		m_Table.data.info.clear();
+		m_Table.data.n = 0;
+		for (int i = 0; i < count; i++) {
+			CallbackInfo info;
+			info.Routine = p->Address[i];
+			info.Type = CallbackType::CreateProcessNotify;
+			info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+			std::wstring path(info.Module.begin(), info.Module.end());
+			info.Company = GetCompanyName(path);
+			m_Table.data.info.push_back(std::move(info));
+		}
 	}
+	
+
+	count = 0;
+	ThreadNotifyCountData threadData;
+	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineCount");
+	threadData.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineNonSystemCount");
+	threadData.pNonSystemCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	count = DriverHelper::GetThreadNotifyCount(&threadData);
+	if (count > 0) {
+		info.Count = count;
+		symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutine");
+		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
+		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
+		p->Count = count;
+		DriverHelper::EnumThreadNotify(&info, p);
+		for (int i = 0; i < count; i++) {
+			CallbackInfo info;
+			info.Routine = p->Address[i];
+			info.Type = CallbackType::CreateThreadNotify;
+			info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+			std::wstring path(info.Module.begin(), info.Module.end());
+			info.Company = GetCompanyName(path);
+			m_Table.data.info.push_back(std::move(info));
+		}
+	}
+	
+
 	m_Table.data.n = m_Table.data.info.size();
 }
 
 std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) { 
 	BYTE buffer[1 << 12];
 	WCHAR* companyName = nullptr;
-	if (::GetFileVersionInfo(path.c_str(), 0, sizeof(buffer), buffer)) {
+	CString filePath = path.c_str();
+	if (filePath.Mid(1, 2) == "??")
+		filePath = filePath.Mid(4);
+	if (::GetFileVersionInfo(filePath, 0, sizeof(buffer), buffer)) {
 		WORD* langAndCodePage;
 		UINT len;
 		if (::VerQueryValue(buffer, L"\\VarFileInfo\\Translation", (void**)&langAndCodePage, &len)) {
@@ -190,6 +223,6 @@ std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 				return companyName;
 		}
 	}
-	return companyName;
+	return L"";
 }
 
