@@ -2,15 +2,26 @@
 #include <intrin.h>
 // get errors for deprecated functions
 #include <dontuse.h>
+#include <TraceLoggingProvider.h>
+#include <evntrace.h>
 #include"util.h"
 #include"AntiRootkit.h"
 #include"RegManager.h"
 #include"ProcManager.h"
 #include "..\KernelLibrary\khook.h"
 #include "..\KernelLibrary\SysMon.h"
+#include "..\KernelLibrary\Logging.h"
+
+
 
 // define a tag (because of little endianess, viewed in PoolMon as 'arkv'
 #define DRIVER_TAG 'vkra'
+
+
+// {86F32D72-5D88-49D2-A44D-F632FF240C06}
+TRACELOGGING_DEFINE_PROVIDER(g_Provider, "AntiRootkit",\
+	(0x86f32d72, 0x5d88, 0x49d2, 0xa4, 0x4d, 0xf6, 0x32, 0xff, 0x24, 0xc, 0x6));
+
 
 // 条件编译
 #ifdef _WIN64
@@ -71,6 +82,16 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		return STATUS_UNSUCCESSFUL;
 	}
 
+	TraceLoggingRegister(g_Provider);
+
+	TraceLoggingWrite(g_Provider, "DriverEntry started",
+		TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
+		TraceLoggingValue("Ark Driver", "DriverName"),
+		TraceLoggingUnicodeString(RegistryPath, "RegistryPath")
+	);
+
+	Log(LogLevel::Information, "DriverEntry called.Registry Path: %wZ\n", RegistryPath);
+
 	RTL_OSVERSIONINFOW info;
 	NTSTATUS status = RtlGetVersion(&info);
 	if (!NT_SUCCESS(status)) {
@@ -129,6 +150,12 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\AntiRootkit");
 	status = IoCreateSymbolicLink(&symLink, &devName);
 	if (!NT_SUCCESS(status)) {
+		TraceLoggingWrite(g_Provider,
+			"Error",
+			TraceLoggingLevel(TRACE_LEVEL_ERROR),
+			TraceLoggingValue("Symbolic link creation failed", "Message"),
+			TraceLoggingNTStatus(status, "Status", "Returned status"));
+
 		KdPrint(("Failed to create symbolic link (0x%08X)\n", status));
 		IoDeleteDevice(DeviceObject);
 		return status;
@@ -162,6 +189,10 @@ void AntiRootkitUnload(_In_ PDRIVER_OBJECT DriverObject) {
 	// delete device object
 	IoDeleteDevice(DriverObject->DeviceObject);
 	KdPrint(("Driver Unload called\n"));
+	TraceLoggingWrite(g_Provider, "Unload",
+		TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
+		TraceLoggingString("Driver unloading", "Message"));
+	TraceLoggingUnregister(g_Provider);
 }
 
 NTSTATUS CompleteIrp(PIRP Irp, NTSTATUS status = STATUS_SUCCESS, ULONG_PTR info = 0) {
@@ -179,6 +210,8 @@ _Use_decl_annotations_
 NTSTATUS AntiRootkitCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 	UNREFERENCED_PARAMETER(DeviceObject);
 
+	Log(LogLevel::Verbose, "Create/Close called\n");
+
 	auto status = STATUS_SUCCESS;
 	// 获取请求的当前栈空间
 	auto stack = IoGetCurrentIrpStackLocation(Irp);
@@ -187,6 +220,10 @@ NTSTATUS AntiRootkitCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 		CompleteIrp(Irp);
 		return status;
 	}
+
+	TraceLoggingWrite(g_Provider, "Create/Close",
+		TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
+		TraceLoggingValue(stack->MajorFunction == IRP_MJ_CREATE ? "Create" : "Close", "Operation"));
 
 	if (stack->MajorFunction == IRP_MJ_CREATE) {
 		// verify it's WinArk client (very simple at the moment)
@@ -682,6 +719,13 @@ NTSTATUS AntiRootkitWrite(PDEVICE_OBJECT, PIRP Irp) {
 		auto oldPriority = KeSetPriorityThread(thread, data->Priority);
 		KdPrint(("Priority change for thread %d from %d to %d succeeded!\n", data->ThreadId, 
 			oldPriority, data->Priority));
+
+		TraceLoggingWrite(g_Provider, "Boosting",
+			TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
+			TraceLoggingUInt32(data->ThreadId, "ThreadId"),
+			TraceLoggingInt32(oldPriority, "OldPriority"),
+			TraceLoggingInt32(data->Priority, "NewPriority"));
+
 		ObReferenceObject(thread);
 		len = sizeof(ThreadData);
 	} while (false);

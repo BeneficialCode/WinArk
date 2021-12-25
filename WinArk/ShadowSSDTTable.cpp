@@ -36,13 +36,13 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
 	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTableShadow");
 	PULONG KeServiceDescriptorTableShadow = (PULONG)symbol->GetSymbolInfo()->Address;
-	ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTableShadow);
-	_serviceTableBase = (PULONG)(offset + (char*)kernelBase);
+	//ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTableShadow);
+	//_serviceTableBase = (PULONG)(offset + (char*)kernelBase);
 	_imageBase = parser.GetImageBase();
 	ULONG_PTR base = (ULONG_PTR)parser.GetBaseAddress();
-	_limit = DriverHelper::GetServiceLimit(&_serviceTableBase);
+	//_limit = DriverHelper::GetServiceLimit(&_serviceTableBase);
 
-	GetShadowSSDTEntry();
+	//GetShadowSSDTEntry();
 }
 
 LRESULT CShadowSSDTHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -200,7 +200,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		info.ServiceNumber = i;
 		ULONG_PTR address = GetOrignalAddress(i);
 		info.OriginalAddress = address;
-		address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
+		//address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
 		info.CurrentAddress = address;
 		DWORD64 offset = 0;
 		auto symbol = handler.GetSymbolFromAddress(info.OriginalAddress, &offset);

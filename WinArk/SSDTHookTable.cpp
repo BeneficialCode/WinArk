@@ -34,8 +34,8 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 
 	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTable");
 	PULONG KeServiceDescriptorTable = (PULONG)symbol->GetSymbolInfo()->Address;
-	ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTable);
-	_KiServiceTable = (PULONG)(offset + (DWORD64)kernelBase);
+	//ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTable);
+	//_KiServiceTable = (PULONG)(offset + (DWORD64)kernelBase);
 	_KiServiceTable = (PULONG)handler.GetSymbolFromName("KiServiceTable")->GetSymbolInfo()->Address;
 	WCHAR path[MAX_PATH];
 	::GetSystemDirectory(path, MAX_PATH);
@@ -43,8 +43,8 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	::wcscat_s(path, osFileName.c_str());
 	PEParser parser(path);
 	_imageBase = parser.GetImageBase();
-	GetSSDTEntry();
-	Refresh();
+	//GetSSDTEntry();
+	//Refresh();
 }
 
 LRESULT CSSDTHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -150,10 +150,10 @@ bool CSSDTHookTable::CompareItems(const SystemServiceInfo& s1, const SystemServi
 
 void CSSDTHookTable::Refresh() {
 	for (auto entry : _entries) {
-		void* address = DriverHelper::GetSSDTApiAddress(entry.Number);
+		/*void* address = DriverHelper::GetSSDTApiAddress(entry.Number);
 		if (address != entry.Original) {
 
-		}
+		}*/
 	}
 }
 
@@ -279,7 +279,7 @@ void CSSDTHookTable::GetSSDTEntry() {
 	for (auto& entry : _entries) {
 		ULONG_PTR address = GetOrignalAddress(entry.Number);
 		entry.Original = (void*)address;
-		address = (ULONG_PTR)DriverHelper::GetSSDTApiAddress(entry.Number);
+		//address = (ULONG_PTR)DriverHelper::GetSSDTApiAddress(entry.Number);
 		entry.Current = (void*)address;
 		SystemServiceInfo sysService;
 		sysService.ServiceNumber = entry.Number;

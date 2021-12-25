@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x17
+#define DRIVER_CURRENT_VERSION 0x1A
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -68,11 +68,6 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_ENUM_THREAD_NOTIFY				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80E,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80F,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x810,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
-
-
-
-
 
 
 // 原始方式

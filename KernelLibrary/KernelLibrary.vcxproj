@@ -242,6 +242,7 @@
     <ClInclude Include="kstring.h" />
     <ClInclude Include="kvector.h" />
     <ClInclude Include="LinkedList.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="ObjectAttributes.h" />
@@ -269,6 +270,7 @@
     <ClCompile Include="kstring.cpp" />
     <ClCompile Include="kvector.cpp" />
     <ClCompile Include="LinkedList.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Mutex.cpp" />
     <ClCompile Include="ObjectAttributes.cpp" />
