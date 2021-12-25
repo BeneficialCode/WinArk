@@ -153,7 +153,10 @@ void CKernelNotifyTable::Refresh() {
 	info.Count = count;
 	symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutine");
 	info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
-	
+
+	m_Table.data.n = 0;
+	m_Table.data.info.clear();
+
 	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 	if (count > 0) {
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
@@ -162,8 +165,7 @@ void CKernelNotifyTable::Refresh() {
 		p->Count = count;
 		DriverHelper::EnumProcessNotify(&info, p);
 
-		m_Table.data.info.clear();
-		m_Table.data.n = 0;
+
 		for (int i = 0; i < count; i++) {
 			CallbackInfo info;
 			info.Routine = p->Address[i];
@@ -201,7 +203,29 @@ void CKernelNotifyTable::Refresh() {
 			m_Table.data.info.push_back(std::move(info));
 		}
 	}
-	
+
+	count = 0;
+	symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutineCount");
+	PULONG pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	count = DriverHelper::GetImageNotifyCount(&pCount);
+	if (count > 0) {
+		info.Count = count;
+		symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutine");
+		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, count * sizeof(void*), MEM_COMMIT, PAGE_READWRITE));
+		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
+		p->Count = count;
+		DriverHelper::EnumImageLoadNotify(&info, p);
+		for (int i = 0; i < count; i++) {
+			CallbackInfo info;
+			info.Routine = p->Address[i];
+			info.Type = CallbackType::LoadImageNotify;
+			info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+			std::wstring path(info.Module.begin(), info.Module.end());
+			info.Company = GetCompanyName(path);
+			m_Table.data.info.push_back(std::move(info));
+		}
+	}
 
 	m_Table.data.n = m_Table.data.info.size();
 }

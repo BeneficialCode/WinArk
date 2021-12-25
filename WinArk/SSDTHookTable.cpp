@@ -13,7 +13,30 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	std::string name = Helpers::GetNtosFileName();
 	std::wstring osFileName(name.begin(), name.end());
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
-	_KiServiceTable = DriverHelper::GetKiServiceTable();
+
+	void* kernelBase = Helpers::GetKernelBase();
+	DWORD size = Helpers::GetKernelImageSize();
+	char symPath[MAX_PATH];
+	::GetCurrentDirectoryA(MAX_PATH, symPath);
+	std::string pdbPath = "\\Symbols";
+	pdbPath = symPath + pdbPath;
+
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("ntk") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	std::string pdbFile = pdbPath + "\\" + name;
+	SymbolHandler handler;
+	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+
+	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTable");
+	PULONG KeServiceDescriptorTable = (PULONG)symbol->GetSymbolInfo()->Address;
+	ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTable);
+	_KiServiceTable = (PULONG)(offset + (DWORD64)kernelBase);
+	_KiServiceTable = (PULONG)handler.GetSymbolFromName("KiServiceTable")->GetSymbolInfo()->Address;
 	WCHAR path[MAX_PATH];
 	::GetSystemDirectory(path, MAX_PATH);
 	osFileName = L"\\" + osFileName;
@@ -137,8 +160,9 @@ void CSSDTHookTable::Refresh() {
 ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 	if (!_fileMapVA)
 		return 0;
-	if (!_KiServiceTable)
+	if (!_KiServiceTable) {
 		return 0;
+	}
 
 
 	uintptr_t rva = (uintptr_t)_KiServiceTable - (uintptr_t)_kernelBase;

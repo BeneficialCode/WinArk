@@ -20,13 +20,14 @@ struct DriverHelper final {
 	static PULONG GetKiServiceTable();
 	static PVOID GetSSDTApiAddress(ULONG number);
 	static PVOID GetShadowSSDTApiAddress(ULONG number);
-	static PULONG GetShadowServiceTable();
-	static ULONG GetShadowServiceLimit();
+	static ULONG GetShadowServiceTableOffset(PULONG* pTableBase);
+	static ULONG GetServiceLimit(PULONG* pTable);
 	static ULONG GetProcessNotifyCount(ProcessNotifyCountData* pData);
 	static ULONG GetThreadNotifyCount(ThreadNotifyCountData* pData);
 	static bool EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
 	static bool EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
-
+	static bool EnumImageLoadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
+	static ULONG GetImageNotifyCount(PULONG* pCount);
 
 private:
 	static bool OpenDevice();

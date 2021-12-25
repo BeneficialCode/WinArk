@@ -129,7 +129,7 @@ HANDLE DriverHelper::OpenProcess(DWORD pid, ACCESS_MASK access) {
 }
 
 bool DriverHelper::OpenDevice() {
-	if (!_hDevice) {
+	if (!_hDevice||_hDevice==INVALID_HANDLE_VALUE) {
 		_hDevice = ::CreateFile(L"\\\\.\\AntiRootkit", GENERIC_WRITE | GENERIC_READ,
 			FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
 			OPEN_EXISTING, 0, nullptr);
@@ -247,14 +247,14 @@ PULONG DriverHelper::GetKiServiceTable() {
 	return address;
 }
 
-PULONG DriverHelper::GetShadowServiceTable() {
-	PULONG address = 0;
+ULONG DriverHelper::GetShadowServiceTableOffset(PULONG* pTableBase) {
+	ULONG offset = 0;
 	if (!OpenDevice())
 		return 0;
 
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_TABLE, nullptr, 0, &address, sizeof(address), &bytes, nullptr);
-	return address;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SERVICE_TABLE_OFFSET, pTableBase, sizeof(void*), &offset, sizeof(offset), &bytes, nullptr);
+	return offset;
 }
 
 PVOID DriverHelper::GetSSDTApiAddress(ULONG number) {
@@ -279,13 +279,13 @@ PVOID DriverHelper::GetShadowSSDTApiAddress(ULONG number) {
 	return address;
 }
 
-ULONG DriverHelper::GetShadowServiceLimit() {
+ULONG DriverHelper::GetServiceLimit(PULONG* pTable) {
 	if (!OpenDevice())
 		return 0;
 
 	ULONG limit = 0;
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT, nullptr, 0, 
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT, pTable, sizeof(pTable), 
 		&limit, sizeof(limit),&bytes, nullptr);
 	return limit;
 }
@@ -332,4 +332,26 @@ bool DriverHelper::EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo*
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_THREAD_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
+}
+
+bool DriverHelper::EnumImageLoadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
+		pCallbackInfo, size, &bytes, nullptr);
+	return true;
+}
+
+ULONG DriverHelper::GetImageNotifyCount(PULONG* pCount) {
+	if (!OpenDevice())
+		return false;
+
+	ULONG count = 0;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT, pCount, sizeof(pCount),
+		&count, sizeof(count), &bytes, nullptr);
+	return count;
 }

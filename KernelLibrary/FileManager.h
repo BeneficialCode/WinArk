@@ -65,6 +65,8 @@ public:
 	static NTSTATUS ConvertDosNameToNtName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING ntName);
 
 	NTSTATUS GetRootName(_In_ PCWSTR dosName,_Out_ PUNICODE_STRING rootName);
+
+	NTSTATUS OpenFileForRead(PCWSTR path);
 	//NTSTATUS RenameFile();
 	//NTSTATUS EnumurateFile();
 

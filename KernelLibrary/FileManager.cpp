@@ -19,6 +19,15 @@ NTSTATUS FileManager::Open(PUNICODE_STRING fileName, FileAccessMask accessMask /
 	return status;
 }
 
+NTSTATUS FileManager::OpenFileForRead(PCWSTR path) {
+	UNICODE_STRING name;
+	RtlInitUnicodeString(&name, path);
+
+	ObjectAttributes attr(&name, ObjectAttributesFlags::Caseinsensive | ObjectAttributesFlags::KernelHandle);
+	IO_STATUS_BLOCK ioStatus;
+	return ZwOpenFile(&_handle, FILE_GENERIC_READ, &attr, &ioStatus, FILE_SHARE_READ, 0);
+}
+
 NTSTATUS FileManager::Close() {
 	return ZwClose(_handle);
 }

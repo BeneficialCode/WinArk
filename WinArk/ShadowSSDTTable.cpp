@@ -15,10 +15,32 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	::GetSystemDirectory(path, MAX_PATH);
 	::wcscat_s(path, L"\\win32k.sys");
 	PEParser parser(path);
-	_serviceTableBase = DriverHelper::GetShadowServiceTable();
+
+	void* kernelBase = Helpers::GetKernelBase();
+	DWORD size = Helpers::GetKernelImageSize();
+	char symPath[MAX_PATH];
+	::GetCurrentDirectoryA(MAX_PATH, symPath);
+	std::string pdbPath = "\\Symbols";
+	std::string name;
+	pdbPath = symPath + pdbPath;
+
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("ntk") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	std::string pdbFile = pdbPath + "\\" + name;
+	SymbolHandler handler;
+	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTableShadow");
+	PULONG KeServiceDescriptorTableShadow = (PULONG)symbol->GetSymbolInfo()->Address;
+	ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTableShadow);
+	_serviceTableBase = (PULONG)(offset + (char*)kernelBase);
 	_imageBase = parser.GetImageBase();
 	ULONG_PTR base = (ULONG_PTR)parser.GetBaseAddress();
-	_limit = DriverHelper::GetShadowServiceLimit();
+	_limit = DriverHelper::GetServiceLimit(&_serviceTableBase);
 
 	GetShadowSSDTEntry();
 }

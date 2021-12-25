@@ -1,6 +1,7 @@
-#include<ntifs.h>
-#include<ntddk.h>
-#include<intrin.h>
+#include <ntifs.h>
+#include <intrin.h>
+// get errors for deprecated functions
+#include <dontuse.h>
 #include"util.h"
 #include"AntiRootkit.h"
 #include"RegManager.h"
@@ -69,6 +70,14 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	if (DriverObject == nullptr) {
 		return STATUS_UNSUCCESSFUL;
 	}
+
+	RTL_OSVERSIONINFOW info;
+	NTSTATUS status = RtlGetVersion(&info);
+	if (!NT_SUCCESS(status)) {
+		KdPrint(("Failed to get the version information (0x%08X)\n", status));
+		return status;
+	}
+
 	// Set an Unload routine
 	DriverObject->DriverUnload = AntiRootkitUnload;
 	// Set dispatch routine the driver supports
@@ -87,7 +96,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	// 定义变量时初始化这些变量
 	PDEVICE_OBJECT DeviceObject = nullptr;
 
-	NTSTATUS status = IoCreateDevice(
+	status = IoCreateDevice(
 		DriverObject,		// our driver object,
 		0,					// no need for extra bytes
 		&devName,			// the device name
@@ -111,7 +120,8 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	
 	status = IoRegisterShutdownNotification(DeviceObject);
 	if (!NT_SUCCESS(status)) {
-		IoDeleteDevice(DeviceObject);
+		KdPrint(("Failed to register shutdown notify (0x%08X)\n", status));
+		IoDeleteDevice(DeviceObject); // important!
 		return status;
 	}
 	
@@ -239,29 +249,26 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
-		case IOCTL_ARK_GET_SHADOW_SERVICE_TABLE:
+		case IOCTL_ARK_GET_SERVICE_TABLE_OFFSET:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(PULONG)) {
+			if (dic.InputBufferLength < sizeof(void*)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			khook hook;
-			bool success = hook.GetKernelAndWin32kBase();
-			if (!success) {
-				status = STATUS_UNSUCCESSFUL;
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			success = hook.GetShadowSystemServiceTable();
-			if (success) {
-				*(PULONG*)Irp->AssociatedIrp.SystemBuffer = hook._win32kTable->ServiceTableBase;
-				len = sizeof(PULONG);
-				status = STATUS_SUCCESS;
-			}
+			PULONG pServiceTable = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG offset = *pServiceTable;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = offset;
+			len = sizeof(ULONG);
+			status = STATUS_SUCCESS;
 			break;
 		}
 
@@ -502,14 +509,18 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
+			if (dic.InputBufferLength < sizeof(PULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 			if (dic.OutputBufferLength < sizeof(ULONG)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			khook hook;
-			hook.GetShadowSystemServiceTable();
-
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = hook._win32kTable->NumberOfServices;
+			
+			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = pServiceTable->NumberOfServices;
 			len = sizeof(ULONG);
 			status = STATUS_SUCCESS;
 			break;
@@ -536,13 +547,14 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			if (info->pExCount) {
 				count += *info->pExCount;
+				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+				status = STATUS_SUCCESS;
+				len = sizeof(count);
 			}
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			status = STATUS_SUCCESS;
-			len = sizeof(count);
+			
 			break;
 		}
-
+		case IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY:
 		case IOCTL_ARK_ENUM_THREAD_NOTIFY:
 		case IOCTL_ARK_ENUM_PROCESS_NOTIFY:
 		{
@@ -588,10 +600,35 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			if (info->pNonSystemCount) {
 				count += *info->pNonSystemCount;
+				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+				status = STATUS_SUCCESS;
+				len = sizeof(count);
 			}
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			status = STATUS_SUCCESS;
-			len = sizeof(count);
+			break;
+		}
+
+		case IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PULONG)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = 0;
+			if (pCount) {
+				count = *pCount;
+				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+				status = STATUS_SUCCESS;
+				len = sizeof(count);
+			}
 			break;
 		}
 	}
@@ -622,10 +659,34 @@ NTSTATUS AntiRootkitRead(PDEVICE_OBJECT, PIRP Irp) {
 
 
 NTSTATUS AntiRootkitWrite(PDEVICE_OBJECT, PIRP Irp) {
+	NTSTATUS status = STATUS_SUCCESS;
 	auto stack = IoGetCurrentIrpStackLocation(Irp);
 	auto len = stack->Parameters.Write.Length;
 
-	return CompleteIrp(Irp, STATUS_SUCCESS, len);
+	do
+	{
+		if (len < sizeof(ThreadData)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto data = static_cast<ThreadData*>(Irp->UserBuffer);
+		if (data == nullptr || data->Priority < 1 || data->Priority>31) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		PETHREAD thread;
+		status = PsLookupThreadByThreadId(UlongToHandle(data->ThreadId), &thread);
+		if (!NT_SUCCESS(status)) {
+			break;
+		}
+		auto oldPriority = KeSetPriorityThread(thread, data->Priority);
+		KdPrint(("Priority change for thread %d from %d to %d succeeded!\n", data->ThreadId, 
+			oldPriority, data->Priority));
+		ObReferenceObject(thread);
+		len = sizeof(ThreadData);
+	} while (false);
+
+	return CompleteIrp(Irp, status, len);
 }
 
 KEVENT kEvent;
@@ -662,6 +723,7 @@ void CreateThreadTest() {
 	KeWaitForSingleObject(&kEvent, Executive, KernelMode, FALSE, NULL);
 	KdPrint(("CreateThreadTest over!\n"));
 }
+
 void test() {
 	//ULONG ul = 1234, ul0 = 0;
 	//PKEY_VALUE_PARTIAL_INFORMATION pkvi;
@@ -674,34 +736,6 @@ void test() {
 	/*ExFreePool(pkvi);*/
 }
 
-//typedef struct _CALLBACK_ENTRY_ITEM {
-//	LIST_ENTRY EntryItemList;
-//	OB_OPERATION Operations;
-//	CALLBACK_ENTRY* CallbackEntry; // Points to the CALLBACK_ENTRY which we use for ObUnRegisterCallback
-//	POBJECT_TYPE ObjectType;
-//	POB_PRE_OPERATION_CALLBACK PreOperation;
-//	POB_POST_OPERATION_CALLBACK PostOperation;
-//	__int64 unk;
-//}CALLBACK_ENTRY_ITEM, * PCALLBACK_ENTRY_ITEM;
-//
-//typedef struct _CALLBACK_ENTRY {
-//	__int16 Version;
-//	char buffer1[6];
-//	POB_OPERATION_REGISTRATION RegistrationContext;
-//	__int16 AltitudeLength1;
-//	__int16 AltitudeLength2;
-//	char buffer2[4];
-//	WCHAR* AltitudeString;
-//	CALLBACK_ENTRY_ITEM Items; // Is actually an array of CALLBACK_ENTRY_ITEMs that are also in a doubly linked list
-//}CALLBACK_ENTRY, * PCALLBACK_ENTRY;
-//
-//typedef struct _OB_CALLBACK {
-//	LIST_ENTRY  ListEntry;
-//	ULONG64     Unknown;
-//	ULONG64     ObHandle;
-//	ULONG64     ObjTypeAddr;
-//	ULONG64     PreCall;
-//	ULONG64     PostCall;
-//} OB_CALLBACK, * POB_CALLBACK;
+
 
 
