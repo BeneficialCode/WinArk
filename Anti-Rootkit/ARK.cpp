@@ -33,6 +33,18 @@ typedef struct _PiDDBCacheEntry
 	char			_0x0028[16]; // data from the shim engine, or uninitialized memory for custom drivers
 } PiDDBCacheEntry, * PPiDDBCacheEntry;
 
+
+
+// I recommend you define a structure for user-mode that looks something like this:
+struct MyData {
+	USHORT StringLen;
+	USHORT StringOffset;
+	int OtherData;
+	int MoreData;
+};
+// and the string characters would follow the structure in memory
+// (the length and offset would point to where the string starts / ends)
+
 typedef struct _UNLOADED_DRIVERS {
 	UNICODE_STRING Name;
 	PVOID StartAddress;
