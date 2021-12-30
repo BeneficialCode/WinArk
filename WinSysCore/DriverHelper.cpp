@@ -215,6 +215,7 @@ HANDLE DriverHelper::OpenThread(DWORD tid, ACCESS_MASK access) {
 	return ::OpenThread(access, FALSE, tid);
 }
 
+
 HANDLE DriverHelper::OpenKey(PCWSTR name,ACCESS_MASK access) {
 	if (!OpenDevice())
 		return nullptr;
@@ -354,4 +355,35 @@ ULONG DriverHelper::GetImageNotifyCount(PULONG* pCount) {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT, pCount, sizeof(pCount),
 		&count, sizeof(count), &bytes, nullptr);
 	return count;
+}
+
+bool DriverHelper::EnumPiDDBCacheTable(ULONG_PTR Address) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PIDDBCACHE_TABLE, &Address, sizeof(ULONG_PTR),
+		nullptr, 0, &bytes, nullptr);
+	return true;
+}
+
+ULONG DriverHelper::GetUnloadedDriverCount(PULONG * pCount) {
+	if (!OpenDevice())
+		return false;
+
+	ULONG count = 0;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT, pCount, sizeof(pCount),
+		&count, sizeof(count), &bytes, nullptr);
+	return count;
+}
+
+bool DriverHelper::EnumUnloadedDrivers(UnloadedDriverInfo* pInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_UNLOADED_DRIVERS, pInfo, sizeof(UnloadedDriverInfo),
+		nullptr, 0, &bytes, nullptr);
+	return true;
 }

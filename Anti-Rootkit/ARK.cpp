@@ -22,6 +22,24 @@
 TRACELOGGING_DEFINE_PROVIDER(g_Provider, "AntiRootkit",\
 	(0x86f32d72, 0x5d88, 0x49d2, 0xa4, 0x4d, 0xf6, 0x32, 0xff, 0x24, 0xc, 0x6));
 
+// PiUpdateDriverDBCache RtlInsertElementGenericTableAvl 可以确定该结构体的大小
+// 此结构x86 x64通用
+typedef struct _PiDDBCacheEntry
+{
+	LIST_ENTRY		List;
+	UNICODE_STRING	DriverName;
+	ULONG			TimeDateStamp;
+	NTSTATUS		LoadStatus;
+	char			_0x0028[16]; // data from the shim engine, or uninitialized memory for custom drivers
+} PiDDBCacheEntry, * PPiDDBCacheEntry;
+
+typedef struct _UNLOADED_DRIVERS {
+	UNICODE_STRING Name;
+	PVOID StartAddress;
+	PVOID EndAddress;
+	LARGE_INTEGER CurrentTime;
+}UNLOADED_DRIVER, * PUNLOADED_DRIVER;
+
 
 // 条件编译
 #ifdef _WIN64
@@ -644,6 +662,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
+		case IOCTL_ARK_GET_UNLOADED_DRIVERS_COUNT:
 		case IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
@@ -665,6 +684,60 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 				status = STATUS_SUCCESS;
 				len = sizeof(count);
+			}
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_PIDDBCACHE_TABLE:
+		{
+			// RtlLookupElementGenericTableAvl()
+			// RtlDeleteElementGenericTableAvl()
+			// EtwpFreeKeyNameList
+			// PiDDBCacheTable
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
+			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
+			LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
+			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
+			ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
+			if (PiDDBCacheTable != nullptr) {
+				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
+					p != nullptr;
+					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
+					// Process the element pointed to by p
+					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
+					LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+				};
+			}
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_UNLOADED_DRIVERS:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(UnloadedDriverInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto info = (UnloadedDriverInfo*)Irp->AssociatedIrp.SystemBuffer;
+			// MmUnloadedDrivers MmLastUnloadedDriver
+			PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
+			MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
+			LogInfo("MmUnloadDriversAddress %p\n", MmUnloadDrivers);
+			for (ULONG i = 0; i < info->Count; i++) {
+				LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress, 
+					MmUnloadDrivers[i].EndAddress,
+					MmUnloadDrivers[i].CurrentTime);
 			}
 			break;
 		}

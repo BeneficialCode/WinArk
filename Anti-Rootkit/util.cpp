@@ -113,4 +113,3 @@ UINT_PTR SearchFeature(UINT_PTR nAddr, UCHAR* pFeature, int nLeng)
 	return NULL;
 }
 
-

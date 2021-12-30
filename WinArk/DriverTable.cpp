@@ -210,3 +210,41 @@ ServiceInfoEx& CDriverTable::GetServiceInfoEx(const std::wstring& name) const {
 }
 
 
+bool CDriverTable::CompareItems(const WinSys::DriverInfo& s1, const WinSys::DriverInfo& s2, int col, bool asc) {
+
+	// Name, DisplayName, State, Type, StartType, BinaryPath, Description
+	switch (static_cast<DriverColumn>(col))
+	{
+	case DriverColumn::Name:
+		return SortHelper::SortStrings(s1.GetName(), s2.GetName(), asc);
+	case DriverColumn::DisplayName:
+		return SortHelper::SortStrings(s1.GetDisplayName(), s2.GetDisplayName(), asc);
+	case DriverColumn::State:
+		return SortHelper::SortStrings(
+			ServiceStateToString(s1.GetStatusProcess().CurrentState),
+			ServiceStateToString(s2.GetStatusProcess().CurrentState),
+			asc);
+	case DriverColumn::Type:
+		return SortHelper::SortNumbers(s1.GetStatusProcess().Type, s2.GetStatusProcess().Type, asc);
+	case DriverColumn::StartType:
+		return SortHelper::SortStrings(
+			ServiceStartTypeToString(*GetServiceInfoEx(s1.GetName()).GetConfiguration()),
+			ServiceStartTypeToString(*GetServiceInfoEx(s2.GetName()).GetConfiguration()),
+			asc
+		);
+	case DriverColumn::BinaryPath:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetConfiguration()->BinaryPathName,
+			GetServiceInfoEx(s2.GetName()).GetConfiguration()->BinaryPathName,
+			asc
+		);
+	case DriverColumn::Description:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetDescription(),
+			GetServiceInfoEx(s2.GetName()).GetDescription(),
+			asc
+		);
+	}
+
+	return false;
+}

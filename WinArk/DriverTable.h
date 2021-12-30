@@ -14,7 +14,12 @@ public:
 
 	CDriverTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, WinSys::DriverInfo& info, int column);
-	
+	bool CompareItems(const WinSys::DriverInfo& s1, const WinSys::DriverInfo& s2, int col, bool asc);
+
+	enum class DriverColumn {
+		Name, DisplayName, State, Type, StartType, BinaryPath, Description
+	};
+
 	BEGIN_MSG_MAP(CDriverTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)

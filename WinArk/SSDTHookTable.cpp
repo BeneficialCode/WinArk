@@ -32,7 +32,20 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	SymbolHandler handler;
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
 
-	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTable");
+	ULONG_PTR address = 0;
+	address = handler.GetSymbolFromName("PiDDBCacheTable")->GetSymbolInfo()->Address;
+	DriverHelper::EnumPiDDBCacheTable(address);
+
+	auto symbol = handler.GetSymbolFromName("MmLastUnloadedDriver");
+	PULONG pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	ULONG count = DriverHelper::GetUnloadedDriverCount(&pCount);
+	UnloadedDriverInfo info;
+	info.Count = count;
+	symbol = handler.GetSymbolFromName("MmUnloadedDrivers");
+	info.pMmUnloadedDrivers = (void*)symbol->GetSymbolInfo()->Address;
+	DriverHelper::EnumUnloadedDrivers(&info);
+
+	symbol = handler.GetSymbolFromName("KeServiceDescriptorTable");
 	PULONG KeServiceDescriptorTable = (PULONG)symbol->GetSymbolInfo()->Address;
 	//ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTable);
 	//_KiServiceTable = (PULONG)(offset + (DWORD64)kernelBase);
