@@ -327,6 +327,9 @@
     <ClCompile Include="KernelNotifyTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="KernelView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -646,6 +649,9 @@
     </ClInclude>
     <ClInclude Include="KernelNotifyTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

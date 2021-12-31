@@ -238,6 +238,7 @@
     <ClCompile Include="FileObjectType.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
+    <ClCompile Include="KernelView.cpp" />
     <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="RegExportImport.cpp" />
     <ClCompile Include="RegHelpers.cpp" />
@@ -344,6 +345,7 @@
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
     <ClInclude Include="KernelNotifyTable.h" />
+    <ClInclude Include="KernelView.h" />
     <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="RegExportImport.h" />
     <ClInclude Include="RegHelpers.h" />

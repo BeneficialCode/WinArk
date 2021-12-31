@@ -34,7 +34,26 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 
 	ULONG_PTR address = 0;
 	address = handler.GetSymbolFromName("PiDDBCacheTable")->GetSymbolInfo()->Address;
-	DriverHelper::EnumPiDDBCacheTable(address);
+
+	ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
+
+	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+	DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
+
+	PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();
+
+	for (;;) {
+		NTSTATUS status = p->LoadStatus;
+		if (NT_SUCCESS(status)) {
+			// load failed
+		}
+		std::wstring Name = (WCHAR*)((PUCHAR)p + p->StringOffset);
+		if (p->NextEntryOffset == 0)
+			break;
+		p = (PiDDBCacheData*)((PUCHAR)p + p->NextEntryOffset);
+		if (p == nullptr)
+			break;
+	}
 
 	auto symbol = handler.GetSymbolFromName("MmLastUnloadedDriver");
 	PULONG pCount = (PULONG)symbol->GetSymbolInfo()->Address;

@@ -1,5 +1,4 @@
 #pragma once
-#include "pch.h"
 
 template<typename TLock>
 struct AutoLock {

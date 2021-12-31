@@ -229,13 +229,16 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AutoEnter.h" />
     <ClInclude Include="AutoLock.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="CriticalRegion.h" />
     <ClInclude Include="CyclicBuffer.h" />
     <ClInclude Include="DbgDefender.h" />
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="FastMutex.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="GuardedRegion.h" />
     <ClInclude Include="kDbgCore.h" />
     <ClInclude Include="kDbgSys.h" />
     <ClInclude Include="khook.h" />
@@ -259,12 +262,15 @@
     <ClInclude Include="Win10_1903.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AutoEnter.cpp" />
     <ClCompile Include="AutoLock.cpp" />
+    <ClCompile Include="CriticalRegion.cpp" />
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="FastMutex.cpp" />
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="GuardedRegion.cpp" />
     <ClCompile Include="kDbgSys.cpp" />
     <ClCompile Include="khook.cpp" />
     <ClCompile Include="kstring.cpp" />

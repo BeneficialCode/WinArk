@@ -17,36 +17,18 @@
       <UniqueIdentifier>{8E41214B-6785-4CFE-B992-037D68949A14}</UniqueIdentifier>
       <Extensions>inf;inv;inx;mof;mc;</Extensions>
     </Filter>
+    <Filter Include="Synchronization">
+      <UniqueIdentifier>{08ba55e2-d7d7-4d8a-80c2-d1203de7ef76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ktl">
+      <UniqueIdentifier>{33f70f83-4ce1-4895-91aa-e2bd0d9a8525}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="APC">
+      <UniqueIdentifier>{7ddf8f9c-2c3c-4897-97e5-7d5ec40aa64e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AutoLock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kstring.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kvector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FastMutex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkedList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mutex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpinLock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="QueuedSpinLock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ObjectAttributes.h">
@@ -62,9 +44,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DevMonManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CyclicBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Common.h">
@@ -103,36 +82,48 @@
     <ClInclude Include="Logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoLock.h">
+      <Filter>Synchronization</Filter>
+    </ClInclude>
+    <ClInclude Include="SpinLock.h">
+      <Filter>Synchronization</Filter>
+    </ClInclude>
+    <ClInclude Include="Mutex.h">
+      <Filter>Synchronization</Filter>
+    </ClInclude>
+    <ClInclude Include="FastMutex.h">
+      <Filter>Synchronization</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
+    <ClInclude Include="kstring.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
+    <ClInclude Include="kvector.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedList.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
+    <ClInclude Include="QueuedSpinLock.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
+    <ClInclude Include="GuardedRegion.h">
+      <Filter>APC</Filter>
+    </ClInclude>
+    <ClInclude Include="CriticalRegion.h">
+      <Filter>APC</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoEnter.h">
+      <Filter>APC</Filter>
+    </ClInclude>
+    <ClInclude Include="CyclicBuffer.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FastMutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Mutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kstring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AutoLock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kvector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkedList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SpinLock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QueuedSpinLock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ObjectAttributes.cpp">
@@ -148,9 +139,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DevMonManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CyclicBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="khook.cpp">
@@ -176,6 +164,45 @@
     </ClCompile>
     <ClCompile Include="Logging.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoLock.cpp">
+      <Filter>Synchronization</Filter>
+    </ClCompile>
+    <ClCompile Include="FastMutex.cpp">
+      <Filter>Synchronization</Filter>
+    </ClCompile>
+    <ClCompile Include="Mutex.cpp">
+      <Filter>Synchronization</Filter>
+    </ClCompile>
+    <ClCompile Include="SpinLock.cpp">
+      <Filter>Synchronization</Filter>
+    </ClCompile>
+    <ClCompile Include="CriticalRegion.cpp">
+      <Filter>APC</Filter>
+    </ClCompile>
+    <ClCompile Include="GuardedRegion.cpp">
+      <Filter>APC</Filter>
+    </ClCompile>
+    <ClCompile Include="kstring.cpp">
+      <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="kvector.cpp">
+      <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkedList.cpp">
+      <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="QueuedSpinLock.cpp">
+      <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoEnter.cpp">
+      <Filter>APC</Filter>
+    </ClCompile>
+    <ClCompile Include="CyclicBuffer.cpp">
+      <Filter>ktl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

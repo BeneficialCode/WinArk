@@ -3,6 +3,7 @@
 #include "SysMonCommon.h"
 #include "AutoLock.h"
 #include "PEParser.h"
+#include "AutoEnter.h"
 
 
 ULONG	PspNotifyEnableMask;
@@ -319,7 +320,9 @@ VOID PsCallImageNotifyRoutines(
 	PLOAD_IMAGE_NOTIFY_ROUTINE Routine;
 	PEX_CALLBACK_ROUTINE_BLOCK Callback;
 
-	KeEnterCriticalRegion();
+	CriticalRegion critical;
+	AutoEnter<CriticalRegion> enter(critical);
+
 	if (PspNotifyEnableMask & 1) {
 		ImageInfoEx->Size = sizeof(IMAGE_INFO_EX);
 		ImageInfoEx->ImageInfo.ExtendedInfoPresent = TRUE;
@@ -335,7 +338,6 @@ VOID PsCallImageNotifyRoutines(
 			}
 		}
 	}
-	KeLeaveCriticalRegion();
 }
 
 bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info) {

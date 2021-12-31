@@ -357,13 +357,24 @@ ULONG DriverHelper::GetImageNotifyCount(PULONG* pCount) {
 	return count;
 }
 
-bool DriverHelper::EnumPiDDBCacheTable(ULONG_PTR Address) {
+ULONG DriverHelper::GetPiDDBCacheDataSize(ULONG_PTR Address) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	DWORD size = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE, &Address, sizeof(ULONG_PTR),
+		&size, sizeof(DWORD), &bytes, nullptr);
+	return size;
+}
+
+bool DriverHelper::EnumPiDDBCacheTable(ULONG_PTR Address,PVOID buffer,ULONG size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PIDDBCACHE_TABLE, &Address, sizeof(ULONG_PTR),
-		nullptr, 0, &bytes, nullptr);
+		buffer, size, &bytes, nullptr);
 	return true;
 }
 

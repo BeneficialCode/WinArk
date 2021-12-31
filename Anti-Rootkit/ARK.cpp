@@ -33,18 +33,6 @@ typedef struct _PiDDBCacheEntry
 	char			_0x0028[16]; // data from the shim engine, or uninitialized memory for custom drivers
 } PiDDBCacheEntry, * PPiDDBCacheEntry;
 
-
-
-// I recommend you define a structure for user-mode that looks something like this:
-struct MyData {
-	USHORT StringLen;
-	USHORT StringOffset;
-	int OtherData;
-	int MoreData;
-};
-// and the string characters would follow the structure in memory
-// (the length and offset would point to where the string starts / ends)
-
 typedef struct _UNLOADED_DRIVERS {
 	UNICODE_STRING Name;
 	PVOID StartAddress;
@@ -706,7 +694,13 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			// RtlDeleteElementGenericTableAvl()
 			// EtwpFreeKeyNameList
 			// PiDDBCacheTable
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			len = dic.InputBufferLength;
+			if (len < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			if (dic.Type3InputBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
@@ -715,24 +709,74 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
-			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
-			LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
-			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-			ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
-			if (PiDDBCacheTable != nullptr) {
-				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
-					p != nullptr;
-					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
-					// Process the element pointed to by p
-					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
-					LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
-				};
+
+			__try {
+				// 获得输入缓冲区
+				ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)dic.Type3InputBuffer;
+				// 获得输出缓冲区
+				auto pData = (PiDDBCacheData*)Irp->UserBuffer;
+				if (pData == nullptr) {
+					status = STATUS_INVALID_PARAMETER;
+					break;
+				}
+				ULONG size = dic.OutputBufferLength;
+				LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
+				PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
+				ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
+				if (PiDDBCacheTable != nullptr) {
+					for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
+						p != nullptr;
+						p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
+						// Process the element pointed to by p
+						PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
+						LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+						// 首先得放得下结构体
+						if (size < sizeof(PiDDBCacheData)) {
+							status = STATUS_INFO_LENGTH_MISMATCH;
+							break;
+						}
+						// 减小size part1
+						size -= sizeof(PiDDBCacheData);
+						// 填充信息
+						pData->LoadStatus = entry->LoadStatus;
+						pData->StringLen = entry->DriverName.Length;
+						pData->TimeDateStamp = entry->TimeDateStamp;
+						if (size < entry->DriverName.Length) {
+							status = STATUS_INFO_LENGTH_MISMATCH;
+							break;
+						}
+						// 字符串放在这个结构体后面
+						pData->StringOffset = sizeof(PiDDBCacheData);
+						auto pString = (WCHAR*)((PUCHAR)pData + pData->StringOffset);
+						memcpy(pString, entry->DriverName.Buffer, entry->DriverName.Length);
+						// 减小size part2
+						size -= entry->DriverName.Length;
+						// 减小size part3
+						size -= sizeof(WCHAR);
+						pString[entry->DriverName.Length] = L'\0';
+						// 下一项的位置
+						pData->NextEntryOffset = sizeof(PiDDBCacheData) + pData->StringLen + sizeof(WCHAR);
+
+						// 更新指针
+						pData = (PiDDBCacheData*)((PUCHAR)pData + pData->NextEntryOffset);
+					};
+
+					pData->NextEntryOffset = 0;
+					
+					status = STATUS_SUCCESS;
+				}
 			}
+			__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
+				? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+				status = STATUS_ACCESS_VIOLATION;
+			}
+			
 			break;
 		}
 
 		case IOCTL_ARK_ENUM_UNLOADED_DRIVERS:
 		{
+			ULONG len = 0;
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
@@ -750,7 +794,48 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress, 
 					MmUnloadDrivers[i].EndAddress,
 					MmUnloadDrivers[i].CurrentTime);
+
+				status = STATUS_INFO_LENGTH_MISMATCH;
 			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE: 
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			ULONG size = 0;
+			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
+			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
+			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
+			ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
+			if (PiDDBCacheTable != nullptr) {
+				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
+					p != nullptr;
+					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
+					// Process the element pointed to by p
+					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
+					//LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+					// part1 结构体大小
+					size += sizeof(PiDDBCacheData);
+					// part2 字符串长度+'\0'
+					size += entry->DriverName.Length + sizeof(WCHAR);
+				};
+			}
+
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
+			status = STATUS_SUCCESS;
+			len = sizeof(ULONG);
 			break;
 		}
 	}
@@ -792,27 +877,38 @@ NTSTATUS AntiRootkitWrite(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 		auto data = static_cast<ThreadData*>(Irp->UserBuffer);
-		if (data == nullptr || data->Priority < 1 || data->Priority>31) {
+		if (data == nullptr) {
 			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-		PETHREAD thread;
-		status = PsLookupThreadByThreadId(UlongToHandle(data->ThreadId), &thread);
-		if (!NT_SUCCESS(status)) {
-			break;
+		__try {
+			if (data->Priority < 1 || data->Priority>31) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			PETHREAD thread;
+			status = PsLookupThreadByThreadId(UlongToHandle(data->ThreadId), &thread);
+			if (!NT_SUCCESS(status)) {
+				break;
+			}
+			auto oldPriority = KeSetPriorityThread(thread, data->Priority);
+			ObReferenceObject(thread);
+
+			KdPrint(("Priority change for thread %d from %d to %d succeeded!\n", data->ThreadId,
+				oldPriority, data->Priority));
+
+			TraceLoggingWrite(g_Provider, "Boosting",
+				TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
+				TraceLoggingUInt32(data->ThreadId, "ThreadId"),
+				TraceLoggingInt32(oldPriority, "OldPriority"),
+				TraceLoggingInt32(data->Priority, "NewPriority"));
+
+			len = sizeof(ThreadData);
 		}
-		auto oldPriority = KeSetPriorityThread(thread, data->Priority);
-		KdPrint(("Priority change for thread %d from %d to %d succeeded!\n", data->ThreadId, 
-			oldPriority, data->Priority));
-
-		TraceLoggingWrite(g_Provider, "Boosting",
-			TraceLoggingLevel(TRACE_LEVEL_INFORMATION),
-			TraceLoggingUInt32(data->ThreadId, "ThreadId"),
-			TraceLoggingInt32(oldPriority, "OldPriority"),
-			TraceLoggingInt32(data->Priority, "NewPriority"));
-
-		ObReferenceObject(thread);
-		len = sizeof(ThreadData);
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+			status = STATUS_ACCESS_VIOLATION;
+		}
+		
 	} while (false);
 
 	return CompleteIrp(Irp, status, len);

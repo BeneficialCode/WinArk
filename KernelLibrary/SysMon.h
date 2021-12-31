@@ -1,5 +1,6 @@
 #pragma once
 #include "FastMutex.h"
+#include "CriticalRegion.h"
 
 #define SYSMON_PREFIX "SysMon: "
 #define SYSMON_TAG 'nmys'
@@ -94,7 +95,6 @@ typedef struct _OB_CALLBACK_BLOCK {
 
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;
-
 
 void PushItem(LIST_ENTRY* entry);
 
