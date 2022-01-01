@@ -79,7 +79,7 @@ void CKernelView::InitPiDDBCacheTable() {
 	BarDesc bars[] = {
 		{22,"驱动名",0},
 		{55,"加载状态",0},
-		{50,"时间戳",0},
+		{50,"时间戳/文件哈希",0},
 	};
 
 	TableInfo table = {
