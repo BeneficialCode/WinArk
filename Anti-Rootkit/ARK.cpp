@@ -704,10 +704,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
 			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
 
 			__try {
@@ -722,11 +718,10 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				ULONG size = dic.OutputBufferLength;
 				LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
 				PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-				ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
 				if (PiDDBCacheTable != nullptr) {
 					for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
 						p != nullptr;
-						p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
+						) {
 						// Process the element pointed to by p
 						PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
 						LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
@@ -741,7 +736,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 						pData->LoadStatus = entry->LoadStatus;
 						pData->StringLen = entry->DriverName.Length;
 						pData->TimeDateStamp = entry->TimeDateStamp;
-						if (size < entry->DriverName.Length) {
+						if (size < entry->DriverName.Length + sizeof(WCHAR)) {
 							status = STATUS_INFO_LENGTH_MISMATCH;
 							break;
 						}
@@ -757,12 +752,15 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 						// 下一项的位置
 						pData->NextEntryOffset = sizeof(PiDDBCacheData) + pData->StringLen + sizeof(WCHAR);
 
+						p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE);
 						// 更新指针
-						pData = (PiDDBCacheData*)((PUCHAR)pData + pData->NextEntryOffset);
+						if (p != nullptr)
+							pData = (PiDDBCacheData*)((PUCHAR)pData + pData->NextEntryOffset);
 					};
 
 					pData->NextEntryOffset = 0;
-					
+
+					len = dic.OutputBufferLength;
 					status = STATUS_SUCCESS;
 				}
 			}
@@ -776,27 +774,77 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		case IOCTL_ARK_ENUM_UNLOADED_DRIVERS:
 		{
-			ULONG len = 0;
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			if (dic.Type3InputBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(UnloadedDriverInfo)) {
+			if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
 				status = STATUS_INVALID_BUFFER_SIZE;
 				break;
 			}
-			auto info = (UnloadedDriverInfo*)Irp->AssociatedIrp.SystemBuffer;
-			// MmUnloadedDrivers MmLastUnloadedDriver
-			PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
-			MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
-			LogInfo("MmUnloadDriversAddress %p\n", MmUnloadDrivers);
-			for (ULONG i = 0; i < info->Count; i++) {
-				LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress, 
-					MmUnloadDrivers[i].EndAddress,
-					MmUnloadDrivers[i].CurrentTime);
+			__try {
+				// 获得输入缓冲区
+				auto info = (UnloadedDriversInfo*)dic.Type3InputBuffer;
+				// 获得输出缓冲区
+				auto pData = (UnloadedDriverData*)Irp->UserBuffer;
+				if (pData == nullptr) {
+					status = STATUS_INVALID_PARAMETER;
+					break;
+				}
+				ULONG size = dic.OutputBufferLength;
+				// MmUnloadedDrivers MmLastUnloadedDriver
+				PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
+				MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
+				LogInfo("MmUnloadDriversAddress %p\n", MmUnloadDrivers);
+				for (ULONG i = 0; i < info->Count; ) {
+					LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress,
+						MmUnloadDrivers[i].EndAddress,
+						MmUnloadDrivers[i].CurrentTime);
+					// 首先得放得下结构体
+					if (size < sizeof(UnloadedDriverData)) {
+						status = STATUS_INFO_LENGTH_MISMATCH;
+						break;
+					}
+					// 减小size part1
+					size -= sizeof(UnloadedDriverData);
+					// 填充数据
+					pData->CurrentTime = MmUnloadDrivers[i].CurrentTime;
+					pData->EndAddress = MmUnloadDrivers[i].EndAddress;
+					pData->StartAddress = MmUnloadDrivers[i].StartAddress;
+					pData->StringLen = MmUnloadDrivers[i].Name.Length;
+					// 检查是否能存放字符串
+					if (size < MmUnloadDrivers[i].Name.Length + sizeof(WCHAR)) {
+						status = STATUS_INFO_LENGTH_MISMATCH;
+						break;
+					}
+					// 存储字符串
+					pData->StringOffset = sizeof(UnloadedDriverData);
+					auto pString = (WCHAR*)((PUCHAR)pData + pData->StringOffset);
+					memcpy(pString, MmUnloadDrivers[i].Name.Buffer, pData->StringLen);
+					// 减小size part2
+					size -= pData->StringLen;
+					// 减小size part3
+					size -= sizeof(WCHAR);
+					pString[pData->StringLen] = L'\0';
 
-				status = STATUS_INFO_LENGTH_MISMATCH;
+					// 下一项的位置
+					pData->NextEntryOffset = sizeof(UnloadedDriverData) + pData->StringLen + sizeof(WCHAR);
+
+					i++;
+					// 检查是否需要更新指针
+					if (i < info->Count)
+						pData = (UnloadedDriverData*)((PUCHAR)pData + pData->NextEntryOffset);
+				}
+				pData->NextEntryOffset = 0;
+
+				len = dic.OutputBufferLength;
+				status = STATUS_SUCCESS;
 			}
+			__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
+				? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+				status = STATUS_ACCESS_VIOLATION;
+			}
+			
 			break;
 		}
 
@@ -833,6 +881,33 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				};
 			}
 
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
+			status = STATUS_SUCCESS;
+			len = sizeof(ULONG);
+			break;
+		}
+
+		case IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE:
+		{
+			ULONG size = 0;
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto info = (UnloadedDriversInfo*)Irp->AssociatedIrp.SystemBuffer;
+			// MmUnloadedDrivers MmLastUnloadedDriver
+			PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
+			MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
+			for (ULONG i = 0; i < info->Count; i++) {
+				// part1 结构体大小
+				size += sizeof(UnloadedDriverData);
+				// part2 字符串长度+L'\0'
+				size += MmUnloadDrivers[i].Name.Length + sizeof(WCHAR);
+			}
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
 			status = STATUS_SUCCESS;
 			len = sizeof(ULONG);

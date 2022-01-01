@@ -10,7 +10,7 @@ class CProcessMemoryTable :
 	public CTable<std::shared_ptr<WinSys::MemoryRegionItem>>,
 	public CWindowImpl<CProcessMemoryTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	BEGIN_MSG_MAP(CProcessMemoryTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)

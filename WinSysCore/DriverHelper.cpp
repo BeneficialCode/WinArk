@@ -318,7 +318,7 @@ bool DriverHelper::EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo
 		return false;
 
 	DWORD bytes;
-	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	DWORD size = pCallbackInfo->Count * sizeof(void*) + sizeof(ULONG);
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PROCESS_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
@@ -329,7 +329,7 @@ bool DriverHelper::EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo*
 		return false;
 
 	DWORD bytes;
-	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	DWORD size = pCallbackInfo->Count * sizeof(void*) + sizeof(ULONG);
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_THREAD_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
@@ -340,7 +340,7 @@ bool DriverHelper::EnumImageLoadNotify(NotifyInfo* pNotifyInfo, KernelCallbackIn
 		return false;
 
 	DWORD bytes;
-	DWORD size = pCallbackInfo->Count * sizeof(pCallbackInfo->Address);
+	DWORD size = pCallbackInfo->Count * sizeof(void*)+sizeof(ULONG);
 	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
@@ -389,12 +389,23 @@ ULONG DriverHelper::GetUnloadedDriverCount(PULONG * pCount) {
 	return count;
 }
 
-bool DriverHelper::EnumUnloadedDrivers(UnloadedDriverInfo* pInfo) {
+bool DriverHelper::EnumUnloadedDrivers(UnloadedDriversInfo* pInfo,PVOID buffer,ULONG size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_UNLOADED_DRIVERS, pInfo, sizeof(UnloadedDriverInfo),
-		nullptr, 0, &bytes, nullptr);
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_UNLOADED_DRIVERS, pInfo, sizeof(UnloadedDriversInfo),
+		buffer, size, &bytes, nullptr);
 	return true;
+}
+
+ULONG DriverHelper::GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	DWORD size = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE, pInfo, sizeof(UnloadedDriversInfo),
+		&size, sizeof(DWORD), &bytes, nullptr);
+	return size;
 }

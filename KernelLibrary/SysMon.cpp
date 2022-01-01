@@ -344,12 +344,13 @@ bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* inf
 	if (!callback) 
 		return false;
 
+	KdPrint(("Count: %d\n", count));
 	for (ULONG i = 0; i < count; i++) {
 		if (!MmIsAddressValid(callback)) 
 			break;
 		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
 		if (block != nullptr) {
-			// KdPrint(("ProcessNotifyFunc: 0x%p\n", (ULONG64)block->Function));
+			KdPrint(("ProcessNotifyFunc: 0x%p\n", (ULONG64)block->Function));
 			info->Address[i] = block->Function;
 			ExDereferenceCallBackBlock(callback, block);
 		}

@@ -10,7 +10,7 @@ class CDriverTable :
 	public CTable<WinSys::DriverInfo>,
 	public CWindowImpl<CDriverTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	CDriverTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, WinSys::DriverInfo& info, int column);

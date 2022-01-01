@@ -16,7 +16,7 @@ class CShadowSSDTHookTable :
 	public CTable<ShadowSystemServiceInfo>,
 	public CWindowImpl<CShadowSSDTHookTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	CShadowSSDTHookTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, ShadowSystemServiceInfo& info, int column);

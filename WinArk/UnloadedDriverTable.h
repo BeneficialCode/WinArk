@@ -1,24 +1,25 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
-#include "VirtualListView.h"
-#include <ServiceInfo.h>
-#include <ServiceManager.h>
-#include <Service.h>
-#include <ProcessManager.h>
-#include "ServiceInfoEx.h"
 
-class CServiceTable :
-	public CTable<WinSys::ServiceInfo>,
-	public CWindowImpl<CServiceTable> {
+struct UnloadedDriverInfo {
+	std::wstring DriverName;
+	PVOID StartAddress;
+	PVOID EndAddress;
+	LARGE_INTEGER CurrentTime;
+};
+
+class CUnloadedDriverTable :
+	public CTable<UnloadedDriverInfo>,
+	public CWindowImpl<CUnloadedDriverTable>{
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
+	
+	CUnloadedDriverTable(BarInfo& bars, TableInfo& table);
+	int ParseTableEntry(CString& s, char& mask, int& select, UnloadedDriverInfo& info, int column);
+	bool CompareItems(const UnloadedDriverInfo& s1, const UnloadedDriverInfo& s2, int col, bool asc);
 
-	CServiceTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, WinSys::ServiceInfo& info, int column);
-	bool CompareItems(const WinSys::ServiceInfo& s1, const WinSys::ServiceInfo& s2, int col, bool asc);
-
-	BEGIN_MSG_MAP(CServiceTable)
+	BEGIN_MSG_MAP(CUnloadedDriverTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -55,30 +56,10 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-
 private:
-	enum class ServiceColumn {
-		Name,DisplayName,State,Type,PID,ProcessName,StartType,BinaryPath,AccountName,
-		ErrorControl,Description,Privileges,Triggers,Dependencies,ControlsAccepted,SID,SidType
+	enum class TableColumn {
+		Name,StartAddress,EndAddress,CurrentTime
 	};
 
 	void Refresh();
-
-	// static int ServiceStatusToImage(WinSys::ServiceState state);
-	static PCWSTR ServiceStateToString(WinSys::ServiceState state);
-	static CString ServiceStartTypeToString(const WinSys::ServiceConfiguration&);
-	static CString ErrorControlToString(WinSys::ServiceErrorControl ec);
-	static CString ServiceTypeToString(WinSys::ServiceType type);
-	static PCWSTR ServiceSidTypeToString(WinSys::ServiceSidType type);
-	static PCWSTR TriggerToText(const WinSys::ServiceTrigger& trigger);
-	static CString DependenciesToString(const std::vector<std::wstring>& deps);
-	static CString ServiceControlsAcceptedToString(WinSys::ServiceControlsAccepted accepted);
-
-	ServiceInfoEx& GetServiceInfoEx(const std::wstring& name) const;
-
-	mutable std::unordered_map<std::wstring, ServiceInfoEx> m_ServicesEx;
-	CListViewCtrl m_List;
-	WinSys::ProcessManager m_ProcMgr;
-	int m_SelectedHeader;
-	bool m_ViewServices;
 };

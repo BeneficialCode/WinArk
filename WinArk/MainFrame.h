@@ -17,12 +17,14 @@
 #include "DeviceManagerView.h"
 #include "WindowsView.h"
 #include "KernelHookView.h"
+#include "KernelView.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
 enum class TabColumn :int {
 	Process, KernelModule, 
-	//Kernel, UserHook,
+	Kernel, 
+	//UserHook,
 	KernelHook,
 	Network,Driver,Registry,Device,Windows,Service
 };
@@ -74,6 +76,7 @@ public:
 	void InitDeviceView();
 	void InitWindowsView();
 	void InitKernelHookView();
+	void InitKernelView();
 
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
@@ -116,7 +119,7 @@ private:
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
 	CKernelHookView m_KernelHookView;
-
+	CKernelView m_KernelView;
 
 	CString m_StatusText;
 

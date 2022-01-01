@@ -30,8 +30,9 @@ struct DriverHelper final {
 	static ULONG GetImageNotifyCount(PULONG* pCount);
 	static bool EnumPiDDBCacheTable(ULONG_PTR Address,PVOID buffer,ULONG size);
 	static ULONG GetUnloadedDriverCount(PULONG* pCount);
-	static bool EnumUnloadedDrivers(UnloadedDriverInfo* pInfo);
+	static bool EnumUnloadedDrivers(UnloadedDriversInfo* pInfo,PVOID buffer,ULONG size);
 	static ULONG GetPiDDBCacheDataSize(ULONG_PTR Address);
+	static ULONG GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo);
 
 private:
 	static bool OpenDevice();

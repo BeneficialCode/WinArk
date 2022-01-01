@@ -334,6 +334,18 @@ void CMainFrame::InitKernelHookView() {
 	m_hwndArray[static_cast<int>(TabColumn::KernelHook)] = m_KernelHookView.m_hWnd;
 }
 
+void CMainFrame::InitKernelView() {
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height + 5;
+	rect.bottom -= height;
+
+	HWND hWnd = m_KernelView.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::Kernel)] = m_KernelView.m_hWnd;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -373,7 +385,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	}columns[] = {
 		L"进程",
 		L"内核模块",
-		//L"内核",
+		L"内核",
 		L"内核钩子",
 		//L"应用层钩子",
 		L"网络",
@@ -406,6 +418,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitDeviceView();
 	InitWindowsView();
 	InitKernelHookView();
+	InitKernelView();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -502,6 +515,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	m_RegView.ShowWindow(SW_HIDE);
 	m_DevView.ShowWindow(SW_HIDE);
 	m_WinView.ShowWindow(SW_HIDE);
+	m_KernelHookView.ShowWindow(SW_HIDE);
+	m_KernelView.ShowWindow(SW_HIDE);
+	
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
 			m_ProcTable->ShowWindow(SW_SHOW);
@@ -534,6 +550,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::Service:
 			m_ServiceTable->ShowWindow(SW_SHOW);
 			m_ServiceTable->SetFocus();
+			break;
+		case TabColumn::Kernel:
+			m_KernelView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;

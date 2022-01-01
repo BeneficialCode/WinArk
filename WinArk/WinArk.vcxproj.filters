@@ -330,6 +330,12 @@
     <ClCompile Include="KernelView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="PiDDBCacheTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="UnloadedDriverTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -652,6 +658,12 @@
     </ClInclude>
     <ClInclude Include="KernelView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="PiDDBCacheTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="UnloadedDriverTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

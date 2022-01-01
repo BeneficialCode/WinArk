@@ -42,7 +42,7 @@ class CRegistryManagerView :
 	public COwnerDraw<CRegistryManagerView>,
 	public IMainFrame {
 public:
-	DECLARE_WND_CLASS(L"RegExpWndClass", IDR_MAINFRAME)
+	DECLARE_WND_CLASS(L"RegExpWndClass")
 	
 	CRegistryManagerView():m_AddressBar(this,2){}
 

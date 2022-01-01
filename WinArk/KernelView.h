@@ -1,11 +1,13 @@
 #pragma once
+#include "PiDDBCacheTable.h"
+#include "UnloadedDriverTable.h"
 
 class CKernelView :
 	public CWindowImpl<CKernelView> {
 public:
 	DECLARE_WND_CLASS(nullptr);
 
-	const UINT TabId = 1236;
+	const UINT TabId = 0x1236;
 	CKernelView() :m_TabCtrl(this) {
 	}
 
@@ -21,12 +23,18 @@ public:
 
 
 	enum class TabColumn : int {
-		PiDDBCacheTable,
+		PiDDBCacheTable,UnloadedDriverTable
 	};
+
+	void InitPiDDBCacheTable();
+	void InitUnloadedDriverTable();
+
 private:
 	// 动态创建出来的控件
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 
+	CPiDDBCacheTable* m_PiDDBCacheTable;
+	CUnloadedDriverTable* m_UnloadedDriverTable;
 
 	HWND m_hwndArray[16];
 	int _index = 0;

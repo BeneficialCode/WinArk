@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <atlstr.h>
-#include <cor.h>
 #include "PEParser.h"
 #include "CLRMetadataParser.h"
 #pragma comment(lib,"imagehlp")

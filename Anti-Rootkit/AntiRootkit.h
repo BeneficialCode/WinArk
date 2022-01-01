@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x23
+#define DRIVER_CURRENT_VERSION 0x2C
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -69,9 +69,10 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x80F,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x810,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_PIDDBCACHE_TABLE				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x811,METHOD_NEITHER,FILE_ANY_ACCESS)
-#define IOCTL_ARK_ENUM_UNLOADED_DRIVERS				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x812,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_UNLOADED_DRIVERS				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x812,METHOD_NEITHER,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_UNLOADED_DRIVERS_COUNT		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x813,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x814,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x815,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer
@@ -125,7 +126,7 @@ struct ThreadNotifyCountData {
 	PULONG pNonSystemCount;
 };
 
-struct UnloadedDriverInfo {
+struct UnloadedDriversInfo {
 	void* pMmUnloadedDrivers;
 	ULONG Count;
 };
@@ -145,3 +146,12 @@ struct PiDDBCacheData {
 };
 // and the string characters would follow the structure in memory
 // (the length and offset would point to where the string starts / ends)
+
+struct UnloadedDriverData {
+	USHORT NextEntryOffset;
+	USHORT StringLen;
+	USHORT StringOffset;
+	PVOID StartAddress;
+	PVOID EndAddress;
+	LARGE_INTEGER CurrentTime;
+};

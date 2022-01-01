@@ -239,6 +239,7 @@
     <ClCompile Include="FormatHelper.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
     <ClCompile Include="KernelView.cpp" />
+    <ClCompile Include="PiDDBCacheTable.cpp" />
     <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="RegExportImport.cpp" />
     <ClCompile Include="RegHelpers.cpp" />
@@ -309,6 +310,7 @@
     <ClCompile Include="TokenObjectType.cpp" />
     <ClCompile Include="TokenPropertiesDlg.cpp" />
     <ClCompile Include="TreeHelper.cpp" />
+    <ClCompile Include="UnloadedDriverTable.cpp" />
     <ClCompile Include="View.cpp" />
     <ClCompile Include="WinArk.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
@@ -346,6 +348,7 @@
     <ClInclude Include="FormatHelper.h" />
     <ClInclude Include="KernelNotifyTable.h" />
     <ClInclude Include="KernelView.h" />
+    <ClInclude Include="PiDDBCacheTable.h" />
     <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="RegExportImport.h" />
     <ClInclude Include="RegHelpers.h" />
@@ -418,6 +421,7 @@
     <ClInclude Include="TokenPropertiesDlg.h" />
     <ClInclude Include="TreeHelper.h" />
     <ClInclude Include="TreeViewManager.h" />
+    <ClInclude Include="UnloadedDriverTable.h" />
     <ClInclude Include="View.h" />
     <ClInclude Include="VirtualListView.h" />
     <ClInclude Include="WindowHelper.h" />

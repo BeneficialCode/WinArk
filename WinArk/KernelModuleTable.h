@@ -7,7 +7,7 @@ class CKernelModuleTable :
 	public CTable<std::shared_ptr<WinSys::KernelModuleInfo>>,
 	public CWindowImpl<CKernelModuleTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	CKernelModuleTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::KernelModuleInfo>& info, int column);

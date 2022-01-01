@@ -52,7 +52,7 @@ CString RegHelpers::GetObjectName(HANDLE hObeject, DWORD pid) {
 
 
 CString RegHelpers::GetErrorText(DWORD error) {
-	ATLASSERT(error);
+	//ATLASSERT(error);
 	PWSTR buffer;
 	CString msg;
 	if (::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,

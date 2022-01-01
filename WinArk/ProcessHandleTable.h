@@ -10,7 +10,7 @@ class CProcessHandleTable :
 	public CTable<std::shared_ptr<WinSys::HandleInfo>>,
 	public CWindowImpl<CProcessHandleTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	BEGIN_MSG_MAP(CProcessHandleTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)

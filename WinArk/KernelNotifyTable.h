@@ -17,7 +17,7 @@ class CKernelNotifyTable :
 	public CTable<CallbackInfo>,
 	public CWindowImpl<CKernelNotifyTable> {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	CKernelNotifyTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, CallbackInfo& info, int column);
