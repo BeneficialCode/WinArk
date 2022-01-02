@@ -410,3 +410,24 @@ ULONG DriverHelper::GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo) {
 		&size, sizeof(DWORD), &bytes, nullptr);
 	return size;
 }
+
+bool DriverHelper::EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice,IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
+		pCallbackInfo, size, &bytes, nullptr);
+	return true;
+}
+
+LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	LONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT, pNotifyInfo, sizeof(NotifyInfo),
+		&count, sizeof(LONG), &bytes, nullptr);
+	return count;
+}

@@ -26,6 +26,9 @@
     <Filter Include="APC">
       <UniqueIdentifier>{7ddf8f9c-2c3c-4897-97e5-7d5ec40aa64e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DbgCore">
+      <UniqueIdentifier>{d16ecf0f-c2bb-4c5b-9769-755333485338}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -58,9 +61,6 @@
     <ClInclude Include="PEParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DbgDefender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SysMon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -68,15 +68,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProcessProtect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kDbgSys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kDbgCore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Win10_1903.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Logging.h">
@@ -121,6 +112,18 @@
     <ClInclude Include="CyclicBuffer.h">
       <Filter>ktl</Filter>
     </ClInclude>
+    <ClInclude Include="DbgDefender.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
+    <ClInclude Include="kDbgSys.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
+    <ClInclude Include="kDbgCore.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Win10_1903.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -150,16 +153,10 @@
     <ClCompile Include="PEParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DbgDefender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SysMon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProcessProtect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kDbgSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Logging.cpp">
@@ -203,6 +200,12 @@
     </ClCompile>
     <ClCompile Include="CyclicBuffer.cpp">
       <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="kDbgSys.cpp">
+      <Filter>DbgCore</Filter>
+    </ClCompile>
+    <ClCompile Include="DbgDefender.cpp">
+      <Filter>DbgCore</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

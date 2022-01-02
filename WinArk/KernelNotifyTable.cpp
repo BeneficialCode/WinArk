@@ -99,6 +99,22 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 				case CallbackType::LoadImageNotify:
 					s = L"LoadImage";
 					break;
+
+				case CallbackType::ProcessObPostOperationNotify:
+					s = L"Process ObPostOperation";
+					break;
+
+				case CallbackType::ProcessObPreOperationNotify:
+					s = L"Process ObPreOperation";
+					break;
+
+				case CallbackType::ThreadObPostOperationNotify:
+					s = L"Thread ObPostOperation";
+					break;
+
+				case CallbackType::ThreadObPreOperationNotify:
+					s = L"Thread ObPreOperation";
+					break;
 			}
 			break;
 		}
@@ -157,7 +173,7 @@ void CKernelNotifyTable::Refresh() {
 	m_Table.data.n = 0;
 	m_Table.data.info.clear();
 
-	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	// Enum CreateProcessNotify
 	if (count > 0) {
 		SIZE_T size = count * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
@@ -178,6 +194,75 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 	
+	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	KernelNotifyInfo notifyInfo;
+	notifyInfo.Type = NotifyType::ProcessObjectNotify;
+	notifyInfo.Offset = offset;
+	count = DriverHelper::GetObCallbackCount(&notifyInfo);
+	if (count > 0) {
+		SIZE_T size = count * sizeof(ObCallbackInfo);
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
+
+		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
+		if (p != nullptr) {
+			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
+			for (int i = 0; i < count; i++) {
+				if (p[i].PostOperation) {
+					CallbackInfo info;
+					info.Routine = p[i].PostOperation;
+					info.Type = CallbackType::ProcessObPostOperationNotify;
+					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					std::wstring path(info.Module.begin(), info.Module.end());
+					info.Company = GetCompanyName(path);
+					m_Table.data.info.push_back(std::move(info));
+				}
+				if (p[i].PreOperation) {
+					CallbackInfo info;
+					info.Routine = p[i].PreOperation;
+					info.Type = CallbackType::ProcessObPreOperationNotify;
+					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					std::wstring path(info.Module.begin(), info.Module.end());
+					info.Company = GetCompanyName(path);
+					m_Table.data.info.push_back(std::move(info));
+				}
+			}
+		}
+	}
+
+
+	notifyInfo.Type = NotifyType::ThreadObjectNotify;
+	count = DriverHelper::GetObCallbackCount(&notifyInfo);
+	if (count > 0) {
+		SIZE_T size = count * sizeof(ObCallbackInfo);
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
+
+		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
+		if (p != nullptr) {
+			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
+			for (int i = 0; i < count; i++) {
+				if (p[i].PostOperation) {
+					CallbackInfo info;
+					info.Routine = p[i].PostOperation;
+					info.Type = CallbackType::ThreadObPostOperationNotify;
+					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					std::wstring path(info.Module.begin(), info.Module.end());
+					info.Company = GetCompanyName(path);
+					m_Table.data.info.push_back(std::move(info));
+				}
+				if (p[i].PreOperation) {
+					CallbackInfo info;
+					info.Routine = p[i].PreOperation;
+					info.Type = CallbackType::ThreadObPreOperationNotify;
+					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					std::wstring path(info.Module.begin(), info.Module.end());
+					info.Company = GetCompanyName(path);
+					m_Table.data.info.push_back(std::move(info));
+				}
+			}
+		}
+
+	}
+
 
 	count = 0;
 	ThreadNotifyCountData threadData;

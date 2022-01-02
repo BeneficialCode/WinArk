@@ -902,6 +902,69 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			len = sizeof(ULONG);
 			break;
 		}
+
+		case IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ObCallbackInfo)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+			POBJECT_TYPE pObjectType = nullptr;
+			switch (pInfo->Type) {
+				case NotifyType::ProcessObjectNotify:
+					pObjectType = *PsProcessType;
+					break;
+
+				case NotifyType::ThreadObjectNotify:
+					pObjectType = *PsThreadType;
+					break;
+			}
+			EnumObCallbackNotify(pObjectType, pInfo->Offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			len = dic.OutputBufferLength;
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(LONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+			POBJECT_TYPE pObjectType = nullptr;
+			switch (pInfo->Type) {
+				case NotifyType::ProcessObjectNotify:
+					pObjectType = *PsProcessType;
+					break;
+
+				case NotifyType::ThreadObjectNotify:
+					pObjectType = *PsThreadType;
+					break;
+			}
+			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+			*(LONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(LONG);
+			status = STATUS_SUCCESS;
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;

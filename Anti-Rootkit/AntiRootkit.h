@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x31
+#define DRIVER_CURRENT_VERSION 0x34
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -73,6 +73,9 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_GET_UNLOADED_DRIVERS_COUNT		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x813,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x814,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x815,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x816,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT	CTL_CODE(ANTI_ROOTKIT_DEVICE,0x817,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer
@@ -154,4 +157,22 @@ struct UnloadedDriverData {
 	PVOID StartAddress;
 	PVOID EndAddress;
 	LARGE_INTEGER CurrentTime;
+};
+
+enum class NotifyType {
+	CreateProcessNotify = 0, 
+	CreateThreadNotify, 
+	LoadImageNotify,
+	ProcessObjectNotify, 
+	ThreadObjectNotify
+};
+
+struct KernelNotifyInfo {
+	NotifyType Type;
+	ULONG Offset;
+};
+
+struct ObCallbackInfo {
+	PVOID PreOperation;
+	PVOID PostOperation;
 };

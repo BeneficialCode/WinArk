@@ -4,6 +4,7 @@
 #include "AutoLock.h"
 #include "PEParser.h"
 #include "AutoEnter.h"
+#include "Logging.h"
 
 
 ULONG	PspNotifyEnableMask;
@@ -399,13 +400,54 @@ bool EnumRegistryNotify(PEXT_CALLBACK callback) {
 	
 }
 
-bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset) {
+bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCallbackInfo* info) {
 	PLIST_ENTRY callbackListHead = nullptr;
 	PLIST_ENTRY nextEntry = nullptr;
 	POB_CALLBACK_ENTRY callbackEntry = nullptr;
 	ULONG count = 0;
 
+	if (!objectType) {
+		return false;
+	}
+
+	callbackListHead = (PLIST_ENTRY)((PUCHAR)objectType + callbackListOffset);
+	nextEntry = callbackListHead->Flink;
+	int i = 0;
+	while (nextEntry != callbackListHead) {
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		LogInfo("PreOperation %p, PostOperation: %p\n", callbackEntry->PreOperation, callbackEntry->PostOperation);
+		if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_CREATE))
+			LogInfo("Protect handle from creating\n");
+		if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_DUPLICATE))
+			LogInfo("Protect handle from duplicating\n");
+		info[i].PostOperation = callbackEntry->PostOperation;
+		info[i].PreOperation = callbackEntry->PreOperation;
+		i++;
+		nextEntry = nextEntry->Flink;
+	}
 
 	return false;
+}
+
+LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
+	PLIST_ENTRY callbackListHead = nullptr;
+	PLIST_ENTRY nextEntry = nullptr;
+	POB_CALLBACK_ENTRY callbackEntry = nullptr;
+	volatile LONG count = 0;
+
+	if (!objectType) {
+		return count;
+	}
+
+	callbackListHead = (PLIST_ENTRY)((PUCHAR)objectType + callbackListOffset);
+	nextEntry = callbackListHead->Flink;
+
+	while (nextEntry != callbackListHead) {
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		InterlockedIncrement(&count);
+		nextEntry = nextEntry->Flink;
+	}
+
+	return count;
 }
 

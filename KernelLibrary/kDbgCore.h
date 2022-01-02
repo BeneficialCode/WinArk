@@ -14,8 +14,6 @@
 #define DEBUG_EVENT_PROTECT_FAILED			(0x10)  // Rundown protection failed to be acquired on this thread
 #define DEBUG_EVENT_SUSPEND					(0x20)  // Resume thread on continue
 
-
-
 // Used to signify that the delete APC has been queued or the
 // thread has called PspExitThread itself.
 //

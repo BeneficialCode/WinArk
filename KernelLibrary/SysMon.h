@@ -74,7 +74,7 @@ typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
 
 typedef struct _OB_CALLBACK_ENTRY {
 	LIST_ENTRY EntryItemList;
-	OB_OPERATION Operations;
+	OB_OPERATION Operations; // magic bit
 	ULONG Flags;
 	PVOID CallbackEntry; // Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
@@ -113,7 +113,8 @@ VOID PsCallImageNotifyRoutines(
 bool EnumProcessNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumThreadNotify(PEX_CALLBACK callback, ULONG count);
 bool EnumImageNotify(PEX_CALLBACK callback, ULONG count);
-bool EnumObCallbackNotify(POBJECT_TYPE objectType);
+bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
+LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
 
 
 extern "C" {

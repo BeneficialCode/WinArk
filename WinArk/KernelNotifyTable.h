@@ -3,7 +3,9 @@
 #include "resource.h"
 
 enum class CallbackType {
-	CreateProcessNotify,CreateThreadNotify,LoadImageNotify
+	CreateProcessNotify,CreateThreadNotify,LoadImageNotify,
+	ProcessObPostOperationNotify,ThreadObPostOperationNotify,
+	ProcessObPreOperationNotify, ThreadObPreOperationNotify,
 };
 
 struct CallbackInfo {

@@ -33,6 +33,8 @@ struct DriverHelper final {
 	static bool EnumUnloadedDrivers(UnloadedDriversInfo* pInfo,PVOID buffer,ULONG size);
 	static ULONG GetPiDDBCacheDataSize(ULONG_PTR Address);
 	static ULONG GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo);
+	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
+	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
 
 private:
 	static bool OpenDevice();
