@@ -17,11 +17,11 @@ struct DriverHelper final {
 	static bool CloseDevice();
 	static HANDLE OpenThread(DWORD tid, ACCESS_MASK access = THREAD_QUERY_INFORMATION);
 	static HANDLE OpenKey(PCWSTR name, ACCESS_MASK access);
-	static PULONG GetKiServiceTable();
+	static PULONG GetShadowServiceTable(PULONG* pServiceDescriptor);
 	static PVOID GetSSDTApiAddress(ULONG number);
 	static PVOID GetShadowSSDTApiAddress(ULONG number);
-	static ULONG GetShadowServiceTableOffset(PULONG* pTableBase);
 	static ULONG GetServiceLimit(PULONG* pTable);
+	static bool InitNtServiceTable(PULONG* pTable);
 	static ULONG GetProcessNotifyCount(ProcessNotifyCountData* pData);
 	static ULONG GetThreadNotifyCount(ThreadNotifyCountData* pData);
 	static bool EnumProcessNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);

@@ -275,36 +275,8 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	const auto& dic = IoGetCurrentIrpStackLocation(Irp)->Parameters.DeviceIoControl;
 	ULONG len = 0;
 
-	//UNHOOK_SSDT64 unhookssdt;
-
 	switch (dic.IoControlCode) {
-		case IOCTL_ARK_GET_SERVICE_TABLE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(PULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			khook hook;
-			bool success = hook.GetKernelAndWin32kBase();
-			if (!success) {
-				status = STATUS_UNSUCCESSFUL;
-				break;
-			}
-			success = hook.GetSystemServiceTable();
-			if (success) {
-				*(PULONG*)Irp->AssociatedIrp.SystemBuffer = hook._ntTable->ServiceTableBase;
-				len = sizeof(PULONG);
-				status = STATUS_SUCCESS;
-			}
-			break;
-		}
-
-		case IOCTL_ARK_GET_SERVICE_TABLE_OFFSET:
+		case IOCTL_ARK_GET_SHADOW_SERVICE_TABLE:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
@@ -314,15 +286,17 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
+			void* p = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			SystemServiceTable* pSystemServiceTable = (SystemServiceTable*)p;
 			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
+			if (dic.OutputBufferLength < sizeof(PULONG)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			PULONG pServiceTable = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG offset = *pServiceTable;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = offset;
-			len = sizeof(ULONG);
+			pSystemServiceTable += 1;
+			khook::_win32kTable = pSystemServiceTable;
+			*(PULONG*)Irp->AssociatedIrp.SystemBuffer = pSystemServiceTable->ServiceTableBase;
+			len = sizeof(PULONG);
 			status = STATUS_SUCCESS;
 			break;
 		}
@@ -342,10 +316,10 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			khook hook;
+
 			PVOID address;
 			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = hook.GetApiAddress(number,&address);
+			bool success = khook::GetApiAddress(number,&address);
 			if (success) {
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
 				len = sizeof(address);
@@ -369,10 +343,9 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			khook hook;
 			PVOID address;
 			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = hook.GetShadowApiAddress(number, &address);
+			bool success = khook::GetShadowApiAddress(number, &address);
 			if (success) {
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
 				len = sizeof(address);
@@ -557,8 +530,24 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			break;
 		}
+		case IOCTL_ARK_INIT_NT_SERVICE_TABLE:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
+			khook::_ntTable = pServiceTable;
+			status = STATUS_SUCCESS;
+			break;
+		}
 
-		case IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT:
+		case IOCTL_ARK_GET_SERVICE_LIMIT:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
@@ -630,7 +619,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			
 			EnumProcessNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			status = STATUS_SUCCESS;
-			len = sizeof(void*) * info->Count;
+			len = sizeof(void*) * info->Count + sizeof(ULONG);
 			break;
 		}
 

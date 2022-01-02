@@ -63,7 +63,6 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-	
 	void Refresh();
 private:
 
@@ -88,5 +87,6 @@ private:
 	PULONG _KiServiceTable;
 	ULONGLONG _imageBase;
 	std::vector<SSDTEntry> _entries;
+	ULONG _limit;
 	int _total = 0;
 };

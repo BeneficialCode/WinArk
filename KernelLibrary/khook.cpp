@@ -16,6 +16,7 @@ ULONG khook::_sectionSize = 0;
 PVOID khook::_shadowSectionStart = nullptr;
 ULONG khook::_shadowSectionSize = 0;
 LinkedList<ShadowServiceNameEntry> khook::_shadowServiceNameList;
+HANDLE khook::_pid = nullptr;
 
 
 NTSTATUS khook::RtlSuperCopyMemory(_In_ VOID UNALIGNED* Destination, _In_ VOID UNALIGNED* Source, _In_ ULONG Length) {

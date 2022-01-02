@@ -71,8 +71,20 @@ private:
 		void* Current;
 	};
 
+	struct SystemServiceTable {
+		PULONG ServiceTableBase;
+		PVOID ServiceCounterTableBase;
+#ifdef _WIN64
+		ULONGLONG NumberOfServices;
+#else
+		ULONG NumberOfServices;
+#endif // _WIN64
+		PVOID ParamTableBase;
+	};
+
 	void GetShadowSSDTEntry();
 	ULONG_PTR GetOrignalAddress(DWORD number);
+	void Refresh();
 
 	PVOID _win32kBase{ nullptr };
 	PULONG _serviceTableBase = 0;

@@ -35,14 +35,13 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	SymbolHandler handler;
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
 	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTableShadow");
-	PULONG KeServiceDescriptorTableShadow = (PULONG)symbol->GetSymbolInfo()->Address;
-	//ULONG offset = DriverHelper::GetShadowServiceTableOffset(&KeServiceDescriptorTableShadow);
-	//_serviceTableBase = (PULONG)(offset + (char*)kernelBase);
+	PULONG KeServiceDescriptorShadow = (PULONG)symbol->GetSymbolInfo()->Address;
+	_serviceTableBase = DriverHelper::GetShadowServiceTable(&KeServiceDescriptorShadow);
+	PULONG address = (PULONG)((PUCHAR)KeServiceDescriptorShadow + sizeof(SystemServiceTable));
 	_imageBase = parser.GetImageBase();
-	ULONG_PTR base = (ULONG_PTR)parser.GetBaseAddress();
-	//_limit = DriverHelper::GetServiceLimit(&_serviceTableBase);
+	_limit = DriverHelper::GetServiceLimit(&address);
 
-	//GetShadowSSDTEntry();
+	GetShadowSSDTEntry();
 }
 
 LRESULT CShadowSSDTHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -200,7 +199,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		info.ServiceNumber = i;
 		ULONG_PTR address = GetOrignalAddress(i);
 		info.OriginalAddress = address;
-		//address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
+		address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
 		info.CurrentAddress = address;
 		DWORD64 offset = 0;
 		auto symbol = handler.GetSymbolFromAddress(info.OriginalAddress, &offset);
@@ -217,5 +216,19 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		info.TargetModule = Helpers::GetModuleByAddress(info.CurrentAddress);
 		m_Table.data.info.push_back(info);
 		m_Table.data.n = m_Table.data.info.size();
+	}
+}
+
+void CShadowSSDTHookTable::Refresh() {
+	for (int i = 0; i < _limit; i++) {
+		void* address = DriverHelper::GetShadowSSDTApiAddress(i);
+		if (m_Table.data.info[i].OriginalAddress != (uintptr_t)address) {
+			m_Table.data.info[i].Hooked = true;
+			m_Table.data.info[i].HookType = "hooked";
+		}
+		else {
+			m_Table.data.info[i].Hooked = false;
+			m_Table.data.info[i].HookType = "   ---   ";
+		}
 	}
 }

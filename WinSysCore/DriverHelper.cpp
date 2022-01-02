@@ -238,24 +238,15 @@ HANDLE DriverHelper::OpenKey(PCWSTR name,ACCESS_MASK access) {
 	return hObject;
 }
 
-PULONG DriverHelper::GetKiServiceTable() {
+PULONG DriverHelper::GetShadowServiceTable(PULONG* pServiceDescriptor) {
 	PULONG address = 0;
 	if (!OpenDevice())
 		return 0;
 
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SERVICE_TABLE, nullptr, 0, &address, sizeof(address), &bytes, nullptr);
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_TABLE, pServiceDescriptor, sizeof(pServiceDescriptor), 
+		&address, sizeof(address), &bytes, nullptr);
 	return address;
-}
-
-ULONG DriverHelper::GetShadowServiceTableOffset(PULONG* pTableBase) {
-	ULONG offset = 0;
-	if (!OpenDevice())
-		return 0;
-
-	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SERVICE_TABLE_OFFSET, pTableBase, sizeof(void*), &offset, sizeof(offset), &bytes, nullptr);
-	return offset;
 }
 
 PVOID DriverHelper::GetSSDTApiAddress(ULONG number) {
@@ -280,13 +271,23 @@ PVOID DriverHelper::GetShadowSSDTApiAddress(ULONG number) {
 	return address;
 }
 
+bool DriverHelper::InitNtServiceTable(PULONG * pTable) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_INIT_NT_SERVICE_TABLE, pTable, sizeof(pTable),
+		nullptr, 0, &bytes, nullptr);
+	return true;
+}
+
 ULONG DriverHelper::GetServiceLimit(PULONG* pTable) {
 	if (!OpenDevice())
 		return 0;
 
 	ULONG limit = 0;
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SHADOW_SERVICE_LIMIT, pTable, sizeof(pTable), 
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_SERVICE_LIMIT, pTable, sizeof(pTable), 
 		&limit, sizeof(limit),&bytes, nullptr);
 	return limit;
 }

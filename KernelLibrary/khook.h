@@ -392,11 +392,11 @@ public:
 	//PVOID GetFunctionAddress(const char* apiName);
 	static PVOID GetApiAddress(PCWSTR name);
 
-    bool GetApiAddress(ULONG index, PVOID* address);
-    bool GetShadowApiAddress(ULONG index, PVOID* address);
+    static bool GetApiAddress(ULONG index, PVOID* address);
+    static bool GetShadowApiAddress(ULONG index, PVOID* address);
 
-	bool GetSystemServiceTable();
-    bool GetShadowSystemServiceTable();
+	static bool GetSystemServiceTable();
+    static bool GetShadowSystemServiceTable();
     ULONG GetShadowServiceLimit();
 
 	bool HookSSDT(const char* apiName,void* newfunc);
@@ -409,11 +409,11 @@ public:
 	bool GetKernelAndWin32kBase();
     bool GetShadowSystemServiceNumber(PUNICODE_STRING symbolName, PULONG index);
     
-    bool SearchSessionProcess();
+    static bool SearchSessionProcess();
 
-    bool GetSectionStart(ULONG_PTR va);
-    bool GetShadowSectionStart(ULONG_PTR va);
-    PVOID FindCaveAddress(PVOID start, ULONG size, ULONG caveSize);
+    static bool GetSectionStart(ULONG_PTR va);
+    static bool GetShadowSectionStart(ULONG_PTR va);
+    static PVOID FindCaveAddress(PVOID start, ULONG size, ULONG caveSize);
 
 	bool Hook(PVOID api, void* newfunc);
 	bool Unhook();
@@ -428,7 +428,7 @@ public:
 
 private:
 	HookInfo* _info = nullptr;
-    HANDLE _pid = nullptr;
+    static HANDLE _pid;
     InlineHookInfo* _inlineInfo = nullptr;
 
 public:
