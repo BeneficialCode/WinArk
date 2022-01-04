@@ -214,6 +214,15 @@ VOID DbgkpFreeDebugEvent(
 	ExFreePool(DebugEvent);
 }
 
+NTSTATUS PsResumeThread(
+	_In_ PETHREAD Thread,
+	_Out_opt_ PULONG PreviousSuspendCount
+) {
+	if (PreviousSuspendCount)
+		*PreviousSuspendCount = 0;
+	return STATUS_SUCCESS;
+}
+
 VOID DbgkpWakeTarget(
 	_In_ PDEBUG_EVENT DebugEvent
 ) {
@@ -222,7 +231,7 @@ VOID DbgkpWakeTarget(
 	Thread = (PETHREAD_S)DebugEvent->Thread;
 
 	if ((DebugEvent->Flags & DEBUG_EVENT_SUSPEND) != 0) {
-		KeResumeThread(DebugEvent->Thread);
+		PsResumeThread((PETHREAD)Thread, nullptr);
 	}
 
 	if (DebugEvent->Flags & DEBUG_EVENT_RELEASE) {
@@ -1180,20 +1189,22 @@ NTSTATUS NtWaitForDebugEvent(
 
 NTSTATUS NtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
-	_In_ PCLIENT_ID ClientId,
+	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
 ) {
 	NTSTATUS status;
 	PDEBUG_OBJECT DebugObject;
-	PDEBUG_EVENT DebugEvent;
+	PDEBUG_EVENT DebugEvent, FoundDebugEvent;
 	KPROCESSOR_MODE PreviousMode;
 	PLIST_ENTRY Entry;
+	CLIENT_ID ClientId;
+	BOOLEAN GetEvent;
 
 	PreviousMode = ExGetPreviousMode();
 
 	__try {
 		if (PreviousMode != KernelMode) {
-			ProbeForRead(ClientId, sizeof(*ClientId), TYPE_ALIGNMENT(CLIENT_ID));
+			ClientId = *AppClientId;
 		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {
@@ -1205,6 +1216,8 @@ NTSTATUS NtDebugContinue(
 	case DBG_EXCEPTION_HANDLED:
 	case DBG_CONTINUE:
 	case DBG_TERMINATE_PROCESS:
+	case DBG_TERMINATE_THREAD:
+	case DBG_EXCEPTION_NOT_HANDLED:
 		break;
 	default:
 		return STATUS_INVALID_PARAMETER;
@@ -1221,20 +1234,43 @@ NTSTATUS NtDebugContinue(
 		return status;
 	}
 
+	GetEvent = FALSE;
+	FoundDebugEvent = nullptr;
+
 	ExAcquireFastMutex(&DebugObject->Mutex);
 	for (Entry = DebugObject->EventList.Flink;
 		Entry != &DebugObject->EventList;
 		Entry = Entry->Flink) {
 		DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
 
-		if (DebugEvent->ClientId.UniqueProcess == ClientId->UniqueProcess) {
-			
+		if (DebugEvent->ClientId.UniqueProcess == AppClientId->UniqueProcess) {
+			if (!GetEvent) {
+				if (DebugEvent->ClientId.UniqueThread == ClientId.UniqueThread &&
+					(DebugEvent->Flags & DEBUG_EVENT_READ) != 0) {
+					RemoveEntryList(Entry);
+					FoundDebugEvent = DebugEvent;
+					GetEvent = TRUE;
+				}
+			}
+			else {
+				DebugEvent->Flags &= ~DEBUG_EVENT_INACTIVE;
+				KeSetEvent(&DebugObject->EventsPresent, 0, FALSE);
+				break;
+			}
 		}
 	}
 
 	ExReleaseFastMutex(&DebugObject->Mutex);
-
 	ObReferenceObject(DebugObject);
+
+	if (GetEvent) {
+		FoundDebugEvent->ApiMsg.ReturnedStatus = ContinueStatus;
+		FoundDebugEvent->Status = STATUS_SUCCESS;
+		DbgkpWakeTarget(FoundDebugEvent);
+	}
+	else {
+		status = STATUS_INVALID_PARAMETER;
+	}
 
 	return status;
 }
@@ -1670,6 +1706,75 @@ NTSTATUS NtSetInformationDebugObject(
 	_In_ ULONG DebugInformationLength,
 	_Out_opt_ PULONG ReturnLength
 ) {
+	KPROCESSOR_MODE PreviousMode;
+	ULONG Flags;
+	NTSTATUS status;
+	PDEBUG_OBJECT DebugObject;
+
+	PreviousMode = ExGetPreviousMode();
+
+	__try {
+		if (PreviousMode != KernelMode) {
+			if (DebugInformationLength) {
+				ProbeForRead(DebugInformation, DebugInformationLength,
+					sizeof(ULONG));
+				if (ARGUMENT_PRESENT(ReturnLength)) {
+					ProbeForWriteUlong(ReturnLength);
+				}
+			}
+		}
+		if (ARGUMENT_PRESENT(ReturnLength)) {
+			*ReturnLength = 0;
+		}
+
+		switch (DebugObjectInformationClass) {
+			case DebugObjectFlagsInformation: 
+			{
+				if (DebugInformationLength != sizeof(ULONG)) {
+					if (ARGUMENT_PRESENT(ReturnLength)) {
+						*ReturnLength = sizeof(ULONG);
+					}
+					return STATUS_INFO_LENGTH_MISMATCH;
+				}
+				Flags = *(PULONG)DebugInformation;
+
+				break;
+			}
+			default:
+				return STATUS_INVALID_PARAMETER;
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		return GetExceptionCode();
+	}
+	
+	switch (DebugObjectInformationClass)
+	{
+		case DebugObjectFlagsInformation: 
+		{
+			if (Flags & ~DEBUG_KILL_ON_CLOSE) {
+				return STATUS_INVALID_PARAMETER;
+			}
+			status = ObReferenceObjectByHandle(DebugObjectHandle,
+				DEBUG_OBJECT_SET_INFORMATION,
+				*DbgkDebugObjectType, 
+				PreviousMode,
+				(PVOID*)&DebugObject,
+				nullptr);
+			if (!NT_SUCCESS(status)) {
+				return status;
+			}
+			ExAcquireFastMutex(&DebugObject->Mutex);
+
+			if (Flags & DEBUG_KILL_ON_CLOSE) {
+				DebugObject->Flags |= DEBUG_OBJECT_KILL_ON_CLOSE;
+			}else {
+				DebugObject->Flags &= ~DEBUG_OBJECT_KILL_ON_CLOSE;
+			}
+			ExReleaseFastMutex(&DebugObject->Mutex);
+			ObDereferenceObject(DebugObject);
+		}
+	}
 
 	return STATUS_SUCCESS;
 }
@@ -1678,6 +1783,7 @@ NTSTATUS NtQueryDebugFilterState(
 	_In_ ULONG ComponentId,
 	_In_ ULONG Level
 ) {
+	
 
 	return STATUS_SUCCESS;
 }

@@ -147,14 +147,8 @@ NTSTATUS DbgkpQueueMessage(
 	_In_ PDEBUG_OBJECT TargetDebugObject
 );
 
-/// <summary>
-/// 等待调试事件
-/// </summary>
-/// <param name="DebugObjectHandle"></param>
-/// <param name="Alertable"></param>
-/// <param name="Timeout"></param>
-/// <param name="WaitStateChange"></param>
-/// <returns></returns>
+
+// 等待调试事件
 NTSTATUS NtWaitForDebugEvent(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ BOOLEAN Alertable,
@@ -162,16 +156,11 @@ NTSTATUS NtWaitForDebugEvent(
 	_Out_ PDBGUI_WAIT_STATE_CHANGE WaitStateChange
 );
 
-/// <summary>
-/// 回复调试事件，恢复被调试进程
-/// </summary>
-/// <param name="DebugObjectHandle"></param>
-/// <param name="ClientId"></param>
-/// <param name="ContinueStatus"></param>
-/// <returns></returns>
+
+// 回复调试事件，恢复被调试进程
 NTSTATUS NtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
-	_In_ PCLIENT_ID ClientId,
+	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
 );
 
@@ -227,8 +216,9 @@ NTSTATUS PsSuspendThread(
 	_Out_opt_ PULONG PreviousSuspendCount
 );
 
-NTSTATUS KeResumeThread(
-	_Inout_ PETHREAD Thread
+NTSTATUS PsResumeThread(
+	_In_ PETHREAD Thread,
+	_Out_opt_ PULONG PreviousSuspendCount
 );
 
 VOID DbgkSendSystemDllMessages(
@@ -376,3 +366,10 @@ NTSTATUS PsTerminateProcess(
 PEPROCESS PsGetNextProcess(
 	_In_ PEPROCESS Process
 );
+
+/*
+结构体偏移
+
+Process->RundownProtect
+
+*/

@@ -362,3 +362,27 @@ typedef enum _DEBUG_OBJECT_INFORMATION_CLASS {
 	DebugObjectFlagsInformation = 1,
 	DebugObjectMaximumInfomation
 }DEBUG_OBJECT_INFORMATION_CLASS, *PDEBUG_OBJECT_INFORMATION_CLASS;
+
+#if defined(_AMD64_)
+FORCEINLINE
+VOID
+ProbeForWriteUlong(
+	IN PULONG Address
+){
+	if (Address >= (ULONG* const)MM_USER_PROBE_ADDRESS) {
+		Address = (ULONG* const)MM_USER_PROBE_ADDRESS;
+	}
+
+	*((volatile ULONG*)Address) = *Address;
+	return;
+}
+#else
+#define ProbeForWriteUlong(Address) {                                        \
+    if ((Address) >= (ULONG * const)MM_USER_PROBE_ADDRESS) {                 \
+        *(volatile ULONG * const)MM_USER_PROBE_ADDRESS = 0;                  \
+    }                                                                        \
+                                                                             \
+    *(volatile ULONG *)(Address) = *(volatile ULONG *)(Address);             \
+}
+
+#endif
