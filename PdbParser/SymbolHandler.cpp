@@ -59,7 +59,11 @@ SymbolHandler::~SymbolHandler() {
 }
 
 ULONG64 SymbolHandler::LoadSymbolsForModule(PCSTR moduleName,DWORD64 baseAddress,DWORD dllSize) {
-	_address = SymLoadModuleEx(m_hProcess, nullptr, moduleName, nullptr, baseAddress, dllSize, nullptr, 0);
+#ifdef _WIN64
+	_address = SymLoadModule64(m_hProcess, nullptr, moduleName, nullptr, baseAddress, dllSize);
+#else
+	_address = SymLoadModule(m_hProcess, nullptr, moduleName, nullptr, baseAddress, dllSize);
+#endif // _WIN64
 	return _address;
 }
 

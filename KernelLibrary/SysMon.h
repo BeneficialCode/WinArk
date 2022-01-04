@@ -110,9 +110,7 @@ VOID PsCallImageNotifyRoutines(
 	_Out_ PIMAGE_INFO_EX ImageInfoEx
 );
 
-bool EnumProcessNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
-bool EnumThreadNotify(PEX_CALLBACK callback, ULONG count);
-bool EnumImageNotify(PEX_CALLBACK callback, ULONG count);
+bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
 

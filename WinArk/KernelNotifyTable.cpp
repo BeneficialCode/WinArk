@@ -263,13 +263,18 @@ void CKernelNotifyTable::Refresh() {
 
 	}
 
-
 	count = 0;
 	ThreadNotifyCountData threadData;
+	threadData.pCount = 0;
+	threadData.pNonSystemCount = 0;
 	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineCount");
-	threadData.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	if (symbol) {
+		threadData.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	}
 	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineNonSystemCount");
-	threadData.pNonSystemCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	if (symbol) {
+		threadData.pNonSystemCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	}
 	count = DriverHelper::GetThreadNotifyCount(&threadData);
 	if (count > 0) {
 		info.Count = count;
@@ -282,13 +287,13 @@ void CKernelNotifyTable::Refresh() {
 			p->Count = count;
 			DriverHelper::EnumThreadNotify(&info, p);
 			for (int i = 0; i < count; i++) {
-				CallbackInfo info;
-				info.Routine = p->Address[i];
-				info.Type = CallbackType::CreateThreadNotify;
-				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-				std::wstring path(info.Module.begin(), info.Module.end());
-				info.Company = GetCompanyName(path);
-				m_Table.data.info.push_back(std::move(info));
+				CallbackInfo item;
+				item.Routine = p->Address[i];
+				item.Type = CallbackType::CreateThreadNotify;
+				item.Module = Helpers::GetModuleByAddress((ULONG_PTR)item.Routine);
+				std::wstring path(item.Module.begin(), item.Module.end());
+				item.Company = GetCompanyName(path);
+				m_Table.data.info.push_back(std::move(item));
 			}
 		}
 	}

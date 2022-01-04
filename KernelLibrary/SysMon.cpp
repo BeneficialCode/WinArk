@@ -341,58 +341,37 @@ VOID PsCallImageNotifyRoutines(
 	}
 }
 
-bool EnumProcessNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info) {
+bool EnumSystemNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info) {
 	if (!callback) 
 		return false;
 
 	KdPrint(("Count: %d\n", count));
-	for (ULONG i = 0; i < count; i++) {
+
+#ifdef _WIN64
+	static ULONG Max = 64;
+#else
+	static ULONG Max = 8;
+#endif
+
+	int j = 0;
+	for (ULONG i = 0; i < Max; i++) {
+		if (j == count)
+			break;
 		if (!MmIsAddressValid(callback)) 
 			break;
 		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
 		if (block != nullptr) {
-			KdPrint(("ProcessNotifyFunc: 0x%p\n", (ULONG64)block->Function));
-			info->Address[i] = block->Function;
+			KdPrint(("SystemNotifyFunc: 0x%p\n", (ULONG64)block->Function));
+			info->Address[j] = block->Function;
 			ExDereferenceCallBackBlock(callback, block);
+			++j;
 		}
 		callback++;
 	}
 	return true;
 }
 
-bool EnumThreadNotify(PEX_CALLBACK callback, ULONG count) {
-	if (!callback)
-		return false;
 
-	for (ULONG i = 0; i < count; i++) {
-		if (!MmIsAddressValid(callback))
-			break;
-		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
-		if (block != nullptr) {
-			KdPrint(("ThreadNotifyFunc: 0x%p\n", (ULONG64)block->Function));
-			ExDereferenceCallBackBlock(callback, block);
-		}
-		callback++;
-	}
-	return true;
-}
-
-bool EnumImageNotify(PEX_CALLBACK callback, ULONG count) {
-	if (!callback)
-		return false;
-
-	for (ULONG i = 0; i < count; i++) {
-		if (!MmIsAddressValid(callback))
-			break;
-		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
-		if (block != nullptr) {
-			KdPrint(("ImageNotifyFunc: 0x%p\n", (ULONG64)block->Function));
-			ExDereferenceCallBackBlock(callback, block);
-		}
-		callback++;
-	}
-	return true;
-}
 
 bool EnumRegistryNotify(PEXT_CALLBACK callback) {
 	if (!callback)

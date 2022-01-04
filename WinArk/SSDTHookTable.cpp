@@ -223,7 +223,8 @@ void CSSDTHookTable::GetSSDTEntry() {
 		info.CurrentAddress = address;
 
 		DWORD64 offset = 0;
-		auto symbol = handler.GetSymbolFromAddress(info.OriginalAddress, &offset);
+		auto symbol = handler.GetSymbolFromAddress(address, &offset);
+		symbol = handler.GetSymbolFromAddress(info.OriginalAddress);
 		if (symbol != nullptr) {
 			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
 		}
