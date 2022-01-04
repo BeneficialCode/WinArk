@@ -142,7 +142,7 @@ void CPiDDBCacheTable::Refresh() {
 
 	ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
 
-	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 	DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
 
 	PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();

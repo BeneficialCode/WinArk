@@ -149,7 +149,7 @@ std::string Helpers::GetModuleByAddress(ULONG_PTR address) {
 
 	auto count = m_Tracker.EnumModules();
 	auto modules = m_Tracker.GetModules();
-	for (int i = 0; i < count; i++) {
+	for (decltype(count) i = 0; i < count; i++) {
 		auto m = modules[i];
 		ULONG_PTR limit = (ULONG_PTR)((char*)m->ImageBase + m->ImageSize);
 		if (address > (ULONG_PTR)m->ImageBase && address < limit) {

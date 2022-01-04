@@ -64,7 +64,7 @@ LRESULT CRegistryManagerView::OnFindUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPA
 }
 
 void CRegistryManagerView::OnFindNext(PCWSTR path, PCWSTR name, PCWSTR data) {
-	ATLASSERT(L"Found: %s, %s, %s\n", path, name, data);
+	ATLTRACE(L"Found: %s, %s, %s\n", path, name, data);
 	FindData fd{ path,name,data };
 	SendMessage(WM_FIND_UPDATE, 0, reinterpret_cast<LPARAM>(&fd));
 }
