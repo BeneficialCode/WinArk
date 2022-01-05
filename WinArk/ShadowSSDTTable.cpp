@@ -120,19 +120,19 @@ int CShadowSSDTHookTable::ParseTableEntry(CString& s, char& mask, int& select, S
 			s.Format(L"%d (0x%-x)", info.ServiceNumber, info.ServiceNumber);
 			break;
 		case 1:
-			s = std::wstring(info.ServiceFunctionName.begin(), info.ServiceFunctionName.end()).c_str();
+			s = Helpers::StringToWstring(info.ServiceFunctionName).c_str();
 			break;
 		case 2:
 			s.Format(L"0x%p", info.OriginalAddress);
 			break;
 		case 3:
-			s = std::wstring(info.HookType.begin(), info.HookType.end()).c_str();
+			s = Helpers::StringToWstring(info.HookType).c_str();
 			break;
 		case 4:
 			s.Format(L"0x%p", info.CurrentAddress);
 			break;
 		case 5:
-			s = std::wstring(info.TargetModule.begin(), info.TargetModule.end()).c_str();
+			s = Helpers::StringToWstring(info.TargetModule).c_str();
 			break;
 	}
 

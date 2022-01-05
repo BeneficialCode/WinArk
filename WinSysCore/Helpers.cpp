@@ -74,7 +74,7 @@ std::string Helpers::GetNtosFileName() {
 	status = ::NtQuerySystemInformation(static_cast<SYSTEM_INFORMATION_CLASS>(SystemModuleInformation),
 		buffer.get(), size, nullptr);
 	if (!NT_SUCCESS(status)) {
-		return nullptr;
+		return "";
 	}
 
 	auto info = (RTL_PROCESS_MODULES*)buffer.get();
@@ -157,4 +157,24 @@ std::string Helpers::GetModuleByAddress(ULONG_PTR address) {
 		}
 	}
 	return "";
+}
+
+std::wstring Helpers::StringToWstring(const std::string& str) {
+	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, nullptr, 0);
+	len += 1;
+	std::unique_ptr<wchar_t[]> buffer = std::make_unique<wchar_t[]>(len);
+	memset(buffer.get(), 0, sizeof(wchar_t) * len);
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), buffer.get(), len);
+	std::wstring wstr(buffer.get());
+	return wstr;
+}
+
+std::string Helpers::WstringToString(const std::wstring& wstr) {
+	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), nullptr, 0, nullptr, nullptr);
+	len += 1;
+	std::unique_ptr<char[]> buffer = std::make_unique<char[]>(len);
+	memset(buffer.get(), 0, sizeof(char) * len);
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), buffer.get(), len, nullptr, nullptr);
+	std::string str(buffer.get());
+	return str;
 }

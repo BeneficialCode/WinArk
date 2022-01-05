@@ -2,6 +2,7 @@
 #include "SymbolFileInfo.h"
 #include <WinInet.h>
 #include <filesystem>
+#include <Helpers.h>
 
 #pragma comment(lib,"Wininet.lib")
 
@@ -66,7 +67,7 @@ bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY 
 		auto cv = (CV_INFO_PDB20*)cvData;
 		_pdbSignature.Format(L"%X%X", cv->Signature, cv->Age);
 		std::string file((const char*)cv->PdbFileName, entry->SizeOfData - FIELD_OFFSET(CV_INFO_PDB20, PdbFileName));
-		_pdbFile = std::wstring(file.begin(), file.end()).c_str();
+		_pdbFile = Helpers::StringToWstring(file).c_str();
 		_pdbValidation.signature = cv->Signature;
 		_pdbValidation.age = cv->Age;
 	}
@@ -78,7 +79,7 @@ bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY 
 			cv->Signature.Data4[3], cv->Signature.Data4[4], cv->Signature.Data4[5],
 			cv->Signature.Data4[6], cv->Signature.Data4[7], cv->Age);
 		std::string file((const char*)cv->PdbFileName, entry->SizeOfData - FIELD_OFFSET(CV_INFO_PDB70, PdbFileName));
-		_pdbFile = std::wstring(file.begin(), file.end()).c_str();
+		_pdbFile = Helpers::StringToWstring(file).c_str();
 		memcpy(&_pdbValidation.guid, &cv->Signature, sizeof(GUID));
 		_pdbValidation.signature = 0;
 		_pdbValidation.age = cv->Age;

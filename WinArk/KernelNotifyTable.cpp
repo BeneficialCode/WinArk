@@ -120,7 +120,7 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 		}
 			
 		case 2:
-			s = std::wstring(info.Module.begin(), info.Module.end()).c_str();
+			s = Helpers::StringToWstring(info.Module).c_str();
 			break;
 		case 3:
 			s = info.Company.c_str();
