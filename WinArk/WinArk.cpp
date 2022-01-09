@@ -43,7 +43,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 
 	HANDLE hThread = ::CreateThread(nullptr, 0, [](auto param)->DWORD {
 		std::string name = Helpers::GetNtosFileName();
-		std::wstring osFileName(name.begin(), name.end());
+		std::wstring osFileName = Helpers::StringToWstring(name);
 		InitSymbols(osFileName.c_str());
 		InitSymbols(L"user32.dll");
 		InitSymbols(L"ntdll.dll");

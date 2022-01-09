@@ -297,15 +297,8 @@ NTSTATUS DbgkClearProcessDebugObject(
 	_In_ PDEBUG_OBJECT SourceDebugObject
 );
 
-/// <summary>
-/// 设置调试对象的属性
-/// </summary>
-/// <param name="DebugObjectHandle"></param>
-/// <param name="DebugObjectInformationClass"></param>
-/// <param name="DebugInformation"></param>
-/// <param name="DebugInformationLength"></param>
-/// <param name="ReturnLength"></param>
-/// <returns></returns>
+
+// 设置调试对象的属性
 NTSTATUS NtSetInformationDebugObject(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ DEBUG_OBJECT_INFORMATION_CLASS DebugObjectInformationClass,

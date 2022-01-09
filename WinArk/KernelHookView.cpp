@@ -32,6 +32,9 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitShadowSSDTHookTable();
 	InitKernelNotifyTable();
 
+
+
+
 	return 0;
 }
 

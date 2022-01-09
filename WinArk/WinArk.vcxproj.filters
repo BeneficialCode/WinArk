@@ -684,4 +684,7 @@
     <None Include="..\x64\Debug\AntiRootkit.sys" />
     <None Include="..\Debug\AntiRootkit.sys" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="manifest.xml" />
+  </ItemGroup>
 </Project>

@@ -135,4 +135,5 @@ int ColumnManager::AddColumn(PCWSTR name, int format, int width, T tag, ColumnFl
 
 		return static_cast<int>(m_Columns.size());
 	}
+	return 0;
 }

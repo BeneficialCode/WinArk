@@ -570,4 +570,5 @@ LRESULT CWindowsView::OnTreeNodeRightClick(int, LPNMHDR, BOOL&) {
 	::GetCursorPos(&pt);
 
 	TrackPopupMenu(menu.GetSubMenu(4), 0, pt.x, pt.y, 0, m_hWnd, nullptr);
+	return 0;
 }
