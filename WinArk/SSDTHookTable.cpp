@@ -11,8 +11,8 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	SetTableWindowInfo(bars.nbar);
 	_kernelBase = Helpers::GetKernelBase();
 	std::string name = Helpers::GetNtosFileName();
-	std::wstring osFileName(name.begin(), name.end());
-	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
+	std::wstring osFileName = Helpers::StringToWstring(name);
+	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES| LOAD_LIBRARY_SEARCH_SYSTEM32);
 
 	void* kernelBase = Helpers::GetKernelBase();
 	DWORD size = Helpers::GetKernelImageSize();
@@ -210,6 +210,9 @@ void CSSDTHookTable::GetSSDTEntry() {
 			break;
 		}
 	}
+
+	ATLTRACE("%s", name.c_str());
+
 	std::string pdbFile = pdbPath + "\\" + name;
 	SymbolHandler handler;
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);

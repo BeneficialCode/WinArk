@@ -10,7 +10,7 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	_win32kBase = Helpers::GetWin32kBase();
-	_fileMapVA = ::LoadLibraryEx(L"win32k.sys", nullptr, DONT_RESOLVE_DLL_REFERENCES);
+	_fileMapVA = ::LoadLibraryEx(L"win32k.sys", nullptr, DONT_RESOLVE_DLL_REFERENCES | LOAD_LIBRARY_SEARCH_SYSTEM32);
 	WCHAR path[MAX_PATH];
 	::GetSystemDirectory(path, MAX_PATH);
 	::wcscat_s(path, L"\\win32k.sys");
