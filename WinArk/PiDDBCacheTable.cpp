@@ -141,25 +141,26 @@ void CPiDDBCacheTable::Refresh() {
 	address = handler.GetSymbolFromName("PiDDBCacheTable")->GetSymbolInfo()->Address;
 
 	ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
+	if (len > sizeof PiDDBCacheData) {
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
 
-	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-	DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
+		PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();
 
-	PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();
-	
-	PiDDBCacheInfo info;
-	m_Table.data.info.clear();
-	m_Table.data.n = 0;
-	for (;;) {
-		info.LoadStatus = p->LoadStatus;
-		info.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
-		info.TimeDateStamp = p->TimeDateStamp;
-		m_Table.data.info.push_back(info);
-		if (p->NextEntryOffset == 0)
-			break;
-		p = (PiDDBCacheData*)((PUCHAR)p + p->NextEntryOffset);
-		if (p == nullptr)
-			break;
+		PiDDBCacheInfo info;
+		m_Table.data.info.clear();
+		m_Table.data.n = 0;
+		for (;;) {
+			info.LoadStatus = p->LoadStatus;
+			info.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
+			info.TimeDateStamp = p->TimeDateStamp;
+			m_Table.data.info.push_back(info);
+			if (p->NextEntryOffset == 0)
+				break;
+			p = (PiDDBCacheData*)((PUCHAR)p + p->NextEntryOffset);
+			if (p == nullptr)
+				break;
+		}
 	}
 	m_Table.data.n = m_Table.data.info.size();
 }
