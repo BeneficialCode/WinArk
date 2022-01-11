@@ -139,24 +139,27 @@ void CUnloadedDriverTable::Refresh() {
 
 	ULONG len = DriverHelper::GetUnloadedDriverDataSize(&info);
 
-	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-	DriverHelper::EnumUnloadedDrivers(&info,buffer.get(),len);
+	if (len > sizeof UnloadedDriverData) {
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		DriverHelper::EnumUnloadedDrivers(&info, buffer.get(), len);
 
-	UnloadedDriverData* p = (UnloadedDriverData*)buffer.get();
-	UnloadedDriverInfo item;
-	m_Table.data.info.clear();
-	m_Table.data.n = 0;
-	for (;;) {
-		item.CurrentTime = p->CurrentTime;
-		item.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
-		item.StartAddress = p->StartAddress;
-		item.EndAddress = p->EndAddress;
-		m_Table.data.info.push_back(item);
-		if (p->NextEntryOffset == 0)
-			break;
-		p = (UnloadedDriverData*)((PUCHAR)p + p->NextEntryOffset);
-		if (p == nullptr)
-			break;
+		UnloadedDriverData* p = (UnloadedDriverData*)buffer.get();
+		UnloadedDriverInfo item;
+		m_Table.data.info.clear();
+		m_Table.data.n = 0;
+		for (;;) {
+			item.CurrentTime = p->CurrentTime;
+			item.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
+			item.StartAddress = p->StartAddress;
+			item.EndAddress = p->EndAddress;
+			m_Table.data.info.push_back(item);
+			if (p->NextEntryOffset == 0)
+				break;
+			p = (UnloadedDriverData*)((PUCHAR)p + p->NextEntryOffset);
+			if (p == nullptr)
+				break;
+		}
 	}
+	
 	m_Table.data.n = m_Table.data.info.size();
 }

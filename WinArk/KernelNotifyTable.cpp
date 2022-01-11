@@ -187,7 +187,7 @@ void CKernelNotifyTable::Refresh() {
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::CreateProcessNotify;
 				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-				std::wstring path(info.Module.begin(), info.Module.end());
+				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(info));
 			}
@@ -212,7 +212,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Routine = p[i].PostOperation;
 					info.Type = CallbackType::ProcessObPostOperationNotify;
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path(info.Module.begin(), info.Module.end());
+					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					m_Table.data.info.push_back(std::move(info));
 				}
@@ -221,7 +221,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Routine = p[i].PreOperation;
 					info.Type = CallbackType::ProcessObPreOperationNotify;
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path(info.Module.begin(), info.Module.end());
+					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					m_Table.data.info.push_back(std::move(info));
 				}
@@ -235,7 +235,6 @@ void CKernelNotifyTable::Refresh() {
 	if (count > 0) {
 		SIZE_T size = count * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
-
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
 		if (p != nullptr) {
 			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
@@ -245,7 +244,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Routine = p[i].PostOperation;
 					info.Type = CallbackType::ThreadObPostOperationNotify;
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path(info.Module.begin(), info.Module.end());
+					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					m_Table.data.info.push_back(std::move(info));
 				}
@@ -254,7 +253,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Routine = p[i].PreOperation;
 					info.Type = CallbackType::ThreadObPreOperationNotify;
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path(info.Module.begin(), info.Module.end());
+					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					m_Table.data.info.push_back(std::move(info));
 				}
@@ -291,7 +290,7 @@ void CKernelNotifyTable::Refresh() {
 				item.Routine = p->Address[i];
 				item.Type = CallbackType::CreateThreadNotify;
 				item.Module = Helpers::GetModuleByAddress((ULONG_PTR)item.Routine);
-				std::wstring path(item.Module.begin(), item.Module.end());
+				std::wstring path = Helpers::StringToWstring(item.Module);
 				item.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(item));
 			}
@@ -317,7 +316,7 @@ void CKernelNotifyTable::Refresh() {
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::LoadImageNotify;
 				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
-				std::wstring path(info.Module.begin(), info.Module.end());
+				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(info));
 			}
