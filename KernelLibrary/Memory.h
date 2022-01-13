@@ -3,6 +3,9 @@
 // 遵循"最小化原则"，非分页内存比较昂贵，所以默认是分页内存
 void* _cdecl operator new(size_t size, POOL_TYPE type, ULONG tag = 0);
 
+void* _cdecl operator new(size_t size, POOL_TYPE pool,
+	EX_POOL_PRIORITY priority, ULONG tag = 0);
+
 // size 是编译器确定的
 // placement new
 void* _cdecl operator new(size_t size, void* p);
