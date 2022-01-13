@@ -5,14 +5,16 @@
 #include "PEParser.h"
 #include "SymbolHandler.h"
 #include <filesystem>
+#include "RegHelpers.h"
 
 CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	_kernelBase = Helpers::GetKernelBase();
 	std::string name = Helpers::GetNtosFileName();
-	std::wstring osFileName = Helpers::StringToWstring(name);
-	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES| LOAD_LIBRARY_SEARCH_SYSTEM32);
+	std::wstring osFileName = RegHelpers::GetSystemDir();
+	osFileName = osFileName + L"\\"+ Helpers::StringToWstring(name);
+	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 
 	void* kernelBase = Helpers::GetKernelBase();
 	DWORD size = Helpers::GetKernelImageSize();
@@ -36,11 +38,8 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	// KiServiceLimit
 	_limit = DriverHelper::GetServiceLimit(&address);
 	DriverHelper::InitNtServiceTable(&address);
-	WCHAR path[MAX_PATH];
-	::GetSystemDirectory(path, MAX_PATH);
-	osFileName = L"\\" + osFileName;
-	::wcscat_s(path, osFileName.c_str());
-	PEParser parser(path);
+	
+	PEParser parser(osFileName.c_str());
 	_imageBase = parser.GetImageBase();
 
 	GetSSDTEntry();
