@@ -5,16 +5,16 @@
 #include <DriverHelper.h>
 #include <SymbolHandler.h>
 #include <filesystem>
+#include "RegHelpers.h"
 
 CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	_win32kBase = Helpers::GetWin32kBase();
-	_fileMapVA = ::LoadLibraryEx(L"win32k.sys", nullptr, DONT_RESOLVE_DLL_REFERENCES | LOAD_LIBRARY_SEARCH_SYSTEM32);
-	WCHAR path[MAX_PATH];
-	::GetSystemDirectory(path, MAX_PATH);
-	::wcscat_s(path, L"\\win32k.sys");
-	PEParser parser(path);
+	std::wstring osFileName = RegHelpers::GetSystemDir();
+	osFileName = osFileName + L"\\win32k.sys";
+	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
+	PEParser parser(osFileName.c_str());
 
 	void* kernelBase = Helpers::GetKernelBase();
 	DWORD size = Helpers::GetKernelImageSize();

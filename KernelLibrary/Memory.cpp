@@ -13,6 +13,11 @@ void* _cdecl operator new(size_t size, POOL_TYPE type, ULONG tag) {
 	return p;
 }
 
+void* _cdecl operator new(size_t size, POOL_TYPE pool,
+	EX_POOL_PRIORITY priority, ULONG tag) {
+	return ExAllocatePoolWithTagPriority(pool, size, tag, priority);
+}
+
 void* _cdecl operator new(size_t, void* p) {
 	return p;
 }
