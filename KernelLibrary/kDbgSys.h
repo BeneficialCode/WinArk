@@ -44,6 +44,36 @@ NTSTATUS ObDuplicateObject(
 
 PEPROCESS PsGetCurrentProcessByThread(PETHREAD Thread);
 
+using PPsGetNextProcessThread = PETHREAD(NTAPI*) (
+	_In_ PEPROCESS Process,
+	_In_ PETHREAD Thread
+);
+
+using PPsSuspendThread = NTSTATUS(NTAPI*) (
+	_In_ PETHREAD Thread,
+	_Out_opt_ PULONG PreviousSuspendCount
+);
+
+using PDbgkpSectionToFileHandle = HANDLE(NTAPI*) (
+	_In_ PVOID SectionObject
+);
+
+using PPsResumeThread = NTSTATUS(NTAPI*) (
+	_In_ PETHREAD Thread,
+	_Out_opt_ PULONG PreviousSuspendCount
+);
+
+using PMmGetFileNameForAddress = NTSTATUS(NTAPI*) (
+	_In_ PVOID ProcessVa,
+	_Out_ PUNICODE_STRING FileName
+);
+
+using PDbgkpSuspendProcess = BOOLEAN(NTAPI*)();
+
+using PDbgkpResumeProcess = VOID(NTAPI*) (
+	_In_ PEPROCESS Process
+);
+
 // 创建调试对象
 NTSTATUS NtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
@@ -201,25 +231,25 @@ ExFastRefAddAdditionalReferenceCounts(
 	_In_ ULONG RefsToAdd
 );
 
-PETHREAD PsGetNextProcessThread(
-	_In_ PEPROCESS Process,
-	_In_ PETHREAD Thread
-);
+//PETHREAD PsGetNextProcessThread(
+//	_In_ PEPROCESS Process,
+//	_In_ PETHREAD Thread
+//);
 
 // 取得Section对应的文件句柄
-HANDLE DbgkpSectionToFileHandle(
-	_In_ PVOID SectionObject
-);
+//HANDLE DbgkpSectionToFileHandle(
+//	_In_ PVOID SectionObject
+//);
 
-NTSTATUS PsSuspendThread(
-	_In_ PETHREAD Thread,
-	_Out_opt_ PULONG PreviousSuspendCount
-);
+//NTSTATUS PsSuspendThread(
+//	_In_ PETHREAD Thread,
+//	_Out_opt_ PULONG PreviousSuspendCount
+//);
 
-NTSTATUS PsResumeThread(
-	_In_ PETHREAD Thread,
-	_Out_opt_ PULONG PreviousSuspendCount
-);
+//NTSTATUS PsResumeThread(
+//	_In_ PETHREAD Thread,
+//	_Out_opt_ PULONG PreviousSuspendCount
+//);
 
 VOID DbgkSendSystemDllMessages(
 	PETHREAD Thread,
@@ -250,14 +280,14 @@ NTSTATUS DbgkpSendErrorMessage(
 );
 
 // 挂起被调试进程
-BOOLEAN
-DbgkpSuspendProcess(
-);
+//BOOLEAN
+//DbgkpSuspendProcess(
+//);
 
 // 恢复被调试进程的执行
-VOID DbgkpResumeProcess(
-	_In_ PEPROCESS Process
-);
+//VOID DbgkpResumeProcess(
+//	_In_ PEPROCESS Process
+//);
 
 // 向调试子系统发送异常消息
 BOOLEAN DbgkForwardException(
@@ -287,10 +317,10 @@ VOID DbgkpConvertKernelToUserStateChange(
 	PDEBUG_EVENT DebugEvent
 );
 
-NTSTATUS MmGetFileNameForAddress(
-	_In_ PVOID ProcessVa,
-	_Out_ PUNICODE_STRING FileName
-);
+//NTSTATUS MmGetFileNameForAddress(
+//	_In_ PVOID ProcessVa,
+//	_Out_ PUNICODE_STRING FileName
+//);
 
 NTSTATUS DbgkClearProcessDebugObject(
 	_In_ PEPROCESS Process,

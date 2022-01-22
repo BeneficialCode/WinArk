@@ -37,9 +37,11 @@ using namespace std;
 SymbolInfo::SymbolInfo() {
 	auto size = sizeof(SYMBOL_INFO) + MAX_SYM_NAME;
 	m_Symbol = static_cast<SYMBOL_INFO*>(malloc(size));
-	::memset(m_Symbol, 0, size);
-	m_Symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-	m_Symbol->MaxNameLen = MAX_SYM_NAME;
+	if (m_Symbol) {
+		::memset(m_Symbol, 0, size);
+		m_Symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+		m_Symbol->MaxNameLen = MAX_SYM_NAME;
+	}
 }
 
 SymbolInfo::~SymbolInfo() {

@@ -1102,7 +1102,6 @@ DbgkpQueueMessage(
 		ExReleaseFastMutex(&DebugObject->Mutex);
 	}
 
-
 	if ((Flags & DEBUG_EVENT_NOWAIT) == 0) {
 		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
 		if (NT_SUCCESS(status)) {

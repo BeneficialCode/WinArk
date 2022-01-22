@@ -193,6 +193,6 @@ public:
 private:
 	BOOL Callback(ULONG code, ULONG64 data);
 
-	HANDLE m_hProcess;
-	DWORD64 _address;
+	HANDLE m_hProcess{ INVALID_HANDLE_VALUE };
+	DWORD64 _address{ 0 };
 };
