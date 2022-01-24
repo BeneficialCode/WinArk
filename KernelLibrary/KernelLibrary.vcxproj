@@ -236,6 +236,7 @@
     <ClInclude Include="CyclicBuffer.h" />
     <ClInclude Include="DbgDefender.h" />
     <ClInclude Include="DevMonManager.h" />
+    <ClInclude Include="ExecutiveResource.h" />
     <ClInclude Include="FastMutex.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="GuardedRegion.h" />
@@ -246,6 +247,7 @@
     <ClInclude Include="kvector.h" />
     <ClInclude Include="LinkedList.h" />
     <ClInclude Include="Logging.h" />
+    <ClInclude Include="LookasideList.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="ObjectAttributes.h" />
@@ -268,6 +270,7 @@
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
+    <ClCompile Include="ExecutiveResource.cpp" />
     <ClCompile Include="FastMutex.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GuardedRegion.cpp" />
@@ -277,6 +280,7 @@
     <ClCompile Include="kvector.cpp" />
     <ClCompile Include="LinkedList.cpp" />
     <ClCompile Include="Logging.cpp" />
+    <ClCompile Include="LookasideList.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Mutex.cpp" />
     <ClCompile Include="ObjectAttributes.cpp" />

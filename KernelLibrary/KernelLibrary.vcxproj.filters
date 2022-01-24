@@ -124,6 +124,12 @@
     <ClInclude Include="Win10_1903.h">
       <Filter>DbgCore</Filter>
     </ClInclude>
+    <ClInclude Include="ExecutiveResource.h">
+      <Filter>Synchronization</Filter>
+    </ClInclude>
+    <ClInclude Include="LookasideList.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -206,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="DbgDefender.cpp">
       <Filter>DbgCore</Filter>
+    </ClCompile>
+    <ClCompile Include="ExecutiveResource.cpp">
+      <Filter>Synchronization</Filter>
+    </ClCompile>
+    <ClCompile Include="LookasideList.cpp">
+      <Filter>ktl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

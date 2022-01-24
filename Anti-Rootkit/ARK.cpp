@@ -12,7 +12,7 @@
 #include "..\KernelLibrary\SysMon.h"
 #include "..\KernelLibrary\Logging.h"
 
-
+// SE_IMAGE_SIGNATURE_TYPE
 
 // define a tag (because of little endianess, viewed in PoolMon as 'arkv'
 #define DRIVER_TAG 'vkra'
