@@ -160,6 +160,7 @@ void CSSDTHookTable::Refresh() {
 	}
 }
 
+
 ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 	if (!_fileMapVA)
 		return 0;
@@ -169,21 +170,31 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 
 
 	uintptr_t rva = (uintptr_t)_KiServiceTable - (uintptr_t)_kernelBase;
-
+	
 #ifdef _WIN64
-	auto pEntry = (char*)_fileMapVA + rva + 8 * number;
-	// 0xFFFFFFFF00000000
-	ULONGLONG value = *(ULONGLONG*)pEntry;
-
-	if ((value & 0xFFFFFFFF00000000) == (_imageBase & 0xFFFFFFFF00000000)) {
-		rva = *(ULONGLONG*)pEntry - _imageBase;
-	}
-	else {
-		pEntry = (char*)_fileMapVA + rva + 4 * number;
-		auto entry = *(ULONG*)pEntry;
+	auto CheckAddressMethod = [&]()->bool {
+		auto pEntry = (char*)_fileMapVA + rva + 8 * number;
+		// 0xFFFFFFFF00000000
+		ULONGLONG value = *(ULONGLONG*)pEntry;
+		if ((value & 0xFFFFFFFF00000000) == (_imageBase & 0xFFFFFFFF00000000)
+			&& value > _imageBase) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	};
+	static bool use4bytes = CheckAddressMethod();
+	if (use4bytes) {
+		auto pEntry = (ULONG*)((char*)_fileMapVA + rva);
+		auto entry = pEntry[number];
 		rva = entry;
 	}
-
+	else {
+		auto pEntry = (ULONGLONG*)((char*)_fileMapVA + rva);
+		ULONGLONG value = pEntry[number];
+		rva = value - _imageBase;
+	}
 #else
 	auto pEntry = (char*)_fileMapVA + (DWORD)rva + sizeof(ULONG) * number;
 	auto entry = *(ULONG*)pEntry;
@@ -235,7 +246,7 @@ void CSSDTHookTable::GetSSDTEntry() {
 		info.HookType = "   ---   ";
 		if (info.OriginalAddress != info.CurrentAddress) {
 			info.Hooked = true;
-			info.HookType = "hooked";
+			info.HookType = "  hooked";
 		}
 		info.TargetModule = Helpers::GetModuleByAddress(info.CurrentAddress);
 		m_Table.data.info.push_back(info);

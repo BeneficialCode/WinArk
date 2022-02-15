@@ -336,6 +336,9 @@
     <ClCompile Include="UnloadedDriverTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="DispatchRoutinesTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -663,6 +666,9 @@
       <Filter>Table</Filter>
     </ClInclude>
     <ClInclude Include="UnloadedDriverTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="DispatchRoutinesTable.h">
       <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>

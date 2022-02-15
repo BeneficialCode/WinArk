@@ -1,32 +1,23 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
-#include <KernelModuleTracker.h>
 
-#define SystemModuleInformation 11
+#define IRP_MJ_MAXIMUM_FUNCTION         0x1b
 
-struct SystemServiceInfo {
-	DWORD ServiceNumber;
-	std::string ServiceFunctionName;
-	uintptr_t OriginalAddress;
-	std::string HookType;
-	uintptr_t CurrentAddress;
+struct DispatchRoutineInfo {
+	DWORD OrdinalNumber;
+	void* Routine[IRP_MJ_MAXIMUM_FUNCTION];
 	std::string TargetModule;
 	bool Hooked;
 };
 
-class CSSDTHookTable :
-	public CTable<SystemServiceInfo>,
-	public CWindowImpl<CSSDTHookTable> {
-
+class CDispatchRoutinesTable :
+	public CTable<DispatchRoutineInfo>,
+	public CWindowImpl<CDispatchRoutinesTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CSSDTHookTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, SystemServiceInfo& info, int column);
-	bool CompareItems(const SystemServiceInfo& s1, const SystemServiceInfo& s2, int col, bool asc);
-
-	BEGIN_MSG_MAP(CServiceTable)
+	BEGIN_MSG_MAP(CDispatchRoutinesTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -63,30 +54,8 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-	void Refresh();
 private:
-
-	ULONG_PTR GetOrignalAddress(DWORD number);
-
-	struct SSDTEntry {
-		int Number;
-		std::string Name;
-		void* Original;
-		void* Current;
+	enum class Column {
+		Name,Address,TargetModule
 	};
-
-	void GetSSDTEntry();
-
-private:
-	enum class HookColumn {
-		Number, Name, OrgAddress, HookType, CurAddress, TargetModule
-	};
-
-	PVOID _kernelBase;
-	PVOID _fileMapVA;
-	PULONG _KiServiceTable;
-	ULONGLONG _imageBase;
-	std::vector<SSDTEntry> _entries;
-	ULONG _limit;
-	int _total = 0;
 };

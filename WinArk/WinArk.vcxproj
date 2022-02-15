@@ -238,6 +238,7 @@
     <ClCompile Include="DeleteValueCommand.cpp" />
     <ClCompile Include="DeviceManagerView.cpp" />
     <ClCompile Include="DeviceObjectType.cpp" />
+    <ClCompile Include="DispatchRoutinesTable.cpp" />
     <ClCompile Include="DriverTable.cpp" />
     <ClCompile Include="EnumString.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
@@ -346,6 +347,7 @@
     <ClInclude Include="DeleteValueCommand.h" />
     <ClInclude Include="DeviceManagerView.h" />
     <ClInclude Include="DeviceObjectType.h" />
+    <ClInclude Include="DispatchRoutinesTable.h" />
     <ClInclude Include="DriverTable.h" />
     <ClInclude Include="EnumStrings.h" />
     <ClInclude Include="EnvironmentDlg.h" />
