@@ -1,5 +1,6 @@
 #pragma once
 #include <SetupAPI.h>
+#include <cfgmgr32.h>
 
 namespace wil {
 	using unique_hinfoset = unique_any_handle_invalid<decltype(&::SetupDiDestroyDeviceInfoList), ::SetupDiDestroyDeviceInfoList>;

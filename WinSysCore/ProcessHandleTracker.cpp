@@ -12,7 +12,7 @@ bool HandleEntryInfo::operator==(const HandleEntryInfo& other) const {
 template<>
 struct std::hash<HandleEntryInfo> {
 	size_t operator()(const HandleEntryInfo& key) const {
-		return (size_t)key.HandleValue;
+		return (size_t)key.HandleValue ^ ((int32_t)key.ObjectTypeIndex << 16);
 	}
 };
 
@@ -98,7 +98,7 @@ uint32_t ProcessHandleTracker::Impl::EnumHandles(bool clearHistory) {
 		_handles.reserve(info->NumberOfHandles);
 		for (ULONG i = 0; i < info->NumberOfHandles; i++) {
 			const auto& entry = info->Handles[i];
-			HandleEntryInfo key = { entry.HandleValue,entry.ObjectTypeIndex };
+			HandleEntryInfo key = { entry.HandleValue,(uint16_t)entry.ObjectTypeIndex };
 			_handles.insert(key);
 		}
 	}
@@ -106,7 +106,7 @@ uint32_t ProcessHandleTracker::Impl::EnumHandles(bool clearHistory) {
 		auto oldHandles = _handles;
 		for (ULONG i = 0; i < info->NumberOfHandles; i++) {
 			const auto& entry = info->Handles[i];
-			HandleEntryInfo key = { entry.HandleValue,entry.ObjectTypeIndex };
+			HandleEntryInfo key = { entry.HandleValue,(uint16_t)entry.ObjectTypeIndex };
 			if (_handles.find(key) == _handles.end()) {
 				// new handle
 				_newHandles.push_back(key);
