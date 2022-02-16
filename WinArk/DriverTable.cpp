@@ -2,6 +2,7 @@
 #include "DriverTable.h"
 #include "ServiceManager.h"
 #include "Helpers.h"
+#include "KernelRoutineDlg.h"
 
 using namespace WinSys;
 
@@ -63,7 +64,27 @@ LRESULT CDriverTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CDriverTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_CONTEXT);
+	hSubMenu = menu.GetSubMenu(7);
+	POINT pt;
+	::GetCursorPos(&pt);
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+	auto& pdata = p.GetStatusProcess();
+	if (pdata.CurrentState != ServiceState::Running) {
+		EnableMenuItem(hSubMenu, ID_KERNEL_ROUTINES, MF_DISABLED);
+	}
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
 LRESULT CDriverTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -247,4 +268,15 @@ bool CDriverTable::CompareItems(const WinSys::DriverInfo& s1, const WinSys::Driv
 	}
 
 	return false;
+}
+
+LRESULT CDriverTable::OnKernelRoutine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+	CKernelRoutineDlg dlg;
+	dlg.DoModal(m_hWnd, (LPARAM)p.GetName().c_str());
+
+	return 0;
 }

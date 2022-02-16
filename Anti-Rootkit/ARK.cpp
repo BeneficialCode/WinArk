@@ -64,6 +64,8 @@ extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
 	_Out_opt_ PULONG ReturnLength
 );
 
+extern "C" POBJECT_TYPE * IoDriverObjectType;
+
 NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -75,18 +77,17 @@ NtReadVirtualMemory(
 	_Out_opt_ PSIZE_T NumberOfBytesRead
 );
 
-NTKERNELAPI
-NTSTATUS
-NTAPI
-ObReferenceObjectByName(
-	_In_ PUNICODE_STRING ObjectName,
+extern "C"
+NTSYSAPI
+NTSTATUS NTAPI ObReferenceObjectByName(
+	_In_ PUNICODE_STRING ObjectPath,
 	_In_ ULONG Attributes,
-	_In_opt_ PACCESS_STATE AccessState,
+	_In_opt_ PACCESS_STATE PassedAccessState,
+	_In_opt_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_TYPE ObjectType,
 	_In_ KPROCESSOR_MODE AccessMode,
 	_Inout_opt_ PVOID ParseContext,
-	_Out_ PVOID *Object
-);
+	_Out_ PVOID * Object);
 
 // 自身逻辑“最小化”
 // 标识哪些逻辑属于关键逻辑，非关键逻辑
@@ -963,6 +964,32 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			*(LONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(LONG);
 			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES:
+		{
+			PCWSTR driverName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
+			auto inputLen = dic.InputBufferLength;
+			if (driverName[inputLen / sizeof(WCHAR) - 1] != L'\0') {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			UNICODE_STRING name;
+			RtlInitUnicodeString(&name, driverName);
+			PDRIVER_OBJECT driver;
+			status = ObReferenceObjectByName(&name, OBJ_CASE_INSENSITIVE, nullptr, 0,
+				*IoDriverObjectType, KernelMode, nullptr, (PVOID*)&driver);
+			if (!NT_SUCCESS(status))
+				break;
+			PDRIVER_DISPATCH* pRoutines = (PDRIVER_DISPATCH*)Irp->AssociatedIrp.SystemBuffer;
+			for (int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++) {
+				pRoutines[i] = driver->MajorFunction[i];
+			}
+			ObDereferenceObject(driver);
+			if (NT_SUCCESS(status)) {
+				len = sizeof(PVOID) * IRP_MJ_MAXIMUM_FUNCTION;
+			}
 			break;
 		}
 	}

@@ -26,6 +26,7 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
@@ -53,10 +54,14 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+	
+
+
 	void DoRefresh();
 	enum class KernemModuleColumn {
 		Name, ImageBase, ImageSize, LoadOrderIndex, FullPath,
 	};
+
 
 private:
 	WinSys::KernelModuleTracker m_Tracker;

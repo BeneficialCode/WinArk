@@ -24,7 +24,6 @@
 enum class TabColumn :int {
 	Process, KernelModule, 
 	Kernel, 
-	//UserHook,
 	KernelHook,
 	Network,Driver,Registry,Device,Windows,Service
 };

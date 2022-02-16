@@ -339,6 +339,9 @@
     <ClCompile Include="DispatchRoutinesTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="KernelRoutineDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -670,6 +673,9 @@
     </ClInclude>
     <ClInclude Include="DispatchRoutinesTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelRoutineDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

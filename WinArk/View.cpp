@@ -950,13 +950,14 @@ LRESULT CRegistryManagerView::OnRunOnUIThread(UINT, WPARAM, LPARAM lp, BOOL&) {
 LRESULT CRegistryManagerView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	CRect rc;
 	GetClientRect(&rc);
-	int iX = rc.left;
+	int iX = rc.left + 5;
 	int width = rc.Width();
 	int bottom = rc.bottom;
 	int height = rc.Height();
 	::GetClientRect(m_AddressBar.m_hWnd, &rc);
 	int editHeight = rc.Height();
-	::MoveWindow(m_AddressBar, rc.left, rc.top, width, editHeight, TRUE);
+	rc.top += 5;
+	::MoveWindow(m_AddressBar, iX, rc.top, width, editHeight, TRUE);
 
 
 	bHandled = false;

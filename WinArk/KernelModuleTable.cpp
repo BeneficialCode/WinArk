@@ -3,9 +3,11 @@
 #include "KernelModuleTable.h"
 
 
+
 LRESULT CKernelModuleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
 }
+
 LRESULT CKernelModuleTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
 	return 0;
 }
@@ -53,8 +55,10 @@ LRESULT CKernelModuleTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CKernelModuleTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	
+	return 0;
 }
+
 LRESULT CKernelModuleTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
@@ -116,3 +120,5 @@ bool CKernelModuleTable::CompareItems(const std::shared_ptr<WinSys::KernelModule
 	}
 	return false;
 }
+
+

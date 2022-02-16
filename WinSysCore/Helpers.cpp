@@ -178,3 +178,52 @@ std::string Helpers::WstringToString(const std::wstring& wstr) {
 	std::string str(buffer.get());
 	return str;
 }
+
+std::wstring Helpers::GetDriverDirFromObjectManager(std::wstring serviceName) {
+	DWORD size = 1 << 16;
+	wil::unique_virtualalloc_ptr<> buffer(
+		::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+
+	NTSTATUS status;
+	HANDLE hDirectory = INVALID_HANDLE_VALUE;
+	UNICODE_STRING directoryName;
+	std::wstring folder;
+	folder = L"\\driver";
+	RtlInitUnicodeString(&directoryName, folder.c_str());
+	OBJECT_ATTRIBUTES objAttr;
+	InitializeObjectAttributes(&objAttr, &directoryName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+	status = ::NtOpenDirectoryObject(&hDirectory, DIRECTORY_QUERY | DIRECTORY_TRAVERSE, &objAttr);
+	if (!NT_SUCCESS(status)) {
+		return L"";
+	}
+	ULONG index = 0;
+	ULONG returned;
+	status = ::NtQueryDirectoryObject(hDirectory, buffer.get(), 1 << 16, FALSE, TRUE, &index, &returned);
+	if (NT_SUCCESS(status)) {
+		auto info = (OBJECT_DIRECTORY_INFORMATION*)buffer.get();
+		for (int i = 0; i < index; i++) {
+			std::wstring name(info[i].Name.Buffer, info[i].Name.Length);
+			if (name.find(serviceName) != name.npos) {
+				return folder;
+			}
+		}
+	}
+
+	folder = L"\\filesystem";
+	RtlInitUnicodeString(&directoryName, folder.c_str());
+	InitializeObjectAttributes(&objAttr, &directoryName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+	status = ::NtOpenDirectoryObject(&hDirectory, DIRECTORY_QUERY | DIRECTORY_TRAVERSE, &objAttr);
+	if (!NT_SUCCESS(status)) {
+		return L"";
+	}
+	status = ::NtQueryDirectoryObject(hDirectory, buffer.get(), 1 << 16, FALSE, TRUE, &index, &returned);
+	if (NT_SUCCESS(status)) {
+		auto info = (OBJECT_DIRECTORY_INFORMATION*)buffer.get();
+		for (int i = 0; i < index; i++) {
+			std::wstring name(info[i].Name.Buffer, info[i].Name.Length);
+			if (name.find(serviceName) != name.npos) {
+				return folder;
+			}
+		}
+	}
+}

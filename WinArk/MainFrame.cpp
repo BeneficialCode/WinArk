@@ -118,7 +118,7 @@ void CMainFrame::InitNetworkTable() {
 
 void CMainFrame::InitKernelModuleTable() {
 	BarDesc bars[] = {
-		{20,"驱动名",0},
+		{20,"驱动文件名",0},
 		{20,"映像基址",0},
 		{10,"映像大小",0},
 		{20,"加载顺序",0},
@@ -151,7 +151,7 @@ void CMainFrame::InitKernelModuleTable() {
 
 void CMainFrame::InitDriverTable() {
 	BarDesc bars[] = {
-		{20,"驱动名",0},
+		{20,"驱动服务名",0},
 		{20,"显示名称",0},
 		{10,"状态",0},
 		{20,"驱动类型",0},

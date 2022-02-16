@@ -320,31 +320,31 @@ DbgkpSetProcessDebugObject(
 			process->DebugPort = DebugObject;
 			ObReferenceObject(LastThread);
 
-			Thread = (PETHREAD_S)PsGetNextProcessThread(Process, LastThread);
+			//Thread = (PETHREAD_S)PsGetNextProcessThread(Process, LastThread);
 						
-			if (Thread != nullptr) {
-				process->DebugPort = nullptr;
-				ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
-				GlobalHeld = FALSE;
+			//if (Thread != nullptr) {
+			//	process->DebugPort = nullptr;
+			//	ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+			//	GlobalHeld = FALSE;
 
-				ObDereferenceObject(LastThread);
-				// 通知线程创建消息
-				status = DbgkpPostFakeThreadMessages(
-					Process,
-					(PETHREAD)Thread,
-					DebugObject,
-					&FirstThread,
-					&LastThread
-				);
-				if (!NT_SUCCESS(status)) {
-					LastThread = nullptr;
-					break;
-				}
-				ObDereferenceObject(FirstThread);
-			}
-			else {
-				break;
-			}
+			//	ObDereferenceObject(LastThread);
+			//	// 通知线程创建消息
+			//	status = DbgkpPostFakeThreadMessages(
+			//		Process,
+			//		(PETHREAD)Thread,
+			//		DebugObject,
+			//		&FirstThread,
+			//		&LastThread
+			//	);
+			//	if (!NT_SUCCESS(status)) {
+			//		LastThread = nullptr;
+			//		break;
+			//	}
+			//	ObDereferenceObject(FirstThread);
+			//}
+			//else {
+			//	break;
+			//}
 		}
 	}
 
@@ -474,7 +474,7 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	CurrentThread = (PETHREAD_S)PsGetCurrentThread();
 
 	if (StartThread == nullptr) {
-		StartThread = PsGetNextProcessThread(Process,nullptr);
+		//StartThread = PsGetNextProcessThread(Process,nullptr);
 		First = TRUE;
 	}
 	else {
@@ -484,101 +484,101 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	}
 
 	// 遍历调试进程的所有线程
-	for (Thread = (PETHREAD_S)StartThread;
-		Thread != nullptr;
-		Thread = (PETHREAD_S)PsGetNextProcessThread(Process, (PETHREAD)Thread)) {
-		Flags = DEBUG_EVENT_NOWAIT;
+	//for (Thread = (PETHREAD_S)StartThread;
+	//	Thread != nullptr;
+	//	Thread = (PETHREAD_S)PsGetNextProcessThread(Process, (PETHREAD)Thread))
+	//	Flags = DEBUG_EVENT_NOWAIT;
 
-		if (LastThread != nullptr) {
-			ObfDereferenceObject(LastThread);
-		}
+	//	if (LastThread != nullptr) {
+	//		ObfDereferenceObject(LastThread);
+	//	}
 
-		LastThread = Thread;
-		ObfDereferenceObject(LastThread);
+	//	LastThread = Thread;
+	//	ObfDereferenceObject(LastThread);
 
-		if (Thread->ThreadInserted == 0) {
-			// 涉及的内容太多
-			continue;
-		}
+	//	if (Thread->ThreadInserted == 0) {
+	//		// 涉及的内容太多
+	//		continue;
+	//	}
 
-		if (ExAcquireRundownProtection(&Thread->RundownProtect)) {
-			Flags |= DEBUG_EVENT_RELEASE;
-			status = PsSuspendThread((PETHREAD)Thread, nullptr);
-			if (NT_SUCCESS(status)) {
-				Flags |= DEBUG_EVENT_SUSPEND;
-			}
-		}
-		else {
-			Flags |= DEBUG_EVENT_PROTECT_FAILED;
-		}
+	//	if (ExAcquireRundownProtection(&Thread->RundownProtect)) {
+	//		Flags |= DEBUG_EVENT_RELEASE;
+	//		status = PsSuspendThread((PETHREAD)Thread, nullptr);
+	//		if (NT_SUCCESS(status)) {
+	//			Flags |= DEBUG_EVENT_SUSPEND;
+	//		}
+	//	}
+	//	else {
+	//		Flags |= DEBUG_EVENT_PROTECT_FAILED;
+	//	}
 
-		// 每次构造一个DBGKM_APIMSG结构
-		memset(&ApiMsg, 0, sizeof(ApiMsg));
+	//	// 每次构造一个DBGKM_APIMSG结构
+	//	memset(&ApiMsg, 0, sizeof(ApiMsg));
 
-		if (First && (Flags & DEBUG_EVENT_PROTECT_FAILED) == 0) {
-			// 进程的第一个线程
-			IsFirstThread = TRUE;
-			ApiMsg.ApiNumber = DbgKmCreateProcessApi;
+	//	if (First && (Flags & DEBUG_EVENT_PROTECT_FAILED) == 0) {
+	//		// 进程的第一个线程
+	//		IsFirstThread = TRUE;
+	//		ApiMsg.ApiNumber = DbgKmCreateProcessApi;
 
-			if (process->SectionObject) {
-				ApiMsg.u.CreateProcess.FileHandle = DbgkpSectionToFileHandle(process->SectionObject);
-			}
-			else {
-				ApiMsg.u.CreateProcess.FileHandle = nullptr;
-			}
-			ApiMsg.u.CreateProcess.BaseOfImage = process->SectionBaseAddress;
+	//		if (process->SectionObject) {
+	//			ApiMsg.u.CreateProcess.FileHandle = DbgkpSectionToFileHandle(process->SectionObject);
+	//		}
+	//		else {
+	//			ApiMsg.u.CreateProcess.FileHandle = nullptr;
+	//		}
+	//		ApiMsg.u.CreateProcess.BaseOfImage = process->SectionBaseAddress;
 
-			KeStackAttachProcess(Process, &ApcState);
+	//		KeStackAttachProcess(Process, &ApcState);
 
-			__try {
-				NtHeaders = RtlImageNtHeader(process->SectionBaseAddress);
-				if (NtHeaders) {
-					ApiMsg.u.CreateProcess.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
-					ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
-					ApiMsg.u.CreateProcess.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
-				}
-			}
-			__except (EXCEPTION_EXECUTE_HANDLER) {
-				ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
-				ApiMsg.u.CreateProcess.DebugInfoFileOffset = 0;
-				ApiMsg.u.CreateProcess.DebugInfoSize = 0;
-			}
+	//		__try {
+	//			NtHeaders = RtlImageNtHeader(process->SectionBaseAddress);
+	//			if (NtHeaders) {
+	//				ApiMsg.u.CreateProcess.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
+	//				ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
+	//				ApiMsg.u.CreateProcess.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
+	//			}
+	//		}
+	//		__except (EXCEPTION_EXECUTE_HANDLER) {
+	//			ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
+	//			ApiMsg.u.CreateProcess.DebugInfoFileOffset = 0;
+	//			ApiMsg.u.CreateProcess.DebugInfoSize = 0;
+	//		}
 
-			KeUnstackDetachProcess(&ApcState);
-		}
-		else {
-			IsFirstThread = FALSE;
-			ApiMsg.ApiNumber = DbgKmCreateThreadApi;
-			ApiMsg.u.CreateThread.StartAddress = Thread->StartAddress;
-		}
+	//		KeUnstackDetachProcess(&ApcState);
+	//	}
+	//	else {
+	//		IsFirstThread = FALSE;
+	//		ApiMsg.ApiNumber = DbgKmCreateThreadApi;
+	//		ApiMsg.u.CreateThread.StartAddress = Thread->StartAddress;
+	//	}
 
-		status = DbgkpQueueMessage(Process, (PETHREAD)Thread,
-			&ApiMsg, Flags, DebugObject);
+	//	status = DbgkpQueueMessage(Process, (PETHREAD)Thread,
+	//		&ApiMsg, Flags, DebugObject);
 
-		if (!NT_SUCCESS(status)) {
-			if (Flags & DEBUG_EVENT_SUSPEND) {
-				KeResumeThread((PETHREAD)Thread);
-			}
+	//	if (!NT_SUCCESS(status)) {
+	//		if (Flags & DEBUG_EVENT_SUSPEND) {
+	//			KeResumeThread((PETHREAD)Thread);
+	//		}
 
-			if (Flags & DEBUG_EVENT_RELEASE) {
-				ExReleaseRundownProtection(&Thread->RundownProtect);
-			}
+	//		if (Flags & DEBUG_EVENT_RELEASE) {
+	//			ExReleaseRundownProtection(&Thread->RundownProtect);
+	//		}
 
-			if (ApiMsg.ApiNumber == DbgKmCreateProcessApi && ApiMsg.u.CreateProcess.FileHandle != nullptr) {
-				ObCloseHandle(ApiMsg.u.CreateProcess.FileHandle, KernelMode);
-			}
+	//		if (ApiMsg.ApiNumber == DbgKmCreateProcessApi && ApiMsg.u.CreateProcess.FileHandle != nullptr) {
+	//			ObCloseHandle(ApiMsg.u.CreateProcess.FileHandle, KernelMode);
+	//		}
 
-			ObfDereferenceObject(Thread);
-			break;
-		}
-		else if (IsFirstThread) {
-			First = FALSE;
-			ObReferenceObject(Thread);
-			FirstThread = Thread;
+	//		ObfDereferenceObject(Thread);
+	//		break;
+	//	}
+	//	else if (IsFirstThread) {
+	//		First = FALSE;
+	//		ObReferenceObject(Thread);
+	//		FirstThread = Thread;
 
-			DbgkSendSystemDllMessages((PETHREAD)Thread, DebugObject, &ApiMsg);
-		}
-	}
+	//		DbgkSendSystemDllMessages((PETHREAD)Thread, DebugObject, &ApiMsg);
+	//	}
+	//}
 
 	if (!NT_SUCCESS(status)) {
 		if (FirstThread) {

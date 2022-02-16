@@ -5,17 +5,22 @@
 #define IRP_MJ_MAXIMUM_FUNCTION         0x1b
 
 struct DispatchRoutineInfo {
-	DWORD OrdinalNumber;
-	void* Routine[IRP_MJ_MAXIMUM_FUNCTION];
+	DWORD Code;
+	std::string MajorCodeName;
+	void* Routine;
 	std::string TargetModule;
-	bool Hooked;
 };
+
 
 class CDispatchRoutinesTable :
 	public CTable<DispatchRoutineInfo>,
 	public CWindowImpl<CDispatchRoutinesTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
+
+	CDispatchRoutinesTable(BarInfo& bars, TableInfo& table,std::wstring name);
+	int ParseTableEntry(CString& s, char& mask, int& select, DispatchRoutineInfo& info, int column);
+	bool CompareItems(const DispatchRoutineInfo& s1, const DispatchRoutineInfo& s2, int col, bool asc);
 
 	BEGIN_MSG_MAP(CDispatchRoutinesTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
@@ -54,8 +59,10 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
+	void GetDispatchInfo(std::wstring name);
+
 private:
 	enum class Column {
-		Name,Address,TargetModule
+		Code,MajorCodeName,Address,TargetModule
 	};
 };

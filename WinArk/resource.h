@@ -28,6 +28,8 @@
 #define IDR_X86_DRIVER                  231
 #define IDR_BIN3                        233
 #define IDD_PROGRESS                    234
+#define IDD_MODULES1                    235
+#define IDD_ROUTINES                    235
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
 #define IDC_HEX                         1002
@@ -76,7 +78,6 @@
 #define IDC_KEY                         1049
 #define IDC_PATH                        1050
 #define IDC_BROWSE                      1051
-#define IDC_PROGRESS1                   1052
 #define IDC_PROGRESS                    1052
 #define IDC_MESSAGE                     1053
 #define ID_PROCESS_THREADS              32775
@@ -167,13 +168,15 @@
 #define ID_LISTDIR_DELETE               32874
 #define ID_REMOTE_DISCONNECT            32875
 #define ID_FILE_DISCONNECT              32876
+#define ID_KERNEL_32877                 32877
+#define ID_KERNEL_ROUTINES              32878
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        236
-#define _APS_NEXT_COMMAND_VALUE         32877
+#define _APS_NEXT_COMMAND_VALUE         32879
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

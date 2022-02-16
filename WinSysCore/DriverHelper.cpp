@@ -4,7 +4,7 @@
 
 HANDLE DriverHelper::_hDevice;
 
-
+#define IRP_MJ_MAXIMUM_FUNCTION         0x1b
 
 bool DriverHelper::LoadDriver(bool load) {
 	if (_hDevice) {
@@ -430,4 +430,17 @@ LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT, pNotifyInfo, sizeof(NotifyInfo),
 		&count, sizeof(LONG), &bytes, nullptr);
 	return count;
+}
+
+bool DriverHelper::GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	LONG count = 0;
+	DWORD len = ::wcslen(name) + 1;
+	len = len * sizeof(WCHAR);
+
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES, (LPVOID)name, len,
+		pRoutines, sizeof(void*) * IRP_MJ_MAXIMUM_FUNCTION, &bytes, nullptr);
 }

@@ -11,4 +11,5 @@ struct Helpers abstract final {
 	static std::string GetModuleByAddress(ULONG_PTR address);
 	static std::wstring StringToWstring(const std::string& str);
 	static std::string WstringToString(const std::wstring& wstr);
+	static std::wstring GetDriverDirFromObjectManager(std::wstring serviceName);
 };
