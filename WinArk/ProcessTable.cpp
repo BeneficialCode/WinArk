@@ -61,6 +61,9 @@ int CProcessTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			break;
 		case ProcessColumn::CmdLine:
 			s = px.GetCommandLine().c_str();
+			if (s.GetLength() > MAX_PATH) {
+				select = DRAW_HILITE;
+			}
 			break;
 		default:
 			break;
@@ -257,7 +260,8 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	}
 	if (!ok)
 		AtlMessageBox(*this, L"Failed to kill process", IDS_TITLE, MB_ICONERROR);
-	
+	else
+		Refresh();
 	return 0;
 }
 

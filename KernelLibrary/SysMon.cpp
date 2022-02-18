@@ -7,6 +7,7 @@
 #include "Logging.h"
 
 
+
 ULONG	PspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
@@ -124,11 +125,15 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		// 判断驱动名，修改入口点代码，达到禁止加载驱动。
 		
 		// do something...
-
 		if (ImageInfo->ExtendedInfoPresent) {
 			auto exinfo = CONTAINING_RECORD(ImageInfo, IMAGE_INFO_EX, ImageInfo);
 			// access FileObject
-			
+			PFLT_FILE_NAME_INFORMATION nameInfo;
+			if (NT_SUCCESS(FltGetFileNameInformationUnsafe(exinfo->FileObject, nullptr,
+				FLT_FILE_NAME_NORMALIZED | FLT_FILE_NAME_QUERY_DEFAULT, &nameInfo))) {
+				LogInfo("FileNameInfo %wZ\n", &nameInfo->Name);
+				FltReleaseFileNameInformation(nameInfo);
+			}
 		}
 		return;
 	}
