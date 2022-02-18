@@ -145,15 +145,20 @@ std::wstring Process::GetFullImageName() const {
 }
 
 std::wstring Process::GetCommandLine() const {
-	ULONG size = 8192;
-	auto buffer = std::make_unique<BYTE[]>(size);
-	auto status = ::NtQueryInformationProcess(_handle.get(), ProcessCommandLineInformation, buffer.get(), size, &size);
-	if (NT_SUCCESS(status)) {
-		auto str = (UNICODE_STRING*)buffer.get();
-		return std::wstring(str->Buffer, str->Length / sizeof(WCHAR));
+	if (::IsWindows8OrGreater()) {
+		ULONG size = 8192;
+		auto buffer = std::make_unique<BYTE[]>(size);
+		auto status = ::NtQueryInformationProcess(_handle.get(), ProcessCommandLineInformation, buffer.get(), size, &size);
+		if (NT_SUCCESS(status)) {
+			auto str = (UNICODE_STRING*)buffer.get();
+			return std::wstring(str->Buffer, str->Length / sizeof(WCHAR));
+		}
+		if (status == STATUS_INVALID_INFO_CLASS) {
+			return L"";
+		}
 	}
-	if (status == STATUS_INVALID_INFO_CLASS) {
-		return L"";
+	else {
+		return GetCmdLine(_handle.get());
 	}
 	return L"";
 }
@@ -323,6 +328,24 @@ std::wstring Process::GetCurrentDirectory(HANDLE hProcess) {
 		return L"";
 
 	return path;
+}
+
+std::wstring Process::GetCmdLine(HANDLE hProcess) {
+	std::wstring cmdLine;
+	PEB peb;
+	if (!GetProcessPeb(hProcess, &peb))
+		return cmdLine;
+
+	RTL_USER_PROCESS_PARAMETERS processParams;
+	if (!::ReadProcessMemory(hProcess, peb.ProcessParameters, &processParams, sizeof(processParams), nullptr))
+		return cmdLine;
+
+	cmdLine.resize(processParams.CommandLine.Length / sizeof(WCHAR) + 1);
+	if (!::ReadProcessMemory(hProcess, processParams.CommandLine.Buffer, cmdLine.data(),
+		processParams.CommandLine.Length, nullptr))
+		return L"";
+
+	return cmdLine;
 }
 
 std::vector<std::pair<std::wstring, std::wstring>> Process::GetEnvironment(HANDLE hProcess) {

@@ -9,9 +9,9 @@
 #pragma comment(lib,"Version.lib")
 
 ProcessInfoEx::ProcessInfoEx(WinSys::ProcessInfo* pi) :_pi(pi) {
-	auto hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_INFORMATION);
+	auto hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_INFORMATION|PROCESS_VM_READ);
 	if(!hProcess)
-		hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_LIMITED_INFORMATION);
+		hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ);
 	if (hProcess)
 		_process.reset(new WinSys::Process(hProcess));
 }

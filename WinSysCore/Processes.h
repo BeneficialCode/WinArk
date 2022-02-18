@@ -115,6 +115,7 @@ namespace WinSys {
 		ProcessPriorityClass GetPriorityClass() const;
 		std::wstring GetCurrentDirectory() const;
 		static std::wstring GetCurrentDirectory(HANDLE hProcess);
+		static std::wstring GetCmdLine(HANDLE hProcess);
 		static std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment(HANDLE hProcess);
 		std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment() const;
 

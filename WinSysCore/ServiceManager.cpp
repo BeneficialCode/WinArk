@@ -2,6 +2,7 @@
 #include "ServiceManager.h"
 #include "Service.h"
 #include "Token.h"
+#include "Helpers.h"
 
 using namespace WinSys;
 
@@ -125,7 +126,23 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 	}
 
 	result->Type = static_cast<ServiceType>(config->dwServiceType);
+	WCHAR winDir[MAX_PATH];
+	::GetWindowsDirectory(winDir, _countof(winDir));
+	static const std::wstring root(L"\\SystemRoot\\");
+	static const std::wstring System(L"System32");
+	static const std::wstring system(L"system32");
+	static const std::wstring global(L"\\??\\");
+
 	result->BinaryPathName = config->lpBinaryPathName;
+	if (result->BinaryPathName.find(root) == 0)
+		result->BinaryPathName = winDir + result->BinaryPathName.substr(root.size() - 1);
+	else if (result->BinaryPathName.find(System) == 0 || result->BinaryPathName.find(system) == 0) {
+		result->BinaryPathName = winDir + (L"\\" + result->BinaryPathName);
+	}
+	else if (result->BinaryPathName.find(global) == 0) {
+		result->BinaryPathName = result->BinaryPathName.substr(global.size());
+	}
+	
 	auto s = config->lpDependencies;
 	while (s && *s) {
 		result->Dependencies.emplace_back(s);
