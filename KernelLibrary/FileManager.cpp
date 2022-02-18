@@ -29,7 +29,12 @@ NTSTATUS FileManager::OpenFileForRead(PCWSTR path) {
 }
 
 NTSTATUS FileManager::Close() {
-	return ZwClose(_handle);
+	if (_handle)
+		return ZwClose(_handle);
+}
+
+FileManager::~FileManager() {
+	Close();
 }
 
 NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus,LARGE_INTEGER offset) {
@@ -39,7 +44,9 @@ NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus
 		nullptr, // Í¬²½¶Á
 		nullptr, // 
 		nullptr, //
-		ioStatus, buffer, size, &offset, nullptr);
+		ioStatus, buffer, size, 
+		&offset, // specifies the starting byte offset in the file where the read operation will begin
+		nullptr);
 	return status;
 }
 

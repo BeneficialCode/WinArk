@@ -136,6 +136,8 @@ public:
 
 	NTSTATUS ForceDeleteFile(PCWSTR fileName);
 
+	~FileManager();
+
 private:
 	HANDLE _handle;
 };

@@ -114,6 +114,7 @@ bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* inf
 bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
 
+NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName);
 
 extern "C" {
 	NTKERNELAPI UCHAR* NTAPI PsGetProcessImageFileName(_In_ PEPROCESS Process);

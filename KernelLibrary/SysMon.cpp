@@ -5,7 +5,8 @@
 #include "PEParser.h"
 #include "AutoEnter.h"
 #include "Logging.h"
-
+#include "FileManager.h"
+#include "Memory.h"
 
 
 ULONG	PspNotifyEnableMask;
@@ -118,13 +119,15 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		//system image , ignore
 		PEParser parser(ImageInfo->ImageBase);
 		auto entryPoint = parser.GetAddressEntryPoint();
-		if (FullImageName)
-			KdPrint(("[Library] Driver Load %wZ AddressEntryPoint 0x%p\n", FullImageName,entryPoint));
+		if (FullImageName) {
+			KdPrint(("[Library] Driver Load %wZ AddressEntryPoint 0x%p\n", FullImageName, entryPoint));
+		}
 		else
 			KdPrint(("[Library] Unknown Driver Load AddressEntryPoint: 0x%p\n",entryPoint));
 		// 判断驱动名，修改入口点代码，达到禁止加载驱动。
 		
 		// do something...
+		
 		if (ImageInfo->ExtendedInfoPresent) {
 			auto exinfo = CONTAINING_RECORD(ImageInfo, IMAGE_INFO_EX, ImageInfo);
 			// access FileObject
@@ -433,5 +436,66 @@ LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
 	}
 
 	return count;
+}
+
+NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
+	NTSTATUS status = STATUS_SUCCESS;
+	FileManager mgrS,mgrT;
+	void* buffer = nullptr;
+	IO_STATUS_BLOCK ioStatus;
+
+	do
+	{
+		// open source file
+		mgrS.Open(FileName, FileAccessMask::Read | FileAccessMask::Synchronize);
+		if (!NT_SUCCESS(status))
+			break;
+
+		// get source file size
+		LARGE_INTEGER fileSize;
+		status = mgrS.GetFileSize(&fileSize);
+		if (!NT_SUCCESS(status) || fileSize.QuadPart == 0)
+			break;
+
+		// open target file
+		UNICODE_STRING targetFileName;
+		const WCHAR backupStream[] = L":backup";
+		targetFileName.MaximumLength = FileName->Length + sizeof(backupStream);
+
+		targetFileName.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, targetFileName.MaximumLength, 'kuab');
+		if (targetFileName.Buffer == nullptr){
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		RtlCopyUnicodeString(&targetFileName, FileName);
+		RtlAppendUnicodeToString(&targetFileName, backupStream);
+
+		status = mgrT.Open(&targetFileName, FileAccessMask::Write | FileAccessMask::Synchronize);
+
+		ExFreePool(targetFileName.Buffer);
+
+		if (!NT_SUCCESS(status))
+			break;
+
+		// allocate buffer for copying purpose
+		ULONG size = 1 << 21; // 2 MB
+		buffer = ExAllocatePoolWithTag(PagedPool, size, 'kcab');
+		if (!buffer) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		// loop - read from source,write to target
+		LARGE_INTEGER offset = { 0 }; // read
+		LARGE_INTEGER writeOffset = { 0 }; // write
+
+		while (fileSize.QuadPart > 0) {
+			status = mgrS.ReadFile(buffer, (ULONG)min((ULONGLONG)size, fileSize.QuadPart), &ioStatus, offset);
+
+		}
+	} while (false);
+	
+	return status;
 }
 
