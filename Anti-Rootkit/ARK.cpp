@@ -11,6 +11,7 @@
 #include "..\KernelLibrary\khook.h"
 #include "..\KernelLibrary\SysMon.h"
 #include "..\KernelLibrary\Logging.h"
+#include "..\KernelLibrary\SysMonCommon.h"
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -117,6 +118,9 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		KdPrint(("Failed to get the version information (0x%08X)\n", status));
 		return status;
 	}
+
+	InitializeListHead(&g_SysMonGlobals.ItemHead);
+	g_SysMonGlobals.Mutex.Init();
 
 	// Set an Unload routine
 	DriverObject->DriverUnload = AntiRootkitUnload;
@@ -992,6 +996,28 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			break;
 		}
+
+		case IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD:
+		{
+			status = PsSetLoadImageNotifyRoutine(OnImageLoadNotify);
+			if (!NT_SUCCESS(status)) {
+				LogError("failed to set image load callbacks (status=%08X)\n", status);
+				break;
+			}
+			break;
+		}
+
+		case IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD:
+		{
+			HANDLE hThread;
+			status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, RemoveImageNotify, nullptr);
+			if (!NT_SUCCESS(status)) {
+				KdPrint(("PsCreateSystemThread failed!"));
+				break;
+			}
+			status = ZwClose(hThread);
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;
@@ -1092,7 +1118,7 @@ void CreateThreadTest() {
 		SynchronizationEvent,	// when this event is set, 
 		// it releases at most one thread (auto reset)
 		FALSE);
-
+	
 	status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, MyThreadFunc, (PVOID)&ustrTest);
 	if (!NT_SUCCESS(status)) {
 		KdPrint(("PsCreateSystemThread failed!"));

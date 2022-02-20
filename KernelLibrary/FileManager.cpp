@@ -37,7 +37,7 @@ FileManager::~FileManager() {
 	Close();
 }
 
-NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus,LARGE_INTEGER offset) {
+NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus,PLARGE_INTEGER offset) {
 	NTSTATUS status;
 
 	status = ZwReadFile(_handle, 
@@ -45,19 +45,20 @@ NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus
 		nullptr, // 
 		nullptr, //
 		ioStatus, buffer, size, 
-		&offset, // specifies the starting byte offset in the file where the read operation will begin
+		offset, // specifies the starting byte offset in the file where the read operation will begin
 		nullptr);
 	return status;
 }
 
-NTSTATUS FileManager::WriteFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, LARGE_INTEGER offset) {
+
+NTSTATUS FileManager::WriteFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, PLARGE_INTEGER offset) {
 	NTSTATUS status;
 
 	status = ZwWriteFile(_handle,
 		nullptr,// Í¬²½Ð´
 		nullptr,
 		nullptr,
-		ioStatus,buffer,size,&offset,nullptr);
+		ioStatus,buffer,size,offset,nullptr);
 
 	return status;
 }
@@ -923,4 +924,8 @@ NTSTATUS FileManager::ForceDeleteFile(PCWSTR fileName){
 	}
 
 	return status;
+}
+
+NTSTATUS FileManager::SetInformationFile(PIO_STATUS_BLOCK ioStatus, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass) {
+	return ZwSetInformationFile(_handle, ioStatus, FileInformation, Length, FileInformationClass);
 }

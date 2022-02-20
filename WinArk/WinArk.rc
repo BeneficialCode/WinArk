@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -223,6 +223,16 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
 END
 
+IDD_CONFIG DIALOGEX 0, 0, 693, 379
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "回调配置",IDC_STATIC,7,6,375,120,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    CONTROL         "驱动加载备份（拦截式）",IDC_INTERCEPT_DRIVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,33,104,10
+    PUSHBUTTON      "设置回调",IDC_SET_CALLBACK,258,105,50,14
+    PUSHBUTTON      "移除回调",IDC_REMOVE_CALLBACK,326,105,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -319,6 +329,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 309
     END
+
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 686
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 372
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -379,6 +397,11 @@ BEGIN
 END
 
 IDD_ROUTINES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONFIG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -496,6 +519,10 @@ BEGIN
     BEGIN
         MENUITEM "查看分发例程",                      ID_KERNEL_ROUTINES
     END
+    POPUP "kernel_notify"
+    BEGIN
+        MENUITEM "Refresh",                     ID_KERNEL_REFRESH
+    END
 END
 
 IDR_MAINFRAME MENU
@@ -526,12 +553,12 @@ IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys
 
 IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -880,7 +907,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

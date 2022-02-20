@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -30,6 +30,7 @@
 #define IDD_PROGRESS                    234
 #define IDD_MODULES1                    235
 #define IDD_ROUTINES                    235
+#define IDD_CONFIG                      236
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
 #define IDC_HEX                         1002
@@ -80,6 +81,9 @@
 #define IDC_BROWSE                      1051
 #define IDC_PROGRESS                    1052
 #define IDC_MESSAGE                     1053
+#define IDC_INTERCEPT_DRIVER            1054
+#define IDC_REMOVE_CALLBACK             1060
+#define IDC_SET_CALLBACK                1061
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -170,14 +174,15 @@
 #define ID_FILE_DISCONNECT              32876
 #define ID_KERNEL_32877                 32877
 #define ID_KERNEL_ROUTINES              32878
+#define ID_KERNEL_REFRESH               32879
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        236
-#define _APS_NEXT_COMMAND_VALUE         32879
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_RESOURCE_VALUE        238
+#define _APS_NEXT_COMMAND_VALUE         32880
+#define _APS_NEXT_CONTROL_VALUE         1062
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

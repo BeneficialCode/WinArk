@@ -9,6 +9,7 @@
 #include "Memory.h"
 
 
+
 ULONG	PspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
@@ -121,6 +122,7 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		auto entryPoint = parser.GetAddressEntryPoint();
 		if (FullImageName) {
 			KdPrint(("[Library] Driver Load %wZ AddressEntryPoint 0x%p\n", FullImageName, entryPoint));
+			BackupFile(FullImageName);
 		}
 		else
 			KdPrint(("[Library] Unknown Driver Load AddressEntryPoint: 0x%p\n",entryPoint));
@@ -256,31 +258,103 @@ void PushItem(LIST_ENTRY* entry) {
 	g_SysMonGlobals.ItemCount++;
 }
 
-BOOLEAN ExFastRefCanBeReferenced(PEX_FAST_REF_S ref)
-{
-	return ref->RefCnt != 0;
+LOGICAL
+ExFastRefAddAdditionalReferenceCounts(
+	_Inout_ PEX_FAST_REF_S FastRef,
+	_In_ PVOID Object,
+	_In_ ULONG RefsToAdd
+) {
+	EX_FAST_REF_S OldRef, NewRef;
+
+	while (true) {
+		OldRef = ReadForWriteAccess(FastRef);
+
+		if (OldRef.RefCnt + RefsToAdd > MAX_FAST_REFS ||
+			(ULONG_PTR)Object != (OldRef.Value & ~MAX_FAST_REFS)) {
+			return FALSE;
+		}
+
+		NewRef.Value = OldRef.Value + RefsToAdd;
+		NewRef.Object = InterlockedCompareExchangePointerAcquire(&FastRef->Object,
+			NewRef.Object, OldRef.Object);
+
+		if (NewRef.Object != OldRef.Object) {
+			continue;
+		}
+		break;
+	}
+	return TRUE;
 }
 
-BOOLEAN ExFastRefObjectNull(PEX_FAST_REF_S ref)
-{
-	return (BOOLEAN)(ref->Value == 0);
-}
+PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(
+	_Inout_ PEX_CALLBACK Callback
+) {
+	EX_FAST_REF_S OldRef;
+	PEX_CALLBACK_ROUTINE_BLOCK CallbackBlock;
 
-PVOID ExFastRefGetObject(PEX_FAST_REF_S ref){
-	return (PVOID)(ref->Value & ~MAX_FAST_REFS);
-}
 
-PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(PEX_FAST_REF_S ref)
-{
-	if (ExFastRefObjectNull(ref)) {
-		return NULL;
+	if (Callback->RoutineBlock.RefCnt & MAX_FAST_REFS) {
+		OldRef = ExFastReference(&Callback->RoutineBlock);
+		if (OldRef.Value == 0)
+			return nullptr;
 	}
 
-	if (!ExFastRefCanBeReferenced(ref)) {
-		return NULL;
+	if (OldRef.RefCnt == 0)
+		return nullptr;
+
+	if (!(OldRef.RefCnt & MAX_FAST_REFS)) {
+
+		KeEnterCriticalRegion();
+
+		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)(Callback->RoutineBlock.Value & ~MAX_FAST_REFS);
+		if (CallbackBlock && !ExAcquireRundownProtection(&CallbackBlock->RundownProtect)) {
+			CallbackBlock = nullptr;
+		}
+
+		KeLeaveCriticalRegion();
+
+		if (CallbackBlock == nullptr) {
+			return nullptr;
+		}
+	}
+	else {
+		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)(OldRef.Value & ~MAX_FAST_REFS);
+
+		if (OldRef.RefCnt == 1 &&
+			ExAcquireRundownProtectionEx(&CallbackBlock->RundownProtect, MAX_FAST_REFS)) {
+
+			if (!ExFastRefAddAdditionalReferenceCounts(&Callback->RoutineBlock,
+				CallbackBlock, MAX_FAST_REFS)) {
+				ExReleaseRundownProtectionEx(&CallbackBlock->RundownProtect, MAX_FAST_REFS);
+			}
+		}
 	}
 
-	return (PEX_CALLBACK_ROUTINE_BLOCK)ExFastRefGetObject(ref);
+	return CallbackBlock;
+}
+
+EX_FAST_REF_S ExFastReference(
+	_Inout_ PEX_FAST_REF_S FastRef
+) {
+	EX_FAST_REF_S OldRef, NewRef;
+
+	while (true) {
+		OldRef = ReadForWriteAccess(FastRef);
+
+		if (OldRef.RefCnt != 0) {
+			NewRef.Value = OldRef.Value - 1;
+			NewRef.Object = InterlockedCompareExchangePointerAcquire(
+				&FastRef->Object,
+				NewRef.Object,
+				OldRef.Object);
+			if (NewRef.Object != OldRef.Object) {
+				continue;
+			}
+		}
+		break;
+	}
+
+	return OldRef;
 }
 
 LOGICAL ExFastRefDereference(
@@ -338,7 +412,7 @@ VOID PsCallImageNotifyRoutines(
 		ImageInfoEx->FileObject = (FILE_OBJECT*)FileObject;
 
 		for (ULONG i = 0; i < PSP_MAX_LOAD_IMAGE_NOTIFY; i++) {
-			Callback = ExReferenceCallBackBlock(&PspLoadImageNotifyRoutine[i].RoutineBlock);
+			Callback = ExReferenceCallBackBlock(&PspLoadImageNotifyRoutine[i]);
 			if (Callback != nullptr) {
 				Routine = (PLOAD_IMAGE_NOTIFY_ROUTINE)Callback->Function;
 				Routine(ImageName,
@@ -367,7 +441,7 @@ bool EnumSystemNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info
 			break;
 		if (!MmIsAddressValid(callback)) 
 			break;
-		auto block = ExReferenceCallBackBlock(&callback->RoutineBlock);
+		auto block = ExReferenceCallBackBlock(callback);
 		if (block != nullptr) {
 			KdPrint(("SystemNotifyFunc: 0x%p\n", (ULONG64)block->Function));
 			info->Address[j] = block->Function;
@@ -447,7 +521,7 @@ NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 	do
 	{
 		// open source file
-		mgrS.Open(FileName, FileAccessMask::Read | FileAccessMask::Synchronize);
+		status = mgrS.Open(FileName, FileAccessMask::Read | FileAccessMask::Synchronize);
 		if (!NT_SUCCESS(status))
 			break;
 
@@ -459,7 +533,7 @@ NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 
 		// open target file
 		UNICODE_STRING targetFileName;
-		const WCHAR backupStream[] = L":backup";
+		const WCHAR backupStream[] = L"_backup.sys";
 		targetFileName.MaximumLength = FileName->Length + sizeof(backupStream);
 
 		targetFileName.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, targetFileName.MaximumLength, 'kuab');
@@ -472,7 +546,6 @@ NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 		RtlAppendUnicodeToString(&targetFileName, backupStream);
 
 		status = mgrT.Open(&targetFileName, FileAccessMask::Write | FileAccessMask::Synchronize);
-
 		ExFreePool(targetFileName.Buffer);
 
 		if (!NT_SUCCESS(status))
@@ -490,12 +563,48 @@ NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 		LARGE_INTEGER offset = { 0 }; // read
 		LARGE_INTEGER writeOffset = { 0 }; // write
 
+		ULONG bytes;
+		auto saveSize = fileSize;
 		while (fileSize.QuadPart > 0) {
-			status = mgrS.ReadFile(buffer, (ULONG)min((ULONGLONG)size, fileSize.QuadPart), &ioStatus, offset);
+			status = mgrS.ReadFile(buffer, (ULONG)min((ULONGLONG)size, fileSize.QuadPart), &ioStatus, &offset);
+			if (!NT_SUCCESS(status))
+				break;
 
+			bytes = (ULONG)ioStatus.Information;
+
+			// write to target file
+			status = mgrT.WriteFile(buffer, bytes, &ioStatus, &writeOffset);
+
+			if (!NT_SUCCESS(status))
+				break;
+
+			// update byte count and offsets
+			offset.QuadPart += bytes;
+			writeOffset.QuadPart += bytes;
+			fileSize.QuadPart -= bytes;
 		}
+
+		FILE_END_OF_FILE_INFORMATION info;
+		info.EndOfFile = saveSize;
+		NT_VERIFY(NT_SUCCESS(mgrT.SetInformationFile(&ioStatus, &info, sizeof(info), FileEndOfFileInformation)));
 	} while (false);
+
+	if (buffer)
+		ExFreePool(buffer);
 	
 	return status;
 }
 
+
+void RemoveImageNotify(_In_ PVOID context) {
+	NTSTATUS status = PsRemoveLoadImageNotifyRoutine(OnImageLoadNotify);
+	if (!NT_SUCCESS(status)) {
+		LogError("failed to remove image load callbacks (status=%08X)\n", status);
+	}
+	// free remaining items
+	while (!IsListEmpty(&g_SysMonGlobals.ItemHead)) {
+		auto entry = RemoveHeadList(&g_SysMonGlobals.ItemHead);
+		ExFreePool(CONTAINING_RECORD(entry, FullItem<ItemHeader>, Entry));
+	}
+	PsTerminateSystemThread(status);
+}

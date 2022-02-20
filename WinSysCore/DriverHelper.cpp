@@ -444,3 +444,21 @@ bool DriverHelper::GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines) {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES, (LPVOID)name, len,
 		pRoutines, sizeof(void*) * IRP_MJ_MAXIMUM_FUNCTION, &bytes, nullptr);
 }
+
+bool DriverHelper::SetImageLoadNotify() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD,
+		nullptr, 0, nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::RemoveImageLoadNotify() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD, 
+		nullptr, 0, nullptr, 0, &bytes, nullptr);
+}

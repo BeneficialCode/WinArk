@@ -18,6 +18,7 @@
 #include "WindowsView.h"
 #include "KernelHookView.h"
 #include "KernelView.h"
+#include "SystemConfigView.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -25,7 +26,7 @@ enum class TabColumn :int {
 	Process, KernelModule, 
 	Kernel, 
 	KernelHook,
-	Network,Driver,Registry,Device,Windows,Service
+	Network,Driver,Registry,Device,Windows,Service,Config
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -76,6 +77,7 @@ public:
 	void InitWindowsView();
 	void InitKernelHookView();
 	void InitKernelView();
+	void InitConfigView();
 
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
@@ -119,6 +121,7 @@ private:
 	CWindowsView m_WinView;
 	CKernelHookView m_KernelHookView;
 	CKernelView m_KernelView;
+	CSystemConfigView m_SysConfigView;
 
 	CString m_StatusText;
 

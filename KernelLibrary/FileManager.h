@@ -51,14 +51,15 @@ NTSTATUS SeCreateAccessState(
 
 IO_COMPLETION_ROUTINE IoCompletionRoutine;
 
+
 // 参考链接
 // https://bbs.pediy.com/thread-264070.htm
 struct FileManager {
 public:
 	NTSTATUS Open(PUNICODE_STRING fileName, FileAccessMask accessMask = FileAccessMask::All);
 	NTSTATUS Close();
-	NTSTATUS WriteFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, LARGE_INTEGER offset = { 0 });
-	NTSTATUS ReadFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, LARGE_INTEGER offset = { 0 });
+	NTSTATUS WriteFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, PLARGE_INTEGER offset);
+	NTSTATUS ReadFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, PLARGE_INTEGER offset);
 	NTSTATUS GetFileSize(PLARGE_INTEGER fileSize);
 	//NTSTATUS CreateDir(PUNICODE_STRING dir);
 	static NTSTATUS DeleteFile(PUNICODE_STRING fileName);
@@ -70,6 +71,8 @@ public:
 	//NTSTATUS RenameFile();
 	//NTSTATUS EnumurateFile();
 
+	NTSTATUS SetInformationFile(PIO_STATUS_BLOCK ioStatus,PVOID FileInformation,ULONG Length,FILE_INFORMATION_CLASS FileInformationClass);
+	
 	// 解锁并释放MDL链
 	static VOID FreeMdl(_In_ PMDL mdl);
 	
@@ -139,5 +142,5 @@ public:
 	~FileManager();
 
 private:
-	HANDLE _handle;
+	HANDLE _handle{ nullptr };
 };

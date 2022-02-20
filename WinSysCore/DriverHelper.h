@@ -2,7 +2,6 @@
 #include "..\Anti-Rootkit\AntiRootkit.h"
 
 
-
 struct DriverHelper final {
 	static bool LoadDriver(bool load = true);
 	static bool InstallDriver(bool justCopy = false, void* pBuffer = nullptr,DWORD size = 0);
@@ -36,6 +35,8 @@ struct DriverHelper final {
 	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
 	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
 	static bool GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines);
+	static bool SetImageLoadNotify();
+	static bool RemoveImageLoadNotify();
 
 private:
 	static bool OpenDevice();

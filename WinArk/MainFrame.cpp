@@ -346,6 +346,19 @@ void CMainFrame::InitKernelView() {
 	m_hwndArray[static_cast<int>(TabColumn::Kernel)] = m_KernelView.m_hWnd;
 }
 
+void CMainFrame::InitConfigView() {
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height + 5;
+	rect.bottom -= height;
+
+	HWND hWnd = m_SysConfigView.Create(m_hWnd, rect);
+	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
+}
+
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -394,6 +407,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"设备",
 		L"窗口",
 		L"服务",
+		L"配置"
 	};
 
 	int i = 0;
@@ -419,6 +433,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitWindowsView();
 	InitKernelHookView();
 	InitKernelView();
+	InitConfigView();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -469,6 +484,11 @@ LRESULT CMainFrame::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	int iY = rect.top + tabHeight;
 	int height = rect.bottom - tabHeight - statusHeight - rect.top;
 
+	// 判定是否窗口存在
+	bool existence = ::IsWindow(m_hwndArray[_index]);
+	if (!existence) {
+		return TRUE;
+	}
 	if (_index == static_cast<int>(TabColumn::Registry)) {
 		::MoveWindow(m_RegView.m_hWnd, iX, iY, width, height, true);
 		CRect rc;
@@ -517,6 +537,7 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	m_WinView.ShowWindow(SW_HIDE);
 	m_KernelHookView.ShowWindow(SW_HIDE);
 	m_KernelView.ShowWindow(SW_HIDE);
+	m_SysConfigView.ShowWindow(SW_HIDE);
 	
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
@@ -554,6 +575,8 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::Kernel:
 			m_KernelView.ShowWindow(SW_SHOW);
 			break;
+		case TabColumn::Config:
+			m_SysConfigView.ShowWindow(SW_SHOW);
 		default:
 			break;
 	}

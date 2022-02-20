@@ -15,7 +15,7 @@ PEParser::PEParser(const wchar_t* path) {
 		LARGE_INTEGER fileSize;
 		_file.GetFileSize(&fileSize);
 		_address = (PUCHAR)ExAllocatePool(NonPagedPool, fileSize.QuadPart); // Œ¥ Õ∑≈…Í«Îµƒƒ⁄¥Ê
-		status = _file.ReadFile(_address, fileSize.LowPart, &ioStatus);
+		status = _file.ReadFile(_address, fileSize.LowPart, &ioStatus, nullptr);
 		if (!NT_SUCCESS(status)) {
 			if(_address)
 				ExFreePool(_address);

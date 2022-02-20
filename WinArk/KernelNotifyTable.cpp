@@ -63,7 +63,23 @@ LRESULT CKernelNotifyTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CKernelNotifyTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_CONTEXT);
+	hSubMenu = menu.GetSubMenu(8);
+	POINT pt;
+	::GetCursorPos(&pt);
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
 LRESULT CKernelNotifyTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -144,6 +160,7 @@ void CKernelNotifyTable::Refresh() {
 	std::string pdbPath = "\\Symbols";
 	std::string name;
 	pdbPath = path + pdbPath;
+	int maxCount = 64;
 
 	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
 		auto filename = iter.path().filename().string();
@@ -175,7 +192,7 @@ void CKernelNotifyTable::Refresh() {
 
 	// Enum CreateProcessNotify
 	if (count > 0) {
-		SIZE_T size = count * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
@@ -200,7 +217,7 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Offset = offset;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = count * sizeof(ObCallbackInfo);
+		SIZE_T size = maxCount * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
@@ -233,7 +250,7 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Type = NotifyType::ThreadObjectNotify;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = count * sizeof(ObCallbackInfo);
+		SIZE_T size = maxCount * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
 		if (p != nullptr) {
@@ -279,7 +296,7 @@ void CKernelNotifyTable::Refresh() {
 		info.Count = count;
 		symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutine");
 		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
-		SIZE_T size = count * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
 		if (p != nullptr) {
@@ -305,7 +322,7 @@ void CKernelNotifyTable::Refresh() {
 		info.Count = count;
 		symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutine");
 		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
-		SIZE_T size = count * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
 		if (p != nullptr) {
@@ -346,3 +363,7 @@ std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 	return L"";
 }
 
+LRESULT CKernelNotifyTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
+	return TRUE;
+}
