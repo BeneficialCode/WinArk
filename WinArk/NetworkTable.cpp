@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NetworkTable.h"
 #include <ip2string.h>
+#include "SortHelper.h"
 
 using namespace WinSys;
 
@@ -29,15 +30,15 @@ LRESULT CNetwrokTable::OnVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&)
 }
 
 LRESULT CNetwrokTable::OnUserVabs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
-    return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT CNetwrokTable::OnUserVrel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
-    return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT CNetwrokTable::OnUserChgs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
-    return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT CNetwrokTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
@@ -58,7 +59,21 @@ LRESULT CNetwrokTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) 
 }
 
 LRESULT CNetwrokTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_CONTEXT);
+	hSubMenu = menu.GetSubMenu(9);
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
 
 LRESULT CNetwrokTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
@@ -110,16 +125,19 @@ const CString CNetwrokTable::GetProcessName(WinSys::Connection* conn) const {
 }
 
 void CNetwrokTable::DoRefresh() {
+	m_Table.data.n = 0;
 	if (m_Table.data.info.empty()) {
 		// first time
 		auto count = m_Tracker.EnumConnections();
 		for (auto& conn : m_Tracker.GetConnections()) {
 			AddConnection(m_Table.data.info, conn, false);
 		}
+		m_Table.data.n = count;
 		m_ItemsEx.reserve(count + 16);
 	}
 	else {
-		decltype(m_Table.data.info) local(m_Table.data.info.size());
+		decltype(m_Table.data.info) local;
+		local.reserve(m_Table.data.info.size());
 
 		auto time = ::GetTickCount64();
 		int newCount = (int)m_NewConnections.size();
@@ -171,8 +189,8 @@ void CNetwrokTable::DoRefresh() {
 		}
 
 		m_Table.data.info = std::move(local);
+		m_Table.data.n = m_Table.data.info.size();
 	}
-	m_Table.data.n = m_Table.data.info.size();
 }
 
 PCWSTR CNetwrokTable::ConnectionTypeToString(ConnectionType type) {
@@ -236,7 +254,7 @@ CNetwrokTable::CNetwrokTable(BarInfo& bars, TableInfo& table)
 
 int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::Connection>& info, int column) {
 	switch (column) {
-		case 0: 
+		case 0:
 			s = info->Pid == 0 ? L"" : GetProcessName(info.get()).GetString();
 			break;
 		case 1:
@@ -248,6 +266,9 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			break;
 		case 3:
 			s = ConnectionStateToString(info->State);
+			if (info->State == MIB_TCP_STATE_ESTAB) {
+				select |= DRAW_HILITE;
+			}
 			break;
 		case 4:
 			s = info->Type == ConnectionType::TcpV6 || info->Type == ConnectionType::UdpV6 ?
@@ -257,7 +278,7 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			s.Format(L"%d", info->LocalPort);
 			break;
 		case 6:
-			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6){
+			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
 				break;
 			}
 			s = info->Type == ConnectionType::TcpV6 ? IPAddressToString(info->RemoteAddressV6) : IPAddressToString(info->RemoteAddress);
@@ -269,8 +290,8 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			s.Format(L"%d", info->RemotePort);
 			break;
 		case 8:
-			if(info->TimeStamp)
-				s.Format(L"%s.%03d",(PCWSTR)CTime(*(FILETIME*)&info->TimeStamp).Format(L"%x %X"),info->TimeStamp%1000);
+			if (info->TimeStamp)
+				s.Format(L"%s.%03d", (PCWSTR)CTime(*(FILETIME*)&info->TimeStamp).Format(L"%x %X"), info->TimeStamp % 1000);
 			break;
 		case 9:
 			s = info->ModuleName.c_str();
@@ -280,4 +301,29 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			break;
 	}
 	return s.GetLength();
+}
+
+bool CNetwrokTable::CompareItems(const std::shared_ptr<WinSys::Connection>& c1, const std::shared_ptr<WinSys::Connection>& c2, int col, bool asc){
+	switch (col)
+	{
+		case 0: return SortHelper::SortStrings(GetProcessName(c1.get()), GetProcessName(c2.get()),asc);
+		case 1: return SortHelper::SortNumbers(c1->Pid, c2->Pid,asc);
+		case 2: return SortHelper::SortStrings(ConnectionTypeToString(c1->Type), ConnectionTypeToString(c2->Type),asc);
+		case 3: return SortHelper::SortNumbers(c1->State, c2->State,asc);
+		case 4: return SortHelper::SortNumbers(SwapBytes(c1->LocalAddress), SwapBytes(c2->LocalAddress),asc);
+		case 5: return SortHelper::SortNumbers(c1->LocalPort, c2->LocalPort,asc);
+		case 6: return SortHelper::SortNumbers(SwapBytes(c1->RemoteAddress), SwapBytes(c2->RemoteAddress),asc);
+		case 7: return SortHelper::SortNumbers(c1->RemotePort, c2->RemotePort, asc);
+		case 8: return SortHelper::SortNumbers(c1->TimeStamp, c2->TimeStamp, asc);
+		case 9: return SortHelper::SortStrings(c1->ModuleName, c2->ModuleName, asc);
+		default:
+			break;
+	}
+	return false;
+}
+
+LRESULT CNetwrokTable::OnRefresh(WORD, WORD, HWND, BOOL&) {
+	m_pm.EnumProcesses();
+	DoRefresh();
+	return 0;
 }
