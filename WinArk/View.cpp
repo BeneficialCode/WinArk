@@ -930,7 +930,17 @@ LRESULT CRegistryManagerView::OnEditKeyDown(UINT, WPARAM wp, LPARAM, BOOL& handl
 	if (wp == VK_RETURN) {
 		CString path;
 		m_AddressBar.GetWindowText(path);
-		GotoKey(path);
+		static const std::wstring computer(L"Computer\\");
+		static const std::wstring computerName(L"¼ÆËã»ú\\");
+
+		std::wstring regPath(path);
+		if (regPath.find(computer) == 0) {
+			regPath = regPath.substr(computer.size());
+		}
+		else if (regPath.find(computerName) == 0) {
+			regPath = regPath.substr(computerName.size());
+		}
+		GotoKey(regPath.c_str());
 	}
 	else if (wp == VK_ESCAPE) {
 		m_List.SetFocus();
