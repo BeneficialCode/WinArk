@@ -82,7 +82,7 @@ void CMainFrame::InitNetworkTable() {
 		{20,"进程名",0},
 		{20,"进程ID",0},
 		{10,"协议",0},
-		{10,"状态",0},
+		{15,"状态",0},
 		{20,"本地地址",0},
 		{10,"本地端口",0},
 		{20,"远程地址",0},
@@ -262,7 +262,7 @@ void CMainFrame::InitDriverInterface() {
 	}
 	if (DriverHelper::IsDriverLoaded()) {
 		if (DriverHelper::GetVersion() < DriverHelper::GetCurrentVersion()) {
-			auto response = AtlMessageBox(nullptr, L"A newer driver is available with new functionality. Update?",
+			auto response = AtlMessageBox(nullptr, L"驱动更新（A newer driver is available with new functionality. Update?）",
 				IDS_TITLE, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON1);
 			if (response == IDYES) {
 				if (SecurityHelper::IsRunningElevated()) {

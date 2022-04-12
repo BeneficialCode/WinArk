@@ -25,17 +25,20 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
+		COMMAND_ID_HANDLER(ID_NETWORK_REFRESH,OnRefresh)
 	END_MSG_MAP()
 
 	CNetwrokTable(BarInfo& bars, TableInfo& table);
 
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::Connection>& info, int column);
+	bool CompareItems(const std::shared_ptr<WinSys::Connection>& c1, const std::shared_ptr<WinSys::Connection>& c2, int col, bool asc = true);
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);
@@ -55,6 +58,7 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnRefresh(WORD, WORD, HWND, BOOL&);
 
 	enum class ItemState{None,New,Deleted,DeletePending = 4 };
 	struct ItemEx {
