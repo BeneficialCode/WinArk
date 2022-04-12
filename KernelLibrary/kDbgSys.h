@@ -259,9 +259,9 @@ VOID DbgkSendSystemDllMessages(
 
 
 
-BOOLEAN DbgkpSuppressDbgMsg(
-	_In_ PTEB Teb
-);
+//BOOLEAN DbgkpSuppressDbgMsg(
+//	_In_ PTEB Teb
+//);
 
 PVOID PsCaptureExceptionPort(
 	_In_ PEPROCESS Process
@@ -394,5 +394,25 @@ PEPROCESS PsGetNextProcess(
 结构体偏移
 
 Process->RundownProtect
+CurrentThread->CrossThreadFlags
+CurrentThread->Tcb.ApcStateIndex
+CurrentThread->SystemThread
+process->Peb
+CurrentThread->CrossThreadFlags
+process->DebugPort
+CurrentThread->Tcb.ApcStateIndex
+CurrentThread->Tcb.Teb
+Process->WoW64Process;
+Process->Flags
+Process->SectionBaseAddress
+Process->SectionObject
+Thread->ClonedThread
+thread->Cid;
+Thread->RundownProtect
+Process->UniqueProcessId
+CurrentThread->ThreadInserted
+
+函数引用
+PspMapSystemDll，DbgkCreateThread	-->	ObFastReferenceObjectLocked
 
 */

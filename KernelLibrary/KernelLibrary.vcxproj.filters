@@ -121,9 +121,6 @@
     <ClInclude Include="kDbgCore.h">
       <Filter>DbgCore</Filter>
     </ClInclude>
-    <ClInclude Include="Win10_1903.h">
-      <Filter>DbgCore</Filter>
-    </ClInclude>
     <ClInclude Include="ExecutiveResource.h">
       <Filter>Synchronization</Filter>
     </ClInclude>

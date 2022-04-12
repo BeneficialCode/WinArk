@@ -261,7 +261,6 @@
     <ClInclude Include="SysMonCommon.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Helpers.h" />
-    <ClInclude Include="Win10_1903.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoEnter.cpp" />

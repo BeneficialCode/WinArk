@@ -1,5 +1,5 @@
 #pragma once
-#include "Win10_1903.h"
+
 #define DEBUG_OBJECT_DELETE_PENDING			(0x1) // Debug object is delete pending.
 #define DEBUG_OBJECT_KILL_ON_CLOSE			(0x2) // Kill all debugged processes on close
 // (0x4)
@@ -386,3 +386,227 @@ ProbeForWriteUlong(
 }
 
 #endif
+
+typedef enum _SYSTEM_DLL_TYPE  // 7 elements, 0x4 bytes
+{
+	PsNativeSystemDll = 0 /*0x0*/,
+	PsWowX86SystemDll = 1 /*0x1*/,
+	PsWowArm32SystemDll = 2 /*0x2*/,
+	PsWowAmd64SystemDll = 3 /*0x3*/,
+	PsWowChpeX86SystemDll = 4 /*0x4*/,
+	PsVsmEnclaveRuntimeDll = 5 /*0x5*/,
+	PsSystemDllTotalTypes = 6 /*0x6*/
+}SYSTEM_DLL_TYPE, * PSYSTEM_DLL_TYPE;
+
+typedef struct _PEB_LDR_DATA                            // 9 elements, 0x58 bytes (sizeof) 
+{
+	ULONG32      Length;
+	UINT8        Initialized;
+	VOID* SsHandle;
+	struct _LIST_ENTRY InLoadOrderModuleList;          
+	struct _LIST_ENTRY InMemoryOrderModuleList;        
+	struct _LIST_ENTRY InInitializationOrderModuleList; 
+	VOID* EntryInProgress;
+	UINT8        ShutdownInProgress;
+	VOID* ShutdownThreadId;
+}PEB_LDR_DATA, * PPEB_LDR_DATA;
+
+typedef BOOLEAN(NTAPI* PLDR_INIT_ROUTINE)(
+	_In_ PVOID DllHandle,
+	_In_ ULONG Reason,
+	_In_opt_ PVOID Context
+	);
+
+// symbols
+typedef struct _LDR_SERVICE_TAG_RECORD
+{
+	struct _LDR_SERVICE_TAG_RECORD* Next;
+	ULONG ServiceTag;
+} LDR_SERVICE_TAG_RECORD, * PLDR_SERVICE_TAG_RECORD;
+
+// symbols
+typedef struct _LDRP_CSLIST
+{
+	PSINGLE_LIST_ENTRY Tail;
+} LDRP_CSLIST, * PLDRP_CSLIST;
+
+
+// symbols
+typedef enum _LDR_DDAG_STATE
+{
+	LdrModulesMerged = -5,
+	LdrModulesInitError = -4,
+	LdrModulesSnapError = -3,
+	LdrModulesUnloaded = -2,
+	LdrModulesUnloading = -1,
+	LdrModulesPlaceHolder = 0,
+	LdrModulesMapping = 1,
+	LdrModulesMapped = 2,
+	LdrModulesWaitingForDependencies = 3,
+	LdrModulesSnapping = 4,
+	LdrModulesSnapped = 5,
+	LdrModulesCondensed = 6,
+	LdrModulesReadyToInit = 7,
+	LdrModulesInitializing = 8,
+	LdrModulesReadyToRun = 9
+} LDR_DDAG_STATE;
+
+// symbols
+typedef struct _LDR_DDAG_NODE
+{
+	LIST_ENTRY Modules;
+	PLDR_SERVICE_TAG_RECORD ServiceTagList;
+	ULONG LoadCount;
+	ULONG LoadWhileUnloadingCount;
+	ULONG LowestLink;
+	union
+	{
+		LDRP_CSLIST Dependencies;
+		SINGLE_LIST_ENTRY RemovalLink;
+	};
+	LDRP_CSLIST IncomingDependencies;
+	LDR_DDAG_STATE State;
+	SINGLE_LIST_ENTRY CondenseLink;
+	ULONG PreorderNumber;
+} LDR_DDAG_NODE, * PLDR_DDAG_NODE;
+
+// rev
+typedef struct _LDR_DEPENDENCY_RECORD
+{
+	SINGLE_LIST_ENTRY DependencyLink;
+	PLDR_DDAG_NODE DependencyNode;
+	SINGLE_LIST_ENTRY IncomingDependencyLink;
+	PLDR_DDAG_NODE IncomingDependencyNode;
+} LDR_DEPENDENCY_RECORD, * PLDR_DEPENDENCY_RECORD;
+
+// symbols
+typedef enum _LDR_DLL_LOAD_REASON
+{
+	LoadReasonStaticDependency,
+	LoadReasonStaticForwarderDependency,
+	LoadReasonDynamicForwarderDependency,
+	LoadReasonDelayloadDependency,
+	LoadReasonDynamicLoad,
+	LoadReasonAsImageLoad,
+	LoadReasonAsDataLoad,
+	LoadReasonEnclavePrimary, // REDSTONE3
+	LoadReasonEnclaveDependency,
+	LoadReasonUnknown = -1
+} LDR_DLL_LOAD_REASON, * PLDR_DLL_LOAD_REASON;
+
+typedef struct _LDR_DATA_TABLE_ENTRY
+{
+	LIST_ENTRY InLoadOrderLinks;
+	LIST_ENTRY InMemoryOrderLinks;
+	union
+	{
+		LIST_ENTRY InInitializationOrderLinks;
+		LIST_ENTRY InProgressLinks;
+	};
+	PVOID DllBase;
+	PLDR_INIT_ROUTINE EntryPoint;
+	ULONG SizeOfImage;
+	UNICODE_STRING FullDllName;
+	UNICODE_STRING BaseDllName;
+	union
+	{
+		UCHAR FlagGroup[4];
+		ULONG Flags;
+		struct
+		{
+			ULONG PackagedBinary : 1;
+			ULONG MarkedForRemoval : 1;
+			ULONG ImageDll : 1;
+			ULONG LoadNotificationsSent : 1;
+			ULONG TelemetryEntryProcessed : 1;
+			ULONG ProcessStaticImport : 1;
+			ULONG InLegacyLists : 1;
+			ULONG InIndexes : 1;
+			ULONG ShimDll : 1;
+			ULONG InExceptionTable : 1;
+			ULONG ReservedFlags1 : 2;
+			ULONG LoadInProgress : 1;
+			ULONG LoadConfigProcessed : 1;
+			ULONG EntryProcessed : 1;
+			ULONG ProtectDelayLoad : 1;
+			ULONG ReservedFlags3 : 2;
+			ULONG DontCallForThreads : 1;
+			ULONG ProcessAttachCalled : 1;
+			ULONG ProcessAttachFailed : 1;
+			ULONG CorDeferredValidate : 1;
+			ULONG CorImage : 1;
+			ULONG DontRelocate : 1;
+			ULONG CorILOnly : 1;
+			ULONG ChpeImage : 1;
+			ULONG ReservedFlags5 : 2;
+			ULONG Redirected : 1;
+			ULONG ReservedFlags6 : 2;
+			ULONG CompatDatabaseProcessed : 1;
+		};
+	};
+	USHORT ObsoleteLoadCount;
+	USHORT TlsIndex;
+	LIST_ENTRY HashLinks;
+	ULONG TimeDateStamp;
+	struct _ACTIVATION_CONTEXT* EntryPointActivationContext;
+	PVOID Lock; // RtlAcquireSRWLockExclusive
+	PLDR_DDAG_NODE DdagNode;
+	LIST_ENTRY NodeModuleLink;
+	struct _LDRP_LOAD_CONTEXT* LoadContext;
+	PVOID ParentDllBase;
+	PVOID SwitchBackContext;
+	RTL_BALANCED_NODE BaseAddressIndexNode;
+	RTL_BALANCED_NODE MappingInfoIndexNode;
+	ULONG_PTR OriginalBase;
+	LARGE_INTEGER LoadTime;
+	ULONG BaseNameHashValue;
+	LDR_DLL_LOAD_REASON LoadReason;
+	ULONG ImplicitPathOptions;
+	ULONG ReferenceCount;
+	ULONG DependentLoadFlags;
+	UCHAR SigningLevel; // since REDSTONE2
+} LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
+
+//typedef enum _SYSTEM_DLL_TYPE  // 7 elements, 0x4 bytes
+//{
+//	PsNativeSystemDll = 0 /*0x0*/,
+//	PsWowX86SystemDll = 1 /*0x1*/,
+//	PsWowArm32SystemDll = 2 /*0x2*/,
+//	PsWowAmd64SystemDll = 3 /*0x3*/,
+//	PsWowChpeX86SystemDll = 4 /*0x4*/,
+//	PsVsmEnclaveRuntimeDll = 5 /*0x5*/,
+//	PsSystemDllTotalTypes = 6 /*0x6*/
+//}SYSTEM_DLL_TYPE, * PSYSTEM_DLL_TYPE;
+
+/*
+// like GetProcAddress
+PVOID
+RtlFindExportedRoutineByName (
+	PVOID DllBase,
+	PCHAR RoutineName);
+*/
+
+typedef struct _SYSTEM_DLL_INFO {
+	USHORT Mask;
+	USHORT Machine;
+	UNICODE_STRING FileName; // 0x8
+	PVOID Section;  // 0x18
+	PVOID DllBase;  // 0x20
+	PWCHAR FullDllName;  // 0x28
+}SYSTEM_DLL_INFO, * PSYSTEM_DLL_INFO;
+
+typedef struct _EX_FAST_REF      // 3 elements, 0x8 bytes (sizeof) 
+{
+	union                        // 3 elements, 0x8 bytes (sizeof) 
+	{
+		/*0x000*/         VOID* Object;
+		/*0x000*/         UINT64       RefCnt : 4; // 0 BitPosition                  
+		/*0x000*/         UINT64       Value;
+	};
+}EX_FAST_REF, * PEX_FAST_REF;
+
+typedef struct _SYSTEM_DLL {
+	EX_FAST_REF FastRef;      // 0x0
+	EX_PUSH_LOCK Lock;        // 0x8
+	SYSTEM_DLL_INFO DllInfo;  // 0x10
+}SYSTEM_DLL, * PSYSTEM_DLL;
