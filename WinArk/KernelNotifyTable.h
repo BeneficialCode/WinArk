@@ -13,6 +13,7 @@ struct CallbackInfo {
 	CallbackType Type;
 	std::string Module;
 	std::wstring Company;
+	void* Address;
 };
 
 class CKernelNotifyTable :
@@ -44,6 +45,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_KERNEL_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE,OnRemove)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -64,6 +66,8 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	std::wstring GetCompanyName(std::wstring path);
 

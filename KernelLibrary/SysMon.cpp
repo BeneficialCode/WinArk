@@ -7,6 +7,7 @@
 #include "Logging.h"
 #include "FileManager.h"
 #include "Memory.h"
+#include "khook.h"
 
 
 
@@ -481,8 +482,10 @@ bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCal
 			LogInfo("Protect handle from creating\n");
 		if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_DUPLICATE))
 			LogInfo("Protect handle from duplicating\n");
+
 		info[i].PostOperation = callbackEntry->PostOperation;
 		info[i].PreOperation = callbackEntry->PreOperation;
+		info[i].RegistrationHandle = callbackEntry->RegistrationHandle;
 		i++;
 		nextEntry = nextEntry->Flink;
 	}
@@ -607,4 +610,52 @@ void RemoveImageNotify(_In_ PVOID context) {
 		ExFreePool(CONTAINING_RECORD(entry, FullItem<ItemHeader>, Entry));
 	}
 	PsTerminateSystemThread(status);
+}
+
+NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
+	auto notify = (NotifyData*)context;
+	NTSTATUS status = STATUS_SUCCESS;
+	switch (notify->Type)
+	{	
+		case NotifyType::LoadImageNotify:
+		{
+			status = PsRemoveLoadImageNotifyRoutine(reinterpret_cast<PLOAD_IMAGE_NOTIFY_ROUTINE>(notify->Address));
+			if (!NT_SUCCESS(status)) {
+				LogError("failed to remove image load callbacks (status=%08X)\n", status);
+			}
+			break;
+		}
+			
+		case NotifyType::CreateProcessNotify:
+		{
+			
+			status = PsSetCreateProcessNotifyRoutineEx(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE_EX>(notify->Address), TRUE);
+			if (status == STATUS_PROCEDURE_NOT_FOUND) {
+				status = PsSetCreateProcessNotifyRoutine(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE>(notify->Address), TRUE);
+			}
+			if (status == STATUS_PROCEDURE_NOT_FOUND) {
+				// PsSetCreateProcessNotifyRoutineEx2
+				PPsSetCreateProcessNotifyRoutineEx2 pPsSetCreateProcessNotifyRoutineEx2 = nullptr;
+				pPsSetCreateProcessNotifyRoutineEx2 = (PPsSetCreateProcessNotifyRoutineEx2)khook::GetApiAddress(L"PsSetCreateProcessNotifyRoutineEx2");
+				if(nullptr != pPsSetCreateProcessNotifyRoutineEx2)
+					status = pPsSetCreateProcessNotifyRoutineEx2(0, notify->Address, TRUE);
+			}
+			break;
+		}
+
+		case NotifyType::CreateThreadNotify:
+		{
+			status = PsRemoveCreateThreadNotifyRoutine(reinterpret_cast<PCREATE_THREAD_NOTIFY_ROUTINE>(notify->Address));
+			break;
+		}
+		case NotifyType::ThreadObjectNotify:
+		case NotifyType::ProcessObjectNotify:
+		{
+			ObUnRegisterCallbacks(notify->Address);
+		}
+		default:
+			break;
+	}
+	
+	return status;
 }

@@ -45,9 +45,18 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		std::string name = Helpers::GetNtosFileName();
 		std::wstring osFileName = Helpers::StringToWstring(name);
 		InitSymbols(osFileName.c_str());
+		if (!g_hasSymbol)
+			return -1;
 		InitSymbols(L"user32.dll");
+		if (!g_hasSymbol)
+			return -1;
 		InitSymbols(L"ntdll.dll");
+		if (!g_hasSymbol)
+			return -1;
 		InitSymbols(L"win32k.sys");
+		if (!g_hasSymbol)
+			return -1;
+
 		return 0;
 		}, nullptr, 0, nullptr);
 

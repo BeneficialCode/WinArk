@@ -37,6 +37,7 @@ struct DriverHelper final {
 	static bool GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines);
 	static bool SetImageLoadNotify();
 	static bool RemoveImageLoadNotify();
+	static bool RemoveNotify(NotifyData* pData);
 
 private:
 	static bool OpenDevice();

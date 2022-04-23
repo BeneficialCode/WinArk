@@ -134,12 +134,11 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 			}
 			break;
 		}
-			
 		case 2:
-			s = Helpers::StringToWstring(info.Module).c_str();
+			s = info.Company.c_str();
 			break;
 		case 3:
-			s = info.Company.c_str();
+			s = Helpers::StringToWstring(info.Module).c_str();
 			break;
 	}
 
@@ -160,7 +159,6 @@ void CKernelNotifyTable::Refresh() {
 	std::string pdbPath = "\\Symbols";
 	std::string name;
 	pdbPath = path + pdbPath;
-	int maxCount = 64;
 
 	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
 		auto filename = iter.path().filename().string();
@@ -172,6 +170,12 @@ void CKernelNotifyTable::Refresh() {
 	std::string pdbFile = pdbPath + "\\" + name;
 	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
 	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+
+#ifdef _WIN64
+	static ULONG Max = 64;
+#else
+	static ULONG Max = 8;
+#endif
 
 	ULONG count;
 	ProcessNotifyCountData data;
@@ -192,12 +196,12 @@ void CKernelNotifyTable::Refresh() {
 
 	// Enum CreateProcessNotify
 	if (count > 0) {
-		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
 		if (p != nullptr) {
-			p->Count = count;
+			p->Count = count + 1;
 			DriverHelper::EnumProcessNotify(&info, p);
 			for (int i = 0; i < count; i++) {
 				CallbackInfo info;
@@ -217,7 +221,7 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Offset = offset;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = maxCount * sizeof(ObCallbackInfo);
+		SIZE_T size = Max * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
@@ -231,6 +235,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
+					info.Address = p[i].RegistrationHandle;
 					m_Table.data.info.push_back(std::move(info));
 				}
 				if (p[i].PreOperation) {
@@ -250,7 +255,7 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Type = NotifyType::ThreadObjectNotify;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = maxCount * sizeof(ObCallbackInfo);
+		SIZE_T size = Max * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
 		if (p != nullptr) {
@@ -263,6 +268,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
+					info.Address = p[i].RegistrationHandle;
 					m_Table.data.info.push_back(std::move(info));
 				}
 				if (p[i].PreOperation) {
@@ -272,6 +278,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
+					info.Address = p[i].RegistrationHandle;
 					m_Table.data.info.push_back(std::move(info));
 				}
 			}
@@ -296,11 +303,11 @@ void CKernelNotifyTable::Refresh() {
 		info.Count = count;
 		symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutine");
 		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
-		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
 		if (p != nullptr) {
-			p->Count = count;
+			p->Count = count + 1;
 			DriverHelper::EnumThreadNotify(&info, p);
 			for (int i = 0; i < count; i++) {
 				CallbackInfo item;
@@ -322,11 +329,11 @@ void CKernelNotifyTable::Refresh() {
 		info.Count = count;
 		symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutine");
 		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
-		SIZE_T size = maxCount * sizeof(void*) + sizeof(ULONG);
+		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
 		if (p != nullptr) {
-			p->Count = count;
+			p->Count = count + 1;
 			DriverHelper::EnumImageLoadNotify(&info, p);
 			for (int i = 0; i < count; i++) {
 				CallbackInfo info;
@@ -365,5 +372,57 @@ std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 
 LRESULT CKernelNotifyTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	Refresh();
+	return TRUE;
+}
+
+LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+	CString text;
+	text.Format(L"ÒÆ³ý»Øµ÷£º%p?",p.Routine);
+	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
+		return 0;
+
+	NotifyData data;
+	data.Address = p.Routine;
+
+	switch (p.Type)
+	{
+		case CallbackType::CreateProcessNotify:
+			data.Type = NotifyType::CreateProcessNotify;
+			break;
+
+		case CallbackType::CreateThreadNotify:
+			data.Type = NotifyType::CreateThreadNotify;
+			break;
+
+		case CallbackType::LoadImageNotify:
+			data.Type = NotifyType::LoadImageNotify;
+			break;
+
+		case CallbackType::ProcessObPostOperationNotify:
+		case CallbackType::ProcessObPreOperationNotify:
+			data.Type = NotifyType::ProcessObjectNotify;
+			data.Address = p.Address;
+			break;
+		case CallbackType::ThreadObPostOperationNotify:
+		case CallbackType::ThreadObPreOperationNotify:
+			data.Type = NotifyType::ThreadObjectNotify;
+			data.Address = p.Address;
+			break;
+		default:
+			break;
+	}
+
+
+	BOOL ok = false;
+
+	ok = DriverHelper::RemoveNotify(&data);
+	if (!ok)
+		AtlMessageBox(*this, L"Failed to remove notify", IDS_TITLE, MB_ICONERROR);
+	else
+		Refresh();
 	return TRUE;
 }

@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x44
+#define DRIVER_CURRENT_VERSION 0x50
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -78,6 +78,8 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x818,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x819,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x820,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_REMOVE_KERNEL_NOTIFY				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x821,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
 
 
 // 原始方式
@@ -176,6 +178,12 @@ struct KernelNotifyInfo {
 };
 
 struct ObCallbackInfo {
+	PVOID RegistrationHandle;
 	PVOID PreOperation;
 	PVOID PostOperation;
+};
+
+struct NotifyData {
+	NotifyType Type;
+	PVOID Address;
 };

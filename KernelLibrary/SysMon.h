@@ -76,7 +76,7 @@ typedef struct _OB_CALLBACK_ENTRY {
 	LIST_ENTRY EntryItemList;
 	OB_OPERATION Operations; // magic bit
 	ULONG Flags;
-	PVOID CallbackEntry; // Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
+	PVOID RegistrationHandle; // Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
 	POB_PRE_OPERATION_CALLBACK PreOperation;
 	POB_POST_OPERATION_CALLBACK PostOperation;
@@ -140,4 +140,13 @@ ExFastRefAddAdditionalReferenceCounts(
 	_Inout_ PEX_FAST_REF_S FastRef,
 	_In_ PVOID Object,
 	_In_ ULONG RefsToAdd
+);
+
+NTSTATUS RemoveSystemNotify(_In_ PVOID context);
+
+using PPsSetCreateProcessNotifyRoutineEx2 = NTSTATUS
+(NTAPI*)(
+	_In_ ULONG NotifyType,
+	_In_ PVOID NotifyInformation,
+	_In_ BOOLEAN Remove
 );

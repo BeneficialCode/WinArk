@@ -462,3 +462,12 @@ bool DriverHelper::RemoveImageLoadNotify() {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD, 
 		nullptr, 0, nullptr, 0, &bytes, nullptr);
 }
+
+bool DriverHelper::RemoveNotify(NotifyData* pData) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_REMOVE_KERNEL_NOTIFY, pData, sizeof(NotifyData),
+		nullptr, 0, &bytes, nullptr);
+}

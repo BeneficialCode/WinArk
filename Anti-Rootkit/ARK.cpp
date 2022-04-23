@@ -624,7 +624,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			
 			EnumSystemNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			status = STATUS_SUCCESS;
-			len = sizeof(void*) * info->Count + sizeof(ULONG);
+			len = dic.OutputBufferLength;
 			break;
 		}
 
@@ -1016,6 +1016,26 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			status = ZwClose(hThread);
+			break;
+		}
+
+		case IOCTL_ARK_REMOVE_KERNEL_NOTIFY:
+		{
+			ULONG size = 0;
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(NotifyData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto pData = (NotifyData*)Irp->AssociatedIrp.SystemBuffer;
+			status = RemoveSystemNotify(pData);
+			if (!NT_SUCCESS(status)) {
+				KdPrint(("Remove kernel notify failed!"));
+				break;
+			}
 			break;
 		}
 	}

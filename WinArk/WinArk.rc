@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -522,6 +522,7 @@ BEGIN
     POPUP "kernel_notify"
     BEGIN
         MENUITEM "Refresh",                     ID_KERNEL_REFRESH
+        MENUITEM "Remove",                      ID_KERNEL_REMOVE
     END
     POPUP "network"
     BEGIN
@@ -557,12 +558,12 @@ IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys
 
 IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -911,7 +912,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
