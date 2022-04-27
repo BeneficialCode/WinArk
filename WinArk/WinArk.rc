@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -84,7 +84,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 IDD_MODULES DIALOGEX 0, 0, 619, 280
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "驱动对象分发例程"
+CAPTION "进程模块"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
 END
@@ -233,6 +233,13 @@ BEGIN
     PUSHBUTTON      "移除回调",IDC_REMOVE_CALLBACK,326,105,50,14
 END
 
+IDD_INLINEHOOKSCAN DIALOGEX 0, 0, 619, 280
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Inline Hook Scan"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -337,6 +344,14 @@ BEGIN
         TOPMARGIN, 6
         BOTTOMMARGIN, 372
     END
+
+    IDD_INLINEHOOKSCAN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 612
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 273
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -406,6 +421,11 @@ BEGIN
     0
 END
 
+IDD_INLINEHOOKSCAN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -427,6 +447,7 @@ BEGIN
             MENUITEM "Handles",                     ID_PROCESS_HANDLES
             MENUITEM "Memory",                      ID_PROCESS_MEMORY
         END
+        MENUITEM "Inline Hook Scan",            ID_PROCESS_INLINEHOOKSCAN
     END
     POPUP "listdir"
     BEGIN
@@ -558,12 +579,12 @@ IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys
 
 IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -912,7 +933,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

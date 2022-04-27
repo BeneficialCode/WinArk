@@ -12,6 +12,8 @@ LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	BarDesc bars[] = {
 		{25,"模块名",0},
 		{8,"类型",0},
+		{8,"位数",0},
+		{42,"描述",0},
 		{15,"映像大小",0},
 		{20,"基地址",0},
 		{20,"镜像基址",0},
@@ -36,9 +38,14 @@ LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	m_ProcModuleTable = new CProcessModuleTable(info, table,pid,m_hWnd);
 	WCHAR proc[25];
 	_itow(pid, proc, 10);
-	std::wstring title = L"Process: pid = ";
+	std::wstring text;
+	text.reserve(256);
+	text.resize(GetWindowTextLength());
+	GetWindowText(text.data(), 256);
+	std::wstring title = L" Process: pid = ";
 	title += proc;
-	SetWindowText(title.c_str());
+	text += title; 
+	SetWindowText(text.c_str());
 	RECT rect;
 	GetClientRect(&rect);
 	m_ProcModuleTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);

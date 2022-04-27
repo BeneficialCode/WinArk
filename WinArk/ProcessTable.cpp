@@ -338,3 +338,13 @@ LRESULT CProcessTable::OnProcessMemory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 
 	return 0;
 }
+
+LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+
+
+	return 0;
+}

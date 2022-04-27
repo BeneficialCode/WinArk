@@ -345,6 +345,12 @@
     <ClCompile Include="SystemConfigView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ProcessInlineHookScanDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessInlineHookScanTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -682,6 +688,12 @@
     </ClInclude>
     <ClInclude Include="SystemConfigView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInlineHookScanDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInlineHookScanTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

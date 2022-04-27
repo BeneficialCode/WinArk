@@ -5,6 +5,7 @@
 #include <ImageHlp.h>
 #include "Helpers.h"
 
+
 #pragma comment(lib,"imagehlp")
 
 using namespace WinSys;
@@ -15,7 +16,7 @@ struct ProcessModuleTracker::Impl {
 	DWORD _pid;
 	wil::unique_handle _handle;
 	BOOL _isWow64;
-
+	
 	explicit Impl(DWORD pid) :_pid(pid) {
 		_handle.reset(::OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | SYNCHRONIZE, FALSE, pid));
 		if (_handle)
@@ -74,6 +75,7 @@ struct ProcessModuleTracker::Impl {
 		}
 		mi->Base = mbi.AllocationBase;
 		mi->Type = mbi.Type == MEM_MAPPED ? MapType::Data : MapType::Image;
+		
 		return mi;
 	}
 

@@ -62,6 +62,12 @@ public:
 	ModuleInfoEx& GetModuleEx(WinSys::ModuleInfo* mi);
 	CString CharacteristicsToString(WinSys::DllCharacteristics ch);
 	void Refresh();
+
+	std::wstring GetFileDescription(std::wstring path);
+
+	enum class ModuleColumn {
+		ModuleName,Type,Bit,FileDescription, ModuleSize,Base, ImageBase, Characteristics,Path
+	};
 private:
 	std::unordered_map<WinSys::ModuleInfo*, ModuleInfoEx> m_ModulesEx;
 	WinSys::ProcessModuleTracker m_Tracker;

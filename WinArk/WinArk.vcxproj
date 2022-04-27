@@ -251,6 +251,8 @@
     <ClCompile Include="KernelRoutineDlg.cpp" />
     <ClCompile Include="KernelView.cpp" />
     <ClCompile Include="PiDDBCacheTable.cpp" />
+    <ClCompile Include="ProcessInlineHookScanDlg.cpp" />
+    <ClCompile Include="ProcessInlineHookScanTable.cpp" />
     <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="RegExportImport.cpp" />
     <ClCompile Include="RegHelpers.cpp" />
@@ -363,6 +365,8 @@
     <ClInclude Include="KernelRoutineDlg.h" />
     <ClInclude Include="KernelView.h" />
     <ClInclude Include="PiDDBCacheTable.h" />
+    <ClInclude Include="ProcessInlineHookScanDlg.h" />
+    <ClInclude Include="ProcessInlineHookScanTable.h" />
     <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="RegExportImport.h" />
     <ClInclude Include="RegHelpers.h" />

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "SortHelper.h"
 #include "resource.h"
+#include <PEParser.h>
 
 LRESULT CProcessModuleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
@@ -74,15 +75,17 @@ LRESULT CProcessModuleTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 }
 
 
-CProcessModuleTable::CProcessModuleTable(BarInfo& bars, TableInfo& table,DWORD pid,HWND hwnd)
-	: CTable(bars, table),m_Tracker(pid),_hDlg(hwnd) {
+CProcessModuleTable::CProcessModuleTable(BarInfo& bars, TableInfo& table, DWORD pid, HWND hwnd)
+	: CTable(bars, table), m_Tracker(pid), _hDlg(hwnd) {
 	SetTableWindowInfo(bars.nbar);
+	m_Table.data.info.clear();
 	Refresh();
 }
 
 CProcessModuleTable::CProcessModuleTable(BarInfo& bars, TableInfo& table, HANDLE hProcess)
 	: CTable(bars, table), m_Tracker(hProcess) {
 	SetTableWindowInfo(bars.nbar);
+	m_Table.data.info.clear();
 	//DoRefresh();
 }
 
@@ -119,31 +122,56 @@ CString CProcessModuleTable::CharacteristicsToString(WinSys::DllCharacteristics 
 }
 
 int CProcessModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ModuleInfo>& info, int column) {
-	switch (column) {
-	case 0:
-		s = info->Name.empty() ? L"<Pagefile Backed>" : info->Name.c_str();
-		break;
-	case 1:
-		s = info->Type == WinSys::MapType::Image ? L"Image" : L"Data";
-		break;
-	case 2:
-		s.Format(L"0x%08X", info->ModuleSize);
-		break;
-	case 3:
-		s.Format(L"0x%p", info->Base);
-		break;
-	case 4:
-		if (info->Type == WinSys::MapType::Image)
-			s.Format(L"0x%p", info->ImageBase);
-		else
-			s = L"N/A";
-		break;
-	case 5:
-		s = info->Type == WinSys::MapType::Image ? CharacteristicsToString(info->Characteristics) : CString();
-		break;
-	case 6:
-		s = info->Path.c_str();
-		break;
+	switch (static_cast<ModuleColumn>(column)) {
+		case ModuleColumn::ModuleName:
+			s = info->Name.empty() ? L"<Pagefile Backed>" : info->Name.c_str();
+			break;
+
+		case ModuleColumn::Type:
+			s = info->Type == WinSys::MapType::Image ? L"Image" : L"Data";
+			break;
+
+		case ModuleColumn::Bit:
+			if (info->Type == WinSys::MapType::Image) {
+				PEParser parser(info->Path.c_str());
+				s = parser.IsPe64() ? L"x64" : L"x86";
+				bool isSystem = parser.IsSystemFile();
+				bool isExecutable = parser.IsExecutable();
+				parser.GetImports();
+			}
+			else {
+				s = L"N/A";
+			}
+			break;
+
+		case ModuleColumn::ModuleSize:
+			s.Format(L"0x%08X", info->ModuleSize);
+			break;
+
+		case ModuleColumn::Base:
+			s.Format(L"0x%p", info->Base);
+			break;
+
+		case ModuleColumn::ImageBase:
+			if (info->Type == WinSys::MapType::Image)
+				s.Format(L"0x%p", info->ImageBase);
+			else
+				s = L"N/A";
+			break;
+
+		case ModuleColumn::Characteristics:
+			s = info->Type == WinSys::MapType::Image ? CharacteristicsToString(info->Characteristics) : CString();
+			break;
+
+		case ModuleColumn::Path:
+			s = info->Path.c_str();
+			break;
+
+		case ModuleColumn::FileDescription:
+			if (info->Type == WinSys::MapType::Image) {
+				s = GetFileDescription(info->Path).c_str();
+			}
+			break;
 	}
 	return s.GetLength();
 }
@@ -161,7 +189,7 @@ CProcessModuleTable::ModuleInfoEx& CProcessModuleTable::GetModuleEx(WinSys::Modu
 
 void CProcessModuleTable::Refresh() {
 	if (!m_Tracker.IsRunning()) {
-		AtlMessageBox(*this, L"Process has terminated", IDS_TITLE, MB_OK|MB_ICONWARNING);
+		AtlMessageBox(*this, L"Process has terminated", IDS_TITLE, MB_OK | MB_ICONWARNING);
 		EndDialog(_hDlg, 0);
 		return;
 	}
@@ -207,4 +235,24 @@ void CProcessModuleTable::Refresh() {
 	m_Table.data.n = count;
 
 	return;
+}
+
+std::wstring CProcessModuleTable::GetFileDescription(std::wstring path) {
+	BYTE buffer[1 << 12];
+	WCHAR* fileDescription = nullptr;
+	CString filePath = path.c_str();
+	if (filePath.Mid(1, 2) == "??")
+		filePath = filePath.Mid(4);
+	if (::GetFileVersionInfo(filePath, 0, sizeof(buffer), buffer)) {
+		WORD* langAndCodePage;
+		UINT len;
+		if (::VerQueryValue(buffer, L"\\VarFileInfo\\Translation", (void**)&langAndCodePage, &len)) {
+			CString text;
+			text.Format(L"\\StringFileInfo\\%04x%04x\\FileDescription", langAndCodePage[0], langAndCodePage[1]);
+
+			if (::VerQueryValue(buffer, text, (void**)&fileDescription, &len))
+				return fileDescription;
+		}
+	}
+	return L"";
 }
