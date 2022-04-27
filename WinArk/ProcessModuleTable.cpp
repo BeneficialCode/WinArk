@@ -135,7 +135,7 @@ int CProcessModuleTable::ParseTableEntry(CString& s, char& mask, int& select, st
 			if (info->Type == WinSys::MapType::Image) {
 				PEParser parser(info->Path.c_str());
 				s = parser.IsPe64() ? L"x64" : L"x86";
-				bool isSystem = parser.IsSystemFile();
+				
 				bool isExecutable = parser.IsExecutable();
 				parser.GetImports();
 			}
