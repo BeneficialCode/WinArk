@@ -831,7 +831,7 @@ BEGIN
             VALUE "FileDescription", "WinArk Antirootkit"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "WinArk"
-            VALUE "LegalCopyright", "Copyright ?021"
+            VALUE "LegalCopyright", "YuanOS Copyright 2022"
             VALUE "OriginalFilename", "WinArk.exe"
             VALUE "ProductName", "Windows Ark Tool"
             VALUE "ProductVersion", "1, 0, 0, 1"

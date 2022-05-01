@@ -344,7 +344,7 @@ LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*
 	ATLASSERT(selected >= 0);
 	auto& p = m_Table.data.info[selected];
 
-
+	AtlMessageBox(m_hWnd, L"Not implementation yet!");
 
 	return 0;
 }
