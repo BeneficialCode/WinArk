@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -579,12 +579,12 @@ IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys
 
 IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -811,8 +811,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,0,2
+ PRODUCTVERSION 1,0,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -829,12 +829,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "YuanOS Corporation"
             VALUE "FileDescription", "WinArk Antirootkit"
-            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "FileVersion", "1.0.0.2"
             VALUE "InternalName", "WinArk"
             VALUE "LegalCopyright", "YuanOS Copyright 2022"
             VALUE "OriginalFilename", "WinArk.exe"
             VALUE "ProductName", "Windows Ark Tool"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "ProductVersion", "1.0.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -933,7 +933,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

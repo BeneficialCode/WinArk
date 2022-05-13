@@ -245,6 +245,7 @@ void CKernelNotifyTable::Refresh() {
 					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
+					info.Address = p[i].RegistrationHandle;
 					m_Table.data.info.push_back(std::move(info));
 				}
 			}

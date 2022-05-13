@@ -226,4 +226,5 @@ std::wstring Helpers::GetDriverDirFromObjectManager(std::wstring serviceName) {
 			}
 		}
 	}
+	return L"";
 }

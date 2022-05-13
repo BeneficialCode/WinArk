@@ -1,8 +1,8 @@
 #pragma once
 #include "resource.h"
 
-class CSystemConfigView :
-	public CDialogImpl<CSystemConfigView> {
+class CSystemConfigDlg :
+	public CDialogImpl<CSystemConfigDlg> {
 public:
 	enum { IDD = IDD_CONFIG };
 

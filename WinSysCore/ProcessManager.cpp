@@ -406,6 +406,10 @@ std::shared_ptr<ProcessInfo> ProcessManager::Impl::BuildProcessInfo(
 			thread->WaitTime = baseInfo.WaitTime;
 			thread->ContextSwitches = baseInfo.ContextSwitches;
 
+			if ((ThreadState)baseInfo.ThreadState != ThreadState::Waiting || (WaitReason)baseInfo.WaitReason != WaitReason::Suspended) {
+				pi->IsSuspended = false;
+			}
+
 			pi->AddThread(thread);
 
 			_threads.push_back(thread);

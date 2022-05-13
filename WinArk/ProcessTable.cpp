@@ -10,6 +10,13 @@
 #include "ProcessMemoryDlg.h"
 
 #pragma comment(lib,"WinSysCore")
+#pragma comment(lib,"ntdll")
+
+extern "C" NTSTATUS
+NTAPI
+NtSuspendProcess(
+	_In_ HANDLE ProcessHandle
+);
 
 CProcessTable::CProcessTable(BarInfo& bars,TableInfo& table)
 	:CTable(bars,table){
@@ -152,7 +159,7 @@ LRESULT CProcessTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 void CProcessTable::Refresh() {
 	bool first = m_Table.data.info.empty();
-	auto count = (int)m_ProcMgr.EnumProcesses();
+	auto count = (int)m_ProcMgr.EnumProcessAndThreads();
 
 	if (first) {
 		m_Table.data.info = m_ProcMgr.GetProcesses();
@@ -257,11 +264,41 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	BOOL ok = false;
 	if (hProcess) {
 		ok = ::TerminateProcess(hProcess, 0);
+		::CloseHandle(hProcess);
 	}
 	if (!ok)
 		AtlMessageBox(*this, L"Failed to kill process", IDS_TITLE, MB_ICONERROR);
 	else
 		Refresh();
+	return 0;
+}
+
+LRESULT CProcessTable::OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+	CString text;
+	text.Format(L"¹ÒÆð½ø³Ì: %u (%ws)?", p->Id, p->GetImageName().c_str());
+	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
+		return 0;
+
+	auto hProcess = DriverHelper::OpenProcess(p->Id, PROCESS_SUSPEND_RESUME);
+	BOOL ok = false;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	if (hProcess) {
+		status = NtSuspendProcess(hProcess);
+		if (NT_SUCCESS(status))
+			ok = true;
+		::CloseHandle(hProcess);
+	}
+
+	if (!ok) {
+		AtlMessageBox(*this, L"Failed to suspend process", IDS_TITLE, MB_ICONERROR);
+	}
+	else {
+		Refresh();
+	}
 	return 0;
 }
 
@@ -344,7 +381,8 @@ LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*
 	ATLASSERT(selected >= 0);
 	auto& p = m_Table.data.info[selected];
 
-	AtlMessageBox(m_hWnd, L"Not implementation yet!");
+	AtlMessageBox(*this, L"Not implemented yet :)", IDS_TITLE, MB_ICONINFORMATION);
 
 	return 0;
 }
+

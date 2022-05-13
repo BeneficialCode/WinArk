@@ -18,7 +18,7 @@
 #include "WindowsView.h"
 #include "KernelHookView.h"
 #include "KernelView.h"
-#include "SystemConfigView.h"
+#include "SystemConfigDlg.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -121,7 +121,8 @@ private:
 	CWindowsView m_WinView;
 	CKernelHookView m_KernelHookView;
 	CKernelView m_KernelView;
-	CSystemConfigView m_SysConfigView;
+
+	CSystemConfigDlg m_SysConfigView;
 
 	CString m_StatusText;
 

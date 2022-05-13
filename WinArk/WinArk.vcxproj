@@ -315,7 +315,7 @@
     <ClCompile Include="StringValueDlg.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
     <ClCompile Include="SymbolFileInfo.cpp" />
-    <ClCompile Include="SystemConfigView.cpp" />
+    <ClCompile Include="SystemConfigDlg.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
@@ -430,7 +430,7 @@
     <ClInclude Include="StringValueDlg.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
     <ClInclude Include="SymbolFileInfo.h" />
-    <ClInclude Include="SystemConfigView.h" />
+    <ClInclude Include="SystemConfigDlg.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Theme.h" />
     <ClInclude Include="ThemeHelper.h" />
