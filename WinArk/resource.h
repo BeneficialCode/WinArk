@@ -31,7 +31,6 @@
 #define IDD_MODULES1                    235
 #define IDD_ROUTINES                    235
 #define IDD_CONFIG                      236
-#define IDD_MODULES2                    237
 #define IDD_INLINEHOOKSCAN              237
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -86,6 +85,11 @@
 #define IDC_INTERCEPT_DRIVER            1054
 #define IDC_REMOVE_CALLBACK             1060
 #define IDC_SET_CALLBACK                1061
+#define IDC_EXPLORE                     1063
+#define IDC_COMMANDLINE                 1064
+#define IDC_CURDIR                      1065
+#define IDC_EXPLORE_DIR                 1066
+#define IDC_USER                        1068
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -187,7 +191,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        238
 #define _APS_NEXT_COMMAND_VALUE         32883
-#define _APS_NEXT_CONTROL_VALUE         1062
+#define _APS_NEXT_CONTROL_VALUE         1069
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

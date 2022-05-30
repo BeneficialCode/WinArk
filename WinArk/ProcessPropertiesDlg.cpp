@@ -6,6 +6,7 @@
 #include "TokenPropertiesDlg.h"
 #include "JobPropertiesDlg.h"
 #include "ObjectManager.h"
+#include "ClipboardHelper.h"
 
 using namespace WinSys;
 
@@ -55,8 +56,16 @@ void CProcessPropertiesDlg::InitProcess() {
 
 	SetDlgItemText(IDC_NAME, (L" " + pi->GetImageName()).c_str());
 	SetDlgItemInt(IDC_PID, pi->Id);
+	auto& path = m_px.GetExecutablePath();
+	bool imagePath = false;
+	if (!path.empty() && path[1] == L':') {
+		imagePath = true;
+		SetDlgItemText(IDC_PATH, path.c_str());
+	}
+	SetDlgItemText(IDC_COMMANDLINE, m_px.GetCommandLine().c_str());
 	text.Format(L"%d bit", m_px.GetBitness());
 	SetDlgItemText(IDC_PLATFORM, text);
+	SetDlgItemText(IDC_USERNAME, m_px.UserName().c_str());
 	SetDlgItemText(IDC_CREATED, FormatHelper::TimeToString(pi->CreateTime));
 
 	if (pi->ParentId > 0) {
@@ -72,8 +81,14 @@ void CProcessPropertiesDlg::InitProcess() {
 		text.Empty();
 	}
 	SetDlgItemText(IDC_PARENT, text);
-
 	SetDlgItemText(IDC_DESC, m_px.GetDescription().c_str());
+
+	GetDlgItem(IDC_EXPLORE).EnableWindow(imagePath);
+	auto dir = m_px.GetCurDirectory();
+	if (dir.empty())
+		GetDlgItem(IDC_EXPLORE_DIR).EnableWindow(FALSE);
+	else
+		SetDlgItemText(IDC_CURDIR, dir.c_str());
 
 	// enable / disable job button
 	GetDlgItem(IDC_JOB).EnableWindow((m_px.GetAttributes(m_pm) & ProcessAttributes::InJob) == ProcessAttributes::InJob);
@@ -138,5 +153,30 @@ LRESULT CProcessPropertiesDlg::OnShowJob(WORD, WORD wID, HWND, BOOL&) {
 	CJobPropertiesDlg dlg(m_pm, hJob, name.c_str());
 	dlg.DoModal();
 	::CloseHandle(hJob);
+	return 0;
+}
+
+LRESULT CProcessPropertiesDlg::OnExplore(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if ((INT_PTR)::ShellExecute(nullptr, L"open", L"explorer",
+		(L"/select,\"" + m_px.GetExecutablePath() + L"\"").c_str(),
+		nullptr, SW_SHOWDEFAULT) < 32)
+		AtlMessageBox(*this, L"Failed to locate executable", IDS_TITLE, MB_ICONERROR);
+
+	return 0;
+}
+
+LRESULT CProcessPropertiesDlg::OnExploreDirectory(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if ((INT_PTR)::ShellExecute(nullptr, L"explore", m_px.GetCurDirectory().c_str(),
+		nullptr, nullptr, SW_SHOWDEFAULT) < 32)
+		AtlMessageBox(*this, L"Failed to locate directory", IDS_TITLE, MB_ICONERROR);
+
+	return 0;
+}
+
+LRESULT CProcessPropertiesDlg::OnCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto& cmd = m_px.GetCommandLine();
+	if (!cmd.empty()) {
+		ClipboardHelper::CopyText(*this, cmd.c_str());
+	}
 	return 0;
 }

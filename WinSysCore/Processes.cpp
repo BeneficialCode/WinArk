@@ -322,7 +322,7 @@ std::wstring Process::GetCurrentDirectory(HANDLE hProcess) {
 	if (!::ReadProcessMemory(hProcess, peb.ProcessParameters, &processParams, sizeof(processParams), nullptr))
 		return path;
 
-	path.resize(processParams.CurrentDirectories->DosPath.Length / sizeof(WCHAR) + 1);
+	path.resize(processParams.CurrentDirectory.DosPath.Length / sizeof(WCHAR) + 1);
 	if (!::ReadProcessMemory(hProcess, processParams.CurrentDirectory.DosPath.Buffer, path.data(),
 		processParams.CurrentDirectory.DosPath.Length, nullptr))
 		return L"";

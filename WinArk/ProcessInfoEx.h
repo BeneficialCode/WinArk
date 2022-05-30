@@ -32,8 +32,8 @@ public:
 	uint32_t GetPeakUserObjects() const;*/
 	/*WinSys::IntegrityLevel GetIntegrityLevel() const;
 	WinSys::VirtualizationState GetVirtualizationState() const;
-	CString GetWindowTitle() const;
-	std::wstring GetCurrentDirectory() const;*/
+	CString GetWindowTitle() const;*/
+	std::wstring GetCurDirectory() const;
 	const std::wstring& GetCompanyName() const;
 	const std::wstring& GetDescription() const;
 	const std::wstring& GetVersion() const;

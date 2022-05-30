@@ -24,6 +24,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_JOB,OnShowJob)
 		COMMAND_ID_HANDLER(IDC_TOKEN,OnShowToken)
 		COMMAND_ID_HANDLER(IDC_ENV,OnShowEnvironment)
+		COMMAND_ID_HANDLER(IDC_EXPLORE,OnExplore)
+		COMMAND_ID_HANDLER(IDC_EXPLORE_DIR,OnExploreDirectory)
+		COMMAND_ID_HANDLER(IDC_COPY,OnCopy)
 	END_MSG_MAP()
 private:
 	void InitProcess();
@@ -34,6 +37,9 @@ private:
 	LRESULT OnShowToken(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowEnvironment(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowJob(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExplore(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExploreDirectory(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	ProcessInfoEx& m_px;
 	const WinSys::ProcessManager& m_pm;

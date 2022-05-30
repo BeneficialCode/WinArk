@@ -88,6 +88,17 @@ const std::wstring& ProcessInfoEx::GetCommandLine() const {
 //	return _elevated;
 //}
 
+std::wstring ProcessInfoEx::GetCurDirectory() const {
+	auto hProcess = DriverHelper::OpenProcess(_pi->Id, PROCESS_VM_READ | PROCESS_QUERY_INFORMATION);
+	if (!hProcess)
+		return L"";
+
+	auto dir = WinSys::Process::GetCurrentDirectory(hProcess);
+	if (hProcess)
+		::CloseHandle(hProcess);
+	return dir;
+}
+
 const std::wstring& ProcessInfoEx::GetCompanyName() const {
 	if (!_companyChecked) {
 		BYTE buffer[1 << 12];
