@@ -59,6 +59,8 @@ namespace WinSys {
 		uint32_t JobObjectId;
 		BYTE UserSid[SECURITY_MAX_SID_SIZE];
 
+		bool IsSuspended;
+
 		ProcessOrThreadKey Key;
 
 		void AddThread(std::shared_ptr<ThreadInfo> thread);

@@ -9,6 +9,14 @@ thread_local int LastStatus;
 
 static_assert(sizeof(PerformanceInformation) == sizeof(SYSTEM_PERFORMANCE_INFORMATION));
 
+PerformanceInformation WinSys::SystemInformation::GetPerformanceInformation() {
+	PerformanceInformation info{};
+	ULONG len;
+	auto status = ::NtQuerySystemInformation(SystemPerformanceInformation, &info, sizeof(info), &len);
+	assert(NT_SUCCESS(status));
+	return info;
+}
+
 const WindowsVersion& WinSys::SystemInformation::GetWindowsVersion() {
 	static WindowsVersion version;
 	if (version.Major == 0) {

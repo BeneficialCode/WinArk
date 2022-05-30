@@ -342,14 +342,14 @@
     <ClCompile Include="KernelRoutineDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="SystemConfigView.cpp">
-      <Filter>Views</Filter>
-    </ClCompile>
     <ClCompile Include="ProcessInlineHookScanDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="ProcessInlineHookScanTable.cpp">
       <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemConfigDlg.cpp">
+      <Filter>Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -686,14 +686,14 @@
     <ClInclude Include="KernelRoutineDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="SystemConfigView.h">
-      <Filter>Views</Filter>
-    </ClInclude>
     <ClInclude Include="ProcessInlineHookScanDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ProcessInlineHookScanTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemConfigDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

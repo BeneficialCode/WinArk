@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "SystemConfigView.h"
+#include "SystemConfigDlg.h"
 #include <DriverHelper.h>
 
-LRESULT CSystemConfigView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
 	
 	GetDlgItem(IDC_REMOVE_CALLBACK).EnableWindow(FALSE);
@@ -10,21 +10,21 @@ LRESULT CSystemConfigView::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	return TRUE;
 }
            
-LRESULT CSystemConfigView::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CSystemConfigDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	bool enable = GetDlgItem(IDC_SET_CALLBACK).IsWindowEnabled();
 	if (!enable)
 		SendMessage(WM_COMMAND, IDC_REMOVE_CALLBACK);
 	return TRUE;
 }
 
-LRESULT CSystemConfigView::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CSystemConfigDlg::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	bool enable = GetDlgItem(IDC_SET_CALLBACK).IsWindowEnabled();
 	if (!enable)
 		SendMessage(WM_COMMAND, IDC_REMOVE_CALLBACK);
 	return TRUE;
 }
 
-LRESULT CSystemConfigView::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CSystemConfigDlg::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int count = 0;
 	bool success = false;
 
@@ -45,7 +45,7 @@ LRESULT CSystemConfigView::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	return TRUE;
 }
 
-LRESULT CSystemConfigView::OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CSystemConfigDlg::OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	bool success = false;
 	int checkCode = m_CheckImageLoad.GetCheck();
 	if (checkCode == BST_CHECKED) {
