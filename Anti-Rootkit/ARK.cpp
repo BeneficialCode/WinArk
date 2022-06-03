@@ -1038,7 +1038,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			auto pData = (NotifyData*)Irp->AssociatedIrp.SystemBuffer;
 			status = RemoveSystemNotify(pData);
 			if (!NT_SUCCESS(status)) {
-				KdPrint(("Remove kernel notify failed!"));
+				KdPrint(("Remove kernel notify failed! %x",status));
 				break;
 			}
 			break;
@@ -1054,13 +1054,13 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			if (dic.OutputBufferLength < sizeof(int)) {
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
-			int count = GetCmCallbackCount((PLIST_ENTRY*)address);
-			*(int*)Irp->AssociatedIrp.SystemBuffer = count;
+			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = *pCount;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(int);
 			status = STATUS_SUCCESS;
 			break;
@@ -1077,11 +1077,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
-			int count = GetCmCallbackCount((PLIST_ENTRY*)address);
-			if (dic.OutputBufferLength < sizeof(CmCallbackInfo)*count) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
 			bool success = EnumRegistryNotify((PLIST_ENTRY*)address,(CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			if (success) {
 				len = dic.OutputBufferLength;

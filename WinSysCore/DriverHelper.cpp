@@ -432,14 +432,14 @@ LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
 	return count;
 }
 
-int DriverHelper::GetCmCallbackCount(PVOID pHeadList) {
+ULONG DriverHelper::GetCmCallbackCount(PULONG* pCount) {
 	if (!OpenDevice())
 		return 0;
 
 	DWORD bytes;
-	int count = 0;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT, &pHeadList, sizeof(pHeadList),
-		&count, sizeof(int), &bytes, nullptr);
+	ULONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT, pCount, sizeof(pCount),
+		&count, sizeof(ULONG), &bytes, nullptr);
 	return count;
 }
 

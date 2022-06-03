@@ -476,23 +476,6 @@ bool EnumRegistryNotify(PLIST_ENTRY* pListHead,CmCallbackInfo* info) {
 	return true;
 }
 
-int GetCmCallbackCount(PLIST_ENTRY* pListHead) {
-	if (!pListHead)
-		return false;
-
-	PLIST_ENTRY callbackListHead = *pListHead;
-	PLIST_ENTRY nextEntry = callbackListHead->Flink;
-	PCM_CALLBACK_CONTEXT_BLOCKEX callbackEntry = nullptr;
-	int count = 0;
-	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, CM_CALLBACK_CONTEXT_BLOCKEX, ListEntry);
-		++count;
-		nextEntry = nextEntry->Flink;
-	}
-	return count;
-}
-
-
 bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCallbackInfo* info) {
 	PLIST_ENTRY callbackListHead = nullptr;
 	PLIST_ENTRY nextEntry = nullptr;

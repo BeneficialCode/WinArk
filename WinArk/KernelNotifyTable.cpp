@@ -352,14 +352,16 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 
-	symbol = handler.GetSymbolFromName("CallbackListHead");
-	PVOID callbackListHead = (PVOID)symbol->GetSymbolInfo()->Address;
-	count = DriverHelper::GetCmCallbackCount(callbackListHead);
+	symbol = handler.GetSymbolFromName("CmpCallbackCount");
+	pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	count = DriverHelper::GetCmCallbackCount(&pCount);
 	if (count > 0) {
 		SIZE_T size = Max * sizeof(CmCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		CmCallbackInfo* p = (CmCallbackInfo*)buffer.get();
 		if (p != nullptr) {
+			symbol = handler.GetSymbolFromName("CallbackListHead");
+			PVOID callbackListHead = (PVOID)symbol->GetSymbolInfo()->Address;
 			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
 			for (int i = 0; i < count; ++i) {
 				CallbackInfo info;

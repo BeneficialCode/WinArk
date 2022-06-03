@@ -34,7 +34,7 @@ struct DriverHelper final {
 	static ULONG GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo);
 	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
 	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
-	static int GetCmCallbackCount(PVOID pHeadList);
+	static ULONG GetCmCallbackCount(PULONG* pCount);
 	static bool EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo,ULONG size);
 	static bool GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines);
 	static bool SetImageLoadNotify();
