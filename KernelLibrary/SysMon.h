@@ -114,7 +114,7 @@ bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* inf
 bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
 
-bool EnumRegistryNotify(PLIST_ENTRY* pListHead, CmCallbackInfo* info);
+bool EnumRegistryNotify(PLIST_ENTRY pListHead, CmCallbackInfo* info);
 
 NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName);
 

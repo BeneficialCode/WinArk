@@ -1077,7 +1077,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = EnumRegistryNotify((PLIST_ENTRY*)address,(CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			bool success = EnumRegistryNotify((PLIST_ENTRY)address,(CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			if (success) {
 				len = dic.OutputBufferLength;
 				status = STATUS_SUCCESS;

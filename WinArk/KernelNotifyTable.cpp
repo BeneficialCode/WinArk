@@ -363,6 +363,8 @@ void CKernelNotifyTable::Refresh() {
 			symbol = handler.GetSymbolFromName("CallbackListHead");
 			PVOID callbackListHead = (PVOID)symbol->GetSymbolInfo()->Address;
 			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
+			/*symbol = handler.GetSymbolFromName("CmpPreloadedHivesList");
+			PVOID pCmpPreloadedHivesList = (PVOID)symbol->GetSymbolInfo()->Address;*/
 			for (int i = 0; i < count; ++i) {
 				CallbackInfo info;
 				info.Routine = p[i].Address;
