@@ -6,6 +6,7 @@ enum class CallbackType {
 	CreateProcessNotify,CreateThreadNotify,LoadImageNotify,
 	ProcessObPostOperationNotify,ThreadObPostOperationNotify,
 	ProcessObPreOperationNotify, ThreadObPreOperationNotify,
+	RegistryNotify
 };
 
 struct CallbackInfo {
@@ -14,6 +15,7 @@ struct CallbackInfo {
 	std::string Module;
 	std::wstring Company;
 	void* Address;
+	LARGE_INTEGER Cookie;
 };
 
 class CKernelNotifyTable :

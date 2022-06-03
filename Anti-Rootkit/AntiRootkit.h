@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x50
+#define DRIVER_CURRENT_VERSION 0x52
 
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
@@ -79,6 +79,8 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x819,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x820,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_REMOVE_KERNEL_NOTIFY				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x821,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x822,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_CM_CALLBACK_NOTIFY			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x823,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 
 
@@ -169,7 +171,8 @@ enum class NotifyType {
 	CreateThreadNotify, 
 	LoadImageNotify,
 	ProcessObjectNotify, 
-	ThreadObjectNotify
+	ThreadObjectNotify,
+	RegistryNotify
 };
 
 struct KernelNotifyInfo {
@@ -185,5 +188,11 @@ struct ObCallbackInfo {
 
 struct NotifyData {
 	NotifyType Type;
+	PVOID Address;
+	LARGE_INTEGER Cookie;
+};
+
+struct CmCallbackInfo {
+	LARGE_INTEGER Cookie;
 	PVOID Address;
 };

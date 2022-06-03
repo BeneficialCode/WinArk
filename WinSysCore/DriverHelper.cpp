@@ -423,13 +423,33 @@ bool DriverHelper::EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallback
 
 LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
 	if (!OpenDevice())
-		return false;
+		return 0;
 
 	DWORD bytes;
 	LONG count = 0;
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT, pNotifyInfo, sizeof(NotifyInfo),
 		&count, sizeof(LONG), &bytes, nullptr);
 	return count;
+}
+
+int DriverHelper::GetCmCallbackCount(PVOID pHeadList) {
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	int count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT, &pHeadList, sizeof(pHeadList),
+		&count, sizeof(int), &bytes, nullptr);
+	return count;
+}
+
+bool DriverHelper::EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo, ULONG size){
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_CM_CALLBACK_NOTIFY, &pHeadList, sizeof(pHeadList),
+		pCallbackInfo, size, &bytes, nullptr);
 }
 
 bool DriverHelper::GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines) {

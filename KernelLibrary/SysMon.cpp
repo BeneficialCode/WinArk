@@ -456,11 +456,42 @@ bool EnumSystemNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info
 
 
 
-bool EnumRegistryNotify(PEXT_CALLBACK callback) {
-	if (!callback)
+bool EnumRegistryNotify(PLIST_ENTRY* pListHead,CmCallbackInfo* info) {
+	if (!pListHead)
 		return false;
-	
+
+	PLIST_ENTRY callbackListHead = *pListHead;
+	PLIST_ENTRY nextEntry = callbackListHead->Flink;
+	PCM_CALLBACK_CONTEXT_BLOCKEX callbackEntry = nullptr;
+	int i = 0;
+	while (nextEntry != callbackListHead) {
+		callbackEntry = CONTAINING_RECORD(nextEntry, CM_CALLBACK_CONTEXT_BLOCKEX, ListEntry);
+		LogInfo("Cookie %p, Function: %p\n", callbackEntry->Cookie, callbackEntry->Function);
+		info[i].Address = callbackEntry->Function;
+		info[i].Cookie = callbackEntry->Cookie;
+		++i;
+		nextEntry = nextEntry->Flink;
+	}
+
+	return true;
 }
+
+int GetCmCallbackCount(PLIST_ENTRY* pListHead) {
+	if (!pListHead)
+		return false;
+
+	PLIST_ENTRY callbackListHead = *pListHead;
+	PLIST_ENTRY nextEntry = callbackListHead->Flink;
+	PCM_CALLBACK_CONTEXT_BLOCKEX callbackEntry = nullptr;
+	int count = 0;
+	while (nextEntry != callbackListHead) {
+		callbackEntry = CONTAINING_RECORD(nextEntry, CM_CALLBACK_CONTEXT_BLOCKEX, ListEntry);
+		++count;
+		nextEntry = nextEntry->Flink;
+	}
+	return count;
+}
+
 
 bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCallbackInfo* info) {
 	PLIST_ENTRY callbackListHead = nullptr;
@@ -652,6 +683,12 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 		case NotifyType::ProcessObjectNotify:
 		{
 			ObUnRegisterCallbacks(notify->Address);
+		}
+
+		case NotifyType::RegistryNotify:
+		{
+			status = CmUnRegisterCallback(notify->Cookie);
+			break;
 		}
 		default:
 			break;

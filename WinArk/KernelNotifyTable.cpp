@@ -131,6 +131,10 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 				case CallbackType::ThreadObPreOperationNotify:
 					s = L"Thread ObPreOperation";
 					break;
+
+				case CallbackType::RegistryNotify:
+					s = L"Registry Notify";
+					break;
 			}
 			break;
 		}
@@ -348,6 +352,28 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 
+	symbol = handler.GetSymbolFromName("CallbackListHead");
+	PVOID callbackListHead = (PVOID)symbol->GetSymbolInfo()->Address;
+	count = DriverHelper::GetCmCallbackCount(callbackListHead);
+	if (count > 0) {
+		SIZE_T size = Max * sizeof(CmCallbackInfo);
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
+		CmCallbackInfo* p = (CmCallbackInfo*)buffer.get();
+		if (p != nullptr) {
+			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
+			for (int i = 0; i < count; ++i) {
+				CallbackInfo info;
+				info.Routine = p[i].Address;
+				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+				info.Type = CallbackType::RegistryNotify;
+				std::wstring path = Helpers::StringToWstring(info.Module);
+				info.Company = GetCompanyName(path);
+				info.Cookie = p[i].Cookie;
+				m_Table.data.info.push_back(std::move(info));
+			}
+		}
+	}
+
 	m_Table.data.n = m_Table.data.info.size();
 }
 
@@ -373,6 +399,7 @@ std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 
 LRESULT CKernelNotifyTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	Refresh();
+	Invalidate(True);
 	return TRUE;
 }
 
@@ -413,6 +440,11 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			data.Type = NotifyType::ThreadObjectNotify;
 			data.Address = p.Address;
 			break;
+
+		case CallbackType::RegistryNotify:
+			data.Type = NotifyType::RegistryNotify;
+			data.Cookie = p.Cookie;
+			break;
 		default:
 			break;
 	}
@@ -425,5 +457,6 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		AtlMessageBox(*this, L"Failed to remove notify", IDS_TITLE, MB_ICONERROR);
 	else
 		Refresh();
+	Invalidate(True);
 	return TRUE;
 }

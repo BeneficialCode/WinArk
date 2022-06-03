@@ -918,10 +918,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_BUFFER_SIZE;
 				break;
 			}
-			if (dic.OutputBufferLength < sizeof(ObCallbackInfo)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
+			
 			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
 			POBJECT_TYPE pObjectType = nullptr;
 			switch (pInfo->Type) {
@@ -933,9 +930,17 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 					pObjectType = *PsThreadType;
 					break;
 			}
-			EnumObCallbackNotify(pObjectType, pInfo->Offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
-			len = dic.OutputBufferLength;
-			status = STATUS_SUCCESS;
+			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+			if (dic.OutputBufferLength < sizeof(ObCallbackInfo) * count) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			
+			bool success = EnumObCallbackNotify(pObjectType, pInfo->Offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			if (success) {
+				len = dic.OutputBufferLength;
+				status = STATUS_SUCCESS;
+			}
 			break;
 		}
 
@@ -1035,6 +1040,52 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			if (!NT_SUCCESS(status)) {
 				KdPrint(("Remove kernel notify failed!"));
 				break;
+			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(int)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
+			int count = GetCmCallbackCount((PLIST_ENTRY*)address);
+			*(int*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(int);
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_CM_CALLBACK_NOTIFY:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
+			int count = GetCmCallbackCount((PLIST_ENTRY*)address);
+			if (dic.OutputBufferLength < sizeof(CmCallbackInfo)*count) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			bool success = EnumRegistryNotify((PLIST_ENTRY*)address,(CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			if (success) {
+				len = dic.OutputBufferLength;
+				status = STATUS_SUCCESS;
 			}
 			break;
 		}
