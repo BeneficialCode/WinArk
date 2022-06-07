@@ -265,7 +265,7 @@ private:
 	CComObject<CEnumStrings>* m_AutoCompleteStrings{ nullptr };
 	Theme m_DarkTheme, m_DefaultTheme{ true };
 	CFont m_Font;
-	bool m_ReadOnly{ true };
+	bool m_ReadOnly{ false };
 	bool m_UpdateNoDelay{ false };
 	
 public:

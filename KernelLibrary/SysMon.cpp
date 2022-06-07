@@ -456,11 +456,11 @@ bool EnumSystemNotify(PEX_CALLBACK callback,ULONG count,KernelCallbackInfo* info
 
 
 
-bool EnumRegistryNotify(PLIST_ENTRY* pListHead,CmCallbackInfo* info) {
+bool EnumRegistryNotify(PLIST_ENTRY pListHead,CmCallbackInfo* info) {
 	if (!pListHead)
 		return false;
 
-	PLIST_ENTRY callbackListHead = *pListHead;
+	PLIST_ENTRY callbackListHead = pListHead;
 	PLIST_ENTRY nextEntry = callbackListHead->Flink;
 	PCM_CALLBACK_CONTEXT_BLOCKEX callbackEntry = nullptr;
 	int i = 0;
