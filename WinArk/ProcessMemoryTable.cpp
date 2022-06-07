@@ -113,7 +113,7 @@ int CProcessMemoryTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		s = info->State != MEM_COMMIT ? CString() : ProtectionToString(info->Protect);
 		break;
 	case 5:
-		s = info->State != MEM_FREE ? CString() : ProtectionToString(info->AllocationProtect);
+		s = info->State == MEM_FREE ? CString() : ProtectionToString(info->AllocationProtect);
 		break;
 	case 6:
 		s = UsageToString(info);
@@ -194,9 +194,20 @@ CString CProcessMemoryTable::ProtectionToString(DWORD protection) {
 		{ L"Read/Write", PAGE_READWRITE },
 	};
 
-	CString text = std::find_if(std::begin(prot), std::end(prot), [protection](auto& p) {
+	CString text = L"";
+	auto it = std::find_if(std::begin(prot), std::end(prot), [protection](auto& p) {
 		return (p.Value & protection) != 0;
-		})->Text;
+		});
+	if (it != std::end(prot)) {
+		text = it->Text;
+	}
+	else {
+		WCHAR buffer[20];
+		wsprintf(buffer, L"0x%x", protection);
+		std::wstring msg = L"Failed to get the prot: ";
+		msg += buffer;
+		AtlMessageBox(nullptr, msg.c_str() , IDS_TITLE, MB_ICONERROR);
+	}
 
 	static const struct {
 		PCWSTR Text;

@@ -169,6 +169,7 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 CProcessThreadTable::CProcessThreadTable(BarInfo& bars, TableInfo& table, DWORD pid)
 	: CTable(bars, table),m_Pid(pid) {
 	SetTableWindowInfo(bars.nbar);
+	m_Table.data.info.clear();
 	Refresh();
 }
 
