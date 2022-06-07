@@ -4,6 +4,7 @@
 #include <Psapi.h>
 #include <ImageHlp.h>
 #include "Helpers.h"
+#include "DriverHelper.h"
 
 
 #pragma comment(lib,"imagehlp")
@@ -18,7 +19,7 @@ struct ProcessModuleTracker::Impl {
 	BOOL _isWow64;
 	
 	explicit Impl(DWORD pid) :_pid(pid) {
-		_handle.reset(::OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | SYNCHRONIZE, FALSE, pid));
+		_handle.reset(DriverHelper::OpenProcess(pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | SYNCHRONIZE));
 		if (_handle)
 			::IsWow64Process(_handle.get(), &_isWow64);
 	}
@@ -123,8 +124,8 @@ struct ProcessModuleTracker::Impl {
 							existing.erase(key);
 						}
 					}
-					pmi->ModuleSize += (ULONG)mbi.RegionSize;
 				}
+				pmi->ModuleSize += (ULONG)mbi.RegionSize;
 			}
 			address += mbi.RegionSize;
 		}

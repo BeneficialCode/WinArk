@@ -224,7 +224,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 			info.Hooked = true;
 			info.HookType= "   hooked   ";
 		}
-		info.TargetModule = Helpers::GetModuleByAddress(info.CurrentAddress);
+		info.TargetModule = Helpers::GetKernelModuleByAddress(info.CurrentAddress);
 		m_Table.data.info.push_back(info);
 		m_Table.data.n = m_Table.data.info.size();
 	}

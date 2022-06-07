@@ -10,7 +10,7 @@ class CProcessThreadTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	BEGIN_MSG_MAP(CProcessModuleTable)
+	BEGIN_MSG_MAP(CProcessThreadTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -22,6 +22,7 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
@@ -57,7 +58,7 @@ public:
 		State, Id, ProcessId, ProcessName, CPUTime, CreateTime, Priority, BasePriority, Teb,
 		WaitReason, StartAddress, Win32StartAddress, StackBase, StackLimit, ContextSwitches,
 		KernelTime, UserTime, IoPriority, MemoryPriority, ComFlags, ComApartment,
-		WaitTime
+		WaitTime, Module
 	};
 
 	void Refresh();

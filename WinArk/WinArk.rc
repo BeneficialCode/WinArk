@@ -607,6 +607,14 @@ BEGIN
     END
 END
 
+IDR_PROC_CONTEXT MENU
+BEGIN
+    POPUP "thread"
+    BEGIN
+        MENUITEM "Copy",                        ID_THREAD_COPY
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

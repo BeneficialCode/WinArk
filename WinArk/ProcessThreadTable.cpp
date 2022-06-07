@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ProcessThreadTable.h"
 #include "FormatHelper.h"
+#include "Helpers.h"
 
 
 LRESULT CProcessThreadTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -45,27 +46,31 @@ LRESULT CProcessThreadTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lPara
 	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	return Tablefunction(m_hWnd, WM_VSCROLL, zDelta >= 0 ? 0 : 1, wParam);
 }
+
 LRESULT CProcessThreadTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CProcessThreadTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CProcessThreadTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CProcessThreadTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
-}
+
 LRESULT CProcessThreadTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CProcessThreadTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CProcessThreadTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CProcessThreadTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
@@ -159,6 +164,10 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		break;
 	case ThreadColumn::WaitTime:
 		s.Format(L"%u.%03d", info->WaitTime / 1000, info->WaitTime % 1000);
+		break;
+
+	case ThreadColumn::Module:
+		s = Helpers::GetUserModuleByAddress((ULONG_PTR)info->StartAddress,info->ProcessId).c_str();
 		break;
 	default:
 		break;
@@ -323,4 +332,23 @@ PCWSTR CProcessThreadTable::ThreadStateToString(WinSys::ThreadState state) {
 	ATLASSERT(state >= WinSys::ThreadState::Initialized && state <= WinSys::ThreadState::WaitingForProcessInSwap);
 
 	return states[(int)state];
+}
+
+LRESULT CProcessThreadTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_PROC_CONTEXT);
+	hSubMenu = menu.GetSubMenu(0);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+
+	return 0;
 }
