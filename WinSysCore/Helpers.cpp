@@ -161,10 +161,10 @@ std::string Helpers::GetKernelModuleByAddress(ULONG_PTR address) {
 	return "";
 }
 
-std::string Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
-	std::string moduleName = "";
-	if (pid == 0) {
-		return GetKernelModuleByAddress(address);
+std::wstring Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
+	std::wstring moduleName = L"";
+	if (pid == 0||pid==4) {
+		return StringToWstring(GetKernelModuleByAddress(address));
 	}
 	WinSys::ProcessModuleTracker m_Tracker(pid);
 	auto count = m_Tracker.EnumModules();
@@ -173,12 +173,12 @@ std::string Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
 		auto m = modules[i];
 		ULONG_PTR limit = (ULONG_PTR)((char*)m->Base + m->ModuleSize);
 		if (address > (ULONG_PTR)m->Base && address < limit) {
-			moduleName = WstringToString(m->Path);
+			moduleName = m->Path;
 		}
 	}
 
-	if (moduleName == "" && address != 0)
-		return GetKernelModuleByAddress(address);
+	if (moduleName == L"" && address != 0)
+		return StringToWstring(GetKernelModuleByAddress(address));
 	return moduleName;
 }
 

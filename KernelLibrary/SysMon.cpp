@@ -14,7 +14,7 @@
 ULONG	PspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
-
+UNICODE_STRING g_BackupDir;
 
 PUCHAR GetProcessNameByProcessId(HANDLE ProcessId) {
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -550,16 +550,23 @@ NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 
 		// open target file
 		UNICODE_STRING targetFileName;
+		auto sysName = wcsrchr(FileName->Buffer, L'\\') + 1;
+		if (sysName == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		USHORT len = wcslen(sysName);
 		const WCHAR backupStream[] = L"_backup.sys";
-		targetFileName.MaximumLength = FileName->Length + sizeof(backupStream);
-
+		
+		targetFileName.MaximumLength = g_BackupDir.Length + len * sizeof(WCHAR)+ sizeof(backupStream);
 		targetFileName.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, targetFileName.MaximumLength, 'kuab');
 		if (targetFileName.Buffer == nullptr){
 			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
 		}
 
-		RtlCopyUnicodeString(&targetFileName, FileName);
+		RtlCopyUnicodeString(&targetFileName, &g_BackupDir);
+		RtlAppendUnicodeToString(&targetFileName, sysName);
 		RtlAppendUnicodeToString(&targetFileName, backupStream);
 
 		status = mgrT.Open(&targetFileName, FileAccessMask::Write | FileAccessMask::Synchronize);
@@ -618,6 +625,9 @@ void RemoveImageNotify(_In_ PVOID context) {
 	if (!NT_SUCCESS(status)) {
 		LogError("failed to remove image load callbacks (status=%08X)\n", status);
 	}
+	// free the buckup dir memory
+	ExFreePool(g_BackupDir.Buffer);
+
 	// free remaining items
 	while (!IsListEmpty(&g_SysMonGlobals.ItemHead)) {
 		auto entry = RemoveHeadList(&g_SysMonGlobals.ItemHead);

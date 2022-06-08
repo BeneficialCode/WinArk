@@ -2,6 +2,7 @@
 #include "ProcessThreadTable.h"
 #include "FormatHelper.h"
 #include "Helpers.h"
+#include "ClipboardHelper.h"
 
 
 LRESULT CProcessThreadTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -350,5 +351,120 @@ LRESULT CProcessThreadTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam,
 		}
 	}
 
+	return 0;
+}
+
+LRESULT CProcessThreadTable::OnThreadCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CString text;
+	CString s;
+	const auto& tx = GetThreadInfoEx(info.get());
+
+	s = ThreadStateToString(info->ThreadState);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"%d (0x%05X)", info->Id, info->Id);
+	s += L"\t";
+	text += s;
+	
+	s.Format(L"%d (0x%05X)", info->ProcessId, info->ProcessId);
+	s += L"\t";
+	text += s;
+
+	s = info->GetProcessImageName().c_str();
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::TimeSpanToString(info->UserTime + info->KernelTime);
+	s += L"\t";
+	text += s;
+
+	s = info->CreateTime < (1LL << 32) ? CString() : FormatHelper::TimeToString(info->CreateTime);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"%d", info->Priority);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"%d", info->BasePriority);
+	s += L"\t";
+	text += s;
+
+	if (info->TebBase != nullptr) {
+		s.Format(L"0x%p", info->TebBase);
+		s += L"\t";
+		text += s;
+	}
+	s = info->ThreadState == WinSys::ThreadState::Waiting ? WaitReasonToString(info->WaitReason) : L"";
+	s += L"\t";
+	text += s;
+
+	if (info->StartAddress) {
+		s.Format(L"0x%p", info->StartAddress);
+		s += L"\t";
+		text += s;
+	}
+	if (info->Win32StartAddress != info->StartAddress) {
+		s.Format(L"0x%p", info->Win32StartAddress);
+		s += L"\t";
+		text += s;
+	}
+
+	s.Format(L"0x%p", info->StackBase);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info->StackLimit);
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::FormatWithCommas(info->ContextSwitches);
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::TimeSpanToString(info->KernelTime);
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::TimeSpanToString(info->UserTime);
+	s += L"\t";
+	text += s;
+
+	auto priority = tx.GetIoPriority();
+	if (priority != WinSys::IoPriority::Unknown) {
+		s.Format(L"%d (%s)", priority, FormatHelper::IoPriorityToString(priority));
+		s += L"\t";
+		text += s;
+	}
+	auto mp = tx.GetMemoryPriority();
+	if (mp >= 0) {
+		s.Format(L"%d", mp);
+		s += L"\t";
+		text += s;
+	}
+	auto flags = tx.GetComFlags();
+	if (flags != WinSys::ComFlags::Error && flags != WinSys::ComFlags::None) {
+		s.Format(L"0x%08X (%s)", flags, FormatHelper::ComFlagsToString(flags));
+		s += L"\t";
+		text += s;
+	}
+	s = FormatHelper::ComApartmentToString(tx.GetComFlags());
+	s += L"\t";
+	text += s;
+
+	s.Format(L"%u.%03d", info->WaitTime / 1000, info->WaitTime % 1000);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::GetUserModuleByAddress((ULONG_PTR)info->StartAddress, info->ProcessId).c_str();
+	s += L"\t";
+	text += s;
+
+	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
 }

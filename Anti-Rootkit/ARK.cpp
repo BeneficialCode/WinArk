@@ -1004,6 +1004,30 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		case IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD:
 		{
+			HANDLE hProcess;
+			status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
+			if (NT_SUCCESS(status)) {
+				UCHAR buffer[280] = { 0 };
+				status = ZwQueryInformationProcess(hProcess, ProcessImageFileName, buffer, sizeof(buffer) - sizeof(WCHAR), nullptr);
+				ZwClose(hProcess);
+				if (NT_SUCCESS(status)) {
+					auto path = (UNICODE_STRING*)buffer;
+					auto bs = wcsrchr(path->Buffer, L'\\');
+					NT_ASSERT(bs);
+					if (bs == nullptr) {
+						status = STATUS_INVALID_PARAMETER;
+						break;
+					}
+					*(bs + 1) = L'\0';
+					g_BackupDir.MaximumLength = path->Length;
+					g_BackupDir.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, g_BackupDir.MaximumLength, 'kuab');
+					if (g_BackupDir.Buffer == nullptr) {
+						status = STATUS_INSUFFICIENT_RESOURCES;
+						break;
+					}
+					RtlAppendUnicodeToString(&g_BackupDir, path->Buffer);
+				}
+			}
 			status = PsSetLoadImageNotifyRoutine(OnImageLoadNotify);
 			if (!NT_SUCCESS(status)) {
 				LogError("failed to set image load callbacks (status=%08X)\n", status);

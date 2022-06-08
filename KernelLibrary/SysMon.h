@@ -95,6 +95,7 @@ typedef struct _OB_CALLBACK_BLOCK {
 
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;
+extern UNICODE_STRING g_BackupDir;
 
 void PushItem(LIST_ENTRY* entry);
 

@@ -615,6 +615,18 @@ BEGIN
     END
 END
 
+IDR_KERNEL_CONTEXT MENU
+BEGIN
+    POPUP "PiDDBCache"
+    BEGIN
+        MENUITEM "Copy",                        ID_PIDDBCACHE_COPY
+    END
+    POPUP "UnloadedDrivers"
+    BEGIN
+        MENUITEM "Copy",                        ID_UNLOADEDDRIVERS_COPY
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
