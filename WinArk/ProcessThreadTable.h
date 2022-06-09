@@ -30,6 +30,7 @@ public:
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
 		COMMAND_ID_HANDLER(ID_THREAD_COPY,OnThreadCopy)
+		COMMAND_ID_HANDLER(ID_THREAD_EXPORT, OnThreadExport)
 	END_MSG_MAP()
 
 	CProcessThreadTable(BarInfo& bars, TableInfo& table, DWORD pid = 0);
@@ -56,6 +57,8 @@ public:
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT OnThreadCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnThreadExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	
 	enum class ThreadColumn {
 		State, Id, ProcessId, ProcessName, CPUTime, CreateTime, Priority, BasePriority, Teb,
@@ -69,6 +72,9 @@ public:
 
 	static PCWSTR ThreadStateToString(WinSys::ThreadState state);
 	static PCWSTR WaitReasonToString(WinSys::WaitReason reason);
+private:
+
+	std::wstring GetSingleThreadInfo(std::shared_ptr<WinSys::ThreadInfo>& info);
 
 private:
 	WinSys::ProcessManager m_ProcMgr;

@@ -38,6 +38,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_COPY,OnUnloadedDriverCopy)
+		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_EXPORT, OnUnloadedDriverExport)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -59,6 +60,8 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
 	LRESULT OnUnloadedDriverCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnUnloadedDriverExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 private:
 	enum class TableColumn {
@@ -66,4 +69,7 @@ private:
 	};
 
 	void Refresh();
+
+	std::wstring GetSingleUnloadedDriverInfo(UnloadedDriverInfo& info);
+
 };

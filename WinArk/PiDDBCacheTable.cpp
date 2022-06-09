@@ -180,6 +180,30 @@ void CPiDDBCacheTable::Refresh() {
 	m_Table.data.n = m_Table.data.info.size();
 }
 
+std::wstring CPiDDBCacheTable::GetSinglePiDDBCacheInfo(PiDDBCacheInfo& info) {
+	CString text;
+	CString s;
+
+	s = info.DriverName.c_str();
+	s += L"\t";
+	text += s;
+
+	s = RegHelpers::GetErrorText(info.LoadStatus);
+	s += L"\t";
+	text += s;
+
+	time_t t = (time_t)info.TimeDateStamp;
+	CString time = CTime(t).Format(L"%A, %B %d, %Y");
+	CString stamp;
+	stamp.Format(L"0x%X ", info.TimeDateStamp);
+	s = stamp + time;
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
+}
+
 LRESULT CPiDDBCacheTable::OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int selected = m_Table.data.selected;
 	ATLASSERT(selected >= 0);
@@ -205,4 +229,22 @@ LRESULT CPiDDBCacheTable::OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, H
 
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
+}
+
+LRESULT CPiDDBCacheTable::OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSinglePiDDBCacheInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
 }

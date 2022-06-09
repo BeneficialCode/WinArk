@@ -33,7 +33,6 @@
 #define IDD_CONFIG                      236
 #define IDD_INLINEHOOKSCAN              237
 #define IDR_PROC_CONTEXT                239
-#define IDR_MENU1                       240
 #define IDR_KERNEL_CONTEXT              240
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -191,13 +190,16 @@
 #define ID_THREAD_COPY                  32885
 #define ID_PIDDBCACHE_COPY              32886
 #define ID_UNLOADEDDRIVERS_COPY         32887
+#define ID_THREAD_EXPORT                32888
+#define ID_PIDDBCACHE_EXPORT            32889
+#define ID_UNLOADEDDRIVERS_EXPORT       32890
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        241
-#define _APS_NEXT_COMMAND_VALUE         32888
+#define _APS_NEXT_COMMAND_VALUE         32891
 #define _APS_NEXT_CONTROL_VALUE         1069
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -251,3 +251,9 @@ std::wstring Helpers::GetDriverDirFromObjectManager(std::wstring serviceName) {
 	}
 	return L"";
 }
+
+bool Helpers::WriteString(HANDLE hFile, std::wstring const& text) {
+	DWORD bytes;
+	std::string txt = WstringToString(text);
+	return ::WriteFile(hFile, txt.data(), txt.length(),&bytes,nullptr);
+}

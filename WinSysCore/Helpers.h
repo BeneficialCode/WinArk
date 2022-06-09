@@ -13,4 +13,5 @@ struct Helpers abstract final {
 	static std::wstring StringToWstring(const std::string& str);
 	static std::string WstringToString(const std::wstring& wstr);
 	static std::wstring GetDriverDirFromObjectManager(std::wstring serviceName);
+	static bool WriteString(HANDLE hFile, std::wstring const& text);
 };
