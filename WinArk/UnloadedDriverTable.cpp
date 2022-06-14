@@ -6,6 +6,7 @@
 #include "SymbolHandler.h"
 #include <filesystem>
 #include "FormatHelper.h"
+#include "ClipboardHelper.h"
 
 LRESULT CUnloadedDriverTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
@@ -58,7 +59,21 @@ LRESULT CUnloadedDriverTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CUnloadedDriverTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_KERNEL_CONTEXT);
+	hSubMenu = menu.GetSubMenu(1);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+
+	return 0;
 }
 LRESULT CUnloadedDriverTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -162,4 +177,77 @@ void CUnloadedDriverTable::Refresh() {
 	}
 	
 	m_Table.data.n = m_Table.data.info.size();
+}
+
+std::wstring CUnloadedDriverTable::GetSingleUnloadedDriverInfo(UnloadedDriverInfo& info) {
+	CString text;
+	CString s;
+
+	s = info.DriverName.c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.StartAddress);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.EndAddress);
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::TimeToString(info.CurrentTime.QuadPart);
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
+}
+
+LRESULT CUnloadedDriverTable::OnUnloadedDriverCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CString text;
+	CString s;
+
+	s = info.DriverName.c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.StartAddress);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.EndAddress);
+	s += L"\t";
+	text += s;
+
+	s = FormatHelper::TimeToString(info.CurrentTime.QuadPart);
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CUnloadedDriverTable::OnUnloadedDriverExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleUnloadedDriverInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
 }

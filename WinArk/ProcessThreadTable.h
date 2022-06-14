@@ -10,7 +10,7 @@ class CProcessThreadTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	BEGIN_MSG_MAP(CProcessModuleTable)
+	BEGIN_MSG_MAP(CProcessThreadTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -22,12 +22,15 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
+		COMMAND_ID_HANDLER(ID_THREAD_COPY,OnThreadCopy)
+		COMMAND_ID_HANDLER(ID_THREAD_EXPORT, OnThreadExport)
 	END_MSG_MAP()
 
 	CProcessThreadTable(BarInfo& bars, TableInfo& table, DWORD pid = 0);
@@ -52,12 +55,16 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	LRESULT OnThreadCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnThreadExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	
 	enum class ThreadColumn {
 		State, Id, ProcessId, ProcessName, CPUTime, CreateTime, Priority, BasePriority, Teb,
 		WaitReason, StartAddress, Win32StartAddress, StackBase, StackLimit, ContextSwitches,
 		KernelTime, UserTime, IoPriority, MemoryPriority, ComFlags, ComApartment,
-		WaitTime
+		WaitTime, Module
 	};
 
 	void Refresh();
@@ -65,6 +72,9 @@ public:
 
 	static PCWSTR ThreadStateToString(WinSys::ThreadState state);
 	static PCWSTR WaitReasonToString(WinSys::WaitReason reason);
+private:
+
+	std::wstring GetSingleThreadInfo(std::shared_ptr<WinSys::ThreadInfo>& info);
 
 private:
 	WinSys::ProcessManager m_ProcMgr;

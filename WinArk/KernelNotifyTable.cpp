@@ -211,7 +211,7 @@ void CKernelNotifyTable::Refresh() {
 				CallbackInfo info;
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::CreateProcessNotify;
-				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(info));
@@ -236,7 +236,7 @@ void CKernelNotifyTable::Refresh() {
 					CallbackInfo info;
 					info.Routine = p[i].PostOperation;
 					info.Type = CallbackType::ProcessObPostOperationNotify;
-					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					info.Address = p[i].RegistrationHandle;
@@ -246,7 +246,7 @@ void CKernelNotifyTable::Refresh() {
 					CallbackInfo info;
 					info.Routine = p[i].PreOperation;
 					info.Type = CallbackType::ProcessObPreOperationNotify;
-					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					info.Address = p[i].RegistrationHandle;
@@ -270,7 +270,7 @@ void CKernelNotifyTable::Refresh() {
 					CallbackInfo info;
 					info.Routine = p[i].PostOperation;
 					info.Type = CallbackType::ThreadObPostOperationNotify;
-					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					info.Address = p[i].RegistrationHandle;
@@ -280,7 +280,7 @@ void CKernelNotifyTable::Refresh() {
 					CallbackInfo info;
 					info.Routine = p[i].PreOperation;
 					info.Type = CallbackType::ThreadObPreOperationNotify;
-					info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 					std::wstring path = Helpers::StringToWstring(info.Module);
 					info.Company = GetCompanyName(path);
 					info.Address = p[i].RegistrationHandle;
@@ -318,7 +318,7 @@ void CKernelNotifyTable::Refresh() {
 				CallbackInfo item;
 				item.Routine = p->Address[i];
 				item.Type = CallbackType::CreateThreadNotify;
-				item.Module = Helpers::GetModuleByAddress((ULONG_PTR)item.Routine);
+				item.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)item.Routine);
 				std::wstring path = Helpers::StringToWstring(item.Module);
 				item.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(item));
@@ -344,7 +344,7 @@ void CKernelNotifyTable::Refresh() {
 				CallbackInfo info;
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::LoadImageNotify;
-				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(info));
@@ -368,7 +368,7 @@ void CKernelNotifyTable::Refresh() {
 			for (int i = 0; i < count; ++i) {
 				CallbackInfo info;
 				info.Routine = p[i].Address;
-				info.Module = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 				info.Type = CallbackType::RegistryNotify;
 				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);

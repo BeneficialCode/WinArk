@@ -159,7 +159,7 @@ void CDispatchRoutinesTable::GetDispatchInfo(std::wstring name) {
 		info.Code = i;
 		info.MajorCodeName = MajorCodeName[i];
 		info.Routine = routines[i];
-		info.TargetModule = Helpers::GetModuleByAddress((ULONG_PTR)info.Routine);
+		info.TargetModule = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
 		m_Table.data.info.push_back(info);
 	}
 	m_Table.data.n = m_Table.data.info.size();

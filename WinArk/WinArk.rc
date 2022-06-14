@@ -607,6 +607,29 @@ BEGIN
     END
 END
 
+IDR_PROC_CONTEXT MENU
+BEGIN
+    POPUP "thread"
+    BEGIN
+        MENUITEM "Copy",                        ID_THREAD_COPY
+        MENUITEM "Export",                      ID_THREAD_EXPORT
+    END
+END
+
+IDR_KERNEL_CONTEXT MENU
+BEGIN
+    POPUP "PiDDBCache"
+    BEGIN
+        MENUITEM "Copy",                        ID_PIDDBCACHE_COPY
+        MENUITEM "Export",                      ID_PIDDBCACHE_EXPORT
+    END
+    POPUP "UnloadedDrivers"
+    BEGIN
+        MENUITEM "Copy",                        ID_UNLOADEDDRIVERS_COPY
+        MENUITEM "Export",                      ID_UNLOADEDDRIVERS_EXPORT
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

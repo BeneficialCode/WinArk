@@ -4,6 +4,7 @@
 #include "SecurityHelper.h"
 #include <wil\resource.h>
 #include "KernelModuleTracker.h"
+#include "ProcessModuleTracker.h"
 
 
 std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
@@ -144,7 +145,7 @@ DWORD Helpers::GetWin32kImageSize() {
 	return 0;
 }
 
-std::string Helpers::GetModuleByAddress(ULONG_PTR address) {
+std::string Helpers::GetKernelModuleByAddress(ULONG_PTR address) {
 	WinSys::KernelModuleTracker m_Tracker;
 
 	auto count = m_Tracker.EnumModules();
@@ -156,7 +157,29 @@ std::string Helpers::GetModuleByAddress(ULONG_PTR address) {
 			return m->FullPath;
 		}
 	}
+
 	return "";
+}
+
+std::wstring Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
+	std::wstring moduleName = L"";
+	if (pid == 0||pid==4) {
+		return StringToWstring(GetKernelModuleByAddress(address));
+	}
+	WinSys::ProcessModuleTracker m_Tracker(pid);
+	auto count = m_Tracker.EnumModules();
+	auto modules = m_Tracker.GetModules();
+	for (decltype(count) i = 0; i < count; i++) {
+		auto m = modules[i];
+		ULONG_PTR limit = (ULONG_PTR)((char*)m->Base + m->ModuleSize);
+		if (address > (ULONG_PTR)m->Base && address < limit) {
+			moduleName = m->Path;
+		}
+	}
+
+	if (moduleName == L"" && address != 0)
+		return StringToWstring(GetKernelModuleByAddress(address));
+	return moduleName;
 }
 
 std::wstring Helpers::StringToWstring(const std::string& str) {
@@ -227,4 +250,10 @@ std::wstring Helpers::GetDriverDirFromObjectManager(std::wstring serviceName) {
 		}
 	}
 	return L"";
+}
+
+bool Helpers::WriteString(HANDLE hFile, std::wstring const& text) {
+	DWORD bytes;
+	std::string txt = WstringToString(text);
+	return ::WriteFile(hFile, txt.data(), txt.length(),&bytes,nullptr);
 }
