@@ -67,6 +67,8 @@ extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
 
 extern "C" POBJECT_TYPE * IoDriverObjectType;
 
+extern "C" PULONG InitSafeBootMode;
+
 NTSYSCALLAPI
 NTSTATUS
 NTAPI
@@ -97,6 +99,11 @@ NTSTATUS NTAPI ObReferenceObjectByName(
 // 系统处于低资源，中毒状态下，应保证驱动能在恶劣环境下，最大程度地完成逻辑处理
 extern "C" NTSTATUS
 DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
+	if (*InitSafeBootMode > 0) {
+		// The operating system is in Safe Mode.
+		return STATUS_NOT_SAFE_MODE_DRIVER;
+	}
+
 	// 驱动被自加载了，会出现没有实体的驱动对象对应
 	if (DriverObject == nullptr) {
 		return STATUS_UNSUCCESSFUL;
