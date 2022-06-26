@@ -28,7 +28,7 @@ NTSTATUS NtCreateDebugObject(
 	// 判断用户层句柄地址是否合法
 	__try {
 		if (PreviousMode != KernelMode) {
-			ProbeForWrite(DebugObjectHandle,sizeof(PHANDLE),TYPE_ALIGNMENT(PHANDLE));
+			ProbeForWriteHandle(DebugObjectHandle);
 		}
 		*DebugObjectHandle = nullptr;
 	}

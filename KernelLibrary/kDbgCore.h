@@ -387,6 +387,36 @@ ProbeForWriteUlong(
 
 #endif
 
+#if defined(_AMD64_)
+
+FORCEINLINE
+VOID
+ProbeForWriteHandle(
+	IN PHANDLE Address
+)
+
+{
+
+	if (Address >= (HANDLE* const)MM_USER_PROBE_ADDRESS) {
+		Address = (HANDLE* const)MM_USER_PROBE_ADDRESS;
+	}
+
+	*((volatile HANDLE*)Address) = *Address;
+	return;
+}
+
+#else
+
+#define ProbeForWriteHandle(Address) {                                       \
+    if ((Address) >= (HANDLE * const)MM_USER_PROBE_ADDRESS) {                \
+        *(volatile HANDLE * const)MM_USER_PROBE_ADDRESS = 0;                 \
+    }                                                                        \
+                                                                             \
+    *(volatile HANDLE *)(Address) = *(volatile HANDLE *)(Address);           \
+}
+
+#endif
+
 typedef enum _SYSTEM_DLL_TYPE  // 7 elements, 0x4 bytes
 {
 	PsNativeSystemDll = 0 /*0x0*/,

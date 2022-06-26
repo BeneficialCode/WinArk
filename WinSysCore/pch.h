@@ -9,10 +9,13 @@
 #undef NTDDI_VERSION
 #define NTDDI_VERSION NTDDI_WIN7
 
+#define INITGUID	// include all GUIDs
+
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <iphlpapi.h>
 #include <tcpmib.h>
+#include <tdh.h>
 
 #include <wil\resource.h>
 #include <SetupAPI.h>

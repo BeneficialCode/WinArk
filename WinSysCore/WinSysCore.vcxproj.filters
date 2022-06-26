@@ -16,6 +16,9 @@
     <Filter Include="Trackers">
       <UniqueIdentifier>{abbf098f-ef6c-4a17-b70c-95f77f1fa568}</UniqueIdentifier>
     </Filter>
+    <Filter Include="EventTracing">
+      <UniqueIdentifier>{76558903-d35a-4ae8-a405-4e93d3b80aec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Processes.cpp">
@@ -83,6 +86,21 @@
     </ClCompile>
     <ClCompile Include="Helpers.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EventData.cpp">
+      <Filter>EventTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelEvents.cpp">
+      <Filter>EventTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="TraceManager.cpp">
+      <Filter>EventTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterBase.cpp">
+      <Filter>EventTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="StringCompareFilterBase.cpp">
+      <Filter>EventTracing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +181,21 @@
     </ClInclude>
     <ClInclude Include="Helpers.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EventData.h">
+      <Filter>EventTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelEvents.h">
+      <Filter>EventTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="TraceManager.h">
+      <Filter>EventTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterBase.h">
+      <Filter>EventTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="StringCompareFilterBase.h">
+      <Filter>EventTracing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

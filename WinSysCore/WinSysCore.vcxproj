@@ -157,7 +157,10 @@
     <ClCompile Include="ActiveConnectionTracker.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
+    <ClCompile Include="EventData.cpp" />
+    <ClCompile Include="FilterBase.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="KernelEvents.cpp" />
     <ClCompile Include="KernelModuleTracker.cpp" />
     <ClCompile Include="NetworkInformation.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
@@ -174,16 +177,21 @@
     <ClCompile Include="Service.cpp" />
     <ClCompile Include="ServiceManager.cpp" />
     <ClCompile Include="Sid.cpp" />
+    <ClCompile Include="StringCompareFilterBase.cpp" />
     <ClCompile Include="SystemInformation.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="ThreadInfoEx.cpp" />
     <ClCompile Include="Token.cpp" />
+    <ClCompile Include="TraceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveConnectionTracker.h" />
     <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="DriverHelper.h" />
+    <ClInclude Include="EventData.h" />
+    <ClInclude Include="FilterBase.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="KernelEvents.h" />
     <ClInclude Include="KernelModuleTracker.h" />
     <ClInclude Include="Keys.h" />
     <ClInclude Include="NetworkInformation.h" />
@@ -200,11 +208,13 @@
     <ClInclude Include="ServiceInfo.h" />
     <ClInclude Include="ServiceManager.h" />
     <ClInclude Include="Sid.h" />
+    <ClInclude Include="StringCompareFilterBase.h" />
     <ClInclude Include="SystemInformation.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreadInfo.h" />
     <ClInclude Include="ThreadInfoEx.h" />
     <ClInclude Include="Token.h" />
+    <ClInclude Include="TraceManager.h" />
     <ClInclude Include="WinSysCore.h" />
   </ItemGroup>
   <ItemGroup>
