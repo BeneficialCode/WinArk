@@ -22,22 +22,26 @@ typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 
 typedef LONG KPRIORITY;
 
-//typedef struct _UNICODE_STRING {
-//	USHORT Length;
-//	USHORT MaximumLength;
-//	PWSTR  Buffer;
-//} UNICODE_STRING;
+typedef struct _UNICODE_STRING {
+	USHORT Length;
+	USHORT MaximumLength;
+	PWSTR  Buffer;
+} UNICODE_STRING;
 
 typedef UNICODE_STRING* PUNICODE_STRING;
 typedef const UNICODE_STRING* PCUNICODE_STRING;
 
-//typedef enum _PROCESSINFOCLASS {
-//	ProcessBasicInformation = 0,
-//	ProcessDebugPort = 7,
-//	ProcessWow64Information = 26,
-//	ProcessImageFileName = 27,
-//	ProcessBreakOnTermination = 29
-//} PROCESSINFOCLASS;
+extern "C" ULONG NTAPI RtlNtStatusToDosError(NTSTATUS Status);
+
+typedef enum _PROCESSINFOCLASS {
+	ProcessBasicInformation = 0,
+	ProcessDebugPort = 7,
+	ProcessWow64Information = 26,
+	ProcessImageFileName = 27,
+	ProcessBreakOnTermination = 29
+} PROCESSINFOCLASS;
+
+#define OBJ_CASE_INSENSITIVE 0x00000040
 
 extern "C" VOID NTAPI RtlInitUnicodeString(
 	PUNICODE_STRING DestinationString,
@@ -54,64 +58,64 @@ extern "C" VOID NTAPI RtlInitUnicodeString(
 	}
 #endif
 
-//typedef struct _IO_STATUS_BLOCK {
-//#pragma warning(push)
-//#pragma warning(disable: 4201) // we'll always use the Microsoft compiler
-//	union {
-//		NTSTATUS Status;
-//		PVOID Pointer;
-//	} DUMMYUNIONNAME;
-//#pragma warning(pop)
-//
-//	ULONG_PTR Information;
-//} IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
+typedef struct _IO_STATUS_BLOCK {
+#pragma warning(push)
+#pragma warning(disable: 4201) // we'll always use the Microsoft compiler
+	union {
+		NTSTATUS Status;
+		PVOID Pointer;
+	} DUMMYUNIONNAME;
+#pragma warning(pop)
 
-//typedef struct _OBJECT_ATTRIBUTES {
-//	ULONG Length;
-//	HANDLE RootDirectory;
-//	PUNICODE_STRING ObjectName;
-//	ULONG Attributes;
-//	PVOID SecurityDescriptor;
-//	PVOID SecurityQualityOfService;
-//} OBJECT_ATTRIBUTES;
-//typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
+	ULONG_PTR Information;
+} IO_STATUS_BLOCK, * PIO_STATUS_BLOCK;
 
-//typedef struct _CLIENT_ID {
-//	HANDLE UniqueProcess;
-//	HANDLE UniqueThread;
-//} CLIENT_ID;
+typedef struct _OBJECT_ATTRIBUTES {
+	ULONG Length;
+	HANDLE RootDirectory;
+	PUNICODE_STRING ObjectName;
+	ULONG Attributes;
+	PVOID SecurityDescriptor;
+	PVOID SecurityQualityOfService;
+} OBJECT_ATTRIBUTES;
+typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
 
-//typedef struct _PEB_LDR_DATA {
-//	BYTE Reserved1[8];
-//	PVOID Reserved2[3];
-//	LIST_ENTRY InMemoryOrderModuleList;
-//} PEB_LDR_DATA, * PPEB_LDR_DATA;
+typedef struct _CLIENT_ID {
+	HANDLE UniqueProcess;
+	HANDLE UniqueThread;
+} CLIENT_ID;
 
-//typedef struct _LDR_DATA_TABLE_ENTRY {
-//	PVOID Reserved1[2];
-//	LIST_ENTRY InMemoryOrderLinks;
-//	PVOID Reserved2[2];
-//	PVOID DllBase;
-//	PVOID Reserved3[2];
-//	UNICODE_STRING FullDllName;
-//	BYTE Reserved4[8];
-//	PVOID Reserved5[3];
-//#pragma warning(push)
-//#pragma warning(disable: 4201) // we'll always use the Microsoft compiler
-//	union {
-//		ULONG CheckSum;
-//		PVOID Reserved6;
-//	} DUMMYUNIONNAME;
-//#pragma warning(pop)
-//	ULONG TimeDateStamp;
-//} LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
+typedef struct _PEB_LDR_DATA {
+	BYTE Reserved1[8];
+	PVOID Reserved2[3];
+	LIST_ENTRY InMemoryOrderModuleList;
+} PEB_LDR_DATA, * PPEB_LDR_DATA;
 
-//typedef struct _RTL_USER_PROCESS_PARAMETERS {
-//	BYTE Reserved1[16];
-//	PVOID Reserved2[10];
-//	UNICODE_STRING ImagePathName;
-//	UNICODE_STRING CommandLine;
-//} RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
+typedef struct _LDR_DATA_TABLE_ENTRY {
+	PVOID Reserved1[2];
+	LIST_ENTRY InMemoryOrderLinks;
+	PVOID Reserved2[2];
+	PVOID DllBase;
+	PVOID Reserved3[2];
+	UNICODE_STRING FullDllName;
+	BYTE Reserved4[8];
+	PVOID Reserved5[3];
+#pragma warning(push)
+#pragma warning(disable: 4201) // we'll always use the Microsoft compiler
+	union {
+		ULONG CheckSum;
+		PVOID Reserved6;
+	} DUMMYUNIONNAME;
+#pragma warning(pop)
+	ULONG TimeDateStamp;
+} LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
+
+typedef struct _RTL_USER_PROCESS_PARAMETERS {
+	BYTE Reserved1[16];
+	PVOID Reserved2[10];
+	UNICODE_STRING ImagePathName;
+	UNICODE_STRING CommandLine;
+} RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
 
 typedef
 VOID
@@ -119,48 +123,48 @@ VOID
 	VOID
 	);
 
-//typedef struct _PEB {
-//	BYTE Reserved1[2];
-//	BYTE BeingDebugged;
-//	BYTE Reserved2[1];
-//	PVOID Reserved3[2];
-//	PPEB_LDR_DATA Ldr;
-//	PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
-//	PVOID Reserved4[3];
-//	PVOID AtlThunkSListPtr;
-//	PVOID Reserved5;
-//	ULONG Reserved6;
-//	PVOID Reserved7;
-//	ULONG Reserved8;
-//	ULONG AtlThunkSListPtr32;
-//	PVOID Reserved9[45];
-//	BYTE Reserved10[96];
-//	PPS_POST_PROCESS_INIT_ROUTINE PostProcessInitRoutine;
-//	BYTE Reserved11[128];
-//	PVOID Reserved12[1];
-//	ULONG SessionId;
-//} PEB, * PPEB;
+typedef struct _PEB {
+	BYTE Reserved1[2];
+	BYTE BeingDebugged;
+	BYTE Reserved2[1];
+	PVOID Reserved3[2];
+	PPEB_LDR_DATA Ldr;
+	PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
+	PVOID Reserved4[3];
+	PVOID AtlThunkSListPtr;
+	PVOID Reserved5;
+	ULONG Reserved6;
+	PVOID Reserved7;
+	ULONG Reserved8;
+	ULONG AtlThunkSListPtr32;
+	PVOID Reserved9[45];
+	BYTE Reserved10[96];
+	PPS_POST_PROCESS_INIT_ROUTINE PostProcessInitRoutine;
+	BYTE Reserved11[128];
+	PVOID Reserved12[1];
+	ULONG SessionId;
+} PEB, * PPEB;
 
-//typedef struct _TEB {
-//	PVOID Reserved1[12];
-//	PPEB ProcessEnvironmentBlock;
-//	PVOID Reserved2[399];
-//	BYTE Reserved3[1952];
-//	PVOID TlsSlots[64];
-//	BYTE Reserved4[8];
-//	PVOID Reserved5[26];
-//	PVOID ReservedForOle;  // Windows 2000 only
-//	PVOID Reserved6[4];
-//	PVOID TlsExpansionSlots;
-//} TEB, * PTEB;
+typedef struct _TEB {
+	PVOID Reserved1[12];
+	PPEB ProcessEnvironmentBlock;
+	PVOID Reserved2[399];
+	BYTE Reserved3[1952];
+	PVOID TlsSlots[64];
+	BYTE Reserved4[8];
+	PVOID Reserved5[26];
+	PVOID ReservedForOle;  // Windows 2000 only
+	PVOID Reserved6[4];
+	PVOID TlsExpansionSlots;
+} TEB, * PTEB;
 
-//typedef struct _PROCESS_BASIC_INFORMATION {
-//	PVOID Reserved1;
-//	PPEB PebBaseAddress;
-//	PVOID Reserved2[2];
-//	ULONG_PTR UniqueProcessId;
-//	PVOID Reserved3;
-//} PROCESS_BASIC_INFORMATION;
+typedef struct _PROCESS_BASIC_INFORMATION {
+	PVOID Reserved1;
+	PPEB PebBaseAddress;
+	PVOID Reserved2[2];
+	ULONG_PTR UniqueProcessId;
+	PVOID Reserved3;
+} PROCESS_BASIC_INFORMATION;
 typedef PROCESS_BASIC_INFORMATION* PPROCESS_BASIC_INFORMATION;
 
 extern "C" {
@@ -169,9 +173,9 @@ extern "C" {
 		UNICODE_STRING TypeName;
 	} OBJECT_DIRECTORY_INFORMATION, * POBJECT_DIRECTORY_INFORMATION;
 
-	//typedef enum _THREADINFOCLASS {
-	//	ThreadBasicInformation, // q: THREAD_BASIC_INFORMATION
-	//} THREADINFOCLASS;
+	typedef enum _THREADINFOCLASS {
+		ThreadBasicInformation, // q: THREAD_BASIC_INFORMATION
+	} THREADINFOCLASS;
 
 	typedef struct _THREAD_BASIC_INFORMATION {
 		NTSTATUS ExitStatus;
@@ -262,10 +266,10 @@ extern "C" {
 		UNICODE_STRING Name;
 	} OBJECT_NAME_INFORMATION, * POBJECT_NAME_INFORMATION;
 
-	//typedef enum _SYSTEM_INFORMATION_CLASS {
-	//	SystemObjectInformation = 17,
-	//	SystemExtendedHandleInformation = 64, // q: SYSTEM_HANDLE_INFORMATION_EX
-	//} SYSTEM_INFORMATION_CLASS;
+	typedef enum _SYSTEM_INFORMATION_CLASS {
+		SystemObjectInformation = 17,
+		SystemExtendedHandleInformation = 64, // q: SYSTEM_HANDLE_INFORMATION_EX
+	} SYSTEM_INFORMATION_CLASS;
 
 	typedef struct _OBJECT_BASIC_INFORMATION {
 		ULONG Attributes;
@@ -307,16 +311,16 @@ extern "C" {
 		ULONG DefaultNonPagedPoolCharge;
 	} OBJECT_TYPE_INFORMATION, * POBJECT_TYPE_INFORMATION;
 
-	//typedef enum _OBJECT_INFORMATION_CLASS {
-	//	ObjectBasicInformation, // OBJECT_BASIC_INFORMATION
-	//	ObjectNameInformation, // OBJECT_NAME_INFORMATION
-	//	ObjectTypeInformation, // OBJECT_TYPE_INFORMATION
-	//	ObjectTypesInformation, // OBJECT_TYPES_INFORMATION
-	//	ObjectHandleFlagInformation, // OBJECT_HANDLE_FLAG_INFORMATION
-	//	ObjectSessionInformation,
-	//	ObjectSessionObjectInformation,
-	//	MaxObjectInfoClass
-	//} OBJECT_INFORMATION_CLASS;
+	typedef enum _OBJECT_INFORMATION_CLASS {
+		ObjectBasicInformation, // OBJECT_BASIC_INFORMATION
+		ObjectNameInformation, // OBJECT_NAME_INFORMATION
+		ObjectTypeInformation, // OBJECT_TYPE_INFORMATION
+		ObjectTypesInformation, // OBJECT_TYPES_INFORMATION
+		ObjectHandleFlagInformation, // OBJECT_HANDLE_FLAG_INFORMATION
+		ObjectSessionInformation,
+		ObjectSessionObjectInformation,
+		MaxObjectInfoClass
+	} OBJECT_INFORMATION_CLASS;
 
 	typedef struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX {
 		PVOID Object;

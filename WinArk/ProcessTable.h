@@ -29,6 +29,8 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN,OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
+		//MESSAGE_HANDLER(WM_SIZE,OnSize)
+	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_PROCESS_KILL,OnProcessKill)
 		COMMAND_ID_HANDLER(ID_PROCESS_REFRESH, OnProcessRefresh)
 		COMMAND_ID_HANDLER(ID_PROCESS_MODULES,OnProcessModules)
@@ -45,7 +47,7 @@ public:
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ProcessInfo>& info, int column);
 	bool CompareItems(const std::shared_ptr<WinSys::ProcessInfo>& p1, const std::shared_ptr<WinSys::ProcessInfo>& p2, int col, bool asc=true);
 
-
+	//LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
@@ -82,6 +84,7 @@ public:
 	int GetRowImage(HWND, int row) const;
 	void Refresh();
 	ProcessInfoEx& GetProcessInfoEx(WinSys::ProcessInfo* pi) const;
+
 private:
 	enum class ProcessColumn {
 		Name,Id,Session,UserName,Priority,Threads,Handles,Attributes,CreateTime,Description,CompanyName,Version,ExePath,CmdLine

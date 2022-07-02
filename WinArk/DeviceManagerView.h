@@ -9,6 +9,7 @@ public:
 	// 根据这个会创建一个窗口句柄给m_hWnd
 	DECLARE_WND_CLASS(nullptr);
 
+	bool IsSortable(HWND,int col) const;
 	void DoSort(const SortInfo* si);
 
 private:
@@ -31,12 +32,14 @@ private:
 
 	BEGIN_MSG_MAP(CDeviceManagerView)
 		MESSAGE_HANDLER(WM_CREATE,OnCreate)
+		MESSAGE_HANDLER(WM_SIZE,OnSize)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED,OnTreeSelectionChanged)
 		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnListGetDispInfo)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceManagerView>)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTreeSelectionChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnListGetDispInfo(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 

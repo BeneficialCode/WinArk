@@ -12,6 +12,10 @@
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")
 
+#ifndef NT_SUCCESS
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+#endif
+
 extern "C" NTSTATUS
 NTAPI
 NtSuspendProcess(
@@ -199,6 +203,7 @@ void CProcessTable::Refresh() {
 	}
 
 	m_Table.data.n = count;
+
 	return;
 }
 

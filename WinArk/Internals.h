@@ -70,6 +70,24 @@ typedef struct _KEY_FLAGS_INFORMATION {
 	ULONG UserFlags;
 } KEY_FLAGS_INFORMATION, * PKEY_FLAGS_INFORMATION;
 
+typedef struct _UNICODE_STRING {
+	USHORT Length;
+	USHORT MaximumLength;
+	PWSTR  Buffer;
+} UNICODE_STRING;
+
+typedef UNICODE_STRING* PUNICODE_STRING;
+
+typedef struct _OBJECT_ATTRIBUTES {
+	ULONG Length;
+	HANDLE RootDirectory;
+	PUNICODE_STRING ObjectName;
+	ULONG Attributes;
+	PVOID SecurityDescriptor;
+	PVOID SecurityQualityOfService;
+} OBJECT_ATTRIBUTES;
+typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
+
 extern "C" NTSYSCALLAPI NTSTATUS NTAPI NtQueryKey(
 	_In_ HANDLE KeyHandle,
 	_In_ KEY_INFORMATION_CLASS KeyInformationClass,

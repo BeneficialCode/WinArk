@@ -8,6 +8,8 @@ public:
 	static SymbolManager& Get();
 	SymbolHandler* GetCommon();
 	SymbolHandler* GetForProcess(DWORD pid);
+	void Term();
+	~SymbolManager();
 
 	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD pid, DWORD64 address, PDWORD64 offset = nullptr);
 

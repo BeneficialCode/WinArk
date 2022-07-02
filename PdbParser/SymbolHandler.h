@@ -184,6 +184,8 @@ public:
 	/*void EnumSymbols(std::string mask = "*!*");
 	void EnumTypes(std::string mask = "*");*/
 
+	IMAGEHLP_MODULE GetModuleInfo(DWORD64 address);
+
 	DWORD GetStructMemberOffset(std::string name,std::string memberName);
 	DWORD64 LoadKernelModule(DWORD64 address);
 

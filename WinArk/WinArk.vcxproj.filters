@@ -37,6 +37,9 @@
     <Filter Include="Controls">
       <UniqueIdentifier>{615cba77-8723-4b7e-abeb-c4118eefa63e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Filters">
+      <UniqueIdentifier>{19b916de-7748-40bb-92ae-5315f290f739}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -270,9 +273,6 @@
     <ClCompile Include="Settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IniFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LocationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -350,6 +350,18 @@
     </ClCompile>
     <ClCompile Include="SystemConfigDlg.cpp">
       <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="EtwView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="IniFile.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterConfiguration.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="EventConfiguration.cpp">
+      <Filter>Filters</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -602,9 +614,6 @@
     <ClInclude Include="AppSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IniFile.h">
-      <Filter>Helpers</Filter>
-    </ClInclude>
     <ClInclude Include="FindOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -695,6 +704,24 @@
     <ClInclude Include="SystemConfigDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="EtwView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewBase.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IniFile.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterConfiguration.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="EventConfiguration.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -706,6 +733,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\window.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\handles.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\refresh.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\event3.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

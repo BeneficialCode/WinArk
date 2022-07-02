@@ -6,16 +6,21 @@
 #define IDR_MAINFRAME                   128
 #define IDS_TITLE                       129
 #define IDR_CONTEXT                     202
+#define IDI_CANCEL                      202
 #define IDR_BIN1                        204
+#define IDI_FILTER                      204
 #define IDR_DRIVER                      207
 #define IDR_X64_DRIVER                  207
 #define IDD_MODULES                     208
 #define IDD_PROCESS_PROPERTIES          210
 #define IDD_ENVVARS                     212
+#define IDI_PLAY                        212
 #define IDD_TOKEN                       214
 #define IDD_MULTISTRING                 215
+#define IDI_STOP                        215
 #define IDD_JOB                         216
 #define IDD_THREADS                     217
+#define IDI_TOOLS                       217
 #define IDD_HANDLES                     218
 #define IDD_MEMORY                      219
 #define IDD_STRINGVALUE                 220
@@ -24,6 +29,8 @@
 #define IDD_BINVALUE                    223
 #define IDI_WINDOW                      224
 #define IDD_EXPORT                      226
+#define IDI_PROPERTIES                  228
+#define IDI_STACK                       229
 #define IDR_BIN2                        231
 #define IDR_X86_DRIVER                  231
 #define IDR_BIN3                        233
@@ -34,6 +41,12 @@
 #define IDD_INLINEHOOKSCAN              237
 #define IDR_PROC_CONTEXT                239
 #define IDR_KERNEL_CONTEXT              240
+#define IDR_ETW_CONTEXT                 241
+#define IDI_HANDLES                     243
+#define IDI_REFRESH                     244
+#define IDI_GENERIC                     246
+#define IDI_PAUSE                       263
+#define IDI_SCROLL                      264
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
 #define IDC_HEX                         1002
@@ -193,13 +206,28 @@
 #define ID_THREAD_EXPORT                32888
 #define ID_PIDDBCACHE_EXPORT            32889
 #define ID_UNLOADEDDRIVERS_EXPORT       32890
+#define ID_EVENT_PROPERTIES             32891
+#define ID_EVENT_CALLSTACK              32892
+#define ID_EVENT_COPY                   32893
+#define ID_EVENT_COPYALL                32894
+#define ID_MONITOR_START                32895
+#define ID_MONITOR_STOP                 32896
+#define ID_MONITOR_PAUSE                32897
+#define ID_MONITOR_CLEARALL             32898
+#define ID_MONITOR_CONFIGUREEVENTS      32899
+#define ID_MONITOR_CONFIGUREFILTERS     32900
+#define ID_CONFIGURE_FILTERS            32901
+#define ID_CONFIGURE_EVENTS             32902
+#define ID_VIEW_AUTOSCROLL              32907
+#define ID_VIEW_COLUMNS                 32908
+#define ID_VIEW_STATUSBAR               32909
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        241
-#define _APS_NEXT_COMMAND_VALUE         32891
+#define _APS_NEXT_RESOURCE_VALUE        247
+#define _APS_NEXT_COMMAND_VALUE         32910
 #define _APS_NEXT_CONTROL_VALUE         1069
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

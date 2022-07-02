@@ -184,3 +184,9 @@ ULONG SymbolHandler::GetStructSize(std::string name) {
 
 	return info->Size;
 }
+
+IMAGEHLP_MODULE SymbolHandler::GetModuleInfo(DWORD64 address) {
+	IMAGEHLP_MODULE info = { sizeof(info) };
+	::SymGetModuleInfo(m_hProcess, address, &info);
+	return info;
+}

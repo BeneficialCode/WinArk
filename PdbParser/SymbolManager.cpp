@@ -47,3 +47,11 @@ std::unique_ptr<SymbolInfo> SymbolManager::GetSymbolFromAddress(DWORD pid, DWORD
 
 SymbolManager::SymbolManager() {
 }
+
+void SymbolManager::Term() {
+	_procSymbols.clear();
+}
+
+SymbolManager::~SymbolManager() {
+	Term();
+}

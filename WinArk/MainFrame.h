@@ -12,13 +12,13 @@
 #include "KernelModuleTable.h"
 #include "DriverTable.h"
 #include "ServiceTable.h"
-
-#include "View.h"
-#include "DeviceManagerView.h"
 #include "WindowsView.h"
 #include "KernelHookView.h"
 #include "KernelView.h"
 #include "SystemConfigDlg.h"
+#include "Interfaces.h"
+#include "EtwView.h"
+#include "TraceManager.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -26,17 +26,19 @@ enum class TabColumn :int {
 	Process, KernelModule, 
 	Kernel, 
 	KernelHook,
-	Network,Driver,Registry,Device,Windows,Service,Config
+	Network,Driver,Registry,Device,Windows,Service,Config,Etw
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
 
+LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo);
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public CMessageFilter, 
-	public CIdleHandler
+	public CIdleHandler,
+	public IEtwFrame
 {
 public:
 	DECLARE_FRAME_WND_CLASS(nullptr,IDR_MAINFRAME)
@@ -48,6 +50,16 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
+
+	// Inherited via IEtwFrame
+	BOOL TrackPopupMenu(HMENU hMenu, HWND hWnd, POINT* pt = nullptr, UINT flags = 0) override;
+	HFONT GetMonoFont() override;
+	void ViewDestroyed(void*) override;
+	TraceManager& GetTraceManager() override;
+	BOOL SetPaneText(int index, PCWSTR text) override;
+	BOOL SetPaneIcon(int index, HICON hIcon) override;
+	CUpdateUIBase* GetUpdateUI() override;
+
 	void UpdateUI();
 
 	void SetStartKey(const CString& key);
@@ -78,16 +90,23 @@ public:
 	void InitKernelHookView();
 	void InitKernelView();
 	void InitConfigView();
+	void InitEtwView();
 
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		MESSAGE_HANDLER(WM_SIZE, OnSize)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
+		MESSAGE_HANDLER(WM_CLOSE,OnClose)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+		COMMAND_ID_HANDLER(ID_MONITOR_START, OnMonitorStart)
+		COMMAND_ID_HANDLER(ID_MONITOR_STOP, OnMonitorStop)
+		COMMAND_ID_HANDLER(ID_MONITOR_PAUSE, OnMonitorPause)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
+		if(m_pProcTable!=nullptr)
+			CHAIN_MSG_MAP_ALT_MEMBER((*m_pProcTable), 1);
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
@@ -100,19 +119,29 @@ public:
 public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
+
+	LRESULT OnMonitorStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnMonitorPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnMonitorStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+private:
+	void InitProcessToolBar(CToolBarCtrl& tb);
+	void InitEtwToolBar(CToolBarCtrl& tb, int size = 24);
+	void ClearToolBarButtons(CToolBarCtrl& tb);
 private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 	// CTabCtrl m_TabCtrl;
+	CToolBarCtrl m_tb;
 	
-	CProcessTable* m_ProcTable{ nullptr };
-	CNetwrokTable* m_NetTable{ nullptr };
-	CKernelModuleTable* m_KernelModuleTable{ nullptr };
-	CDriverTable* m_DriverTable{ nullptr };
-	CServiceTable* m_ServiceTable{ nullptr };
+	CProcessTable* m_pProcTable{ nullptr };
+	CNetwrokTable* m_pNetTable{ nullptr };
+	CKernelModuleTable* m_pKernelModuleTable{ nullptr };
+	CDriverTable* m_pDriverTable{ nullptr };
+	CServiceTable* m_pServiceTable{ nullptr };
 	
 	CMultiPaneStatusBarCtrl m_StatusBar;
 
@@ -123,6 +152,11 @@ private:
 	CKernelView m_KernelView;
 
 	CSystemConfigDlg m_SysConfigView;
+
+	CEtwView* m_pEtwView;
+	TraceManager m_tm;
+	CIcon m_RunIcon, m_StopIcon, m_PauseIcon;
+	CFont m_MonoFont;
 
 	CString m_StatusText;
 

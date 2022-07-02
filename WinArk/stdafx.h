@@ -23,7 +23,6 @@
 #include <atlstr.h>
 
 #include <atlwin.h>
-#include <winternl.h>
 
 
 
@@ -55,6 +54,9 @@ extern CAppModule _Module;
 #include <algorithm>
 #include <map>
 #include <format>
+
+#include <tdh.h>
+#include <evntcons.h>
 
 #include "ThemeSystem.h"
 #include "WinSysCore.h"

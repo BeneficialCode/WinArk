@@ -136,9 +136,6 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 		}
 	}
 
-	/*RECT rc;
-	GetClientRect(&rc);*/
-
 	m_MainSplitter.Create(m_hWnd, rcDefault, nullptr,
 		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 
@@ -162,6 +159,8 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	m_MainSplitter.SetSplitterPanes(m_Tree, m_List);
 	m_MainSplitter.SetSplitterPosPct(25);
 	m_MainSplitter.UpdateSplitterLayout();
+
+	m_AddressBar.SetFont(m_Tree.GetFont());
 
 	PostMessage(WM_BUILD_TREE);
 
@@ -957,20 +956,14 @@ LRESULT CRegistryManagerView::OnRunOnUIThread(UINT, WPARAM, LPARAM lp, BOOL&) {
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	CRect rc;
-	GetClientRect(&rc);
-	int iX = rc.left + 5;
-	int width = rc.Width();
-	int bottom = rc.bottom;
-	int height = rc.Height();
-	::GetClientRect(m_AddressBar.m_hWnd, &rc);
-	int editHeight = rc.Height();
-	rc.top += 5;
-	::MoveWindow(m_AddressBar, iX, rc.top, width, editHeight, TRUE);
-
-
-	bHandled = false;
+LRESULT CRegistryManagerView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	if (m_AddressBar.IsWindow()) {
+		int cx = GET_X_LPARAM(lParam), cy = GET_Y_LPARAM(lParam);
+		CRect rc;
+		m_AddressBar.GetClientRect(&rc);
+		m_AddressBar.MoveWindow(0, 0, rc.right, rc.bottom);
+		m_MainSplitter.MoveWindow(0, rc.bottom, cx, cy - rc.bottom);
+	}
 	return 0;
 }
 

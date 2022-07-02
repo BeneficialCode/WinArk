@@ -25,6 +25,9 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 BOOL CMainFrame::OnIdle() {
 	UpdateUI();
 	UIUpdateChildWindows();
+	UIUpdateStatusBar();
+	UIUpdateStatusBar();
+
 	return FALSE;
 }
 
@@ -63,18 +66,12 @@ void CMainFrame::InitProcessTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_ProcTable = new CProcessTable(info, table);
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height * 2;
-	rect.bottom -= height;
-	m_ProcTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_ProcTable->ShowWindow(SW_SHOW);
-	m_ProcTable->m_Images.Create(16, 16, ILC_COLOR32, 64, 32);
-	m_ProcTable->Refresh();
-	m_hwndArray[static_cast<int>(TabColumn::Process)] = m_ProcTable->m_hWnd;
+	m_pProcTable = new CProcessTable(info, table);
+	m_hWndClient = m_pProcTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED| WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_pProcTable->ShowWindow(SW_SHOW);
+	m_pProcTable->m_Images.Create(16, 16, ILC_COLOR32, 64, 32);
+	m_pProcTable->Refresh();
+	m_hwndArray[static_cast<int>(TabColumn::Process)] = m_pProcTable->m_hWnd;
 }
 
 void CMainFrame::InitNetworkTable() {
@@ -105,15 +102,9 @@ void CMainFrame::InitNetworkTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_NetTable = new CNetwrokTable(info, table);
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
-	m_NetTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::Network)] = m_NetTable->m_hWnd;
+	m_pNetTable = new CNetwrokTable(info, table);
+	m_pNetTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::Network)] = m_pNetTable->m_hWnd;
 }
 
 void CMainFrame::InitKernelModuleTable() {
@@ -138,15 +129,9 @@ void CMainFrame::InitKernelModuleTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_KernelModuleTable = new CKernelModuleTable(info, table);
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
-	m_KernelModuleTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::KernelModule)] = m_KernelModuleTable->m_hWnd;
+	m_pKernelModuleTable = new CKernelModuleTable(info, table);
+	m_pKernelModuleTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::KernelModule)] = m_pKernelModuleTable->m_hWnd;
 }
 
 void CMainFrame::InitDriverTable() {
@@ -173,15 +158,9 @@ void CMainFrame::InitDriverTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_DriverTable = new CDriverTable(info, table);
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
-	m_DriverTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::Driver)] = m_DriverTable->m_hWnd;
+	m_pDriverTable = new CDriverTable(info, table);
+	m_pDriverTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::Driver)] = m_pDriverTable->m_hWnd;
 }
 
 void CMainFrame::InitServiceTable() {
@@ -218,15 +197,9 @@ void CMainFrame::InitServiceTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_ServiceTable = new CServiceTable(info, table);
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
-	m_ServiceTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::Service)] = m_ServiceTable->m_hWnd;
+	m_pServiceTable = new CServiceTable(info, table);
+	m_pServiceTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::Service)] = m_pServiceTable->m_hWnd;
 }
 
 void CMainFrame::InitDriverInterface() {
@@ -283,93 +256,55 @@ void CMainFrame::InitDriverInterface() {
 
 void CMainFrame::InitRegistryView() {
 	// 注册表
-	RECT clientRect, rect;
-	GetClientRect(&clientRect);
-	m_TabCtrl.GetWindowRect(&rect);
-	clientRect.top += rect.bottom - rect.top;
-	m_StatusBar.GetWindowRect(&rect);
-	clientRect.bottom -= rect.bottom - rect.top;
-
-	m_RegView.Create(m_hWnd, clientRect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_RegView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 
 	m_RegView.m_MainSplitter.ShowWindow(SW_SHOW);
-	m_hwndArray[static_cast<int>(TabColumn::Registry)] = m_RegView.m_MainSplitter.m_hWnd;
+	m_hwndArray[static_cast<int>(TabColumn::Registry)] = m_RegView.m_hWnd;
 }
 
 // 设备列表
 void CMainFrame::InitDeviceView() {
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
-	auto hWnd = m_DevView.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	auto hWnd = m_DevView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::Device)] = m_DevView.m_hWnd;
 }
 
 // 窗口视图
 void CMainFrame::InitWindowsView() {
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height;
-	rect.bottom -= height;
 	// WS_CLIPCHILDREN 子窗口区域父窗口不负责绘制,子窗口自行绘制
 	// 不设置的话，父窗口绘制会遮挡住子窗口
-	HWND hWnd = m_WinView.Create(m_hWnd, rect, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPSIBLINGS| WS_CLIPCHILDREN);
+	HWND hWnd = m_WinView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPSIBLINGS| WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::Windows)] = m_WinView.m_hWnd;
 }
 
 void CMainFrame::InitKernelHookView() {
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height + 5;
-	rect.bottom -= height;
-
-	HWND hWnd = m_KernelHookView.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	HWND hWnd = m_KernelHookView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::KernelHook)] = m_KernelHookView.m_hWnd;
 }
 
 void CMainFrame::InitKernelView() {
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height + 5;
-	rect.bottom -= height;
-
-	HWND hWnd = m_KernelView.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	HWND hWnd = m_KernelView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::Kernel)] = m_KernelView.m_hWnd;
 }
 
 void CMainFrame::InitConfigView() {
-	RECT rect;
-	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
-	int height = rect.bottom - rect.top;
-	GetClientRect(&rect);
-	rect.top += height + 5;
-	rect.bottom -= height;
-
-	HWND hWnd = m_SysConfigView.Create(m_hWnd, rect);
+	HWND hWnd = m_SysConfigView.Create(m_hWnd, rcDefault);
 	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
 }
 
 
+
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	// create command bar window
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-	// attach menu
-	/*m_CmdBar.AttachMenu(GetMenu());
-	SetMenu(nullptr);*/
-
-	UIAddMenu(IDR_MAINFRAME);
-	UIAddMenu(IDR_CONTEXT);
-	//InitCommandBar();
-
+	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
+	
+	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
+	/*auto submenu = menu.GetSubMenu(1);
+	WCHAR text[64];
+	menu.GetMenuString(1, text, _countof(text), MF_BYPOSITION);
+	menu.RemoveMenu(1, MF_BYPOSITION);
+	menu.InsertMenu(1, MF_BYPOSITION, submenu.m_hMenu, text);
+	DrawMenuBar();*/
+	
 	// center the dialog on the screen
 	CenterWindow();
 
@@ -379,10 +314,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HICON hIconSmall = AtlLoadIconImage(IDR_MAINFRAME, LR_DEFAULTCOLOR, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
 	SetIcon(hIconSmall, FALSE);
 
-	m_StatusBar.Create(m_hWnd);
+	CreateSimpleStatusBar();
+	m_StatusBar.SubclassWindow(m_hWndStatusBar);
 	int parts[] = { 100,200,300,430,560,700,830,960,1100 };
 	m_StatusBar.SetParts(_countof(parts), parts);
 	m_StatusBar.ShowWindow(SW_SHOW);
+	UIAddStatusBar(m_StatusBar);
 
 	CTabCtrl tabCtrl;
 	CRect r;
@@ -400,14 +337,14 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"内核模块",
 		L"内核",
 		L"内核钩子",
-		//L"应用层钩子",
 		L"网络",
 		L"驱动",
 		L"注册表",
 		L"设备",
 		L"窗口",
 		L"服务",
-		L"配置"
+		L"配置",
+		L"事件追踪"
 	};
 
 	int i = 0;
@@ -417,6 +354,19 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
 	m_TabCtrl.SetFont(hFont, true);
 	::DeleteObject(hFont);
+	UIAddChildWindowContainer(m_TabCtrl);
+	AddSimpleReBarBand(m_TabCtrl, nullptr, TRUE, 0, TRUE);
+
+	auto hWndToolBar = m_tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+	m_tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
+	InitProcessToolBar(m_tb);
+	UIAddToolBar(m_tb);
+
+	AddSimpleReBarBand(m_tb, nullptr, TRUE);
+	
+	CReBarCtrl rb(m_hWndToolBar);
+	rb.LockBands(true);
+
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 	SetLayeredWindowAttributes(m_hWnd, 0xffffff, 220, LWA_ALPHA);
@@ -434,6 +384,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitKernelHookView();
 	InitKernelView();
 	InitConfigView();
+	InitEtwView();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -441,7 +392,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	// UIAddChildWindowContainer(m_hWnd);
+	UpdateLayout();
+	UpdateUI();
 
 	return TRUE;
 }
@@ -468,93 +420,36 @@ void CMainFrame::CloseDialog(int nVal) {
 	::PostQuitMessage(nVal);
 }
 
-LRESULT CMainFrame::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	RECT rect, statusRect, tabRect;
-	GetClientRect(&rect);
-	int iHorizontalUnit = LOWORD(GetDialogBaseUnits());
-	int iVerticalUnit = HIWORD(GetDialogBaseUnits());
-	m_TabCtrl.GetClientRect(&tabRect);
-	m_StatusBar.GetClientRect(&statusRect);
-	int statusHeight = statusRect.bottom - statusRect.top;
-
-	int width = rect.right - rect.left;
-	int tabHeight = tabRect.bottom - tabRect.top;
-	::MoveWindow(m_TabCtrl.m_hWnd, rect.left, rect.top, width, tabHeight, true);
-	int iX = rect.left;
-	int iY = rect.top + tabHeight;
-	int height = rect.bottom - tabHeight - statusHeight - rect.top;
-
-	// 判定是否窗口存在
-	bool existence = ::IsWindow(m_hwndArray[_index]);
-	if (!existence) {
-		return TRUE;
-	}
-	if (_index == static_cast<int>(TabColumn::Registry)) {
-		::MoveWindow(m_RegView.m_hWnd, iX, iY, width, height, true);
-		CRect rc;
-		m_RegView.m_AddressBar.GetClientRect(&rc);
-		int editHeight = rc.Height();
-		::MoveWindow(m_hwndArray[_index], iX, iY, width, height - editHeight, true);
-	}
-	else
-		::MoveWindow(m_hwndArray[_index], iX, iY, width, height, true);
-
-	iY = rect.bottom - statusHeight;
-	::MoveWindow(m_StatusBar.m_hWnd, iX, iY, width, statusHeight, true);
-	if (_index == static_cast<int>(TabColumn::Device)) {
-		::GetClientRect(m_hwndArray[_index], &rect);
-		iX = rect.left;
-		iY = rect.top;
-		height = rect.bottom - rect.top;
-		width = rect.right - rect.left;
-		::MoveWindow(m_DevView.m_Splitter.m_hWnd, iX, iY, width, height, true);
-	}
-	if (_index == static_cast<int>(TabColumn::Windows)) {
-		::GetClientRect(m_hwndArray[_index], &rect);
-		iX = rect.left;
-		iY = rect.top;
-		height = rect.bottom - rect.top;
-		width = rect.right - rect.left;
-		::MoveWindow(m_WinView.m_Splitter.m_hWnd, iX, iY, width, height, true);
-	}
-
-	RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN);
-
-	return TRUE;
-}
-
 LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 
 	index = m_TabCtrl.GetCurSel();
-	m_ProcTable->ShowWindow(SW_HIDE);
-	m_NetTable->ShowWindow(SW_HIDE);
-	m_KernelModuleTable->ShowWindow(SW_HIDE);
-	m_DriverTable->ShowWindow(SW_HIDE);
-	m_ServiceTable->ShowWindow(SW_HIDE);
-	m_RegView.ShowWindow(SW_HIDE);
-	m_DevView.ShowWindow(SW_HIDE);
-	m_WinView.ShowWindow(SW_HIDE);
-	m_KernelHookView.ShowWindow(SW_HIDE);
-	m_KernelView.ShowWindow(SW_HIDE);
-	m_SysConfigView.ShowWindow(SW_HIDE);
+	for (auto hwnd : m_hwndArray) {
+		if (::IsWindow(hwnd)) {
+			::ShowWindow(hwnd, SW_HIDE);
+		}
+	}
+
+	ClearToolBarButtons(m_tb);
 	
+	m_hWndClient = m_hwndArray[index];
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
-			m_ProcTable->ShowWindow(SW_SHOW);
-			m_ProcTable->SetFocus();
+			InitProcessToolBar(m_tb);
+			m_pProcTable->ShowWindow(SW_SHOW);
+			m_pProcTable->SetFocus();
 			break;
 		case TabColumn::Network:
-			m_NetTable->ShowWindow(SW_SHOW);
-			m_NetTable->SetFocus();
+			m_pNetTable->ShowWindow(SW_SHOW);
+			m_pNetTable->SetFocus();
 			break;
 		case TabColumn::KernelModule:
-			m_KernelModuleTable->ShowWindow(SW_SHOW);
-			m_KernelModuleTable->SetFocus();
+			m_pKernelModuleTable->ShowWindow(SW_SHOW);
+			m_pKernelModuleTable->SetFocus();
 			break;
 		case TabColumn::Driver:
-			m_DriverTable->ShowWindow(SW_SHOW);
-			m_DriverTable->SetFocus();
+			m_pDriverTable->ShowWindow(SW_SHOW);
+			m_pDriverTable->SetFocus();
 			break;
 		case TabColumn::Registry:
 			m_RegView.ShowWindow(SW_SHOW);
@@ -569,14 +464,19 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_KernelHookView.ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Service:
-			m_ServiceTable->ShowWindow(SW_SHOW);
-			m_ServiceTable->SetFocus();
+			m_pServiceTable->ShowWindow(SW_SHOW);
+			m_pServiceTable->SetFocus();
 			break;
 		case TabColumn::Kernel:
 			m_KernelView.ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Config:
 			m_SysConfigView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Etw:
+			InitEtwToolBar(m_tb);
+			m_pEtwView->ShowWindow(SW_SHOW);
+			break;
 		default:
 			break;
 	}
@@ -604,4 +504,192 @@ void CMainFrame::SetStartKey(const CString& key) {
 
 void CMainFrame::SetStatusText(PCWSTR text) {
 	m_StatusBar.SetText(1, m_StatusText = text, SBT_NOBORDERS);
+}
+
+LRESULT CMainFrame::OnMonitorStart(WORD, WORD, HWND, BOOL&) {
+	m_pEtwView->StartMonitoring(m_tm, true);
+	m_tm.Start([&](auto data) {
+		m_pEtwView->AddEvent(data);
+		});
+
+	UIEnable(ID_MONITOR_STOP, TRUE);
+	UIEnable(ID_MONITOR_START, FALSE);
+	UIEnable(ID_MONITOR_PAUSE, TRUE);
+
+	SetTimer(1, 5000, nullptr);
+	SetPaneIcon(1, m_RunIcon);
+	return 0;
+}
+
+LRESULT CMainFrame::OnMonitorStop(WORD, WORD, HWND, BOOL&) {
+	KillTimer(1);
+	m_tm.Stop();
+	m_tm.Pause(false);
+
+	m_pEtwView->StartMonitoring(m_tm, false);
+	SetPaneIcon(1, m_StopIcon);
+
+	UIEnable(ID_MONITOR_STOP, FALSE);
+	UIEnable(ID_MONITOR_START, TRUE);
+	UIEnable(ID_MONITOR_PAUSE, FALSE);
+	UISetCheck(ID_MONITOR_PAUSE, FALSE);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnMonitorPause(WORD, WORD, HWND, BOOL&) {
+	m_tm.Pause(!m_tm.IsPaused());
+	UISetCheck(ID_MONITOR_PAUSE, m_tm.IsPaused());
+	int image = 2;
+	HICON hIcon = m_PauseIcon;
+	if (!m_tm.IsPaused()) {
+		hIcon = m_tm.IsRunning() ? m_RunIcon : m_StopIcon;
+	}
+	SetPaneIcon(1, hIcon);
+	return 0;
+}
+
+BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, HWND hWnd, POINT* pt, UINT flags) {
+	POINT cursorPos;
+	if (pt == nullptr) {
+		::GetCursorPos(&cursorPos);
+		pt = &cursorPos;
+	}
+	return m_CmdBar.TrackPopupMenu(hMenu, flags, pt->x, pt->y);
+}
+
+HFONT CMainFrame::GetMonoFont() {
+	return m_MonoFont;
+}
+
+void CMainFrame::ViewDestroyed(void* view) {
+}
+
+TraceManager& CMainFrame::GetTraceManager() {
+	return m_tm;
+}
+
+BOOL CMainFrame::SetPaneText(int index, PCWSTR text) {
+	return m_StatusBar.SetText(index, text);
+}
+
+BOOL CMainFrame::SetPaneIcon(int index, HICON hIcon) {
+	return m_StatusBar.SetIcon(index, hIcon);
+}
+
+CUpdateUIBase* CMainFrame::GetUpdateUI() {
+	return this;
+}
+
+LRESULT CMainFrame::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
+	if (id == 1 && m_pEtwView) {
+		KillTimer(1);
+		MEMORYSTATUSEX ms = { sizeof(ms) };
+		::GlobalMemoryStatusEx(&ms);
+		if (ms.dwMemoryLoad > 94 && m_pEtwView) {
+			if (AtlMessageBox(*this, L"Physical memory is low. Continue monitoring?",
+				IDS_TITLE, MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONWARNING | MB_SETFOREGROUND | MB_SYSTEMMODAL) == IDCANCEL) {
+				PostMessage(WM_COMMAND, ID_MONITOR_STOP);
+			}
+		}
+	}
+
+	return 0;
+}
+
+LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
+{
+	if (EXCEPTION_ACCESS_VIOLATION == ExceptionInfo->ExceptionRecord->ExceptionCode) {
+		// probably the network related thread failing during symbol loading when terminated abruptly
+		::ExitThread(0);
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
+	CImageList tbImages;
+	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
+	tb.SetImageList(tbImages);
+
+	struct {
+		UINT id;
+		int image;
+		int style = BTNS_BUTTON;
+	}buttons[] = {
+		{ID_MONITOR_START,IDI_PLAY},
+		{ ID_MONITOR_PAUSE, IDI_PAUSE },
+		{ ID_MONITOR_STOP, IDI_STOP },
+		{ 0 },
+		{ ID_VIEW_AUTOSCROLL, IDI_SCROLL },
+		{ 0 },
+		{ ID_MONITOR_CLEARALL, IDI_CANCEL },
+		{ 0 },
+		{ ID_MONITOR_CONFIGUREEVENTS, IDI_TOOLS },
+		{ ID_CONFIGURE_FILTERS, IDI_FILTER },
+		{ 0 },
+		{ ID_EVENT_CALLSTACK, IDI_STACK },
+		{ ID_EVENT_PROPERTIES, IDI_PROPERTIES },
+	};
+
+	for (auto& b : buttons) {
+		if (b.id == 0)
+			tb.AddSeparator(0);
+		else {
+			int image = tbImages.AddIcon(AtlLoadIconImage(b.image, 0, size, size));
+			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, nullptr, 0);
+		}
+	}
+}
+
+void CMainFrame::ClearToolBarButtons(CToolBarCtrl& tb)
+{
+	while (tb.DeleteButton(0));
+}
+
+void CMainFrame::InitEtwView() {
+	m_RunIcon.LoadIconWithScaleDown(IDI_PLAY, 20, 20);
+	m_StopIcon.LoadIconWithScaleDown(IDI_STOP, 20, 20);
+	m_PauseIcon.LoadIconWithScaleDown(IDI_PAUSE, 20, 20);
+	SetPaneIcon(1, m_StopIcon);
+	UIEnable(ID_MONITOR_STOP, FALSE);
+	UIEnable(ID_MONITOR_PAUSE, FALSE);
+
+	m_MonoFont.CreatePointFont(100, L"Consolas");
+
+	m_pEtwView = new CEtwView(this);
+	m_pEtwView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
+	m_hwndArray[static_cast<int>(TabColumn::Etw)] = m_pEtwView->m_hWnd;
+}
+
+void CMainFrame::InitProcessToolBar(CToolBarCtrl& tb) {
+	CImageList tbImages;
+	tbImages.Create(24, 24, ILC_COLOR32, 8, 4);
+	tb.SetImageList(tbImages);
+
+	struct {
+		UINT id;
+		int image;
+		int style = BTNS_BUTTON;
+		PCWSTR text = nullptr;
+	}buttons[] = {
+		{ID_PROCESS_REFRESH,IDI_REFRESH},
+	};
+
+	for (auto& b : buttons) {
+		if (b.id == 0)
+			tb.AddSeparator(0);
+		else {
+			int image = tbImages.AddIcon(AtlLoadIconImage(b.image, 0, 24, 24));
+			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, b.text, 0);
+		}
+	}
+}
+
+LRESULT CMainFrame::OnClose(UINT, WPARAM, LPARAM, BOOL&) {
+	if (m_tm.IsRunning())
+		m_tm.Stop();
+
+	return DefWindowProc();
 }

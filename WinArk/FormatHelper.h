@@ -1,6 +1,7 @@
 #pragma once
 #include "ProcessInfoEx.h"
 #include "Token.h"
+#include "EventData.h"
 
 struct FormatHelper {
 	static CString ToBinary(ULONGLONG value);
@@ -19,4 +20,9 @@ struct FormatHelper {
 	static PCWSTR ComApartmentToString(WinSys::ComFlags flags);
 	static CString ProcessAttributesToString(ProcessAttributes attributes);
 	static CString FormatHWndOrNone(HWND hWnd);
+	static PCWSTR ObjectTypeToString(int type);
+	static CString MajorFunctionToString(UCHAR mf);
+	static CString VirtualAllocFlagsToString(DWORD flags, bool withNumeric = false);
+	static CString FormatTime(LONGLONG ts);
+	static std::wstring FormatProperty(const EventData* data, const EventProperty& prop);
 };

@@ -6,6 +6,10 @@
 
 using namespace WinSys;
 
+bool CDeviceManagerView::IsSortable(HWND,int col) const {
+	return col == 0;
+}
+
 LRESULT CDeviceManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	RECT rect;
 	HWND hWnd = GetParent().m_hWnd;
@@ -288,4 +292,10 @@ CString CDeviceManagerView::GetDeviceClassProperty(const GUID* guid, int index) 
 	}
 
 	return result;
+}
+
+LRESULT CDeviceManagerView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	int cx = GET_X_LPARAM(lParam), cy = GET_Y_LPARAM(lParam);
+	m_Splitter.MoveWindow(0, 0, cx, cy);
+	return 0;
 }

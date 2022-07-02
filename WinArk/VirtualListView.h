@@ -129,6 +129,13 @@ struct CVirtualListView {
 	}
 
 protected:
+	void UpdateList(CListViewCtrl& lv, int count, bool full = false) {
+		lv.SetItemCountEx(count, full ? 0 : (LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL));
+		auto top = lv.GetTopIndex(), page = lv.GetCountPerPage();
+		if (!full && (lv.SendMessage(LVM_ISITEMVISIBLE, top) || lv.SendMessage(LVM_ISITEMVISIBLE, top + page - 1)))
+			lv.RedrawItems(top, top + page);
+	}
+
 	ColumnManager* GetExistingColumnManager(HWND hListView) const {
 		auto it = std::find_if(m_Columns.begin(), m_Columns.end(), [=](auto& cm) {
 			return cm->GetListView() == hListView;
@@ -162,9 +169,15 @@ protected:
 	LRESULT OnGetDispInfo(int /*idCtrl*/, LPNMHDR hdr, BOOL&/*bHandled*/) {
 		auto lv = (NMLVDISPINFO*)hdr;
 		auto& item = lv->item;
+		auto col = GetRealColumn(hdr->hwndFrom, item.iSubItem);
 		auto p = static_cast<T*>(this);
-		if (item.mask & LVIF_TEXT)
-			::StringCchCopy(item.pszText, item.cchTextMax, p->GetColumnText(hdr->hwndFrom, item.iItem, item.iSubItem));
+		if (item.mask & LVIF_TEXT) {
+			auto name = p->GetColumnTextPointer(hdr->hwndFrom, item.iItem, col);
+			if (name)
+				item.pszText = (PWSTR)name;
+			else
+				::StringCchCopy(item.pszText, item.cchTextMax, p->GetColumnText(hdr->hwndFrom, item.iItem, item.iSubItem));
+		}
 		if (item.mask & LVIF_IMAGE) {
 			item.iImage = p->GetRowImage(hdr->hwndFrom, item.iItem);
 		}
@@ -268,11 +281,16 @@ protected:
 	CString GetColumnText(HWND hWnd, int row, int column) const {
 		return L"";
 	}
+	
+	PCWSTR GetColumnTextPointer(HWND, int row, int col) const {
+		return nullptr;
+	}
 
 	int GetSortColumn(UINT_PTR id = 0) const {
 		auto si = FindById(id);
 		return si ? si->SortColumn : -1;
 	}
+
 
 	int IsSortAscending(UINT_PTR id) const {
 		auto si = FindById(id);

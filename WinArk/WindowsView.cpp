@@ -572,3 +572,9 @@ LRESULT CWindowsView::OnTreeNodeRightClick(int, LPNMHDR, BOOL&) {
 	TrackPopupMenu(menu.GetSubMenu(4), 0, pt.x, pt.y, 0, m_hWnd, nullptr);
 	return 0;
 }
+
+LRESULT CWindowsView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	int cx = GET_X_LPARAM(lParam), cy = GET_Y_LPARAM(lParam);
+	m_Splitter.MoveWindow(0, 0, cx, cy);
+	return 0;
+}

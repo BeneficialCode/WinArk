@@ -243,11 +243,15 @@
     <ClCompile Include="DriverTable.cpp" />
     <ClCompile Include="EnumString.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
+    <ClCompile Include="EtwView.cpp" />
+    <ClCompile Include="EventConfiguration.cpp" />
     <ClCompile Include="EventObjectType.cpp" />
     <ClCompile Include="ExportDlg.cpp" />
     <ClCompile Include="FileManagerView.cpp" />
     <ClCompile Include="FileObjectType.cpp" />
+    <ClCompile Include="FilterConfiguration.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
+    <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
     <ClCompile Include="KernelRoutineDlg.cpp" />
     <ClCompile Include="KernelView.cpp" />
@@ -259,7 +263,6 @@
     <ClCompile Include="RegHelpers.cpp" />
     <ClCompile Include="HexControl.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
-    <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="NumberValueDlg.cpp" />
     <ClCompile Include="JobObjectType.cpp" />
     <ClCompile Include="JobPropertiesDlg.cpp" />
@@ -356,12 +359,17 @@
     <ClInclude Include="DriverTable.h" />
     <ClInclude Include="EnumStrings.h" />
     <ClInclude Include="EnvironmentDlg.h" />
+    <ClInclude Include="EtwView.h" />
+    <ClInclude Include="EventConfiguration.h" />
     <ClInclude Include="EventObjectType.h" />
     <ClInclude Include="ExportDlg.h" />
     <ClInclude Include="FileManagerView.h" />
     <ClInclude Include="FileObjectType.h" />
+    <ClInclude Include="FilterConfiguration.h" />
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="IniFile.h" />
+    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="KernelNotifyTable.h" />
     <ClInclude Include="KernelRoutineDlg.h" />
     <ClInclude Include="KernelView.h" />
@@ -374,7 +382,6 @@
     <ClInclude Include="HexControl.h" />
     <ClInclude Include="ImageHelper.h" />
     <ClInclude Include="IMainFrame.h" />
-    <ClInclude Include="IniFile.h" />
     <ClInclude Include="Internals.h" />
     <ClInclude Include="NumberValueDlg.h" />
     <ClInclude Include="JobObjectType.h" />
@@ -443,6 +450,7 @@
     <ClInclude Include="TreeViewManager.h" />
     <ClInclude Include="UnloadedDriverTable.h" />
     <ClInclude Include="View.h" />
+    <ClInclude Include="ViewBase.h" />
     <ClInclude Include="VirtualListView.h" />
     <ClInclude Include="WindowHelper.h" />
     <ClInclude Include="WindowsView.h" />
@@ -453,6 +461,10 @@
     <ResourceCompile Include="WinArk.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\event3.ico" />
+    <Image Include="res\handles.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\refresh.ico" />
     <Image Include="res\WinArk.ico" />
     <Image Include="res\window.ico" />
   </ItemGroup>
