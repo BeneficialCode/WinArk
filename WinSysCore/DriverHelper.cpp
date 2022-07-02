@@ -113,6 +113,7 @@ HANDLE DriverHelper::OpenHandle(void* pObject, ACCESS_MASK access) {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_OBJECT, &data, sizeof(data), &hObject, sizeof(hObject), &bytes, nullptr) ? hObject : nullptr;
 }
 
+// https://docs.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
 HANDLE DriverHelper::OpenProcess(DWORD pid, ACCESS_MASK access) {
 	if (OpenDevice()) {
 		OpenProcessThreadData data;

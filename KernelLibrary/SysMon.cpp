@@ -118,6 +118,8 @@ void OnThreadNotify(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Cr
 
 void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo) {
 	if (ProcessId == nullptr) { // kernel image
+		HANDLE pid = PsGetCurrentProcessId();
+		LogInfo("pid = %d\n", pid);
 		//system image , ignore
 		PEParser parser(ImageInfo->ImageBase);
 		auto entryPoint = parser.GetAddressEntryPoint();
