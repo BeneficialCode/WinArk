@@ -596,6 +596,10 @@ BEGIN
         MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
         MENUITEM "E&xit",                       IDM_EXIT
     END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Copy &All",                   ID_EDIT_COPYALL
+    END
     POPUP "&View"
     BEGIN
         MENUITEM "&Auto Scroll",                ID_VIEW_AUTOSCROLL
@@ -772,6 +776,60 @@ BEGIN
     LTEXT           "Size: ",IDC_BUFFERSIZE,14,161,91,8
 END
 
+IDD_EVENTS DIALOGEX 0, 0, 255, 290
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Configure Events"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Basic",IDC_BASIC,"Button",BS_AUTORADIOBUTTON,6,6,32,10
+    CONTROL         "Advanced",IDC_ADVANCED,"Button",BS_AUTORADIOBUTTON,52,6,48,10
+    PUSHBUTTON      "Expand All",IDC_EXPAND,198,12,50,14
+    PUSHBUTTON      "Collapse All",IDC_COLLAPSE,198,32,50,14
+    PUSHBUTTON      "Save...",IDC_SAVE,198,56,50,14
+    PUSHBUTTON      "&Load...",IDC_LOAD,198,75,50,14
+    PUSHBUTTON      "&Reset",IDC_RESET,198,110,50,14
+    PUSHBUTTON      "Defaults",IDC_DEFAULTS,198,128,50,14
+    DEFPUSHBUTTON   "OK",IDOK,69,269,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,135,269,50,14
+    CONTROL         "",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,6,24,186,234
+END
+
+IDD_FILTERS DIALOGEX 0, 0, 387, 242
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configure Filters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_NAMES,27,9,76,70,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMPARE,109,9,71,46,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_VALUE,192,9,99,129,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INC_EXC,297,9,48,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Button1",IDC_ADD,357,5,26,19,BS_ICON
+    CONTROL         "",IDC_CONFIG_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,30,348,186
+    PUSHBUTTON      "Button1",IDC_UP,358,56,26,18,BS_ICON
+    PUSHBUTTON      "Button1",IDC_DOWN,358,80,26,18,BS_ICON
+    PUSHBUTTON      "Button1",IDC_DELETE,358,104,26,18,BS_ICON
+    PUSHBUTTON      "Button1",IDC_SAVE,358,136,26,18,BS_ICON
+    PUSHBUTTON      "Button1",IDC_LOAD,358,159,26,18,BS_ICON
+    DEFPUSHBUTTON   "OK",IDOK,135,221,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,201,221,50,14
+    LTEXT           "Filter:",IDC_STATIC,6,11,20,8
+    PUSHBUTTON      "Button1",IDC_EDIT,358,29,26,19,BS_ICON
+END
+
+IDD_STACK DIALOGEX 0, 0, 339, 278
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Call Stack"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,6,42,324,228
+    LTEXT           "Process ID:",IDC_STATIC,8,6,38,8
+    LTEXT           "Thread ID:",IDC_STATIC,119,6,36,8
+    LTEXT           "Static",IDC_PROCESS,48,5,42,12,0,WS_EX_CLIENTEDGE | WS_EX_RIGHT
+    LTEXT           "Static",IDC_THREAD,157,5,42,12,0,WS_EX_CLIENTEDGE | WS_EX_RIGHT
+    PUSHBUTTON      "Copy",IDC_COPY,215,3,50,14
+    LTEXT           "Static",IDC_MESSAGE,6,24,174,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -816,6 +874,30 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 191
     END
+
+    IDD_EVENTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 283
+    END
+
+    IDD_FILTERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 380
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 235
+    END
+
+    IDD_STACK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 332
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 271
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -850,6 +932,21 @@ BEGIN
     0
 END
 
+IDD_EVENTS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FILTERS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_STACK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -879,6 +976,64 @@ IDI_PAUSE               ICON                    "res\\Pause.ico"
 IDI_FILTER              ICON                    "res\\filter.ico"
 
 IDI_CANCEL              ICON                    "res\\cancel.ico"
+
+IDI_THREAD_NEW          ICON                    "res\\threads-new.ico"
+
+IDI_THREAD_DELETE       ICON                    "res\\threads-delete.ico"
+
+IDI_THREAD              ICON                    "res\\threads.ico"
+
+IDI_PROCESS_NEW         ICON                    "res\\process-new.ico"
+
+IDI_PROCESS_DELETE      ICON                    "res\\process-delete.ico"
+
+IDI_OBJECT              ICON                    "res\\object.ico"
+
+IDI_NETWORK             ICON                    "res\\network.ico"
+
+IDI_MEMORY              ICON                    "res\\memory.ico"
+
+IDI_HEAP2               ICON                    "res\\heap2.ico"
+
+IDI_HEAP                ICON                    "res\\heap.ico"
+
+IDI_HANDLE              ICON                    "res\\handle.ico"
+
+IDI_GEAR                ICON                    "res\\gear.ico"
+
+IDI_FILE                ICON                    "res\\file.ico"
+
+IDI_DLL_UNLOAD          ICON                    "res\\dll-delete.ico"
+
+IDI_DLL_LOAD            ICON                    "res\\dll-add.ico"
+
+IDI_DLL                 ICON                    "res\\Modules.ico"
+
+IDI_DISK                ICON                    "res\\storage.ico"
+
+IDI_REGISTRY            ICON                    "res\\registry.ico"
+
+IDI_UP_ARROW            ICON                    "res\\arrow_up_blue.ico"
+
+IDI_OPEN                ICON                    "res\\folder_open.ico"
+
+IDI_FILTER_EDIT         ICON                    "res\\filter-edit.ico"
+
+IDI_FILTER_DELETE       ICON                    "res\\filter-delete.ico"
+
+IDI_FILTER_ADD          ICON                    "res\\filter-add.ico"
+
+IDI_DOWN_ARROW          ICON                    "res\\arrow_down_blue.ico"
+
+IDI_OK2                 ICON                    "res\\ok_button.ico"
+
+IDI_OK                  ICON                    "res\\ok.ico"
+
+IDI_CANCEL2             ICON                    "res\\delete_button.ico"
+
+IDI_U                   ICON                    "res\\letter-u.ico"
+
+IDI_K                   ICON                    "res\\letter-k.ico"
 
 
 #ifdef APSTUDIO_INVOKED

@@ -105,8 +105,7 @@ public:
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
-		if(m_pProcTable!=nullptr)
-			CHAIN_MSG_MAP_ALT_MEMBER((*m_pProcTable), 1);
+		COMMAND_RANGE_HANDLER(0x8000,0xefff,OnForwardToActiveView)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
@@ -127,6 +126,8 @@ public:
 	LRESULT OnMonitorStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnMonitorPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnMonitorStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 private:
 	void InitProcessToolBar(CToolBarCtrl& tb);
@@ -153,7 +154,7 @@ private:
 
 	CSystemConfigDlg m_SysConfigView;
 
-	CEtwView* m_pEtwView;
+	CEtwView* m_pEtwView{ nullptr };
 	TraceManager m_tm;
 	CIcon m_RunIcon, m_StopIcon, m_PauseIcon;
 	CFont m_MonoFont;

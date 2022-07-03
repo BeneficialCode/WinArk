@@ -18,7 +18,16 @@
 #define IDC_VIEW_PROCESS 0xDAD
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
-	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
+	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
+		return TRUE;
+}
+
+LRESULT CMainFrame::OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto hWnd = m_hwndArray[_index];
+	if (::IsWindow(hWnd)) {
+		::SendMessage(hWnd, WM_COMMAND, wID, 0);
+	}
+	return 0;
 }
 
 
@@ -298,6 +307,16 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	
 	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
+
+	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+	CMenuHandle hMenu = GetMenu();
+	UIAddMenu(hMenu);
+	m_CmdBar.AttachMenu(hMenu);
+	m_CmdBar.m_bAlphaImages = true;
+	SetMenu(nullptr);
+
+	AddSimpleReBarBand(hWndCmdBar);
+
 	/*auto submenu = menu.GetSubMenu(1);
 	WCHAR text[64];
 	menu.GetMenuString(1, text, _countof(text), MF_BYPOSITION);
@@ -360,16 +379,23 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	auto hWndToolBar = m_tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	m_tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
 	InitProcessToolBar(m_tb);
-	UIAddToolBar(m_tb);
+	
+	UIAddToolBar(hWndToolBar);
 
 	AddSimpleReBarBand(m_tb, nullptr, TRUE);
-	
+
 	CReBarCtrl rb(m_hWndToolBar);
 	rb.LockBands(true);
 
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 	SetLayeredWindowAttributes(m_hWnd, 0xffffff, 220, LWA_ALPHA);
+	
+	// register object for message filtering and idle updates
+	CMessageLoop* pLoop = _Module.GetMessageLoop();
+	ATLASSERT(pLoop != NULL);
+	pLoop->AddMessageFilter(this);
+	pLoop->AddIdleHandler(this);
 
 	InitDriverInterface();
 	InitProcessTable();
@@ -385,12 +411,6 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitKernelView();
 	InitConfigView();
 	InitEtwView();
-
-	// register object for message filtering and idle updates
-	CMessageLoop* pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop != NULL);
-	pLoop->AddMessageFilter(this);
-	pLoop->AddIdleHandler(this);
 
 	UpdateLayout();
 	UpdateUI();

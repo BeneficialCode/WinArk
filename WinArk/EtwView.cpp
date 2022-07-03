@@ -6,6 +6,10 @@
 #include <execution>
 #include "ClipboardHelper.h"
 #include "SortHelper.h"
+#include "EventsDlg.h"
+#include "FiltersDlg.h"
+#include "FilterFactory.h"
+#include "CallStackDlg.h"
 
 CEtwView::CEtwView(IEtwFrame* frame) :CViewBase(frame) {
 }
@@ -309,6 +313,36 @@ LRESULT CEtwView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 			PCWSTR type;
 		}icons[] = {
 			{IDI_GENERIC,nullptr},
+			{ IDI_HEAP2, L"PageFault/VirtualAlloc" },
+			{ IDI_HEAP2, L"Virtual Memory" },
+			{ IDI_GEAR, L"Process" },
+			{ IDI_PROCESS_NEW, L"Process/Start" },
+			{ IDI_PROCESS_DELETE, L"Process/Terminate" },
+			{ IDI_PROCESS_DELETE, L"Process/End" },
+			{ IDI_THREAD, L"Thread" },
+			{ IDI_THREAD_NEW, L"Thread/Start" },
+			{ IDI_THREAD_DELETE, L"Thread/End" },
+			{ IDI_DLL, L"Image" },
+			{ IDI_DLL_LOAD, L"Image/Load" },
+			{ IDI_DLL_UNLOAD, L"Image/UnLoad" },
+			{ IDI_NETWORK, L"TCP" },
+			{ IDI_NETWORK, L"UDP" },
+			{ IDI_NETWORK, L"TcpIp" },
+			{ IDI_NETWORK, L"UdpIp" },
+			{ IDI_REGISTRY, L"Registry" },
+			{ IDI_FILE, L"FileIo" },
+			{ IDI_FILE, L"File" },
+			{ IDI_HANDLE, L"Objects" },
+			{ IDI_HANDLE, L"Object" },
+			{ IDI_OBJECT, L"Object/CreateHandle" },
+			{ IDI_OBJECT, L"Object/CloseHandle" },
+			{ IDI_OBJECT, L"Handles" },
+			{ IDI_DISK, L"DiskIo" },
+			{ IDI_DISK, L"Disk I/O" },
+			{ IDI_MEMORY, L"PageFault" },
+			{ IDI_MEMORY, L"Page Fault" },
+			{ IDI_HEAP, L"Pool" },
+			{ IDI_HEAP, L"Kernel Pool" },
 		};
 
 		int index = 0;
@@ -394,6 +428,9 @@ LRESULT CEtwView::OnCallStack(WORD, WORD, HWND, BOOL&) {
 		return 0;
 	}
 
+	CCallStackDlg dlg(data);
+	dlg.DoModal();
+
 	return 0;
 }
 
@@ -450,6 +487,25 @@ LRESULT CEtwView::OnCopyAll(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CEtwView::OnConfigureEvents(WORD, WORD, HWND, BOOL&) {
+	CEventsDlg dlg(m_EventsConfig);
+	if (dlg.DoModal() == IDOK) {
+		if (m_IsMonitoring) {
+			// update trace manager
+			auto& tm = GetFrame()->GetTraceManager();
+			std::vector<KernelEventTypes> types;
+			std::vector<std::wstring> categories;
+			for (auto& cat : m_EventsConfig.GetCategories()) {
+				auto c = KernelEventCategory::GetCategory(cat.Name.c_str());
+				ATLASSERT(c);
+				types.push_back(c->EnableFlag);
+				categories.push_back(c->Name);
+			}
+			std::initializer_list<KernelEventTypes> events(types.data(), types.data() + types.size());
+			tm.SetKernelEventTypes(events);
+			tm.SetKernelEventStacks(std::initializer_list<std::wstring>(categories.data(),categories.data() + categories.size()));
+			tm.UpdateEventConfig();
+		}
+	}
 	return 0;
 }
 
@@ -461,6 +517,17 @@ LRESULT CEtwView::OnAutoScroll(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CEtwView::OnConfigFilters(WORD, WORD, HWND, BOOL&) {
+	CFiltersDlg dlg(m_FilterConfig);
+	if (dlg.DoModal() == IDOK) {
+		// update filters
+		auto& tm = GetFrame()->GetTraceManager();
+		auto paused = tm.IsRunning() && tm.IsPaused();
+		if (!paused)
+			tm.Pause(true);
+		ApplyFilters(m_FilterConfig);
+		if (!paused)
+			tm.Pause(false);
+	}
 	return 0;
 }
 
@@ -478,7 +545,13 @@ void CEtwView::UpdateUI() {
 	auto ui = GetFrame()->GetUpdateUI();
 	auto& tm = GetFrame()->GetTraceManager();
 
-
+	ui->UIEnable(ID_EDIT_COPYALL, !m_IsMonitoring || tm.IsPaused());
+	ui->UIEnable(ID_FILE_SAVE, !m_IsMonitoring || tm.IsPaused());
+	ui->UISetCheck(ID_VIEW_AUTOSCROLL, m_AutoScroll);
+	auto selected = m_List.GetSelectedIndex();
+	ui->UIEnable(ID_EVENT_PROPERTIES, selected >= 0);
+	ui->UIEnable(ID_EDIT_COPY, selected >= 0);
+	ui->UIEnable(ID_EVENT_CALLSTACK, selected >= 0 && m_Events[selected]->GetStackEventData() != nullptr);
 }
 
 void CEtwView::ApplyFilters(const FilterConfiguration& config) {
@@ -487,5 +560,12 @@ void CEtwView::ApplyFilters(const FilterConfiguration& config) {
 	for (int i = 0; i < config.GetFilterCount(); i++) {
 		auto desc = config.GetFilter(i);
 		ATLASSERT(desc);
+		auto filter = FilterFactory::CreateFilter(desc->Name.c_str(), desc->Compare, 
+			desc->Parameters.c_str(),desc->Action);
+		ATLASSERT(filter);
+		if (filter) {
+			filter->Enable(desc->Enabled);
+			tm.AddFilter(filter);
+		}
 	}
 }

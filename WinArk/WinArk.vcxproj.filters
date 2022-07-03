@@ -363,6 +363,36 @@
     <ClCompile Include="EventConfiguration.cpp">
       <Filter>Filters</Filter>
     </ClCompile>
+    <ClCompile Include="EventsDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="FiltersDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="EventNameFilter.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessIdFilter.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessNameFilter.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyNameFilter.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyValueFilter.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterFactory.cpp">
+      <Filter>Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogHelper.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="CallStackDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -722,6 +752,36 @@
     <ClInclude Include="EventConfiguration.h">
       <Filter>Filters</Filter>
     </ClInclude>
+    <ClInclude Include="EventsDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="FiltersDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="EventNameFilter.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessIdFilter.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessNameFilter.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyNameFilter.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyValueFilter.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterFactory.h">
+      <Filter>Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogHelper.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="CallStackDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -745,6 +805,120 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\event3.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\tools.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Stop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\stack.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\autoscroll.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\properties.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Play.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Pause.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\filter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\cancel.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\threads-new.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\threads-delete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\threads.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\process-new.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\process-delete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\object.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\network.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\memory.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\heap2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\heap.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\handle.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\gear.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\dll-delete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\dll-add.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Modules.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\storage.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\registry.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\arrow_up_blue.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\folder_open.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\filter-edit.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\filter-delete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\filter-add.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\arrow_down_blue.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ok_button.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ok.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\delete_button.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\letter-u.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\letter-k.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
