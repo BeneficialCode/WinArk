@@ -19,6 +19,7 @@
 #include "Interfaces.h"
 #include "EtwView.h"
 #include "TraceManager.h"
+#include "QuickFindDlg.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -31,14 +32,13 @@ enum class TabColumn :int {
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
 
-LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo);
-
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public CMessageFilter, 
 	public CIdleHandler,
-	public IEtwFrame
+	public IEtwFrame,
+	public IQuickFind
 {
 public:
 	DECLARE_FRAME_WND_CLASS(nullptr,IDR_MAINFRAME)
@@ -50,6 +50,9 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
+	// Inherited via IQuickFind
+	void DoFind(PCWSTR text, const QuickFindOptions& options) override;
+	void WindowClosed() override;
 
 	// Inherited via IEtwFrame
 	BOOL TrackPopupMenu(HMENU hMenu, HWND hWnd, POINT* pt = nullptr, UINT flags = 0) override;
@@ -102,11 +105,11 @@ public:
 		COMMAND_ID_HANDLER(ID_MONITOR_START, OnMonitorStart)
 		COMMAND_ID_HANDLER(ID_MONITOR_STOP, OnMonitorStop)
 		COMMAND_ID_HANDLER(ID_MONITOR_PAUSE, OnMonitorPause)
+		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		COMMAND_RANGE_HANDLER(0x8000,0xefff,OnForwardToActiveView)
-		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
 	CCommandBarCtrl m_CmdBar;
@@ -127,12 +130,13 @@ public:
 	LRESULT OnMonitorPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnMonitorStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
+	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	void InitProcessToolBar(CToolBarCtrl& tb);
 	void InitEtwToolBar(CToolBarCtrl& tb, int size = 24);
 	void ClearToolBarButtons(CToolBarCtrl& tb);
+	void InitCommandBar();
 private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 	// CTabCtrl m_TabCtrl;
@@ -158,6 +162,7 @@ private:
 	TraceManager m_tm;
 	CIcon m_RunIcon, m_StopIcon, m_PauseIcon;
 	CFont m_MonoFont;
+	CQuickFindDlg* m_pQuickFindDlg{ nullptr };
 
 	CString m_StatusText;
 

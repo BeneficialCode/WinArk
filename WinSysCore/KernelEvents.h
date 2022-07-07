@@ -312,6 +312,8 @@ DEFINE_GUID( /* 3282fc76-feed-498e-8aa7-e70f459d430e */
 	0x8a, 0xa7, 0xe7, 0x0f, 0x45, 0x9d, 0x43, 0x0e
 );
 
+
+
 struct KernelEvent {
 	std::wstring Name;
 	uint32_t Opcode;

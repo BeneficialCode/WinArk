@@ -40,6 +40,9 @@
     <Filter Include="Filters">
       <UniqueIdentifier>{19b916de-7748-40bb-92ae-5315f290f739}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Serializers">
+      <UniqueIdentifier>{7c95d02f-698c-456c-be5d-eaf370bacc32}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -392,6 +395,24 @@
     </ClCompile>
     <ClCompile Include="CallStackDlg.cpp">
       <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="EventPropertiesDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="QuickFindDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="SerializerFactory.cpp">
+      <Filter>Serializers</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryEventDataSerializer.cpp">
+      <Filter>Serializers</Filter>
+    </ClCompile>
+    <ClCompile Include="CSVEventDataSerializer.cpp">
+      <Filter>Serializers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -782,6 +803,27 @@
     <ClInclude Include="CallStackDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="EventPropertiesDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="QuickFindDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializerFactory.h">
+      <Filter>Serializers</Filter>
+    </ClInclude>
+    <ClInclude Include="BinaryEventDataSerializer.h">
+      <Filter>Serializers</Filter>
+    </ClInclude>
+    <ClInclude Include="CSVEventDataSerializer.h">
+      <Filter>Serializers</Filter>
+    </ClInclude>
+    <ClInclude Include="IEventDataSerializer.h">
+      <Filter>Serializers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -919,6 +961,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\letter-k.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\find.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\search.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

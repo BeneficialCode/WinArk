@@ -131,6 +131,17 @@ bool CheckInstall(PCWSTR cmdLine) {
 	return parse;
 }
 
+LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
+{
+	if (EXCEPTION_ACCESS_VIOLATION == ExceptionInfo->ExceptionRecord->ExceptionCode) {
+		// probably the network related thread failing during symbol loading when terminated abruptly
+		::ExitThread(0);
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
+
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	HRESULT hRes = ::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
 	ATLASSERT(SUCCEEDED(hRes));
@@ -139,8 +150,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
-
+	::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
 
 	if (CheckInstall(lpstrCmdLine))
 		return 0;

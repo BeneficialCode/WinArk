@@ -18,8 +18,12 @@
 #define IDC_VIEW_PROCESS 0xDAD
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
+	if (m_pQuickFindDlg && m_pQuickFindDlg->IsDialogMessage(pMsg))
+		return TRUE;
+
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
+	return FALSE;
 }
 
 LRESULT CMainFrame::OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -33,8 +37,7 @@ LRESULT CMainFrame::OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /
 
 BOOL CMainFrame::OnIdle() {
 	UpdateUI();
-	UIUpdateChildWindows();
-	UIUpdateStatusBar();
+	UIUpdateToolBar();
 	UIUpdateStatusBar();
 
 	return FALSE;
@@ -305,8 +308,6 @@ void CMainFrame::InitConfigView() {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-	
-	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
 
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
@@ -314,6 +315,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_CmdBar.AttachMenu(hMenu);
 	m_CmdBar.m_bAlphaImages = true;
 	SetMenu(nullptr);
+
+	InitCommandBar();
 
 	AddSimpleReBarBand(hWndCmdBar);
 
@@ -373,16 +376,17 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
 	m_TabCtrl.SetFont(hFont, true);
 	::DeleteObject(hFont);
-	UIAddChildWindowContainer(m_TabCtrl);
 	AddSimpleReBarBand(m_TabCtrl, nullptr, TRUE, 0, TRUE);
 
 	auto hWndToolBar = m_tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	m_tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
 	InitProcessToolBar(m_tb);
-	
+
+	AddSimpleReBarBand(hWndToolBar, nullptr, TRUE);
 	UIAddToolBar(hWndToolBar);
 
-	AddSimpleReBarBand(m_tb, nullptr, TRUE);
+	UIEnable(ID_MONITOR_PAUSE, FALSE);
+	UIEnable(ID_MONITOR_STOP, FALSE);
 
 	CReBarCtrl rb(m_hWndToolBar);
 	rb.LockBands(true);
@@ -456,6 +460,7 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::Process:
 			InitProcessToolBar(m_tb);
+			UIAddToolBar(m_tb.m_hWnd);
 			m_pProcTable->ShowWindow(SW_SHOW);
 			m_pProcTable->SetFocus();
 			break;
@@ -495,6 +500,7 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::Etw:
 			InitEtwToolBar(m_tb);
+			UIAddToolBar(m_tb.m_hWnd);
 			m_pEtwView->ShowWindow(SW_SHOW);
 			break;
 		default:
@@ -617,17 +623,6 @@ LRESULT CMainFrame::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
 	return 0;
 }
 
-LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
-{
-	if (EXCEPTION_ACCESS_VIOLATION == ExceptionInfo->ExceptionRecord->ExceptionCode) {
-		// probably the network related thread failing during symbol loading when terminated abruptly
-		::ExitThread(0);
-		return EXCEPTION_CONTINUE_EXECUTION;
-	}
-
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-
 void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
 	CImageList tbImages;
 	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
@@ -638,7 +633,7 @@ void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
 		int image;
 		int style = BTNS_BUTTON;
 	}buttons[] = {
-		{ID_MONITOR_START,IDI_PLAY},
+		{ ID_MONITOR_START,IDI_PLAY},
 		{ ID_MONITOR_PAUSE, IDI_PAUSE },
 		{ ID_MONITOR_STOP, IDI_STOP },
 		{ 0 },
@@ -646,7 +641,7 @@ void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
 		{ 0 },
 		{ ID_MONITOR_CLEARALL, IDI_CANCEL },
 		{ 0 },
-		{ ID_MONITOR_CONFIGUREEVENTS, IDI_TOOLS },
+		{ ID_CONFIGURE_EVENTS, IDI_TOOLS },
 		{ ID_CONFIGURE_FILTERS, IDI_FILTER },
 		{ 0 },
 		{ ID_EVENT_CALLSTACK, IDI_STACK },
@@ -658,7 +653,24 @@ void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
 			tb.AddSeparator(0);
 		else {
 			int image = tbImages.AddIcon(AtlLoadIconImage(b.image, 0, size, size));
-			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, nullptr, 0);
+			BYTE fsState = TBSTATE_ENABLED;
+			
+			if (b.id == ID_MONITOR_START) {
+				if (m_tm.IsRunning()) {
+					fsState = TBSTATE_INDETERMINATE;
+				}
+			}
+			else if (b.id == ID_MONITOR_PAUSE) {
+				if (m_tm.IsPaused()||!m_tm.IsRunning()) {
+					fsState = TBSTATE_INDETERMINATE;
+				}
+			}
+			else if(b.id == ID_MONITOR_STOP) {
+				if (!m_tm.IsRunning()) {
+					fsState = TBSTATE_INDETERMINATE;
+				}
+			}
+			tb.AddButton(b.id, b.style, fsState, image, nullptr, 0);
 		}
 	}
 }
@@ -712,4 +724,44 @@ LRESULT CMainFrame::OnClose(UINT, WPARAM, LPARAM, BOOL&) {
 		m_tm.Stop();
 
 	return DefWindowProc();
+}
+
+void CMainFrame::InitCommandBar() {
+	struct {
+		UINT id, icon;
+	} cmds[] = {
+		{ ID_MONITOR_START, IDI_PLAY },
+		{ ID_MONITOR_STOP, IDI_STOP },
+		{ ID_MONITOR_CLEARALL, IDI_CANCEL },
+		{ ID_MONITOR_CONFIGUREEVENTS, IDI_TOOLS },
+		{ ID_CONFIGURE_FILTERS, IDI_FILTER },
+		{ ID_EVENT_CALLSTACK, IDI_STACK },
+		{ ID_EVENT_PROPERTIES, IDI_PROPERTIES },
+		{ ID_MONITOR_PAUSE, IDI_PAUSE },
+		{ ID_VIEW_AUTOSCROLL, IDI_SCROLL },
+		{ ID_SEARCH_QUICKFIND,IDI_FIND},
+		{ID_SEARCH_FINDALL,IDI_SEARCH}
+	};
+	for (auto& cmd : cmds)
+		m_CmdBar.AddIcon(AtlLoadIcon(cmd.icon), cmd.id);
+}
+
+void CMainFrame::DoFind(PCWSTR text, const QuickFindOptions& options) {
+	m_pEtwView->SendMessage(WM_COMMAND, ID_SEARCH_FINDNEXT);
+}
+
+void CMainFrame::WindowClosed() {
+	m_pQuickFindDlg = nullptr;
+}
+
+LRESULT CMainFrame::OnQuickFind(WORD, WORD, HWND, BOOL&) {
+	if (!m_pQuickFindDlg) {
+		m_pQuickFindDlg = new CQuickFindDlg(this);
+		m_pQuickFindDlg->Create(*this);
+		m_pQuickFindDlg->ShowWindow(SW_SHOW);
+	}
+	m_pQuickFindDlg->BringWindowToTop();
+	m_pQuickFindDlg->SetFocus();
+
+	return 0;
 }

@@ -30,6 +30,8 @@ EventData::EventData(PEVENT_RECORD rec, std::wstring processName, const std::wst
 	_timeStamp = header.TimeStamp.QuadPart;
 	_eventDescriptor = header.EventDescriptor;
 
+	_processorNumber = rec->BufferContext.ProcessorNumber;
+
 	// parse event specific data
 	ULONG size = 0;
 	auto error = ::TdhGetEventInformation(rec, 0, nullptr, nullptr, &size);
@@ -53,6 +55,14 @@ void EventData::operator delete(void* p) {
 	::HeapFree(s_hHeap, 0, p);
 	if (--s_Count == 0)
 		::HeapDestroy(s_hHeap);
+}
+
+UCHAR EventData::GetProcessorNumber() const {
+	return _processorNumber;
+}
+
+void EventData::SetProcessId(DWORD pid) {
+	_processId = pid;
 }
 
 DWORD EventData::GetProcessId() const {

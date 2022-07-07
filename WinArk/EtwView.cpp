@@ -10,6 +10,15 @@
 #include "FiltersDlg.h"
 #include "FilterFactory.h"
 #include "CallStackDlg.h"
+#include "EventPropertiesDlg.h"
+#include "SymbolManager.h"
+#include "Helpers.h"
+#include <filesystem>
+#include "SymbolHelper.h"
+#include <unordered_set>
+#include <DriverHelper.h>
+#include "QuickFindDlg.h"
+#include "SerializerFactory.h"
 
 CEtwView::CEtwView(IEtwFrame* frame) :CViewBase(frame) {
 }
@@ -70,17 +79,43 @@ CString CEtwView::GetColumnText(HWND, int row, int col) const {
 
 		case 3:// PID
 		{
-			auto pid = item->GetProcessId();
-			if (pid != (DWORD)-1)
+			DWORD tid = -1;
+			DWORD pid = -1;
+			if (item->GetEventName() == L"Thread/CSwitch") {
+				tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
+				HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, tid);
+				if (hThread != NULL) {
+					pid = GetProcessIdOfThread(hThread);
+					::CloseHandle(hThread);
+				}
+			}
+			else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+				tid = _threadById[item->GetProcessorNumber()];
+				pid = _processById[tid];
+			}
+			else {
+				pid = item->GetProcessId();
+			}
+			if (pid != (DWORD)-1 && pid != 0)
 				text.Format(L"%u (0x%X)", pid, pid);
 			break;
 		}
 
 		case 5:// TID
 		{
-			auto tid = item->GetThreadId();
+			DWORD tid = -1;
+			if (item->GetEventName() == L"Thread/CSwitch") {
+				tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
+			}
+			else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+				tid = _threadById[item->GetProcessorNumber()];
+			}
+			else {
+				tid = item->GetThreadId();
+			}
 			if (tid != (DWORD)-1 && tid != 0)
 				text.Format(L"%u (0x%X)", tid, tid);
+
 			break;
 		}
 
@@ -109,7 +144,13 @@ PCWSTR CEtwView::GetColumnTextPointer(HWND, int row, int col) const {
 	switch (col)
 	{
 		case 2: return item->GetEventName().c_str();
-		case 4: return item->GetProcessName().c_str();
+		case 4: 
+			if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+				DWORD tid = _threadById[item->GetProcessorNumber()];
+				DWORD pid = _processById[tid];
+				return _processNameById[pid].c_str();
+			}
+			return item->GetProcessName().c_str();
 	}
 	return nullptr;
 }
@@ -129,6 +170,28 @@ bool CEtwView::OnDoubleClickList(HWND, int row, int col, POINT& pt) {
 	return true;
 }
 
+DWORD CEtwView::AddNewProcess(DWORD tid) const{
+	DWORD pid = -1;
+	HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, tid);
+	if (hThread != NULL) {
+		pid = GetProcessIdOfThread(hThread);
+		::CloseHandle(hThread);
+	}
+	if (pid != -1&&pid!=0) {
+		std::unique_ptr<WinSys::Process> process;
+		_processById.insert({ tid,pid });
+		auto hProcess = DriverHelper::OpenProcess(pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
+		if (!hProcess)
+			hProcess = DriverHelper::OpenProcess(pid, PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ);
+		if (hProcess) {
+			process.reset(new WinSys::Process(hProcess));
+			std::wstring procName = process->GetName();
+			_processNameById.insert({ pid,procName });
+		}
+	}
+	return pid;
+}
+
 std::wstring CEtwView::ProcessSpecialEvent(EventData* data) const {
 	std::wstring details;
 	CString text;
@@ -139,6 +202,47 @@ std::wstring CEtwView::ProcessSpecialEvent(EventData* data) const {
 			CString(data->GetProperty(L"ImageFileName")->GetAnsiString()),
 			data->GetProperty(L"CommandLine")->GetUnicodeString());
 		details = std::move(text);
+	}
+	if (name == L"PerfInfo/SysClEnter") {
+		DWORD64 address;
+		auto prop = data->GetProperty(L"SysCallAddress");
+		if (prop->GetLength() == 4)
+			address = prop->GetValue<DWORD>();
+		else
+			address = prop->GetValue<DWORD64>();
+		auto& symbols = SymbolHelper::Get();
+		DWORD64 offset = 0;
+		auto symbol = symbols.GetSymbolFromAddress(address, &offset);
+		if (symbol) {
+			auto sym = symbol->GetSymbolInfo();
+			CStringA text;
+			text.Format("%s", sym->Name);
+			details = Helpers::StringToWstring(std::string(text));
+		}
+	}
+	if (name == L"Thread/CSwitch") {
+		UCHAR processorNumber = data->GetProcessorNumber();
+		DWORD tid = data->GetProperty(L"NewThreadId")->GetValue<DWORD>();
+		if (tid != -1) {
+			_threadById[processorNumber] = tid;
+		}
+		if (_processById.count(tid) == 0) {
+			DWORD pid = AddNewProcess(tid);
+			if (pid != -1 && pid != 0) {
+				data->SetProcessId(pid);
+			}
+		}
+		tid = data->GetProperty(L"OldThreadId")->GetValue<DWORD>();
+		if (_processById.count(tid) == 0) {
+			AddNewProcess(tid);
+		}
+		auto state = data->GetProperty(L"OldThreadState")->GetValue<uint8_t>();
+		if (_processById.count(tid) != 0 && state == (uint8_t)WinSys::ThreadState::Terminated) {
+			if (_processNameById.count(_processById[tid]) != 0) {
+				_processNameById.erase(_processById[tid]);
+			}
+			_processById.erase(tid);
+		}
 	}
 	return details;
 }
@@ -439,6 +543,10 @@ LRESULT CEtwView::OnEventProperties(WORD, WORD, HWND, BOOL&) {
 	if (selected < 0)
 		return 0;
 
+	auto data = m_Events[selected].get();
+	CEventPropertiesDlg dlg(data);
+	dlg.DoModal();
+
 	return 0;
 }
 
@@ -466,6 +574,24 @@ LRESULT CEtwView::OnCopy(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CEtwView::OnSave(WORD, WORD, HWND, BOOL&) {
+	CSimpleFileDialog dlg(FALSE, L"pmx", nullptr, OFN_EXPLORER | OFN_OVERWRITEPROMPT | OFN_ENABLESIZING,
+		L"ProcMonX files (*.pmx)\0*.pmx\0CSV Files (*csv)\0*.csv\0", *this);
+	if (dlg.DoModal() == IDOK) {
+		CString filename(dlg.m_szFileTitle);
+		auto ext = filename.ReverseFind(L'.');
+		if (ext > 0) {
+			auto serializer = SerializerFactory::CreateFromExtension(filename.Mid(ext + 1));
+			if (serializer) {
+				EventDataSerializerOptions options;
+				CWaitCursor wait;
+				auto eventsCopy = m_OrgEvents;
+				if (!serializer->Save(eventsCopy, options, dlg.m_szFileName))
+					AtlMessageBox(*this, L"Failed to save data", IDS_TITLE, MB_ICONERROR);
+				return 0;
+			}
+		}
+		AtlMessageBox(*this, L"Unknown file extension", IDS_TITLE, MB_ICONEXCLAMATION);
+	}
 	return 0;
 }
 
@@ -538,6 +664,73 @@ LRESULT CEtwView::OnItemChanged(int, LPNMHDR, BOOL&) {
 }
 
 LRESULT CEtwView::OnFindNext(WORD, WORD, HWND, BOOL&) {
+	auto& options = CQuickFindDlg::GetSearchOptions();
+	auto& text = CQuickFindDlg::GetSearchText();
+
+	auto step = options.SearchDown ? 1 : -1;
+	auto count = (int)m_Events.size();
+	if (count == 0)
+		return 0;
+
+	auto selected = m_List.GetSelectedIndex() + step;
+	if (selected < 0)
+		selected = count - 1;
+	else if (selected >= count)
+		selected = 0;
+
+	auto start = selected;
+	auto search = text;
+	auto cs = options.CaseSensitive;
+	if (!cs)
+		search.MakeLower();
+
+	// perfrom search
+	bool found = false;
+	do {
+		auto& evt = *m_Events[selected];
+		if (options.SearchProcesses) {
+			CString text = evt.GetProcessName().c_str();
+			if (!cs)
+				text.MakeLower();
+			if (text.Find(search) >= 0) {
+				found = true;
+				break;
+			}
+		}
+		if (options.SearchEvents) {
+			CString text = evt.GetEventName().c_str();
+			if (!cs)
+				text.MakeLower();
+			if (text.Find(search) >= 0) {
+				found = true;
+				break;
+			}
+		}
+		if (options.SearchDetails) {
+			CString text = GetEventDetails(&evt).c_str();
+			if (!cs)
+				text.MakeLower();
+			if (text.Find(search) >= 0) {
+				found = true;
+				break;
+			}
+		}
+
+		// move to the next row
+		selected += step;
+		if (selected >= count)
+			selected = 0;
+		else if (selected < 0)
+			selected = count - 1;
+	} while (selected != start);
+
+	if (found) {
+		m_List.SelectItem(selected);
+		m_List.SetFocus();
+	}
+	else
+		AtlMessageBox(*this, L"Text not found", IDS_TITLE, MB_ICONINFORMATION);
+
 	return 0;
 }
 

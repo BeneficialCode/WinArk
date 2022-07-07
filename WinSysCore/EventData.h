@@ -49,8 +49,10 @@ public:
 	void operator delete(void* p);
 
 	DWORD GetProcessId() const;
+	void SetProcessId(DWORD pid);
 	DWORD GetThreadId() const;
 	ULONGLONG GetTimeStamp() const;
+	UCHAR GetProcessorNumber() const;
 	const GUID& GetProviderId() const;
 	const EVENT_DESCRIPTOR& GetEventDescriptor() const;
 	const std::wstring& GetProcessName() const;
@@ -70,7 +72,7 @@ protected:
 private:
 	inline static HANDLE s_hHeap = nullptr;
 	inline static uint32_t s_Count = 0;
-
+	UCHAR _processorNumber;
 	ULONG _threadId, _processId;
 	EVENT_DESCRIPTOR _eventDescriptor;
 	ULONGLONG _timeStamp;

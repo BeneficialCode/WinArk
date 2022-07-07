@@ -46,7 +46,7 @@ public:
 	virtual void OnFinalMessage(HWND /*hWnd*/);
 
 	BEGIN_MSG_MAP(CEtwView)
-		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED,OnItemChanaged)
+		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
 		MESSAGE_HANDLER(WM_TIMER,OnTimer)
 		MESSAGE_HANDLER(WM_CREATE,OnCreate)
 		COMMAND_ID_HANDLER(ID_EVENT_CALLSTACK,OnCallStack)
@@ -55,12 +55,17 @@ public:
 		COMMAND_ID_HANDLER(ID_CONFIGURE_EVENTS,OnConfigureEvents)
 		COMMAND_ID_HANDLER(ID_MONITOR_CLEARALL,OnClear)
 		COMMAND_ID_HANDLER(ID_CONFIGURE_FILTERS,OnConfigFilters)
+		COMMAND_ID_HANDLER(ID_EVENT_PROPERTIES,OnEventProperties)
+		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL,OnAutoScroll)
+		COMMAND_ID_HANDLER(ID_SEARCH_FINDNEXT,OnFindNext)
 		CHAIN_MSG_MAP(CVirtualListView<CEtwView>)
 		CHAIN_MSG_MAP(CCustomDraw<CEtwView>)
 		CHAIN_MSG_MAP(CViewBase<CEtwView>)
 	END_MSG_MAP()
+
 private:
 	std::wstring ProcessSpecialEvent(EventData* data) const;
+	DWORD AddNewProcess(DWORD tid) const;
 	std::wstring GetEventDetails(EventData* data) const;
 	void UpdateEventStatus();
 	void UpdateUI();
@@ -98,4 +103,7 @@ private:
 	bool m_IsDraining{ false };
 	bool m_AutoScroll{ false };
 	bool m_IsActive{ false };
+	mutable std::unordered_map<uint32_t, uint32_t> _threadById;
+	mutable std::unordered_map<uint32_t, uint32_t> _processById;
+	mutable std::unordered_map<uint32_t, std::wstring> _processNameById;
 };

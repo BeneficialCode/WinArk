@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WIN64;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
@@ -128,7 +128,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,7 +160,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -193,7 +193,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WIN64;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -226,6 +226,7 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
     <ClCompile Include="AppCommandBase.cpp" />
+    <ClCompile Include="BinaryEventDataSerializer.cpp" />
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
@@ -236,6 +237,7 @@
     <ClCompile Include="CopyValueCommand.cpp" />
     <ClCompile Include="CreateKeyCommand.cpp" />
     <ClCompile Include="CreateValueCommand.cpp" />
+    <ClCompile Include="CSVEventDataSerializer.cpp" />
     <ClCompile Include="DeleteKeyCommand.cpp" />
     <ClCompile Include="DeleteValueCommand.cpp" />
     <ClCompile Include="DeviceManagerView.cpp" />
@@ -249,6 +251,7 @@
     <ClCompile Include="EventConfiguration.cpp" />
     <ClCompile Include="EventNameFilter.cpp" />
     <ClCompile Include="EventObjectType.cpp" />
+    <ClCompile Include="EventPropertiesDlg.cpp" />
     <ClCompile Include="EventsDlg.cpp" />
     <ClCompile Include="ExportDlg.cpp" />
     <ClCompile Include="FileManagerView.cpp" />
@@ -269,6 +272,7 @@
     <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="PropertyNameFilter.cpp" />
     <ClCompile Include="PropertyValueFilter.cpp" />
+    <ClCompile Include="QuickFindDlg.cpp" />
     <ClCompile Include="RegExportImport.cpp" />
     <ClCompile Include="RegHelpers.cpp" />
     <ClCompile Include="HexControl.cpp" />
@@ -312,6 +316,7 @@
     <ClCompile Include="SecurityInfo.cpp" />
     <ClCompile Include="SecurityInformation.cpp" />
     <ClCompile Include="SemaphoreObjectType.cpp" />
+    <ClCompile Include="SerializerFactory.cpp" />
     <ClCompile Include="ServiceInfoEx.cpp" />
     <ClCompile Include="ServiceTable.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -326,6 +331,7 @@
     </ClCompile>
     <ClCompile Include="KernelModuleTable.cpp" />
     <ClCompile Include="StringValueDlg.cpp" />
+    <ClCompile Include="SymbolHelper.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
     <ClCompile Include="SymbolFileInfo.cpp" />
     <ClCompile Include="SystemConfigDlg.cpp" />
@@ -351,6 +357,7 @@
     <ClInclude Include="AccessMaskDecoder.h" />
     <ClInclude Include="AppCommandBase.h" />
     <ClInclude Include="AppSettings.h" />
+    <ClInclude Include="BinaryEventDataSerializer.h" />
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
@@ -361,6 +368,7 @@
     <ClInclude Include="CopyValueCommand.h" />
     <ClInclude Include="CreateKeyCommand.h" />
     <ClInclude Include="CreateValueCommand.h" />
+    <ClInclude Include="CSVEventDataSerializer.h" />
     <ClInclude Include="CustomButton.h" />
     <ClInclude Include="DeleteKeyCommand.h" />
     <ClInclude Include="DeleteValueCommand.h" />
@@ -375,6 +383,7 @@
     <ClInclude Include="EventConfiguration.h" />
     <ClInclude Include="EventNameFilter.h" />
     <ClInclude Include="EventObjectType.h" />
+    <ClInclude Include="EventPropertiesDlg.h" />
     <ClInclude Include="EventsDlg.h" />
     <ClInclude Include="ExportDlg.h" />
     <ClInclude Include="FileManagerView.h" />
@@ -384,6 +393,7 @@
     <ClInclude Include="FiltersDlg.h" />
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="IEventDataSerializer.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="KernelNotifyTable.h" />
@@ -397,6 +407,7 @@
     <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="PropertyNameFilter.h" />
     <ClInclude Include="PropertyValueFilter.h" />
+    <ClInclude Include="QuickFindDlg.h" />
     <ClInclude Include="RegExportImport.h" />
     <ClInclude Include="RegHelpers.h" />
     <ClInclude Include="HexControl.h" />
@@ -444,6 +455,7 @@
     <ClInclude Include="SecurityInfo.h" />
     <ClInclude Include="SecurityInformation.h" />
     <ClInclude Include="SemaphoreObjectType.h" />
+    <ClInclude Include="SerializerFactory.h" />
     <ClInclude Include="ServiceInfoEx.h" />
     <ClInclude Include="ServiceTable.h" />
     <ClInclude Include="Settings.h" />
@@ -455,6 +467,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="KernelModuleTable.h" />
     <ClInclude Include="StringValueDlg.h" />
+    <ClInclude Include="SymbolHelper.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
     <ClInclude Include="SymbolFileInfo.h" />
     <ClInclude Include="SystemConfigDlg.h" />
@@ -494,6 +507,7 @@
     <Image Include="res\filter-delete.ico" />
     <Image Include="res\filter-edit.ico" />
     <Image Include="res\filter.ico" />
+    <Image Include="res\find.ico" />
     <Image Include="res\folder_open.ico" />
     <Image Include="res\gear.ico" />
     <Image Include="res\handle.ico" />
@@ -516,6 +530,7 @@
     <Image Include="res\properties.ico" />
     <Image Include="res\refresh.ico" />
     <Image Include="res\registry.ico" />
+    <Image Include="res\search.ico" />
     <Image Include="res\stack.ico" />
     <Image Include="res\Stop.ico" />
     <Image Include="res\storage.ico" />
@@ -537,6 +552,9 @@
     </ProjectReference>
     <ProjectReference Include="..\PEParser\PEParser.vcxproj">
       <Project>{cc899776-2282-4442-bc9d-f21130c80fe1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.vcxproj">
+      <Project>{4276ef07-4fde-43ae-9c72-4cf73e669741}</Project>
     </ProjectReference>
     <ProjectReference Include="..\WinSysCore\WinSysCore.vcxproj">
       <Project>{38942b29-a5a3-49c3-a922-0c1082db33c0}</Project>

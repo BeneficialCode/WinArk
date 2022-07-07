@@ -157,8 +157,8 @@ DWORD64 SymbolHandler::LoadKernelModule(DWORD64 address) {
 std::unique_ptr<SymbolInfo> SymbolHandler::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
 	auto symbol = std::make_unique<SymbolInfo>();
 	if (::SymFromAddr(m_hProcess, address, offset, symbol->GetSymbolInfo())) {
-		symbol->ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
-		::SymGetModuleInfo64(m_hProcess, address, &symbol->ModuleInfo);
+		symbol->ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
+		::SymGetModuleInfo(m_hProcess, address, &symbol->ModuleInfo);
 		return symbol;
 	}
 	return nullptr;

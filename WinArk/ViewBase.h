@@ -2,17 +2,17 @@
 
 #include "Interfaces.h"
 
-template<typename T,typename TBase= CFrameWindowImpl<T,CWindow,CControlWinTraits>>
+template<typename T, typename TBase = CFrameWindowImpl<T, CWindow, CControlWinTraits>>
 class CViewBase abstract :
 	public TBase,
 	public CAutoUpdateUI<T>,
 	public CIdleHandler {
 public:
+	//	DECLARE_WND_CLASS(nullptr)
 
-	CViewBase(IEtwFrame* frame) :m_pFrame(frame) {
+	CViewBase(IEtwFrame* frame) : m_pFrame(frame) {
 		ATLASSERT(frame);
 	}
-
 
 protected:
 	BEGIN_MSG_MAP(CViewBase)
@@ -20,7 +20,7 @@ protected:
 	END_MSG_MAP()
 
 	BOOL OnIdle() override {
-		this->UIUpdateStatusBar();
+		this->UIUpdateToolBar();
 		return FALSE;
 	}
 
@@ -45,8 +45,7 @@ protected:
 	HWND CreateAndInitToolBar(const ToolBarButtonInfo* buttons, int count) {
 		auto pT = static_cast<T*>(this);
 		CToolBarCtrl tb;
-		auto hWndToolBar = tb.Create(pT->m_hWnd, pT->rcDefault, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0,
-			ATL_IDW_TOOLBAR);
+		auto hWndToolBar = tb.Create(pT->m_hWnd, pT->rcDefault, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
 
 		CImageList tbImages;
@@ -70,6 +69,7 @@ protected:
 
 		return hWndToolBar;
 	}
+
 private:
 	IEtwFrame* m_pFrame;
 };

@@ -272,7 +272,21 @@ const std::vector<KernelEventCategory> KernelEvents{
 			{ L"Post Operation Failure", 0x65 },
 		}, true
 	},
+	// https://docs.microsoft.com/en-us/windows/win32/etw/msnt-systemtrace
+	{
+		L"System Call",KernelEventTypes::SystemCall,&PerfInfoGuid,
+		{
+			{L"System call enter",0x33},
+			{L"System call exit", 0x34},
+		},true
+	},
 
+	{
+		L"Thread Context Switch",KernelEventTypes::ContextSwitch,&ThreadGuid,
+		{
+			{L"Context switch",0x24},
+		},true
+	},
 	//{ L"Experimental", KernelEventTypes::PerfHeap, &HeapGuid,
 	//	{
 	//		{ L"Create", 1 },

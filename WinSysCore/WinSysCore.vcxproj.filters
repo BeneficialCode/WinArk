@@ -19,6 +19,9 @@
     <Filter Include="EventTracing">
       <UniqueIdentifier>{76558903-d35a-4ae8-a405-4e93d3b80aec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="StructuredStorage">
+      <UniqueIdentifier>{102a75a3-8342-466b-8493-25cbbbda9335}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Processes.cpp">

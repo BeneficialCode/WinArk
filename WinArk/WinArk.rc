@@ -251,6 +251,34 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
 END
 
+IDD_EVENT_PROPS DIALOGEX 0, 0, 351, 264
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Event Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Copy",IDC_COPY,7,7,50,14
+    PUSHBUTTON      "Stack",IDC_STACK,75,7,50,14
+    PUSHBUTTON      "Resolve Symbols",IDC_RESOLVE_SYM,266,7,78,14
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,26,337,231
+END
+
+IDD_FIND DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Search text:",IDC_STATIC,14,18,41,8
+    EDITTEXT        IDC_TEXT,59,14,182,14,ES_AUTOHSCROLL
+    GROUPBOX        "Search Items",IDC_STATIC,14,43,126,82
+    GROUPBOX        "Search Options",IDC_STATIC,153,43,123,82
+    CONTROL         "Process Names",IDC_PROCESSES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,62,64,10
+    CONTROL         "Event Names",IDC_EVENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,78,58,10
+    CONTROL         "Event Details",IDC_DETAILS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,95,58,10
+    CONTROL         "Search Down",IDC_DOWN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,63,58,10
+    CONTROL         "Case Sensitive",IDC_CASESENSITIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,81,63,10
+    PUSHBUTTON      "Find Next",IDC_FINDNEXT,121,146,50,14,WS_DISABLED
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -363,6 +391,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 273
     END
+
+    IDD_EVENT_PROPS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 344
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 257
+    END
+
+    IDD_FIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -460,6 +504,16 @@ BEGIN
 END
 
 IDD_INLINEHOOKSCAN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_EVENT_PROPS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FIND AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -608,6 +662,13 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
+    POPUP "&Search"
+    BEGIN
+        MENUITEM "&Quick Find...\tCtrl+F",      ID_SEARCH_QUICKFIND
+        MENUITEM "&Find All...\tCtrl+Shift+F",  ID_SEARCH_FINDALL
+        MENUITEM SEPARATOR
+        MENUITEM "Find &Next\tF3",              ID_SEARCH_FINDNEXT
+    END
     POPUP "&Monitor"
     BEGIN
         MENUITEM "&Start",                      ID_MONITOR_START
@@ -689,6 +750,10 @@ IDI_HANDLES             ICON                    "res\\handles.ico"
 IDI_REFRESH             ICON                    "res\\refresh.ico"
 
 IDI_GENERIC             ICON                    "res\\event3.ico"
+
+IDI_FIND                ICON                    "res\\find.ico"
+
+IDI_SEARCH              ICON                    "res\\search.ico"
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
