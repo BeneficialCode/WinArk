@@ -972,8 +972,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="..\x64\Debug\AntiRootkit.sys" />
-    <None Include="..\Debug\AntiRootkit.sys" />
+    <None Include="..\Bin\AntiRootkit.sys" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />

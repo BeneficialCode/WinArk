@@ -8,6 +8,7 @@
 #include "RegHelpers.h"
 #include "FormatHelper.h"
 #include "ClipboardHelper.h"
+#include "SymbolHelper.h"
 
 LRESULT CPiDDBCacheTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
@@ -134,47 +135,31 @@ bool CPiDDBCacheTable::CompareItems(const PiDDBCacheInfo& s1, const PiDDBCacheIn
 }
 
 void CPiDDBCacheTable::Refresh() {
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	pdbPath = symPath + pdbPath;
-	std::string name;
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+	auto& helper = SymbolHelper::Get();
+	static ULONG_PTR address = helper.GetKernelSymbolAddressFromName("PiDDBCacheTable");
+	if (address != 0) {
+		ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
 
-	ULONG_PTR address = 0;
-	address = handler.GetSymbolFromName("PiDDBCacheTable")->GetSymbolInfo()->Address;
+		if (len > sizeof PiDDBCacheData) {
+			wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+			DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
 
-	ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
-	if (len > sizeof PiDDBCacheData) {
-		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-		DriverHelper::EnumPiDDBCacheTable(address, buffer.get(), len);
+			PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();
 
-		PiDDBCacheData* p = (PiDDBCacheData*)buffer.get();
-
-		PiDDBCacheInfo info;
-		m_Table.data.info.clear();
-		m_Table.data.n = 0;
-		for (;;) {
-			info.LoadStatus = p->LoadStatus;
-			info.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
-			info.TimeDateStamp = p->TimeDateStamp;
-			m_Table.data.info.push_back(info);
-			if (p->NextEntryOffset == 0)
-				break;
-			p = (PiDDBCacheData*)((PUCHAR)p + p->NextEntryOffset);
-			if (p == nullptr)
-				break;
+			PiDDBCacheInfo info;
+			m_Table.data.info.clear();
+			m_Table.data.n = 0;
+			for (;;) {
+				info.LoadStatus = p->LoadStatus;
+				info.DriverName = (WCHAR*)((PUCHAR)p + p->StringOffset);
+				info.TimeDateStamp = p->TimeDateStamp;
+				m_Table.data.info.push_back(info);
+				if (p->NextEntryOffset == 0)
+					break;
+				p = (PiDDBCacheData*)((PUCHAR)p + p->NextEntryOffset);
+				if (p == nullptr)
+					break;
+			}
 		}
 	}
 	m_Table.data.n = m_Table.data.info.size();
@@ -246,5 +231,11 @@ LRESULT CPiDDBCacheTable::OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/,
 		}
 		::CloseHandle(hFile);
 	}
+	return TRUE;
+}
+
+LRESULT CPiDDBCacheTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
+
 	return TRUE;
 }

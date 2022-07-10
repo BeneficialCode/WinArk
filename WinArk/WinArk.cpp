@@ -96,12 +96,9 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 
 bool CheckInstall(PCWSTR cmdLine) {
 	bool parse = false, success = false;
-#ifdef _WIN64
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X64_DRIVER), L"BIN");
-#else
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X86_DRIVER), L"BIN");
-#endif // __WIN64
-	
+
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_DRIVER), L"BIN");
+
 	if (!hRes)
 		return false;
 

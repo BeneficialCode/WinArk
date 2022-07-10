@@ -628,7 +628,7 @@ BEGIN
     BEGIN
         MENUITEM "&Disconnect",                 ID_FILE_DISCONNECT
     END
-    POPUP "kernel_module"
+    POPUP "driver"
     BEGIN
         MENUITEM "查看分发例程",                      ID_KERNEL_ROUTINES
     END
@@ -640,6 +640,12 @@ BEGIN
     POPUP "network"
     BEGIN
         MENUITEM "Refresh",                     ID_NETWORK_REFRESH
+    END
+    POPUP "kernel_module"
+    BEGIN
+        MENUITEM "Refresh",                     ID_KERNEL_MODULE_REFRESH
+        MENUITEM "Copy",                        ID_KERNEL_MODULE_COPY
+        MENUITEM "Export",                      ID_KERNEL_MODULE_EXPORT
     END
 END
 
@@ -704,11 +710,13 @@ IDR_KERNEL_CONTEXT MENU
 BEGIN
     POPUP "PiDDBCache"
     BEGIN
+        MENUITEM "Refresh",                     ID_PIDDBCACHE_REFRESH
         MENUITEM "Copy",                        ID_PIDDBCACHE_COPY
         MENUITEM "Export",                      ID_PIDDBCACHE_EXPORT
     END
     POPUP "UnloadedDrivers"
     BEGIN
+        MENUITEM "Refresh",                     ID_UNLOADEDDRIVERS_REFRESH
         MENUITEM "Copy",                        ID_UNLOADEDDRIVERS_COPY
         MENUITEM "Export",                      ID_UNLOADEDDRIVERS_EXPORT
     END
@@ -727,15 +735,33 @@ BEGIN
     END
 END
 
+IDR_SSDT_CONTEXT MENU
+BEGIN
+    POPUP "ssdt"
+    BEGIN
+        MENUITEM "Refresh",                     ID_SSDT_REFRESH
+        MENUITEM "Copy",                        ID_SSDT_COPY
+        MENUITEM "Export",                      ID_SSDT_EXPORT
+    END
+END
+
+IDR_SHADOW_SSDT_CONTEXT MENU
+BEGIN
+    POPUP "shadow"
+    BEGIN
+        MENUITEM "Refresh",                     ID_SHADOW_REFRESH
+        MENUITEM "Copy",                        ID_SHADOW_COPY
+        MENUITEM "Export",                      ID_SHADOW_EXPORT
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // BIN
 //
 
-IDR_X64_DRIVER          BIN                     "..\\x64\\Debug\\AntiRootkit.sys"
-
-IDR_X86_DRIVER          BIN                     "..\\Debug\\AntiRootkit.sys"
+IDR_DRIVER              BIN                     "..\\Bin\\AntiRootkit.sys"
 
 
 /////////////////////////////////////////////////////////////////////////////

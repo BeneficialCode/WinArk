@@ -620,16 +620,29 @@ LRESULT CEtwView::OnConfigureEvents(WORD, WORD, HWND, BOOL&) {
 			auto& tm = GetFrame()->GetTraceManager();
 			std::vector<KernelEventTypes> types;
 			std::vector<std::wstring> categories;
+			DWORD flags = 0;
 			for (auto& cat : m_EventsConfig.GetCategories()) {
 				auto c = KernelEventCategory::GetCategory(cat.Name.c_str());
 				ATLASSERT(c);
 				types.push_back(c->EnableFlag);
 				categories.push_back(c->Name);
+				flags |= (DWORD)c->EnableFlag;
 			}
 			std::initializer_list<KernelEventTypes> events(types.data(), types.data() + types.size());
 			tm.SetKernelEventTypes(events);
 			tm.SetKernelEventStacks(std::initializer_list<std::wstring>(categories.data(),categories.data() + categories.size()));
-			tm.UpdateEventConfig();
+			bool isWin8Plus = ::IsWindows8OrGreater();
+
+			if (isWin8Plus) {
+				tm.UpdateEventConfig();
+			}
+			else {
+				tm.Stop();
+				tm.Pause(false);
+				tm.Start([&](auto data) {
+					this->AddEvent(data);
+					}, flags);
+			}
 		}
 	}
 	return 0;

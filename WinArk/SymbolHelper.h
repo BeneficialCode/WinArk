@@ -5,15 +5,16 @@
 class SymbolHelper {
 public:
 	static SymbolHelper& Get();
-	SymbolHandler* GetKernel();
-	SymbolHandler* GetWin32k();
 	~SymbolHelper();
 
 	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
-
+	ULONG64 GetKernelSymbolAddressFromName(PCSTR name);
+	ULONG64 GetWin32kSymbolAddressFromName(PCSTR name);
 private:
 	SymbolHelper();
 
-	SymbolHandler _kernelSymbols;
-	SymbolHandler _win32kSymbols;
+
+	DWORD _win32kSize, _kernelSize;
+	DWORD64 _win32kBase, _kernelBase;
+	std::string _win32kPdb, _kernelPdb;
 };

@@ -32,6 +32,9 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
+		COMMAND_ID_HANDLER(ID_KERNEL_MODULE_COPY, OnKernelModuleCopy)
+		COMMAND_ID_HANDLER(ID_KERNEL_MODULE_EXPORT, OnKernelModuleExport)
+		COMMAND_ID_HANDLER(ID_KERNEL_MODULE_REFRESH,OnRefresh)
 	END_MSG_MAP()
 
 	
@@ -54,14 +57,17 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	
-
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnKernelModuleCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnKernelModuleExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	std::wstring GetSingleKernelModuleInfo(std::shared_ptr<WinSys::KernelModuleInfo>& info);
 
 	void DoRefresh();
 	enum class KernemModuleColumn {
-		Name, ImageBase, ImageSize, LoadOrderIndex, FullPath,
+		Name, ImageBase, ImageSize, LoadOrderIndex,CommpanyName, FullPath,
 	};
 
+	std::wstring GetCompanyName(std::wstring path);
 
 private:
 	WinSys::KernelModuleTracker m_Tracker;

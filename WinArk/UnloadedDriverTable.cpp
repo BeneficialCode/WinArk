@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "FormatHelper.h"
 #include "ClipboardHelper.h"
+#include "SymbolHelper.h"
 
 LRESULT CUnloadedDriverTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
@@ -123,34 +124,14 @@ bool CUnloadedDriverTable::CompareItems(const UnloadedDriverInfo& s1, const Unlo
 }
 
 void CUnloadedDriverTable::Refresh() {
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	pdbPath = symPath + pdbPath;
-
-	std::string name;
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
-
-
-	auto symbol = handler.GetSymbolFromName("MmLastUnloadedDriver");
-	PULONG pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	auto& helper = SymbolHelper::Get();
+	static PULONG pCount = (PULONG)helper.GetKernelSymbolAddressFromName("MmLastUnloadedDriver");
 	ULONG count = DriverHelper::GetUnloadedDriverCount(&pCount);
 	UnloadedDriversInfo info;
 	info.Count = count;
 
-	symbol = handler.GetSymbolFromName("MmUnloadedDrivers");
-	info.pMmUnloadedDrivers = (void*)symbol->GetSymbolInfo()->Address;
+	static ULONG64 address = helper.GetKernelSymbolAddressFromName("MmUnloadedDrivers");
+	info.pMmUnloadedDrivers = (void*)address;
 
 	ULONG len = DriverHelper::GetUnloadedDriverDataSize(&info);
 
@@ -249,5 +230,10 @@ LRESULT CUnloadedDriverTable::OnUnloadedDriverExport(WORD /*wNotifyCode*/, WORD 
 		}
 		::CloseHandle(hFile);
 	}
+	return TRUE;
+}
+
+LRESULT CUnloadedDriverTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
 	return TRUE;
 }

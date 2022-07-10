@@ -191,6 +191,7 @@ void CWindowsView::InitTree() {
 	if (!hDesktop)
 		return;
 
+	m_SelectedHwnd.Attach(hDesktop);
 	CWaitCursor wait;
 
 	m_Tree.LockWindowUpdate(TRUE);
@@ -363,13 +364,9 @@ CString CWindowsView::GetWindowClassAndTitle(HWND hWnd) {
 }
 
 LRESULT CWindowsView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	// 特殊的地方
-	RECT rect;
-	HWND hWnd = GetParent().m_hWnd;
-	::GetClientRect(hWnd, &rect);
-	rect.bottom -= 50;
-	
-	m_Splitter.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,WS_EX_CLIENTEDGE);
+	// 两个窗格一起改变大小
+	m_Splitter.SetSplitterExtendedStyle(SPLIT_FLATBAR | SPLIT_PROPORTIONAL);
+	m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE);
 
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
 		WS_CLIPCHILDREN |WS_CLIPSIBLINGS |
@@ -377,8 +374,8 @@ LRESULT CWindowsView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE
 		| WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_WINDOW_TREE);
 
-	// 两个窗格一起改变大小
-	m_Splitter.SetSplitterExtendedStyle(SPLIT_FLATBAR | SPLIT_PROPORTIONAL);
+	
+
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER);
 

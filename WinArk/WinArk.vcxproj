@@ -542,8 +542,7 @@
     <Image Include="res\window.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Debug\AntiRootkit.sys" />
-    <None Include="..\x64\Debug\AntiRootkit.sys" />
+    <None Include="..\Bin\AntiRootkit.sys" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

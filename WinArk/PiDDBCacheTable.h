@@ -40,6 +40,7 @@ public:
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_PIDDBCACHE_COPY,OnPiDDBCacheCopy)
 		COMMAND_ID_HANDLER(ID_PIDDBCACHE_EXPORT, OnPiDDBCacheExport)
+		COMMAND_ID_HANDLER(ID_PIDDBCACHE_REFRESH,OnRefresh)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -62,6 +63,7 @@ public:
 
 	LRESULT OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 

@@ -41,7 +41,6 @@
 #define IDI_PROPERTIES                  228
 #define IDI_STACK                       229
 #define IDR_BIN2                        231
-#define IDR_X86_DRIVER                  231
 #define IDI_GEAR                        231
 #define IDR_BIN3                        233
 #define IDI_FILE                        233
@@ -82,8 +81,10 @@
 #define IDI_OK2                         262
 #define IDI_PAUSE                       263
 #define IDI_SCROLL                      264
-#define IDI_ICON1                       265
 #define IDI_SEARCH                      265
+#define IDR_SSDT_CONTEXT                266
+#define IDR_SHADOW_SSDT_CONTEXT         267
+#define IDR_BIN5                        269
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -290,13 +291,27 @@
 #define ID_SEARCH_QUICKFIND             32912
 #define ID_SEARCH_FINDALL               32913
 #define ID_SEARCH_FINDNEXT              32914
+#define ID_PIDDBCACHE_REFRESH           32915
+#define ID_UNLOADEDDRIVERS_REFRESH      32916
+#define ID_SSDT_REFRESH                 32917
+#define ID_SSDT_COPY                    32918
+#define ID_SSDT_EXPORT                  32919
+#define ID_SHADOW_REFRESH               32920
+#define ID_SHADOW_COPY                  32921
+#define ID_SHADOW_EXPORT                32922
+#define ID_KERNEL_REFRESH32923          32923
+#define ID_KERNEL_MODULE_REFRESH        32924
+#define ID_KERNEL_EXPORT                32925
+#define ID_KERNEL_COPY                  32926
+#define ID_KERNEL_MODULE_COPY           32927
+#define ID_KERNEL_MODULE_EXPORT         32928
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        266
-#define _APS_NEXT_COMMAND_VALUE         32915
+#define _APS_NEXT_RESOURCE_VALUE        272
+#define _APS_NEXT_COMMAND_VALUE         32929
 #define _APS_NEXT_CONTROL_VALUE         1079
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

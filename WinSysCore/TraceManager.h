@@ -27,10 +27,12 @@ public:
 	*/
 	bool AddKernelEventTypes(std::initializer_list<KernelEventTypes> types);
 	bool SetKernelEventTypes(std::initializer_list<KernelEventTypes> types);
+	std::set<KernelEventTypes> GetKernelEventTypes() const;
 	bool SetKernelEventStacks(std::initializer_list<std::wstring> categories);
 	bool SetBackupFile(PCWSTR path);
 	void Pause(bool pause);
 	bool Start(EventCallback callback);
+	bool Start(EventCallback cb, DWORD flags);
 	bool Stop();
 	bool IsRunning() const;
 	bool IsPaused() const;

@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "KernelModuleTracker.h"
 #include "KernelModuleTable.h"
-
+#include <Helpers.h>
+#include "ClipboardHelper.h"
 
 
 LRESULT CKernelModuleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -55,7 +56,19 @@ LRESULT CKernelModuleTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CKernelModuleTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_CONTEXT);
+	hSubMenu = menu.GetSubMenu(10);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
 	return 0;
 }
 
@@ -89,7 +102,7 @@ CKernelModuleTable::CKernelModuleTable(BarInfo& bars, TableInfo& table)
 
 int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::KernelModuleInfo>& info, int column) {
 	switch (column) {
-		case 0: 
+		case 0:
 			s = info->Name.c_str();
 			break;
 		case 1:
@@ -102,6 +115,12 @@ int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std
 			s.Format(L"%u", info->LoadOrderIndex);
 			break;
 		case 4:
+			s = GetCompanyName(Helpers::StringToWstring(info->FullPath)).c_str();
+			if (s.Find(L"Microsoft") == -1 && s.Find(L"YuanOS") == -1) {
+				select |= DRAW_HILITE;
+			}
+			break;
+		case 5:
 			s = info->FullPath.c_str();
 			break;
 		default:
@@ -112,13 +131,98 @@ int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std
 
 bool CKernelModuleTable::CompareItems(const std::shared_ptr<WinSys::KernelModuleInfo>& p1, const std::shared_ptr<WinSys::KernelModuleInfo>& p2, int col, bool asc) {
 	switch (static_cast<KernemModuleColumn>(col)) {
-	case KernemModuleColumn::Name: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
-	case KernemModuleColumn::ImageBase:return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
-	case KernemModuleColumn::ImageSize:return SortHelper::SortNumbers(p1->ImageSize, p2->ImageSize, asc);
-	case KernemModuleColumn::LoadOrderIndex: return SortHelper::SortNumbers(p1->LoadOrderIndex, p2->LoadOrderIndex, asc);
-	case KernemModuleColumn::FullPath: return SortHelper::SortStrings(p1->FullPath, p2->FullPath, asc);
+		case KernemModuleColumn::Name: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
+		case KernemModuleColumn::ImageBase:return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
+		case KernemModuleColumn::ImageSize:return SortHelper::SortNumbers(p1->ImageSize, p2->ImageSize, asc);
+		case KernemModuleColumn::LoadOrderIndex: return SortHelper::SortNumbers(p1->LoadOrderIndex, p2->LoadOrderIndex, asc);
+		case KernemModuleColumn::FullPath: return SortHelper::SortStrings(p1->FullPath, p2->FullPath, asc);
 	}
 	return false;
 }
 
+std::wstring CKernelModuleTable::GetCompanyName(std::wstring path) {
+	BYTE buffer[1 << 12];
+	WCHAR* companyName = nullptr;
+	CString filePath = path.c_str();
+	if (filePath.Mid(1, 2) == "??")
+		filePath = filePath.Mid(4);
+	if (::GetFileVersionInfo(filePath, 0, sizeof(buffer), buffer)) {
+		WORD* langAndCodePage;
+		UINT len;
+		if (::VerQueryValue(buffer, L"\\VarFileInfo\\Translation", (void**)&langAndCodePage, &len)) {
+			CString text;
+			text.Format(L"\\StringFileInfo\\%04x%04x\\CompanyName", langAndCodePage[0], langAndCodePage[1]);
 
+			if (::VerQueryValue(buffer, text, (void**)&companyName, &len))
+				return companyName;
+		}
+	}
+	return L"";
+}
+
+LRESULT CKernelModuleTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DoRefresh();
+	return 0;
+}
+
+LRESULT CKernelModuleTable::OnKernelModuleCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CString text = GetSingleKernelModuleInfo(info).c_str();
+
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CKernelModuleTable::OnKernelModuleExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleKernelModuleInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
+}
+
+std::wstring CKernelModuleTable::GetSingleKernelModuleInfo(std::shared_ptr<WinSys::KernelModuleInfo>& info) {
+	CString text;
+	CString s;
+
+	s = info->Name.c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info->ImageBase);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%X", info->ImageSize);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"%u", info->LoadOrderIndex);
+	s += L"\t";
+	text += s;
+
+	s = GetCompanyName(Helpers::StringToWstring(info->FullPath)).c_str();
+	s += L"\t";
+	text += s;
+
+	s = info->FullPath.c_str();
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
+}

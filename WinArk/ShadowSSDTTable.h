@@ -34,11 +34,15 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
+		COMMAND_ID_HANDLER(ID_SHADOW_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_SHADOW_COPY, OnShadowSSDTCopy)
+		COMMAND_ID_HANDLER(ID_SHADOW_EXPORT, OnShadowSSDTExport)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -52,12 +56,18 @@ public:
 	LRESULT OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT OnShadowSSDTCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShadowSSDTExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	std::wstring GetSingleShadowSSDTInfo(ShadowSystemServiceInfo& info);
 
 private:
 	enum class HookColumn {

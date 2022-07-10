@@ -26,10 +26,10 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	return FALSE;
 }
 
-LRESULT CMainFrame::OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnForwardToActiveView(WORD id, WORD code, HWND h, BOOL& /*bHandled*/) {
 	auto hWnd = m_hwndArray[_index];
 	if (::IsWindow(hWnd)) {
-		::SendMessage(hWnd, WM_COMMAND, wID, 0);
+		::SendMessage(hWnd, WM_COMMAND, MAKELONG(id, code), reinterpret_cast<LPARAM>(h));
 	}
 	return 0;
 }
@@ -124,7 +124,8 @@ void CMainFrame::InitKernelModuleTable() {
 		{20,"驱动文件名",0},
 		{20,"映像基址",0},
 		{10,"映像大小",0},
-		{20,"加载顺序",0},
+		{16,"加载顺序",0},
+		{22,"文件厂商",0},
 		{260,"全路径",0},
 	};
 
@@ -216,11 +217,8 @@ void CMainFrame::InitServiceTable() {
 
 void CMainFrame::InitDriverInterface() {
 	// 定位驱动二进制文件，提取到系统目录，然后安装
-#ifdef _WIN64
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X64_DRIVER), L"BIN");
-#else
-	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_X86_DRIVER), L"BIN");
-#endif // __WIN64
+	auto hRes = ::FindResource(nullptr, MAKEINTRESOURCE(IDR_DRIVER), L"BIN");
+
 	if (!hRes)
 		return;
 
@@ -312,9 +310,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
 	UIAddMenu(hMenu);
-	m_CmdBar.AttachMenu(hMenu);
+	/*m_CmdBar.AttachMenu(hMenu);
 	m_CmdBar.m_bAlphaImages = true;
-	SetMenu(nullptr);
+	SetMenu(nullptr);*/
 
 	InitCommandBar();
 
@@ -376,7 +374,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
 	m_TabCtrl.SetFont(hFont, true);
 	::DeleteObject(hFont);
-	AddSimpleReBarBand(m_TabCtrl, nullptr, TRUE, 0, TRUE);
+	AddSimpleReBarBand(m_TabCtrl);
 
 	auto hWndToolBar = m_tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	m_tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
@@ -534,9 +532,23 @@ void CMainFrame::SetStatusText(PCWSTR text) {
 
 LRESULT CMainFrame::OnMonitorStart(WORD, WORD, HWND, BOOL&) {
 	m_pEtwView->StartMonitoring(m_tm, true);
-	m_tm.Start([&](auto data) {
-		m_pEtwView->AddEvent(data);
-		});
+	bool isWin8Plus = ::IsWindows8OrGreater();
+	if (isWin8Plus) {
+		m_tm.Start([&](auto data) {
+			m_pEtwView->AddEvent(data);
+			});
+	}
+	else {
+		DWORD flags = 0;
+		for (auto type : m_tm.GetKernelEventTypes()) {
+			flags |= (DWORD)type;
+		}
+		if (flags == 0)
+			flags = (DWORD)KernelEventTypes::Process;
+		m_tm.Start([&](auto data) {
+			m_pEtwView->AddEvent(data);
+			}, flags);
+	}
 
 	UIEnable(ID_MONITOR_STOP, TRUE);
 	UIEnable(ID_MONITOR_START, FALSE);

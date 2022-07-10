@@ -222,6 +222,8 @@ void TraceManager::ResetIndex(uint32_t index) {
 }
 
 int TraceManager::UpdateEventConfig() {
+	ULONG error = ERROR_SUCCESS;
+	bool isWin8Plus = ::IsWindows8OrGreater();
 	typedef struct _PERFINFO_GROUPMASK {
 		ULONG Masks[8];
 	}PERINFO_GROUPMASK;
@@ -231,7 +233,7 @@ int TraceManager::UpdateEventConfig() {
 	for (auto type : _kernelEventTypes) {
 		gm.Masks[((uint64_t)type) >> 32] |= (ULONG)type;
 	}
-	auto error = ::TraceSetInformation(_handle, TraceSystemTraceEnableFlagsInfo, &gm, sizeof(gm));
+	error = ::TraceSetInformation(_handle, TraceSystemTraceEnableFlagsInfo, &gm, sizeof(gm));
 	if (error != ERROR_SUCCESS)
 		return error;
 
@@ -247,8 +249,8 @@ int TraceManager::UpdateEventConfig() {
 			stacks.push_back(id);
 		}
 	}
-
 	error = ::TraceSetInformation(_handle, TraceStackTracingInfo, stacks.data(), (ULONG)stacks.size() * sizeof(CLASSIC_EVENT_ID));
+	
 	return error;
 }
 
@@ -450,4 +452,67 @@ bool TraceManager::SetBackupFile(PCWSTR path) {
 
 void TraceManager::Pause(bool pause) {
 	_isPaused = pause;
+}
+
+bool TraceManager::Start(EventCallback cb, DWORD flags) {
+	if (_handle || _hTrace)
+		return true;
+
+	auto sessionName = KERNEL_LOGGER_NAME;
+
+	_callback = cb;
+	_filteredEvents = 0;
+
+	auto size = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
+	_propertiesBuffer = std::make_unique<BYTE[]>(size);
+	bool isWin8Plus = ::IsWindows8OrGreater();
+	ULONG error;
+
+	for (;;) {
+		::memset(_propertiesBuffer.get(), 0, size);
+
+		_properties = reinterpret_cast<EVENT_TRACE_PROPERTIES*>(_propertiesBuffer.get());
+		_properties->EnableFlags = flags;
+		_properties->Wnode.BufferSize = (ULONG)size;
+		_properties->Wnode.Guid = SystemTraceControlGuid;
+		_properties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
+		_properties->Wnode.ClientContext = 1;
+		_properties->FlushTimer = 1;
+		_properties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE | EVENT_TRACE_USE_LOCAL_SEQUENCE | EVENT_TRACE_SYSTEM_LOGGER_MODE;
+		_properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+
+		error = ::StartTrace(&_handle, sessionName, _properties);
+		if (error == ERROR_ALREADY_EXISTS) {
+			error = ::ControlTrace(_hTrace, KERNEL_LOGGER_NAME, _properties, EVENT_TRACE_CONTROL_STOP);
+			if (error != ERROR_SUCCESS)
+				return false;
+			continue;
+		}
+		break;
+	}
+
+	if (error != ERROR_SUCCESS)
+		return false;
+
+	_traceLog.Context = this;
+	_traceLog.LoggerName = (PWSTR)KERNEL_LOGGER_NAME;
+	_traceLog.ProcessTraceMode = PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_REAL_TIME;
+	_traceLog.EventRecordCallback = [](PEVENT_RECORD record) {
+		((TraceManager*)record->UserContext)->OnEventRecord(record);
+	};
+	_hTrace = ::OpenTrace(&_traceLog);
+	if (!_hTrace)
+		return false;
+
+	// create a dedicted thread to process the trace
+	_hProcessThread.reset(::CreateThread(nullptr, 0, [](auto param) {
+		return ((TraceManager*)param)->Run();
+		}, this, 0, nullptr));
+
+	::SetThreadPriority(_hProcessThread.get(), THREAD_PRIORITY_HIGHEST);
+	return true;
+}
+
+std::set<KernelEventTypes> TraceManager::GetKernelEventTypes() const {
+	return _kernelEventTypes;
 }

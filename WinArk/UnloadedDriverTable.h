@@ -39,6 +39,7 @@ public:
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_COPY,OnUnloadedDriverCopy)
 		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_EXPORT, OnUnloadedDriverExport)
+		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_REFRESH,OnRefresh)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -61,6 +62,7 @@ public:
 
 	LRESULT OnUnloadedDriverCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnUnloadedDriverExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 private:

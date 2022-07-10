@@ -6,6 +6,9 @@
 #include <SymbolHandler.h>
 #include <filesystem>
 #include "RegHelpers.h"
+#include "SymbolHelper.h"
+#include "ClipboardHelper.h"
+
 
 CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -16,28 +19,11 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 	PEParser parser(osFileName.c_str());
 
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	std::string name;
-	pdbPath = symPath + pdbPath;
+	auto& helper = SymbolHelper::Get();
 
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
-	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTableShadow");
-	PULONG KeServiceDescriptorShadow = (PULONG)symbol->GetSymbolInfo()->Address;
+	static PULONG KeServiceDescriptorShadow = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
 	_serviceTableBase = DriverHelper::GetShadowServiceTable(&KeServiceDescriptorShadow);
-	PULONG address = (PULONG)((PUCHAR)KeServiceDescriptorShadow + sizeof(SystemServiceTable));
+	static PULONG address = (PULONG)((PUCHAR)KeServiceDescriptorShadow + sizeof(SystemServiceTable));
 	_imageBase = parser.GetImageBase();
 	_limit = DriverHelper::GetServiceLimit(&address);
 
@@ -97,7 +83,23 @@ LRESULT CShadowSSDTHookTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CShadowSSDTHookTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_SHADOW_SSDT_CONTEXT);
+	hSubMenu = menu.GetSubMenu(0);
+	POINT pt;
+	::GetCursorPos(&pt);
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
 LRESULT CShadowSSDTHookTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -186,24 +188,7 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 }
 
 void CShadowSSDTHookTable::GetShadowSSDTEntry() {
-	void* win32kBase = Helpers::GetWin32kBase();
-	DWORD size = Helpers::GetWin32kImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	std::string name;
-	pdbPath = symPath + pdbPath;
-
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("win32") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)win32kBase, size);
+	auto& helper = SymbolHelper::Get();
 
 	for (decltype(_limit) i = 0; i < _limit; i++) {
 		ShadowSystemServiceInfo info;
@@ -213,7 +198,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
 		info.CurrentAddress = address;
 		DWORD64 offset = 0;
-		auto symbol = handler.GetSymbolFromAddress(info.OriginalAddress, &offset);
+		auto symbol = helper.GetSymbolFromAddress(info.OriginalAddress, &offset);
 		if (symbol != nullptr) {
 			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
 		}
@@ -222,7 +207,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		info.HookType = "   ---   ";
 		if (info.OriginalAddress != info.CurrentAddress) {
 			info.Hooked = true;
-			info.HookType= "   hooked   ";
+			info.HookType = "   hooked   ";
 		}
 		info.TargetModule = Helpers::GetKernelModuleByAddress(info.CurrentAddress);
 		m_Table.data.info.push_back(info);
@@ -242,4 +227,71 @@ void CShadowSSDTHookTable::Refresh() {
 			m_Table.data.info[i].HookType = "   ---   ";
 		}
 	}
+}
+
+LRESULT CShadowSSDTHookTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
+	return TRUE;
+}
+
+LRESULT CShadowSSDTHookTable::OnShadowSSDTCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CString text = GetSingleShadowSSDTInfo(info).c_str();
+
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CShadowSSDTHookTable::OnShadowSSDTExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleShadowSSDTInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
+}
+
+std::wstring CShadowSSDTHookTable::GetSingleShadowSSDTInfo(ShadowSystemServiceInfo& info) {
+	CString text;
+	CString s;
+
+	s.Format(L"%d (0x%-x)", info.ServiceNumber, info.ServiceNumber);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.ServiceFunctionName).c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.OriginalAddress);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.HookType).c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.CurrentAddress);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.TargetModule).c_str();
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
 }

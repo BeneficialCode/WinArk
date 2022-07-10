@@ -6,6 +6,8 @@
 #include "SymbolHandler.h"
 #include <filesystem>
 #include "RegHelpers.h"
+#include "SymbolHelper.h"
+#include "ClipboardHelper.h"
 
 CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -13,7 +15,7 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	_kernelBase = Helpers::GetKernelBase();
 	std::string name = Helpers::GetNtosFileName();
 	std::wstring osFileName = RegHelpers::GetSystemDir();
-	osFileName = osFileName + L"\\"+ Helpers::StringToWstring(name);
+	osFileName = osFileName + L"\\" + Helpers::StringToWstring(name);
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 
 	void* kernelBase = Helpers::GetKernelBase();
@@ -38,7 +40,7 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	// KiServiceLimit
 	_limit = DriverHelper::GetServiceLimit(&address);
 	DriverHelper::InitNtServiceTable(&address);
-	
+
 	PEParser parser(osFileName.c_str());
 	_imageBase = parser.GetImageBase();
 
@@ -98,7 +100,23 @@ LRESULT CSSDTHookTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CSSDTHookTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_SSDT_CONTEXT);
+	hSubMenu = menu.GetSubMenu(0);
+	POINT pt;
+	::GetCursorPos(&pt);
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
 LRESULT CSSDTHookTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -147,7 +165,7 @@ bool CSSDTHookTable::CompareItems(const SystemServiceInfo& s1, const SystemServi
 }
 
 void CSSDTHookTable::Refresh() {
-	for (int i = 0; i < _limit;i++) {
+	for (int i = 0; i < _limit; i++) {
 		void* address = DriverHelper::GetSSDTApiAddress(i);
 		if (m_Table.data.info[i].OriginalAddress != (uintptr_t)address) {
 			m_Table.data.info[i].Hooked = true;
@@ -170,7 +188,7 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 
 
 	uintptr_t rva = (uintptr_t)_KiServiceTable - (uintptr_t)_kernelBase;
-	
+
 #ifdef _WIN64
 	auto CheckAddressMethod = [&]()->bool {
 		auto pEntry = (char*)_fileMapVA + rva + 8 * number;
@@ -205,27 +223,7 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 }
 
 void CSSDTHookTable::GetSSDTEntry() {
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	std::string name;
-	pdbPath = symPath + pdbPath;
-
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-
-	ATLTRACE("%s", name.c_str());
-
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+	auto& helper = SymbolHelper::Get();
 
 	for (decltype(_limit) i = 0; i < _limit; i++) {
 		SystemServiceInfo info;
@@ -236,8 +234,7 @@ void CSSDTHookTable::GetSSDTEntry() {
 		info.CurrentAddress = address;
 
 		DWORD64 offset = 0;
-		auto symbol = handler.GetSymbolFromAddress(address, &offset);
-		symbol = handler.GetSymbolFromAddress(info.OriginalAddress);
+		auto symbol = helper.GetSymbolFromAddress(info.OriginalAddress, &offset);
 		if (symbol != nullptr) {
 			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
 		}
@@ -252,4 +249,68 @@ void CSSDTHookTable::GetSSDTEntry() {
 		m_Table.data.info.push_back(info);
 		m_Table.data.n = m_Table.data.info.size();
 	}
+}
+
+LRESULT CSSDTHookTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
+	return TRUE;
+}
+
+LRESULT CSSDTHookTable::OnSSDTCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+	CString text = GetSingleSSDTInfo(info).c_str();
+	ClipboardHelper::CopyText(m_hWnd, text);
+}
+
+LRESULT CSSDTHookTable::OnSSDTExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleSSDTInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
+}
+
+std::wstring CSSDTHookTable::GetSingleSSDTInfo(SystemServiceInfo& info) {
+	CString text;
+	CString s;
+
+	s.Format(L"%d (0x%-x)", info.ServiceNumber, info.ServiceNumber);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.ServiceFunctionName).c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.OriginalAddress);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.HookType).c_str();
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.CurrentAddress);
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.TargetModule).c_str();
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
 }

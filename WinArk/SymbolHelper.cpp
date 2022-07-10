@@ -8,19 +8,16 @@ SymbolHelper& SymbolHelper::Get() {
 	return helper;
 }
 
-SymbolHandler* SymbolHelper::GetKernel() {
-	return &_kernelSymbols;
-}
-
-SymbolHandler* SymbolHelper::GetWin32k() {
-	return &_win32kSymbols;
-}
-
 std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
-	auto symbol = _kernelSymbols.GetSymbolFromAddress(address, offset);
+	SymbolHandler kernel;
+	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
+	auto symbol = kernel.GetSymbolFromAddress(address, offset);
 	if (symbol != nullptr)
 		return symbol;
-	return _win32kSymbols.GetSymbolFromAddress(address, offset);
+	SymbolHandler win32k;
+
+	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
+	return win32k.GetSymbolFromAddress(address, offset);
 }
 
 SymbolHelper::SymbolHelper() {
@@ -40,7 +37,13 @@ SymbolHelper::SymbolHelper() {
 		}
 	}
 	std::string pdbFile = pdbPath + "\\" + name;
-	_win32kSymbols.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)win32kBase, size);
+	_win32kSize = size;
+	_win32kPdb = pdbFile;
+#ifdef _WIN64
+	_win32kBase = (DWORD64)win32kBase;
+#else
+	_win32kBase = (DWORD32)win32kBase;
+#endif
 
 	void* kernelBase = Helpers::GetKernelBase();
 	size = Helpers::GetKernelImageSize();
@@ -56,8 +59,27 @@ SymbolHelper::SymbolHelper() {
 	ATLTRACE("%s", name.c_str());
 
 	pdbFile = pdbPath + "\\" + name;
-	_kernelSymbols.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
+	_kernelSize = size;
+	_kernelPdb = pdbFile;
+#ifdef _WIN64
+	_kernelBase = (DWORD64)kernelBase;
+#else
+	_kernelBase = (DWORD)kernelBase;
+#endif
+	
 }
 
 SymbolHelper::~SymbolHelper() {
+}
+
+ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
+	SymbolHandler kernel;
+	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
+	return kernel.GetSymbolFromName(name)->GetSymbolInfo()->Address;
+}
+
+ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
+	SymbolHandler win32k;
+	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
+	return win32k.GetSymbolFromName(name)->GetSymbolInfo()->Address;
 }
