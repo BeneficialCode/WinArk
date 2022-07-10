@@ -1,2 +1,2 @@
 # Anti-Rootkit
-An rootkit tools demo
+An anti-rootkit tools demo
