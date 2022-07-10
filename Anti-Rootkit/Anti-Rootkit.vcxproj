@@ -188,6 +188,10 @@
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
       <Message>copy driver to bin path</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /S /Q $(ProjectDir)..\Bin
+mkdir $(ProjectDir)..\Bin</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -200,6 +204,10 @@
       <Message>copy driver to bin path</Message>
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /S /Q $(ProjectDir)..\Bin
+mkdir $(ProjectDir)..\Bin</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -215,6 +223,10 @@
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
       <Message>Copy driver to bin path</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /S /Q $(ProjectDir)..\Bin
+mkdir $(ProjectDir)..\Bin</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -232,6 +244,10 @@
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
       <Message>Copy driver to bin path</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /S /Q $(ProjectDir)..\Bin
+mkdir $(ProjectDir)..\Bin</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
