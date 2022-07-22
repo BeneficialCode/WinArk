@@ -137,6 +137,12 @@ bool CProcessTable::CompareItems(const std::shared_ptr<WinSys::ProcessInfo>& p1,
 	switch (static_cast<ProcessColumn>(col)) {
 		case ProcessColumn::Name: return SortHelper::SortStrings(p1->GetImageName(), p2->GetImageName(), asc);
 		case ProcessColumn::Id: return SortHelper::SortNumbers(p1->Id, p2->Id, asc);
+		case ProcessColumn::CompanyName: 
+		{
+			auto& px1 = GetProcessInfoEx(p1.get());
+			auto& px2 = GetProcessInfoEx(p2.get());
+			return SortHelper::SortStrings(px1.GetCompanyName(), px2.GetCompanyName(), asc);
+		}
 	}
 	return false;
 }

@@ -110,6 +110,7 @@ public:
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		COMMAND_RANGE_HANDLER(0x8000,0xefff,OnForwardToActiveView)
+		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
 	CCommandBarCtrl m_CmdBar;
