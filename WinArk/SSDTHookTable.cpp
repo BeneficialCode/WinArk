@@ -18,25 +18,9 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	osFileName = osFileName + L"\\" + Helpers::StringToWstring(name);
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	pdbPath = symPath + pdbPath;
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	SymbolHandler handler;
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
-	_KiServiceTable = (PULONG)handler.GetSymbolFromName("KiServiceTable")->GetSymbolInfo()->Address;
-	auto symbol = handler.GetSymbolFromName("KeServiceDescriptorTableShadow");
-	PULONG address = (PULONG)symbol->GetSymbolInfo()->Address;
+	auto& helper = SymbolHelper::Get();
+	_KiServiceTable = (PULONG)helper.GetKernelSymbolAddressFromName("KiServiceTable");
+	PULONG address = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
 	// KiServiceLimit
 	_limit = DriverHelper::GetServiceLimit(&address);
 	DriverHelper::InitNtServiceTable(&address);
@@ -262,6 +246,7 @@ LRESULT CSSDTHookTable::OnSSDTCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	auto& info = m_Table.data.info[selected];
 	CString text = GetSingleSSDTInfo(info).c_str();
 	ClipboardHelper::CopyText(m_hWnd, text);
+	return TRUE;
 }
 
 LRESULT CSSDTHookTable::OnSSDTExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

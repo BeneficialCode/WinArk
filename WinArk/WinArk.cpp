@@ -60,12 +60,11 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		return 0;
 		}, nullptr, 0, nullptr);
 
+	::WaitForSingleObject(hThread, INFINITE);
 	if (!g_hasSymbol||NULL == hThread) {
 		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...", L"WinArk", MB_ICONERROR);
 		return 0;
 	}
-
-	::WaitForSingleObject(hThread, INFINITE);
 	::CloseHandle(hThread);
 
 	InitColorSys();
