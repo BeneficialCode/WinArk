@@ -119,6 +119,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 
 	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
 		nullptr, nullptr, 0);
+	
 
 	if (!hInternet)
 		return downslib_error::inetopen;
@@ -129,6 +130,13 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		flags |= INTERNET_FLAG_SECURE;
 
 	hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+
+	DWORD error = ::GetLastError();
+	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
+		url.insert(4, "s");
+		flags |= INTERNET_FLAG_SECURE;
+		hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+	}
 	if (!hUrl)
 		return downslib_error::openurl;
 

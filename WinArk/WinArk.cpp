@@ -62,7 +62,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 
 	::WaitForSingleObject(hThread, INFINITE);
 	if (!g_hasSymbol||NULL == hThread) {
-		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...", L"WinArk", MB_ICONERROR);
+		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...\r\n符号初始化失败，程序退出...", L"WinArk", MB_ICONERROR);
 		return 0;
 	}
 	::CloseHandle(hThread);
