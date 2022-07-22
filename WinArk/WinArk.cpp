@@ -37,6 +37,13 @@ void InitSymbols(std::wstring fileName) {
 		g_hasSymbol = false;
 }
 
+void ClearSymbols() {
+	WCHAR path[MAX_PATH];
+	::GetCurrentDirectory(MAX_PATH, path);
+	wcscat_s(path, L"\\Symbols");
+	std::filesystem::remove_all(path);
+}
+
 int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
@@ -63,6 +70,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	::WaitForSingleObject(hThread, INFINITE);
 	if (!g_hasSymbol||NULL == hThread) {
 		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...\r\n·ûºÅ³õÊ¼»¯Ê§°Ü£¬³ÌÐòÍË³ö...", L"WinArk", MB_ICONERROR);
+		ClearSymbols();
 		return 0;
 	}
 	::CloseHandle(hThread);
