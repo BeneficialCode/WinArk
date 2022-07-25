@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -656,36 +656,6 @@ BEGIN
         MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
         MENUITEM "E&xit",                       IDM_EXIT
     END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "Copy &All",                   ID_EDIT_COPYALL
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Auto Scroll",                ID_VIEW_AUTOSCROLL
-        MENUITEM SEPARATOR
-        MENUITEM "&Columns...",                 ID_VIEW_COLUMNS
-        MENUITEM SEPARATOR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-    END
-    POPUP "&Search"
-    BEGIN
-        MENUITEM "&Quick Find...\tCtrl+F",      ID_SEARCH_QUICKFIND
-        MENUITEM "&Find All...\tCtrl+Shift+F",  ID_SEARCH_FINDALL
-        MENUITEM SEPARATOR
-        MENUITEM "Find &Next\tF3",              ID_SEARCH_FINDNEXT
-    END
-    POPUP "&Monitor"
-    BEGIN
-        MENUITEM "&Start",                      ID_MONITOR_START
-        MENUITEM "&Stop",                       ID_MONITOR_STOP
-        MENUITEM "&Pause",                      ID_MONITOR_PAUSE
-        MENUITEM SEPARATOR
-        MENUITEM "&Clear All",                  ID_MONITOR_CLEARALL
-        MENUITEM SEPARATOR
-        MENUITEM "Configure &Events...",        ID_CONFIGURE_EVENTS
-        MENUITEM "Configure &Filters...",       ID_CONFIGURE_FILTERS
-    END
     POPUP "&Options"
     BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
@@ -781,12 +751,12 @@ IDI_FIND                ICON                    "res\\find.ico"
 
 IDI_SEARCH              ICON                    "res\\search.ico"
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1304,7 +1274,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
