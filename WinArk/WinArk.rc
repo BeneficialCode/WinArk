@@ -279,6 +279,16 @@ BEGIN
     PUSHBUTTON      "Find Next",IDC_FINDNEXT,121,146,50,14,WS_DISABLED
 END
 
+IDD_GOTOKEY DIALOGEX 0, 0, 475, 199
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go to Key"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Goto",IDOK,146,172,50,14,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,232,172,50,14
+    CONTROL         "",IDC_KEY_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,7,461,154
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -407,6 +417,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
     END
+
+    IDD_GOTOKEY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 468
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 192
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -518,6 +536,14 @@ BEGIN
     0
 END
 
+IDD_GOTOKEY AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -623,6 +649,7 @@ BEGIN
         MENUITEM "&Import...",                  ID_FILE_IMPORT
         MENUITEM SEPARATOR
         MENUITEM "Per&missions...",             ID_KEY_PERMISSIONS
+        MENUITEM "&Go to...\tCtrl+G",           ID_KEY_GOTO
     END
     POPUP "remote"
     BEGIN
@@ -750,6 +777,8 @@ IDI_GENERIC             ICON                    "res\\event3.ico"
 IDI_FIND                ICON                    "res\\find.ico"
 
 IDI_SEARCH              ICON                    "res\\search.ico"
+
+IDI_GOTO                ICON                    "res\\goto.ico"
 
 #endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////

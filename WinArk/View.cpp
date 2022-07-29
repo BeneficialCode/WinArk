@@ -22,6 +22,7 @@
 #include "CopyValueCommand.h"
 #include "SecurityHelper.h"
 #include "RegExportImport.h"
+#include "GotoKeyDlg.h"
 
 HWND CRegistryManagerView::GetHwnd() const {
 	return m_hWnd;
@@ -1560,6 +1561,18 @@ LRESULT CRegistryManagerView::OnExport(WORD, WORD, HWND, BOOL&) {
 			SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, false);
 			::RegCloseKey(hKey);
 		}
+	}
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnGotoKey(WORD, WORD, HWND, BOOL&) {
+	CGotoKeyDlg dlg;
+	dlg.SetKey(GetFullNodePath(m_Tree.GetSelectedItem()));
+	if (dlg.DoModal() == IDOK) {
+		CWaitCursor wait;
+		auto hItem = GotoKey(dlg.GetKey());
+		if(!hItem)
+			AtlMessageBox(m_hWnd, L"Failed to locate key", IDS_TITLE, MB_ICONERROR);
 	}
 	return 0;
 }

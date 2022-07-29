@@ -414,6 +414,9 @@
     <ClCompile Include="CSVEventDataSerializer.cpp">
       <Filter>Serializers</Filter>
     </ClCompile>
+    <ClCompile Include="GotoKeyDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -824,6 +827,9 @@
     <ClInclude Include="IEventDataSerializer.h">
       <Filter>Serializers</Filter>
     </ClInclude>
+    <ClInclude Include="GotoKeyDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -967,6 +973,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\search.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\goto.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
