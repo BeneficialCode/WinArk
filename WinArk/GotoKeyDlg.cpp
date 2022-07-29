@@ -43,7 +43,15 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Explorer Context Menu 5",LR"(HKEY_CLASSES_ROOT\Folder\shellex\ContextMenuHandlers)" },
 		{ L"Explorer Context Menu 6",LR"(HKEY_CLASSES_ROOT\Directory\shell)" },
 		{ L"Explorer Context Menu 7",LR"(HKEY_CLASSES_ROOT\Directory\Background\shell)" },
-		{ L"Explorer Context Menu 8",LR"(HKEY_CLASSES_ROOT\Directory\Background\shellex\ContextMenuHandlers)" }
+		{ L"Explorer Context Menu 8",LR"(HKEY_CLASSES_ROOT\Directory\Background\shellex\ContextMenuHandlers)" },
+		{L"Run 1",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run)"},
+		{L"Run 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run)"},
+		{L"Run 3",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run)"},
+		{L"Run 4",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run)"},
+		{L"RunOnce 1",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce)"},
+		{L"RunOnce 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce)"},
+		{L"RunOnceEx 1",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx)"},
+		{L"RunOnceEx 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx)"}
 	};
 
 	for (const auto& [name, path] : locations) {

@@ -118,7 +118,7 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	auto hr = spAC.CoCreateInstance(CLSID_AutoComplete);
 	if (SUCCEEDED(hr)) {
 		m_AutoCompleteStrings->CreateInstance(&m_AutoCompleteStrings);
-		CRect r(0, 0, 400, 20);
+		CRect r(0, 0, 800, 20);
 		CEdit edit;
 		auto hEdit = edit.Create(m_hWnd, &r, nullptr, WS_CHILD | WS_VISIBLE |
 			ES_AUTOHSCROLL | ES_WANTRETURN | WS_CLIPSIBLINGS, WS_EX_WINDOWEDGE);
@@ -1212,6 +1212,9 @@ AppCommandCallback<DeleteKeyCommand> CRegistryManagerView::GetDeleteKeyCommandCa
 }
 
 LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&){
+	if (m_Clipboard.Items.empty()) {
+		return 0;
+	}
 	ATLASSERT(!m_Clipboard.Items.empty());
 	auto cb = [this](auto& cmd, bool) {
 		RefreshItem(m_Tree.GetSelectedItem());

@@ -134,8 +134,8 @@ RegistryKey Registry::OpenKey(const CString& path, DWORD access, bool* root) {
 			keyname = path.Left(bs);
 		}
 		// c++11 std::begin
-		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) {
-			return k.text == keyname;
+		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) { 
+			return _wcsicmp(k.text, keyname) == 0 || _wcsicmp(k.stext, keyname) == 0; 
 			});
 		ATLASSERT(pair != std::end(Keys));
 		if (bs >= 0) {
@@ -164,8 +164,8 @@ CRegKey Registry::CreateKey(const CString& path, DWORD access) {
 			ATLASSERT(bs >= 0);
 			keyname = path.Left(bs);
 		}
-		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) {
-			return k.text == keyname;
+		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) { 
+			return wcscmp(k.text, keyname) == 0; 
 			});
 
 		ATLASSERT(pair != std::end(Keys));
