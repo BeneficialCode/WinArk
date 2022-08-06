@@ -174,6 +174,12 @@
 #define IDC_DETAILS                     1075
 #define IDC_CASESENSITIVE               1077
 #define IDC_FINDNEXT                    1078
+#define IDC_WIN_VERSION					1080
+#define IDC_BOOT_TIME					1081
+#define IDC_USABLE_RAM					1082
+#define IDC_PROCESSOR_COUNT				1083
+#define IDC_PROCESSOR					1084
+#define IDC_KEY_LIST					1085
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
