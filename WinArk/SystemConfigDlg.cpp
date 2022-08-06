@@ -1,11 +1,36 @@
 #include "stdafx.h"
 #include "SystemConfigDlg.h"
 #include <DriverHelper.h>
+#include "FormatHelper.h"
+
+using namespace WinSys;
 
 LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
+
+	m_BasicSysInfo = SystemInformation::GetBasicSystemInfo();
 	
 	GetDlgItem(IDC_REMOVE_CALLBACK).EnableWindow(FALSE);
+
+	CString text;
+	auto& ver = SystemInformation::GetWindowsVersion();
+
+
+
+	text.Format(L"%u.%u.%u", ver.Major, ver.Minor, ver.Build);
+	SetDlgItemText(IDC_WIN_VERSION, text);
+
+	text = FormatHelper::TimeToString(SystemInformation::GetBootTime());
+	SetDlgItemText(IDC_BOOT_TIME, text);
+
+	text = FormatHelper::FormatWithCommas(m_BasicSysInfo.TotalPhysicalInPages >> 8) + L" MB";
+	text.Format(L"%s (%u GB)", text, (ULONG)((m_BasicSysInfo.TotalPhysicalInPages + (1 << 17)) >> 18));
+	SetDlgItemText(IDC_USABLE_RAM, text);
+
+	SetDlgItemInt(IDC_PROCESSOR_COUNT, m_BasicSysInfo.NumberOfProcessors);
+
+	std::string brand = SystemInformation::GetCpuBrand();
+	SetDlgItemTextA(m_hWnd,IDC_PROCESSOR, brand.c_str());
 
 	return TRUE;
 }

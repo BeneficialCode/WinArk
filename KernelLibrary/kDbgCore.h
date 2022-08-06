@@ -159,9 +159,9 @@ typedef struct _DEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION
 //调试对象
 typedef struct _DEBUG_OBJECT
 {
-	KEVENT EventsPresent;	// 同步调试器进程和被调试进程
-	FAST_MUTEX Mutex;		// 共享资源互斥锁
-	LIST_ENTRY EventList;	// 调试消息队列
+	KEVENT EventsPresent;	// 指示有调试事件发生
+	FAST_MUTEX Mutex;		// 用于同步的互斥对象
+	LIST_ENTRY EventList;	// 保持调试事件的链表，调试消息队列
 	union
 	{
 		ULONG Flags;
@@ -597,16 +597,6 @@ typedef struct _LDR_DATA_TABLE_ENTRY
 	UCHAR SigningLevel; // since REDSTONE2
 } LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
 
-//typedef enum _SYSTEM_DLL_TYPE  // 7 elements, 0x4 bytes
-//{
-//	PsNativeSystemDll = 0 /*0x0*/,
-//	PsWowX86SystemDll = 1 /*0x1*/,
-//	PsWowArm32SystemDll = 2 /*0x2*/,
-//	PsWowAmd64SystemDll = 3 /*0x3*/,
-//	PsWowChpeX86SystemDll = 4 /*0x4*/,
-//	PsVsmEnclaveRuntimeDll = 5 /*0x5*/,
-//	PsSystemDllTotalTypes = 6 /*0x6*/
-//}SYSTEM_DLL_TYPE, * PSYSTEM_DLL_TYPE;
 
 /*
 // like GetProcAddress

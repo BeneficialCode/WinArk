@@ -127,6 +127,9 @@
     <ClInclude Include="LookasideList.h">
       <Filter>ktl</Filter>
     </ClInclude>
+    <ClInclude Include="kDbgUtil.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -215,6 +218,9 @@
     </ClCompile>
     <ClCompile Include="LookasideList.cpp">
       <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="kDbgUtil.cpp">
+      <Filter>DbgCore</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -242,6 +242,7 @@
     <ClInclude Include="GuardedRegion.h" />
     <ClInclude Include="kDbgCore.h" />
     <ClInclude Include="kDbgSys.h" />
+    <ClInclude Include="kDbgUtil.h" />
     <ClInclude Include="khook.h" />
     <ClInclude Include="kstring.h" />
     <ClInclude Include="kvector.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GuardedRegion.cpp" />
     <ClCompile Include="kDbgSys.cpp" />
+    <ClCompile Include="kDbgUtil.cpp" />
     <ClCompile Include="khook.cpp" />
     <ClCompile Include="kstring.cpp" />
     <ClCompile Include="kvector.cpp" />

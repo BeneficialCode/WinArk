@@ -171,6 +171,12 @@
 #define IDC_DETAILS                     1075
 #define IDC_CASESENSITIVE               1077
 #define IDC_FINDNEXT                    1078
+#define IDC_WIN_VERSION                 1079
+#define IDC_BOOT_TIME                   1080
+#define IDC_USABLE_RAM                  1081
+#define IDC_PROCESSOR_COUNT             1082
+#define IDC_PROCESSOR_COUNT2            1083
+#define IDC_PROCESSOR                   1083
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -312,7 +318,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        272
 #define _APS_NEXT_COMMAND_VALUE         32929
-#define _APS_NEXT_CONTROL_VALUE         1079
+#define _APS_NEXT_CONTROL_VALUE         1081
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

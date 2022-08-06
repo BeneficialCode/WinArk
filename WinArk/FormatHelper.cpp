@@ -103,7 +103,7 @@ CString FormatHelper::TimeSpanToString(int64_t ts) {
 
 CString FormatHelper::FormatWithCommas(long long size) {
 	CString result;
-	result.Format(L"%11d", size);
+	result.Format(L"%lld", size);
 	int i = 3;
 	while (result.GetLength() - i > 0) {
 		result = result.Left(result.GetLength() - i) + L"," + result.Right(i);

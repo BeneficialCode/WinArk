@@ -1,5 +1,6 @@
 #pragma once
 #include "resource.h"
+#include "SystemInformation.h"
 
 class CSystemConfigDlg :
 	public CDialogImpl<CSystemConfigDlg> {
@@ -23,4 +24,5 @@ public:
 
 private:
 	CButton m_CheckImageLoad;
+	WinSys::BasicSystemInfo m_BasicSysInfo;
 };

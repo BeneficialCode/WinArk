@@ -25,6 +25,14 @@ const WindowsVersion& WinSys::SystemInformation::GetWindowsVersion() {
 		version.Major = shareData->NtMajorVersion;
 		version.Minor = shareData->NtMinorVersion;
 	}
+#pragma warning(push)
+#pragma warning(disable:4996)
+	OSVERSIONINFOEX osv = { sizeof(osv) };
+	GetVersionEx((OSVERSIONINFO*)&osv);
+	if (version.Build != osv.dwBuildNumber) {
+		version.Build = osv.dwBuildNumber;
+	}
+#pragma warning(pop)
 	return version;
 }
 
@@ -66,4 +74,12 @@ int WinSys::SetLastStatus(int status) {
 
 int WinSys::GetLastStatus() {
 	return LastStatus;
+}
+
+std::string SystemInformation::GetCpuBrand() {
+	char brand[49] = { 0 };
+	auto status = ::NtQuerySystemInformation(SystemProcessorBrandString, brand, sizeof(brand), nullptr);
+	assert(NT_SUCCESS(status));
+	std::string cpuBrand(brand);
+	return cpuBrand;
 }

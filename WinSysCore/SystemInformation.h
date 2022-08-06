@@ -117,5 +117,6 @@ namespace WinSys {
 		static const WindowsVersion& GetWindowsVersion();
 		static const BasicSystemInfo& GetBasicSystemInfo();
 		static uint64_t GetBootTime();
+		static std::string GetCpuBrand();
 	};
 }

@@ -11,6 +11,7 @@
 #define _WIN32_WINNT	0x0601
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
+#define _HAS_EXCEPTIONS 0
 // 解决标准库std::min与min宏冲突
 #define NOMINMAX
 
@@ -19,8 +20,8 @@
 #endif
 
 #include <atlbase.h>
-#include <atlapp.h>
 #include <atlstr.h>
+#include <atlapp.h>
 
 #include <atlwin.h>
 
