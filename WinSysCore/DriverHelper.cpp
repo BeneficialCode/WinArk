@@ -492,3 +492,22 @@ bool DriverHelper::RemoveNotify(NotifyData* pData) {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_REMOVE_KERNEL_NOTIFY, pData, sizeof(NotifyData),
 		nullptr, 0, &bytes, nullptr);
 }
+
+bool DriverHelper::EnableDbgSys() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_DBGSYS, nullptr,0,
+		nullptr, 0, &bytes, nullptr);
+}
+
+
+bool DriverHelper::DisableDbgSys() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DISABLE_DBGSYS, nullptr,0,
+		nullptr, 0, &bytes, nullptr);
+}

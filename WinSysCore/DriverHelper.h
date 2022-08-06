@@ -40,6 +40,8 @@ struct DriverHelper final {
 	static bool SetImageLoadNotify();
 	static bool RemoveImageLoadNotify();
 	static bool RemoveNotify(NotifyData* pData);
+	static bool EnableDbgSys();
+	static bool DisableDbgSys();
 
 private:
 	static bool OpenDevice();

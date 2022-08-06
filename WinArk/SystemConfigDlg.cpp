@@ -34,18 +34,14 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 
 	return TRUE;
 }
-           
-LRESULT CSystemConfigDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	bool enable = GetDlgItem(IDC_SET_CALLBACK).IsWindowEnabled();
-	if (!enable)
-		SendMessage(WM_COMMAND, IDC_REMOVE_CALLBACK);
-	return TRUE;
-}
 
 LRESULT CSystemConfigDlg::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	bool enable = GetDlgItem(IDC_SET_CALLBACK).IsWindowEnabled();
 	if (!enable)
 		SendMessage(WM_COMMAND, IDC_REMOVE_CALLBACK);
+	if (m_enableDbgSys) {
+		DriverHelper::DisableDbgSys();
+	}
 	return TRUE;
 }
 
@@ -81,5 +77,29 @@ LRESULT CSystemConfigDlg::OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, H
 
 	GetDlgItem(IDC_SET_CALLBACK).EnableWindow(TRUE);
 	GetDlgItem(IDC_REMOVE_CALLBACK).EnableWindow(FALSE);
+	return TRUE;
+}
+
+LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (m_enableDbgSys) {
+		bool success = DriverHelper::DisableDbgSys();
+		if (success) {
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"启用调试子系统");
+			m_enableDbgSys = false;
+		}
+		else {
+			AtlMessageBox(m_hWnd, L"禁用失败!");
+		}
+	}
+	else {
+		bool success = DriverHelper::EnableDbgSys();
+		if (success) {
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"禁用调试子系统");
+			m_enableDbgSys = true;
+		}
+		else {
+			AtlMessageBox(m_hWnd, L"启用失败!");
+		}
+	}
 	return TRUE;
 }

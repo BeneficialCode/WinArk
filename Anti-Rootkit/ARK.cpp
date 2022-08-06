@@ -1115,6 +1115,22 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			break;
 		}
+
+		case IOCTL_ARK_ENABLE_DBGSYS:
+		{
+
+			len = 0;
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_DISABLE_DBGSYS:
+		{
+
+			len = 0;
+			status = STATUS_SUCCESS;
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;

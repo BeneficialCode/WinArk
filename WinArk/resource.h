@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -110,6 +110,8 @@
 #define IDC_PROCESS                     1011
 #define IDC_ENV                         1012
 #define IDC_THREAD                      1012
+#define IDC_ENABLE_DBG_SYS              1012
+#define IDC_ENABLE_DBGSYS               1012
 #define IDC_TOKEN                       1013
 #define IDC_JOB                         1014
 #define IDC_CREATED                     1017
@@ -174,12 +176,12 @@
 #define IDC_DETAILS                     1075
 #define IDC_CASESENSITIVE               1077
 #define IDC_FINDNEXT                    1078
-#define IDC_WIN_VERSION					1080
-#define IDC_BOOT_TIME					1081
-#define IDC_USABLE_RAM					1082
-#define IDC_PROCESSOR_COUNT				1083
-#define IDC_PROCESSOR					1084
-#define IDC_KEY_LIST					1085
+#define IDC_WIN_VERSION                 1080
+#define IDC_BOOT_TIME                   1081
+#define IDC_USABLE_RAM                  1082
+#define IDC_PROCESSOR_COUNT             1083
+#define IDC_PROCESSOR                   1084
+#define IDC_KEY_LIST                    1085
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
