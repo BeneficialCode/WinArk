@@ -2,6 +2,7 @@
 #include "SystemConfigDlg.h"
 #include <DriverHelper.h>
 #include "FormatHelper.h"
+#include "SymbolHelper.h"
 
 using namespace WinSys;
 
@@ -14,8 +15,6 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 
 	CString text;
 	auto& ver = SystemInformation::GetWindowsVersion();
-
-
 
 	text.Format(L"%u.%u.%u", ver.Major, ver.Minor, ver.Build);
 	SetDlgItemText(IDC_WIN_VERSION, text);
@@ -92,7 +91,15 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		}
 	}
 	else {
-		bool success = DriverHelper::EnableDbgSys();
+		DbgSysCoreInfo info;
+
+		bool success = InitDbgSymbols(&info);
+		do
+		{
+			if (!success)
+				break;
+			success = DriverHelper::EnableDbgSys(&info);
+		} while (false);
 		if (success) {
 			SetDlgItemText(IDC_ENABLE_DBGSYS, L"禁用调试子系统");
 			m_enableDbgSys = true;
@@ -102,4 +109,17 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		}
 	}
 	return TRUE;
+}
+
+bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
+	auto& helper = SymbolHelper::Get();
+	pInfo->NtCreateDebugObjectAddress = (void*)helper.GetKernelSymbolAddressFromName("NtCreateDebugObject");
+	if (!pInfo->NtCreateDebugObjectAddress)
+		return false;
+
+	pInfo->DbgkDebugObjectTypeAddress = (void*)helper.GetKernelSymbolAddressFromName("DbgkDebugObjectType");
+	if (!pInfo->DbgkDebugObjectTypeAddress)
+		return false;
+
+	return true;
 }

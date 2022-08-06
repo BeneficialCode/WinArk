@@ -85,8 +85,12 @@ HANDLE SymbolHandler::GetHandle() const {
 
 std::unique_ptr<SymbolInfo> SymbolHandler::GetSymbolFromName(PCSTR name) {
 	auto symbol = std::make_unique<SymbolInfo>();
-	if (::SymFromName(m_hProcess, name, symbol->GetSymbolInfo()))
+	auto info = symbol->GetSymbolInfo();
+	if (::SymFromName(m_hProcess, name, info)) {
+		symbol->ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
+		::SymGetModuleInfo(m_hProcess, info->Address, &symbol->ModuleInfo);
 		return symbol;
+	}
 	return nullptr;
 }
 
@@ -191,4 +195,11 @@ IMAGEHLP_MODULE SymbolHandler::GetModuleInfo(DWORD64 address) {
 	IMAGEHLP_MODULE info = { sizeof(info) };
 	::SymGetModuleInfo(m_hProcess, address, &info);
 	return info;
+}
+
+
+ULONG_PTR SymbolHandler::GetSymbolAddressFromName(PCSTR name) {
+	IMAGEHLP_SYMBOL symbol = { sizeof(symbol) };
+	::SymGetSymFromName(m_hProcess, name, &symbol);
+	return symbol.Address;
 }

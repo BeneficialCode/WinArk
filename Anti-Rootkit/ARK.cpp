@@ -12,6 +12,7 @@
 #include "..\KernelLibrary\SysMon.h"
 #include "..\KernelLibrary\Logging.h"
 #include "..\KernelLibrary\SysMonCommon.h"
+#include "..\KernelLibrary\kDbgUtil.h"
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -1118,17 +1119,32 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		case IOCTL_ARK_ENABLE_DBGSYS:
 		{
-
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(DbgSysCoreInfo)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto pInfo = (DbgSysCoreInfo*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = kDbgUtil::InitDbgSys(pInfo);
+			if (!success)
+				break;
 			len = 0;
 			status = STATUS_SUCCESS;
+
 			break;
 		}
 
 		case IOCTL_ARK_DISABLE_DBGSYS:
 		{
-
+			bool success = kDbgUtil::ExitDbgSys();
 			len = 0;
-			status = STATUS_SUCCESS;
+			if (success)
+				status = STATUS_SUCCESS;
+			else
+				status = STATUS_UNSUCCESSFUL;
 			break;
 		}
 	}

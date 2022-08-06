@@ -177,6 +177,8 @@ public:
 	HANDLE GetHandle() const;
 	ULONG64 LoadSymbolsForModule(PCSTR moduleName, DWORD64 baseAddress = 0, DWORD dllSize = 0);
 	
+	ULONG_PTR GetSymbolAddressFromName(PCSTR name);
+
 	std::unique_ptr<SymbolInfo> GetSymbolFromName(PCSTR name);
 	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
 	

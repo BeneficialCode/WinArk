@@ -2,7 +2,7 @@
 #include "kDbgCore.h"
 #include "kDbgSys.h"
 #include <ntimage.h>
-
+#include "kDbgUtil.h"
 
 // 调试对象类型
 POBJECT_TYPE* DbgkDebugObjectType;
@@ -911,7 +911,7 @@ VOID DbgkCreateThread(
 		ObDereferenceObject(FileObject);
 
 		for (int i = 0; i < 6; i++) {
-			PSYSTEM_DLL_INFO info = PsQuerySystemDllInfo(i);
+			PSYSTEM_DLL_INFO info = nullptr;//PsQuerySystemDllInfo(i);
 			if (info != nullptr) {
 				ImageInfoEx.ImageInfo.Properties = 0;
 				ImageInfoEx.ImageInfo.ImageAddressingMode = IMAGE_ADDRESSING_MODE_32BIT;
@@ -935,14 +935,14 @@ VOID DbgkCreateThread(
 				Object = ObFastReferenceObject(&sysDll->FastRef);
 				if (Object == nullptr) {
 					KeEnterCriticalRegion();
-					Object = ObFastReferenceObjectLocked(&sysDll->FastRef);
+					//Object = ObFastReferenceObjectLocked(&sysDll->FastRef);
 					//ExAcquirePushLockShared(&sysDll->Lock);
 					KeLeaveCriticalRegion();
 				}
 
 				FileObject = CcGetFileObjectFromSectionPtrs((PSECTION_OBJECT_POINTERS)Object);
 				if (FileObject != nullptr) {
-					ObFastDereferenceObject(&sysDll->FastRef, Object);
+					//ObFastDereferenceObject(&sysDll->FastRef, Object);
 				}
 				/*PsCallImageNotifyRoutines(&sysDll->DllInfo.FileName,
 					Process->UniqueProcessId,
@@ -1579,7 +1579,7 @@ BOOLEAN DbgkForwardException(
 				return FALSE;
 			}
 
-			status = DbgkpSendErrorMessage(ExceptionRecord, &m);
+			//status = DbgkpSendErrorMessage(ExceptionRecord, &m);
 		}
 	}
 

@@ -130,6 +130,9 @@
     <ClInclude Include="kDbgUtil.h">
       <Filter>DbgCore</Filter>
     </ClInclude>
+    <ClInclude Include="typesdefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

@@ -493,12 +493,12 @@ bool DriverHelper::RemoveNotify(NotifyData* pData) {
 		nullptr, 0, &bytes, nullptr);
 }
 
-bool DriverHelper::EnableDbgSys() {
+bool DriverHelper::EnableDbgSys(DbgSysCoreInfo* pInfo) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_DBGSYS, nullptr,0,
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_DBGSYS, pInfo,sizeof(DbgSysCoreInfo),
 		nullptr, 0, &bytes, nullptr);
 }
 

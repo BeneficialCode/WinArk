@@ -1,4 +1,6 @@
 #pragma once
+#include "khook.h"
+#include "kDbgSys.h"
 
 struct EProcessGlobalOffsets {
 	ULONG RundownProtect;		// PEX_RUNDOWN_REF
@@ -28,6 +30,7 @@ struct TcbGlobalOffsets {
 	ULONG ApcStateIndex;
 };
 
+
 class kDbgUtil final {
 public:
 	static PEX_RUNDOWN_REF GetProcessRundownProtect(PEPROCESS Process);
@@ -39,10 +42,19 @@ public:
 	static PEX_RUNDOWN_REF GetProcessSectionBaseAddress(PEPROCESS Process);
 	static PEX_RUNDOWN_REF GetProcessSectionObject(PEPROCESS Process);
 	static PEX_RUNDOWN_REF GetProcessUniqueProcessId(PEPROCESS Process);*/
-
-
+	static bool InitDbgSys(DbgSysCoreInfo* info);
+	static bool ExitDbgSys();
+	static bool HookDbgSys();
+	static bool UnhookDbgSys();
 
 	static inline TcbGlobalOffsets _tcbOffsets;
 	static inline EThreadGlobalOffsets _ethreadOffsets;
 	static inline EProcessGlobalOffsets _eprocessOffsets;
+	
+	using PNtCreateDebugObject = decltype(&NtCreateDebugObject);
+	static inline PNtCreateDebugObject g_pNtCreateDebugObject;
+	static inline khook _hookNtCreateDebugObject;
+
+	static inline DbgSysCoreInfo _info;
+	static inline bool _first = true;
 };

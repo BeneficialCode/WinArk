@@ -17,4 +17,5 @@ private:
 	DWORD _win32kSize, _kernelSize;
 	DWORD64 _win32kBase, _kernelBase;
 	std::string _win32kPdb, _kernelPdb;
+	std::string _win32kModule, _kernelModule;
 };

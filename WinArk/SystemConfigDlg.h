@@ -1,6 +1,7 @@
 #pragma once
 #include "resource.h"
 #include "SystemInformation.h"
+#include "DriverHelper.h"
 
 class CSystemConfigDlg :
 	public CDialogImpl<CSystemConfigDlg> {
@@ -21,6 +22,8 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+private:
+	bool InitDbgSymbols(DbgSysCoreInfo* pInfo);
 
 private:
 	CButton m_CheckImageLoad;

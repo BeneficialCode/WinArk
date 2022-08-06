@@ -39,6 +39,8 @@ SymbolHelper::SymbolHelper() {
 	std::string pdbFile = pdbPath + "\\" + name;
 	_win32kSize = size;
 	_win32kPdb = pdbFile;
+	_win32kModule = std::string(name, 0, name.find("."));
+
 #ifdef _WIN64
 	_win32kBase = (DWORD64)win32kBase;
 #else
@@ -61,6 +63,7 @@ SymbolHelper::SymbolHelper() {
 	pdbFile = pdbPath + "\\" + name;
 	_kernelSize = size;
 	_kernelPdb = pdbFile;
+	_kernelModule = std::string(name, 0, name.find("."));
 #ifdef _WIN64
 	_kernelBase = (DWORD64)kernelBase;
 #else
@@ -72,14 +75,17 @@ SymbolHelper::SymbolHelper() {
 SymbolHelper::~SymbolHelper() {
 }
 
+// https://blog.csdn.net/xiaoxinjiang/article/details/7013488
 ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
 	SymbolHandler kernel;
 	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
-	return kernel.GetSymbolFromName(name)->GetSymbolInfo()->Address;
+	std::string symbolName = _kernelModule + "!" + name;
+	return kernel.GetSymbolAddressFromName(symbolName.c_str());
 }
 
 ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
 	SymbolHandler win32k;
 	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
-	return win32k.GetSymbolFromName(name)->GetSymbolInfo()->Address;
+	std::string symbolName = _win32kModule + "!" + name;
+	return win32k.GetSymbolAddressFromName(symbolName.c_str());
 }

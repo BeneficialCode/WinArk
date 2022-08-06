@@ -1,5 +1,6 @@
 #pragma once
 #include "SysMon.h"
+#include "kDbgCore.h"
 
 extern "C"
 NTSTATUS ObCreateObject(
@@ -75,7 +76,9 @@ using PDbgkpResumeProcess = VOID(NTAPI*) (
 );
 
 // 创建调试对象
-NTSTATUS NtCreateDebugObject(
+NTSTATUS 
+NTAPI
+NtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -88,8 +91,6 @@ NtDebugActiveProcess(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
 );
-
-
 
 // 将一个调试对象附加到被调试进程中
 NTSTATUS
@@ -127,14 +128,14 @@ NTSTATUS DbgkpPostModuleMessages(
 	_In_ PDEBUG_OBJECT DebugObject
 );
 
-PVOID ObFastReferenceObjectLocked(
-	_In_ PEX_FAST_REF FastRef
-);
-
-PVOID ObFastDereferenceObject(
-	_In_ PEX_FAST_REF FastRef,
-	_In_ PVOID Object
-);
+//PVOID ObFastReferenceObjectLocked(
+//	_In_ PEX_FAST_REF FastRef
+//);
+//
+//PVOID ObFastDereferenceObject(
+//	_In_ PEX_FAST_REF FastRef,
+//	_In_ PVOID Object
+//);
 
 /**
 * Event Collection Routine
@@ -206,9 +207,9 @@ NTSTATUS DbgkpSendApiMessage(
 	ULONG	Flag
 );
 
-PSYSTEM_DLL_INFO PsQuerySystemDllInfo(
-	ULONG index
-);
+//PSYSTEM_DLL_INFO PsQuerySystemDllInfo(
+//	ULONG index
+//);
 
 PVOID ObFastReferenceObject(
 	_In_ PEX_FAST_REF FastRef
@@ -274,10 +275,10 @@ NTSTATUS DbgkpSendApiMessageLpc(
 	_In_ BOOLEAN SuspendProcess
 );
 
-NTSTATUS DbgkpSendErrorMessage(
-	_In_ PEXCEPTION_RECORD ExceptionRecord,
-	_In_ PDBGKM_APIMSG DbgApiMsg
-);
+//NTSTATUS DbgkpSendErrorMessage(
+//	_In_ PEXCEPTION_RECORD ExceptionRecord,
+//	_In_ PDBGKM_APIMSG DbgApiMsg
+//);
 
 // 挂起被调试进程
 //BOOLEAN

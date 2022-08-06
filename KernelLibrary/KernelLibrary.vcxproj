@@ -262,6 +262,7 @@
     <ClInclude Include="SysMonCommon.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="typesdefs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoEnter.cpp" />
