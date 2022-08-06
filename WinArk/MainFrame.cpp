@@ -29,7 +29,8 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 LRESULT CMainFrame::OnForwardToActiveView(WORD id, WORD code, HWND h, BOOL& /*bHandled*/) {
 	auto hWnd = m_hwndArray[_index];
 	if (::IsWindow(hWnd)) {
-		::SendMessage(hWnd, WM_COMMAND, MAKELONG(id, code), reinterpret_cast<LPARAM>(h));
+		auto msg = GetCurrentMessage();
+		::SendMessage(hWnd, msg->message, msg->wParam, msg->lParam);
 	}
 	return 0;
 }
@@ -475,6 +476,8 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_pDriverTable->SetFocus();
 			break;
 		case TabColumn::Registry:
+			InitRegToolBar(m_tb);
+			UIAddToolBar(m_tb.m_hWnd);
 			m_RegView.ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Device:
@@ -752,7 +755,7 @@ void CMainFrame::InitCommandBar() {
 		{ ID_MONITOR_PAUSE, IDI_PAUSE },
 		{ ID_VIEW_AUTOSCROLL, IDI_SCROLL },
 		{ ID_SEARCH_QUICKFIND,IDI_FIND},
-		{ID_SEARCH_FINDALL,IDI_SEARCH}
+		{ID_SEARCH_FINDALL,IDI_SEARCH},
 	};
 	for (auto& cmd : cmds)
 		m_CmdBar.AddIcon(AtlLoadIcon(cmd.icon), cmd.id);
@@ -776,4 +779,30 @@ LRESULT CMainFrame::OnQuickFind(WORD, WORD, HWND, BOOL&) {
 	m_pQuickFindDlg->SetFocus();
 
 	return 0;
+}
+
+void CMainFrame::InitRegToolBar(CToolBarCtrl& tb, int size) {
+	CImageList tbImages;
+	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
+	tb.SetImageList(tbImages);
+
+	const struct {
+		UINT id;
+		int image;
+		BYTE style = BTNS_BUTTON;
+		PCWSTR text = nullptr;
+	}buttons[] = {
+		{ ID_KEY_GOTO, IDI_GOTO },
+	};
+
+	for (auto& b : buttons) {
+		if (b.id == 0)
+			tb.AddSeparator(0);
+		else {
+			auto hIcon = AtlLoadIconImage(b.image, 0, size, size);
+			ATLASSERT(hIcon);
+			int image = tbImages.AddIcon(hIcon);
+			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, b.text, 0);
+		}
+	}
 }

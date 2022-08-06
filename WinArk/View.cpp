@@ -22,6 +22,7 @@
 #include "CopyValueCommand.h"
 #include "SecurityHelper.h"
 #include "RegExportImport.h"
+#include "GotoKeyDlg.h"
 
 HWND CRegistryManagerView::GetHwnd() const {
 	return m_hWnd;
@@ -117,7 +118,7 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	auto hr = spAC.CoCreateInstance(CLSID_AutoComplete);
 	if (SUCCEEDED(hr)) {
 		m_AutoCompleteStrings->CreateInstance(&m_AutoCompleteStrings);
-		CRect r(0, 0, 400, 20);
+		CRect r(0, 0, 800, 20);
 		CEdit edit;
 		auto hEdit = edit.Create(m_hWnd, &r, nullptr, WS_CHILD | WS_VISIBLE |
 			ES_AUTOHSCROLL | ES_WANTRETURN | WS_CLIPSIBLINGS, WS_EX_WINDOWEDGE);
@@ -1211,6 +1212,9 @@ AppCommandCallback<DeleteKeyCommand> CRegistryManagerView::GetDeleteKeyCommandCa
 }
 
 LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&){
+	if (m_Clipboard.Items.empty()) {
+		return 0;
+	}
 	ATLASSERT(!m_Clipboard.Items.empty());
 	auto cb = [this](auto& cmd, bool) {
 		RefreshItem(m_Tree.GetSelectedItem());
@@ -1560,6 +1564,18 @@ LRESULT CRegistryManagerView::OnExport(WORD, WORD, HWND, BOOL&) {
 			SecurityHelper::EnablePrivilege(SE_BACKUP_NAME, false);
 			::RegCloseKey(hKey);
 		}
+	}
+	return 0;
+}
+
+LRESULT CRegistryManagerView::OnGotoKey(WORD, WORD, HWND, BOOL&) {
+	CGotoKeyDlg dlg;
+	dlg.SetKey(GetFullNodePath(m_Tree.GetSelectedItem()));
+	if (dlg.DoModal() == IDOK) {
+		CWaitCursor wait;
+		auto hItem = GotoKey(dlg.GetKey());
+		if(!hItem)
+			AtlMessageBox(m_hWnd, L"Failed to locate key", IDS_TITLE, MB_ICONERROR);
 	}
 	return 0;
 }

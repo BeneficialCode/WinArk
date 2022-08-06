@@ -260,6 +260,7 @@
     <ClCompile Include="FilterFactory.cpp" />
     <ClCompile Include="FiltersDlg.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
+    <ClCompile Include="GotoKeyDlg.cpp" />
     <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
     <ClCompile Include="KernelRoutineDlg.cpp" />
@@ -393,6 +394,7 @@
     <ClInclude Include="FiltersDlg.h" />
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
+    <ClInclude Include="GotoKeyDlg.h" />
     <ClInclude Include="IEventDataSerializer.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Interfaces.h" />
@@ -510,6 +512,7 @@
     <Image Include="res\find.ico" />
     <Image Include="res\folder_open.ico" />
     <Image Include="res\gear.ico" />
+    <Image Include="res\goto.ico" />
     <Image Include="res\handle.ico" />
     <Image Include="res\handles.ico" />
     <Image Include="res\heap.ico" />

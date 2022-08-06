@@ -138,6 +138,8 @@ private:
 	void InitEtwToolBar(CToolBarCtrl& tb, int size = 24);
 	void ClearToolBarButtons(CToolBarCtrl& tb);
 	void InitCommandBar();
+	void InitRegToolBar(CToolBarCtrl& tb, int size = 24);
+
 private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 	// CTabCtrl m_TabCtrl;

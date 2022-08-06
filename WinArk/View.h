@@ -123,6 +123,7 @@ public:
 		COMMAND_ID_HANDLER(ID_KEY_PROPERTIES, OnProperties)
 		COMMAND_ID_HANDLER(ID_FILE_IMPORT,OnImport)
 		COMMAND_ID_HANDLER(ID_FILE_EXPORT,OnExport)
+		COMMAND_ID_HANDLER(ID_KEY_GOTO,OnGotoKey)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CRegistryManagerView>)
 		CHAIN_MSG_MAP(CVirtualListView<CRegistryManagerView>)
 		REFLECT_NOTIFICATIONS_EX()
@@ -143,6 +144,8 @@ public:
 	LRESULT OnRunOnUIThread(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	// LRESULT OnShowKeysInList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnGotoKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 
 
@@ -167,8 +170,6 @@ public:
 
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTreeRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-
 
 	LRESULT OnNewKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNewValue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

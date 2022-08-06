@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -85,6 +85,9 @@
 #define IDR_SSDT_CONTEXT                266
 #define IDR_SHADOW_SSDT_CONTEXT         267
 #define IDR_BIN5                        269
+#define IDD_GOTOKEY                     274
+#define IDI_ICON1                       276
+#define IDI_GOTO                        276
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -171,12 +174,6 @@
 #define IDC_DETAILS                     1075
 #define IDC_CASESENSITIVE               1077
 #define IDC_FINDNEXT                    1078
-#define IDC_WIN_VERSION                 1079
-#define IDC_BOOT_TIME                   1080
-#define IDC_USABLE_RAM                  1081
-#define IDC_PROCESSOR_COUNT             1082
-#define IDC_PROCESSOR_COUNT2            1083
-#define IDC_PROCESSOR                   1083
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -311,6 +308,8 @@
 #define ID_KERNEL_COPY                  32926
 #define ID_KERNEL_MODULE_COPY           32927
 #define ID_KERNEL_MODULE_EXPORT         32928
+#define ID_REG_GOTO                     32929
+#define ID_KEY_GOTO                     32930
 
 // Next default values for new objects
 // 
@@ -318,7 +317,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        272
 #define _APS_NEXT_COMMAND_VALUE         32929
-#define _APS_NEXT_CONTROL_VALUE         1081
+#define _APS_NEXT_CONTROL_VALUE         1079
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
