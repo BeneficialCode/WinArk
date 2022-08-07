@@ -17,6 +17,7 @@
 CAppModule _Module;
 
 bool g_hasSymbol = true;
+HANDLE g_hSingleInstMutex{ nullptr };
 
 void InitSymbols(std::wstring fileName) {
 	WCHAR path[MAX_PATH];
@@ -147,6 +148,13 @@ LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
+	g_hSingleInstMutex = ::CreateMutex(nullptr, FALSE, L"WinArkSingleInstanceMutex");
+	if (g_hSingleInstMutex) {
+		if (::GetLastError() == ERROR_ALREADY_EXISTS) {
+			MessageBox(nullptr, L"ÇëÎðÖØ¸´Æô¶¯!!!", L"Error", MB_ICONERROR);
+			return -1;
+		}
+	}
 	HRESULT hRes = ::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
 	ATLASSERT(SUCCEEDED(hRes));
 	// add flags to support other controls
@@ -165,6 +173,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	_Module.Term();
 	::CoUninitialize();
+	::CloseHandle(g_hSingleInstMutex);
 
 	return nRet;
 }
