@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -51,6 +51,7 @@
 #define IDI_OBJECT                      235
 #define IDD_CONFIG                      236
 #define IDD_INLINEHOOKSCAN              237
+#define IDD_INLINE_HOOK                 237
 #define IDI_DISK                        238
 #define IDR_PROC_CONTEXT                239
 #define IDR_KERNEL_CONTEXT              240

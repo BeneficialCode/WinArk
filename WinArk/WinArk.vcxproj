@@ -268,8 +268,8 @@
     <ClCompile Include="PiDDBCacheTable.cpp" />
     <ClCompile Include="ProcessNameFilter.cpp" />
     <ClCompile Include="ProcessIdFilter.cpp" />
-    <ClCompile Include="ProcessInlineHookScanDlg.cpp" />
-    <ClCompile Include="ProcessInlineHookScanTable.cpp" />
+    <ClCompile Include="ProcessInlineHookDlg.cpp" />
+    <ClCompile Include="ProcessInlineHookTable.cpp" />
     <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="PropertyNameFilter.cpp" />
     <ClCompile Include="PropertyValueFilter.cpp" />
@@ -403,8 +403,8 @@
     <ClInclude Include="KernelView.h" />
     <ClInclude Include="PiDDBCacheTable.h" />
     <ClInclude Include="ProcessIdFilter.h" />
-    <ClInclude Include="ProcessInlineHookScanDlg.h" />
-    <ClInclude Include="ProcessInlineHookScanTable.h" />
+    <ClInclude Include="ProcessInlineHookDlg.h" />
+    <ClInclude Include="ProcessInlineHookTable.h" />
     <ClInclude Include="ProcessNameFilter.h" />
     <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="PropertyNameFilter.h" />

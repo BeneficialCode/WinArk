@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -257,7 +257,7 @@ BEGIN
     PUSHBUTTON      "启用调试子系统",IDC_ENABLE_DBGSYS,276,178,127,64
 END
 
-IDD_INLINEHOOKSCAN DIALOGEX 0, 0, 619, 280
+IDD_INLINE_HOOK DIALOGEX 0, 0, 619, 280
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Inline Hook Scan"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -407,7 +407,7 @@ BEGIN
         BOTTOMMARGIN, 372
     END
 
-    IDD_INLINEHOOKSCAN, DIALOG
+    IDD_INLINE_HOOK, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 612
@@ -534,7 +534,7 @@ BEGIN
     0
 END
 
-IDD_INLINEHOOKSCAN AFX_DIALOG_LAYOUT
+IDD_INLINE_HOOK AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -793,12 +793,12 @@ IDI_SEARCH              ICON                    "res\\search.ico"
 
 IDI_GOTO                ICON                    "res\\goto.ico"
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1316,7 +1316,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -345,10 +345,10 @@
     <ClCompile Include="KernelRoutineDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessInlineHookScanDlg.cpp">
+    <ClCompile Include="ProcessInlineHookDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessInlineHookScanTable.cpp">
+    <ClCompile Include="ProcessInlineHookTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
     <ClCompile Include="SystemConfigDlg.cpp">
@@ -749,10 +749,10 @@
     <ClInclude Include="KernelRoutineDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessInlineHookScanDlg.h">
+    <ClInclude Include="ProcessInlineHookDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessInlineHookScanTable.h">
+    <ClInclude Include="ProcessInlineHookTable.h">
       <Filter>Table</Filter>
     </ClInclude>
     <ClInclude Include="SystemConfigDlg.h">
