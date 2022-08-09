@@ -4,6 +4,7 @@
 #include <SymbolManager.h>
 #include "Helpers.h"
 #include <filesystem>
+#include "SymbolHelper.h"
 
 CKernelNotifyTable::CKernelNotifyTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -155,26 +156,7 @@ bool CKernelNotifyTable::CompareItems(const CallbackInfo& s1, const CallbackInfo
 }
 
 void CKernelNotifyTable::Refresh() {
-	SymbolHandler handler;
-	void* kernelBase = Helpers::GetKernelBase();
-	DWORD size = Helpers::GetKernelImageSize();
-	CHAR path[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, path);
-	std::string pdbPath = "\\Symbols";
-	std::string name;
-	pdbPath = path + pdbPath;
-
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
-	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
-	handler.LoadSymbolsForModule(pdbFile.c_str(), (DWORD64)kernelBase, size);
-
+	auto& helper = SymbolHelper::Get();
 #ifdef _WIN64
 	static ULONG Max = 64;
 #else
@@ -184,16 +166,12 @@ void CKernelNotifyTable::Refresh() {
 	ULONG count;
 	ProcessNotifyCountData data;
 
-	auto symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutineCount");
-	data.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
-	symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutineExCount");
-
-	data.pExCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	data.pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineCount");
+	data.pExCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineExCount");
 	count = DriverHelper::GetProcessNotifyCount(&data);
 	NotifyInfo info;
 	info.Count = count;
-	symbol = handler.GetSymbolFromName("PspCreateProcessNotifyRoutine");
-	info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
+	info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutine");
 
 	m_Table.data.n = 0;
 	m_Table.data.info.clear();
@@ -219,7 +197,7 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 	
-	ULONG offset = handler.GetStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	ULONG offset = helper.GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 	KernelNotifyInfo notifyInfo;
 	notifyInfo.Type = NotifyType::ProcessObjectNotify;
 	notifyInfo.Offset = offset;
@@ -295,19 +273,13 @@ void CKernelNotifyTable::Refresh() {
 	ThreadNotifyCountData threadData;
 	threadData.pCount = 0;
 	threadData.pNonSystemCount = 0;
-	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineCount");
-	if (symbol) {
-		threadData.pCount = (PULONG)symbol->GetSymbolInfo()->Address;
-	}
-	symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutineNonSystemCount");
-	if (symbol) {
-		threadData.pNonSystemCount = (PULONG)symbol->GetSymbolInfo()->Address;
-	}
+	threadData.pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineCount");
+	threadData.pNonSystemCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineNonSystemCount");
+
 	count = DriverHelper::GetThreadNotifyCount(&threadData);
 	if (count > 0) {
 		info.Count = count;
-		symbol = handler.GetSymbolFromName("PspCreateThreadNotifyRoutine");
-		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
+		info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutine");
 		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
@@ -327,13 +299,13 @@ void CKernelNotifyTable::Refresh() {
 	}
 
 	count = 0;
-	symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutineCount");
-	PULONG pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	PULONG pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutineCount");
+
 	count = DriverHelper::GetImageNotifyCount(&pCount);
 	if (count > 0) {
 		info.Count = count;
-		symbol = handler.GetSymbolFromName("PspLoadImageNotifyRoutine");
-		info.pRoutine = (void*)symbol->GetSymbolInfo()->Address;
+		info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutine");
+
 		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
@@ -352,16 +324,15 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 
-	symbol = handler.GetSymbolFromName("CmpCallbackCount");
-	pCount = (PULONG)symbol->GetSymbolInfo()->Address;
+	pCount = (PULONG)helper.GetKernelSymbolAddressFromName("CmpCallbackCount");
 	count = DriverHelper::GetCmCallbackCount(&pCount);
 	if (count > 0) {
 		SIZE_T size = Max * sizeof(CmCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		CmCallbackInfo* p = (CmCallbackInfo*)buffer.get();
 		if (p != nullptr) {
-			symbol = handler.GetSymbolFromName("CallbackListHead");
-			PVOID callbackListHead = (PVOID)symbol->GetSymbolInfo()->Address;
+			PVOID callbackListHead = (void*)helper.GetKernelSymbolAddressFromName("CallbackListHead");
+
 			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
 			/*symbol = handler.GetSymbolFromName("CmpPreloadedHivesList");
 			PVOID pCmpPreloadedHivesList = (PVOID)symbol->GetSymbolInfo()->Address;*/

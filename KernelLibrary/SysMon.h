@@ -126,7 +126,7 @@ extern "C" {
 }
 
 PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(
-	_Out_ PEX_CALLBACK Callback
+	_Inout_ PEX_CALLBACK Callback
 );
 
 LOGICAL ExFastRefDereference(
@@ -136,6 +136,21 @@ LOGICAL ExFastRefDereference(
 
 EX_FAST_REF_S ExFastReference(
 	_Inout_ PEX_FAST_REF_S FastRef
+);
+
+BOOLEAN
+ExFastRefObjectNull(
+	_In_ EX_FAST_REF_S FastRef
+);
+
+PVOID
+ExFastRefGetObject(
+	_In_ EX_FAST_REF_S FastRef
+);
+
+LOGICAL
+ExFastRefIsLastReference(
+	_In_ EX_FAST_REF_S FastRef
 );
 
 LOGICAL
