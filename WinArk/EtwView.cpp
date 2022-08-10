@@ -210,9 +210,8 @@ std::wstring CEtwView::ProcessSpecialEvent(EventData* data) const {
 			address = prop->GetValue<DWORD>();
 		else
 			address = prop->GetValue<DWORD64>();
-		auto& symbols = SymbolHelper::Get();
 		DWORD64 offset = 0;
-		auto symbol = symbols.GetSymbolFromAddress(address, &offset);
+		auto symbol = SymbolHelper::GetSymbolFromAddress(address, &offset);
 		if (symbol) {
 			auto sym = symbol->GetSymbolInfo();
 			CStringA text;

@@ -124,13 +124,12 @@ bool CUnloadedDriverTable::CompareItems(const UnloadedDriverInfo& s1, const Unlo
 }
 
 void CUnloadedDriverTable::Refresh() {
-	auto& helper = SymbolHelper::Get();
-	static PULONG pCount = (PULONG)helper.GetKernelSymbolAddressFromName("MmLastUnloadedDriver");
+	static PULONG pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("MmLastUnloadedDriver");
 	ULONG count = DriverHelper::GetUnloadedDriverCount(&pCount);
 	UnloadedDriversInfo info;
 	info.Count = count;
 
-	static ULONG64 address = helper.GetKernelSymbolAddressFromName("MmUnloadedDrivers");
+	static ULONG64 address = SymbolHelper::GetKernelSymbolAddressFromName("MmUnloadedDrivers");
 	info.pMmUnloadedDrivers = (void*)address;
 
 	ULONG len = DriverHelper::GetUnloadedDriverDataSize(&info);

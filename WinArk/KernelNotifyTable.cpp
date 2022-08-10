@@ -156,7 +156,6 @@ bool CKernelNotifyTable::CompareItems(const CallbackInfo& s1, const CallbackInfo
 }
 
 void CKernelNotifyTable::Refresh() {
-	auto& helper = SymbolHelper::Get();
 #ifdef _WIN64
 	static ULONG Max = 64;
 #else
@@ -166,12 +165,12 @@ void CKernelNotifyTable::Refresh() {
 	ULONG count;
 	ProcessNotifyCountData data;
 
-	data.pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineCount");
-	data.pExCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineExCount");
+	data.pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineCount");
+	data.pExCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutineExCount");
 	count = DriverHelper::GetProcessNotifyCount(&data);
 	NotifyInfo info;
 	info.Count = count;
-	info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutine");
+	info.pRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateProcessNotifyRoutine");
 
 	m_Table.data.n = 0;
 	m_Table.data.info.clear();
@@ -197,7 +196,7 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 	
-	ULONG offset = helper.GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	ULONG offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 	KernelNotifyInfo notifyInfo;
 	notifyInfo.Type = NotifyType::ProcessObjectNotify;
 	notifyInfo.Offset = offset;
@@ -273,13 +272,13 @@ void CKernelNotifyTable::Refresh() {
 	ThreadNotifyCountData threadData;
 	threadData.pCount = 0;
 	threadData.pNonSystemCount = 0;
-	threadData.pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineCount");
-	threadData.pNonSystemCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineNonSystemCount");
+	threadData.pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineCount");
+	threadData.pNonSystemCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutineNonSystemCount");
 
 	count = DriverHelper::GetThreadNotifyCount(&threadData);
 	if (count > 0) {
 		info.Count = count;
-		info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutine");
+		info.pRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspCreateThreadNotifyRoutine");
 		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		KernelCallbackInfo* p = (KernelCallbackInfo*)buffer.get();
@@ -299,12 +298,12 @@ void CKernelNotifyTable::Refresh() {
 	}
 
 	count = 0;
-	PULONG pCount = (PULONG)helper.GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutineCount");
+	PULONG pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutineCount");
 
 	count = DriverHelper::GetImageNotifyCount(&pCount);
 	if (count > 0) {
 		info.Count = count;
-		info.pRoutine = (void*)helper.GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutine");
+		info.pRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutine");
 
 		SIZE_T size = Max * sizeof(void*) + sizeof(ULONG);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
@@ -324,14 +323,14 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 
-	pCount = (PULONG)helper.GetKernelSymbolAddressFromName("CmpCallbackCount");
+	pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("CmpCallbackCount");
 	count = DriverHelper::GetCmCallbackCount(&pCount);
 	if (count > 0) {
 		SIZE_T size = Max * sizeof(CmCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		CmCallbackInfo* p = (CmCallbackInfo*)buffer.get();
 		if (p != nullptr) {
-			PVOID callbackListHead = (void*)helper.GetKernelSymbolAddressFromName("CallbackListHead");
+			PVOID callbackListHead = (void*)SymbolHelper::GetKernelSymbolAddressFromName("CallbackListHead");
 
 			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
 			/*symbol = handler.GetSymbolFromName("CmpPreloadedHivesList");

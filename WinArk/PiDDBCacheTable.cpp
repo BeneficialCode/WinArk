@@ -135,8 +135,7 @@ bool CPiDDBCacheTable::CompareItems(const PiDDBCacheInfo& s1, const PiDDBCacheIn
 }
 
 void CPiDDBCacheTable::Refresh() {
-	auto& helper = SymbolHelper::Get();
-	static ULONG_PTR address = helper.GetKernelSymbolAddressFromName("PiDDBCacheTable");
+	static ULONG_PTR address = SymbolHelper::GetKernelSymbolAddressFromName("PiDDBCacheTable");
 	if (address != 0) {
 		ULONG len = DriverHelper::GetPiDDBCacheDataSize(address);
 

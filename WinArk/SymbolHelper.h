@@ -1,21 +1,20 @@
 #pragma once
 #include "SymbolHandler.h"
 
-class SymbolHelper {
+
+class SymbolHelper final{
 public:
-	static SymbolHelper& Get();
-	~SymbolHelper();
-
-	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
-	ULONG64 GetKernelSymbolAddressFromName(PCSTR name);
-	ULONG64 GetWin32kSymbolAddressFromName(PCSTR name);
-	DWORD GetKernelStructMemberOffset(std::string name, std::string memberName);
+	static std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
+	static ULONG64 GetKernelSymbolAddressFromName(PCSTR name);
+	static ULONG64 GetWin32kSymbolAddressFromName(PCSTR name);
+	static DWORD GetKernelStructMemberOffset(std::string name, std::string memberName);
+	static void Init();
 private:
-	SymbolHelper();
-
-
+	
 	static inline DWORD _win32kSize, _kernelSize;
 	static inline DWORD64 _win32kBase, _kernelBase;
 	static inline std::string _win32kPdb, _kernelPdb;
 	static inline std::string _win32kModule, _kernelModule;
+	static inline SymbolHandler _win32k;
+	static inline SymbolHandler _kernel;
 };

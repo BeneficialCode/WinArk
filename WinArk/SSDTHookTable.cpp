@@ -18,9 +18,8 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	osFileName = osFileName + L"\\" + Helpers::StringToWstring(name);
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 
-	auto& helper = SymbolHelper::Get();
-	_KiServiceTable = (PULONG)helper.GetKernelSymbolAddressFromName("KiServiceTable");
-	PULONG address = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
+	_KiServiceTable = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("KiServiceTable");
+	PULONG address = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
 	// KiServiceLimit
 	_limit = DriverHelper::GetServiceLimit(&address);
 	DriverHelper::InitNtServiceTable(&address);
@@ -208,7 +207,6 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 }
 
 void CSSDTHookTable::GetSSDTEntry() {
-	auto& helper = SymbolHelper::Get();
 
 	for (decltype(_limit) i = 0; i < _limit; i++) {
 		SystemServiceInfo info;
@@ -219,7 +217,7 @@ void CSSDTHookTable::GetSSDTEntry() {
 		info.CurrentAddress = address;
 
 		DWORD64 offset = 0;
-		auto symbol = helper.GetSymbolFromAddress(info.OriginalAddress, &offset);
+		auto symbol = SymbolHelper::GetSymbolFromAddress(info.OriginalAddress, &offset);
 		if (symbol != nullptr) {
 			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
 		}

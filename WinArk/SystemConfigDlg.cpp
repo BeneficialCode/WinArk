@@ -112,12 +112,11 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 }
 
 bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
-	auto& helper = SymbolHelper::Get();
-	pInfo->NtCreateDebugObjectAddress = (void*)helper.GetKernelSymbolAddressFromName("NtCreateDebugObject");
+	pInfo->NtCreateDebugObjectAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtCreateDebugObject");
 	if (!pInfo->NtCreateDebugObjectAddress)
 		return false;
 
-	pInfo->DbgkDebugObjectTypeAddress = (void*)helper.GetKernelSymbolAddressFromName("DbgkDebugObjectType");
+	pInfo->DbgkDebugObjectTypeAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkDebugObjectType");
 	if (!pInfo->DbgkDebugObjectTypeAddress)
 		return false;
 

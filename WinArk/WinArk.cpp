@@ -13,6 +13,7 @@
 #include "PEParser.h"
 #include <filesystem>
 #include <Helpers.h>
+#include "SymbolHelper.h"
 
 CAppModule _Module;
 
@@ -75,6 +76,8 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		return 0;
 	}
 	::CloseHandle(hThread);
+
+	SymbolHelper::Init();
 
 	InitColorSys();
 	InitFontSys();

@@ -19,9 +19,8 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 	PEParser parser(osFileName.c_str());
 
-	auto& helper = SymbolHelper::Get();
 
-	PULONG KeServiceDescriptorShadow = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
+	PULONG KeServiceDescriptorShadow = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
 	_serviceTableBase = DriverHelper::GetShadowServiceTable(&KeServiceDescriptorShadow);
 	static PULONG address = (PULONG)((PUCHAR)KeServiceDescriptorShadow + sizeof(SystemServiceTable));
 	_imageBase = parser.GetImageBase();
@@ -187,8 +186,6 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 }
 
 void CShadowSSDTHookTable::GetShadowSSDTEntry() {
-	auto& helper = SymbolHelper::Get();
-
 	for (decltype(_limit) i = 0; i < _limit; i++) {
 		ShadowSystemServiceInfo info;
 		info.ServiceNumber = i;
@@ -197,7 +194,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 		address = (ULONG_PTR)DriverHelper::GetShadowSSDTApiAddress(i);
 		info.CurrentAddress = address;
 		DWORD64 offset = 0;
-		auto symbol = helper.GetSymbolFromAddress(info.OriginalAddress, &offset);
+		auto symbol = SymbolHelper::GetSymbolFromAddress(info.OriginalAddress, &offset);
 		if (symbol != nullptr) {
 			info.ServiceFunctionName = symbol->GetSymbolInfo()->Name;
 		}

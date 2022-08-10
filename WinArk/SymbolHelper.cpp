@@ -3,24 +3,7 @@
 #include "Helpers.h"
 #include <filesystem>
 
-SymbolHelper& SymbolHelper::Get() {
-	static SymbolHelper helper;
-	return helper;
-}
-
-std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
-	SymbolHandler kernel;
-	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
-	auto symbol = kernel.GetSymbolFromAddress(address, offset);
-	if (symbol != nullptr)
-		return symbol;
-	SymbolHandler win32k;
-
-	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
-	return win32k.GetSymbolFromAddress(address, offset);
-}
-
-SymbolHelper::SymbolHelper() {
+void SymbolHelper::Init() {
 	void* win32kBase = Helpers::GetWin32kBase();
 	DWORD size = Helpers::GetWin32kImageSize();
 	char symPath[MAX_PATH];
@@ -69,30 +52,30 @@ SymbolHelper::SymbolHelper() {
 #else
 	_kernelBase = (DWORD)kernelBase;
 #endif
-	
+	_win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
+	_kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
 }
 
-SymbolHelper::~SymbolHelper() {
+std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
+	auto symbol = _kernel.GetSymbolFromAddress(address, offset);
+	if (symbol != nullptr)
+		return symbol;
+
+	return _win32k.GetSymbolFromAddress(address, offset);
 }
 
 // https://blog.csdn.net/xiaoxinjiang/article/details/7013488
 ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
-	SymbolHandler kernel;
-	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
 	std::string symbolName = _kernelModule + "!" + name;
-	return kernel.GetSymbolAddressFromName(symbolName.c_str());
+	return _kernel.GetSymbolAddressFromName(symbolName.c_str());
 }
 
 ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
-	SymbolHandler win32k;
 	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
-	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
 	std::string symbolName = _win32kModule + "!" + name;
-	return win32k.GetSymbolAddressFromName(symbolName.c_str());
+	return _win32k.GetSymbolAddressFromName(symbolName.c_str());
 }
 
 DWORD SymbolHelper::GetKernelStructMemberOffset(std::string name, std::string memberName) {
-	SymbolHandler kernel;
-	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
-	return kernel.GetStructMemberOffset(name, memberName);
+	return _kernel.GetStructMemberOffset(name, memberName);
 }
