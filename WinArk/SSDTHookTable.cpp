@@ -28,10 +28,11 @@ CSSDTHookTable::CSSDTHookTable(BarInfo& bars, TableInfo& table)
 	PEParser parser(osFileName.c_str());
 	_imageBase = parser.GetImageBase();
 
-	GetSSDTEntry();
+	
 }
 
 LRESULT CSSDTHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	GetSSDTEntry();
 	return 0;
 }
 

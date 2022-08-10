@@ -14,8 +14,8 @@ private:
 	SymbolHelper();
 
 
-	DWORD _win32kSize, _kernelSize;
-	DWORD64 _win32kBase, _kernelBase;
-	std::string _win32kPdb, _kernelPdb;
-	std::string _win32kModule, _kernelModule;
+	static inline DWORD _win32kSize, _kernelSize;
+	static inline DWORD64 _win32kBase, _kernelBase;
+	static inline std::string _win32kPdb, _kernelPdb;
+	static inline std::string _win32kModule, _kernelModule;
 };

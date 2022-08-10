@@ -115,11 +115,14 @@ int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std
 			s.Format(L"%u", info->LoadOrderIndex);
 			break;
 		case 4:
-			s = GetCompanyName(Helpers::StringToWstring(info->FullPath)).c_str();
+		{
+			std::wstring path = Helpers::StringToWstring(info->FullPath);
+			s = GetCompanyName(path).c_str();
 			if (s.Find(L"Microsoft") == -1 && s.Find(L"YuanOS") == -1) {
 				select |= DRAW_HILITE;
 			}
 			break;
+		}
 		case 5:
 			s = info->FullPath.c_str();
 			break;
