@@ -85,7 +85,14 @@ ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
 
 ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
 	SymbolHandler win32k;
+	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
 	win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
 	std::string symbolName = _win32kModule + "!" + name;
 	return win32k.GetSymbolAddressFromName(symbolName.c_str());
+}
+
+DWORD SymbolHelper::GetKernelStructMemberOffset(std::string name, std::string memberName) {
+	SymbolHandler kernel;
+	kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
+	return kernel.GetStructMemberOffset(name, memberName);
 }

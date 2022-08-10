@@ -8,6 +8,7 @@
 #include "ProcessThreadDlg.h"
 #include "ProcessHandleDlg.h"
 #include "ProcessMemoryDlg.h"
+#include "ProcessInlineHookDlg.h"
 
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")
@@ -390,9 +391,16 @@ LRESULT CProcessTable::OnProcessMemory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int selected = m_Table.data.selected;
 	ATLASSERT(selected >= 0);
-	auto& p = m_Table.data.info[selected];
+	auto& process = m_Table.data.info[selected];
 
-	AtlMessageBox(*this, L"Not implemented yet :)", IDS_TITLE, MB_ICONINFORMATION);
+	auto& px = GetProcessInfoEx(process.get());
+	if (px.GetBitness() == 32||process->Id==0 || process->Id==4) {
+		AtlMessageBox(*this, L"Only support x64 process now :)", IDS_TITLE, MB_ICONINFORMATION);
+		return 0;
+	}
+
+	CInlineHookDlg dlg;
+	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
 
 	return 0;
 }

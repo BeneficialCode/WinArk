@@ -1,23 +1,34 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
+#include <ProcessVMTracker.h>
+#include <ProcessModuleTracker.h>
+#include <capstone/capstone.h>
 
-struct InlineHookInfo {
-
+enum class HookType {
+	x64HookType1,x64HookType2,x64HookType3,x64HookType4
 };
 
-class CProcessInlineHookScanTable :
+struct InlineHookInfo {
+	std::wstring Name;
+	HookType Type;
+	ULONG_PTR Address;
+	ULONG_PTR TargetAddress;
+	std::wstring TargetModule;
+};
+
+class CProcessInlineHookTable :
 	public CTable<InlineHookInfo>,
-	public CWindowImpl<CProcessInlineHookScanTable> {
+	public CWindowImpl<CProcessInlineHookTable> {
 
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CProcessInlineHookScanTable(BarInfo& bars, TableInfo& table);
+	CProcessInlineHookTable(BarInfo& bars, TableInfo& table,DWORD pid);
 	int ParseTableEntry(CString& s, char& mask, int& select, InlineHookInfo& info, int column);
 	bool CompareItems(const InlineHookInfo& s1, const InlineHookInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(CProcessInlineHookScanTable)
+	BEGIN_MSG_MAP(CProcessInlineHookTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -58,4 +69,29 @@ public:
 
 private:
 
+	const std::vector<std::shared_ptr<WinSys::MemoryRegionItem>>& GetItems();
+	void CheckX64HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
+		ULONG_PTR base, size_t size);
+	void CheckX64HookType2(cs_insn* insn, size_t j, size_t count);
+	void CheckX64HookType4(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
+		ULONG_PTR base, size_t size);
+
+	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
+	void CheckInlineHook(uint8_t* code, size_t codeSize, uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize);
+
+	CString TypeToString(HookType type);
+
+	enum class Column {
+		HookObject,HookType,Address,TargetAddress,Module
+	};
+
+private:
+	DWORD m_Pid;
+	HANDLE m_hProcess{ INVALID_HANDLE_VALUE };
+	std::unique_ptr<WinSys::ProcessVMTracker> m_VMTracker{ nullptr };
+	std::vector<std::shared_ptr<WinSys::MemoryRegionItem>> m_Items;
+	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Modules;
+	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Sys64Modules;
+	WinSys::ProcessModuleTracker m_ModuleTracker;
+	csh _x64handle;
 };

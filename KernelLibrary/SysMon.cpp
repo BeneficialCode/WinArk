@@ -289,6 +289,27 @@ ExFastRefAddAdditionalReferenceCounts(
 	return TRUE;
 }
 
+BOOLEAN
+ExFastRefObjectNull(
+	_In_ EX_FAST_REF_S FastRef
+) {
+	return (BOOLEAN)(FastRef.Value == 0);
+}
+
+PVOID
+ExFastRefGetObject(
+	_In_ EX_FAST_REF_S FastRef
+) {
+	return (PVOID)(FastRef.Value & ~MAX_FAST_REFS);
+}
+
+LOGICAL
+ExFastRefIsLastReference(
+	_In_ EX_FAST_REF_S FastRef
+) {
+	return FastRef.RefCnt == 1;
+}
+
 PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(
 	_Inout_ PEX_CALLBACK Callback
 ) {
@@ -296,20 +317,18 @@ PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(
 	PEX_CALLBACK_ROUTINE_BLOCK CallbackBlock;
 
 
-	if (Callback->RoutineBlock.RefCnt & MAX_FAST_REFS) {
-		OldRef = ExFastReference(&Callback->RoutineBlock);
-		if (OldRef.Value == 0)
-			return nullptr;
-	}
-
-	if (OldRef.RefCnt == 0)
+	OldRef = ExFastReference(&Callback->RoutineBlock);
+	if (OldRef.Value == 0)
+		return nullptr;
+	
+	if (ExFastRefObjectNull(OldRef))
 		return nullptr;
 
 	if (!(OldRef.RefCnt & MAX_FAST_REFS)) {
 
 		KeEnterCriticalRegion();
-
-		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)(Callback->RoutineBlock.Value & ~MAX_FAST_REFS);
+		
+		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)ExFastRefGetObject(Callback->RoutineBlock);
 		if (CallbackBlock && !ExAcquireRundownProtection(&CallbackBlock->RundownProtect)) {
 			CallbackBlock = nullptr;
 		}
@@ -321,9 +340,9 @@ PEX_CALLBACK_ROUTINE_BLOCK ExReferenceCallBackBlock(
 		}
 	}
 	else {
-		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)(OldRef.Value & ~MAX_FAST_REFS);
+		CallbackBlock = (PEX_CALLBACK_ROUTINE_BLOCK)ExFastRefGetObject(OldRef);
 
-		if (OldRef.RefCnt == 1 &&
+		if (ExFastRefIsLastReference(OldRef) &&
 			ExAcquireRundownProtectionEx(&CallbackBlock->RundownProtect, MAX_FAST_REFS)) {
 
 			if (!ExFastRefAddAdditionalReferenceCounts(&Callback->RoutineBlock,
@@ -654,10 +673,9 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 			
 		case NotifyType::CreateProcessNotify:
 		{
-			
-			status = PsSetCreateProcessNotifyRoutineEx(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE_EX>(notify->Address), TRUE);
+			status = PsSetCreateProcessNotifyRoutine(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE>(notify->Address), TRUE);
 			if (status == STATUS_PROCEDURE_NOT_FOUND) {
-				status = PsSetCreateProcessNotifyRoutine(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE>(notify->Address), TRUE);
+				status = PsSetCreateProcessNotifyRoutineEx(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE_EX>(notify->Address), TRUE);
 			}
 			if (status == STATUS_PROCEDURE_NOT_FOUND) {
 				// PsSetCreateProcessNotifyRoutineEx2

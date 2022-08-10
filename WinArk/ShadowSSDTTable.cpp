@@ -14,23 +14,22 @@ CShadowSSDTHookTable::CShadowSSDTHookTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	_win32kBase = Helpers::GetWin32kBase();
-	std::wstring osFileName = RegHelpers::GetSystemDir();
-	osFileName = osFileName + L"\\win32k.sys";
+	std::wstring sysDir = RegHelpers::GetSystemDir();
+	std::wstring osFileName = sysDir + L"\\win32k.sys";
 	_fileMapVA = ::LoadLibraryEx(osFileName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 	PEParser parser(osFileName.c_str());
 
 	auto& helper = SymbolHelper::Get();
 
-	static PULONG KeServiceDescriptorShadow = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
+	PULONG KeServiceDescriptorShadow = (PULONG)helper.GetKernelSymbolAddressFromName("KeServiceDescriptorTableShadow");
 	_serviceTableBase = DriverHelper::GetShadowServiceTable(&KeServiceDescriptorShadow);
 	static PULONG address = (PULONG)((PUCHAR)KeServiceDescriptorShadow + sizeof(SystemServiceTable));
 	_imageBase = parser.GetImageBase();
 	_limit = DriverHelper::GetServiceLimit(&address);
-
-	GetShadowSSDTEntry();
 }
 
 LRESULT CShadowSSDTHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	GetShadowSSDTEntry();
 	return 0;
 }
 
