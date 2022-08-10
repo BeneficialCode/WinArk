@@ -260,6 +260,7 @@
     <ClInclude Include="SpinLock.h" />
     <ClInclude Include="SysMon.h" />
     <ClInclude Include="SysMonCommon.h" />
+    <ClInclude Include="Teb.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="typesdefs.h" />

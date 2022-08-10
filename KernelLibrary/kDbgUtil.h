@@ -1,6 +1,7 @@
 #pragma once
 #include "khook.h"
 #include "kDbgSys.h"
+#include "Teb.h"
 
 struct EProcessGlobalOffsets {
 	ULONG RundownProtect;		// PEX_RUNDOWN_REF
@@ -42,6 +43,7 @@ public:
 	static PEX_RUNDOWN_REF GetProcessSectionBaseAddress(PEPROCESS Process);
 	static PEX_RUNDOWN_REF GetProcessSectionObject(PEPROCESS Process);
 	static PEX_RUNDOWN_REF GetProcessUniqueProcessId(PEPROCESS Process);*/
+	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
 	static bool ExitDbgSys();
 	static bool HookDbgSys();

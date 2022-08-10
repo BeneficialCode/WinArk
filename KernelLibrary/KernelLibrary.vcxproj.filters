@@ -133,6 +133,9 @@
     <ClInclude Include="typesdefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Teb.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

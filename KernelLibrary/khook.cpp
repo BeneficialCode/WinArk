@@ -32,7 +32,7 @@ NTSTATUS khook::RtlSuperCopyMemory(_In_ VOID UNALIGNED* Destination, _In_ VOID U
 	MmBuildMdlForNonPagedPool(mdl);
 	// Hack: prevent bugcheck from Driver Verifier and possible future version of Windows
 #pragma prefast(push)
-	//Disables the warnings specified in a given warning list.
+	// Disables the warnings specified in a given warning list.
 #pragma prefast(disable:__WARNING_MODIFYING_MDL,"Trust me I'm a scientist")	
 	CSHORT flags = mdl->MdlFlags;
 	mdl->MdlFlags |= MDL_PAGES_LOCKED;

@@ -630,3 +630,4 @@ typedef struct _SYSTEM_DLL {
 	EX_PUSH_LOCK Lock;        // 0x8
 	SYSTEM_DLL_INFO DllInfo;  // 0x10
 }SYSTEM_DLL, * PSYSTEM_DLL;
+

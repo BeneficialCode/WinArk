@@ -841,7 +841,7 @@ VOID DbgkCreateThread(
 	PDBGKM_LOAD_DLL LoadDllArgs;
 	NTSTATUS status;
 	PIMAGE_NT_HEADERS NtHeaders = nullptr;
-	//PTEB Teb;
+	PTEB Teb;
 	ULONG OldFlags = 0;
 	PFILE_OBJECT FileObject;
 	OBJECT_ATTRIBUTES ioStatus;
@@ -867,7 +867,7 @@ VOID DbgkCreateThread(
 		POBJECT_NAME_INFORMATION FileNameInfo;
 
 		//
-		// notification of main .exe
+		// notification of main.exe
 		//
 		ImageInfoEx.ImageInfo.Properties = 0;
 		ImageInfoEx.ImageInfo.ImageAddressingMode = IMAGE_ADDRESSING_MODE_32BIT;
