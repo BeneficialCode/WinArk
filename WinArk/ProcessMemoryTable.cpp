@@ -104,7 +104,8 @@ int CProcessMemoryTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		s.Format(L"0x%p", info->BaseAddress);
 		break;
 	case 2:
-		s = FormatWithCommas(info->RegionSize >> 10) + L" KB";
+		s.Format(L"0x%X", info->RegionSize);
+		s += L" (" + FormatWithCommas(info->RegionSize >> 10) + L" KB) ";
 		break;
 	case 3:
 		s = info->State != MEM_COMMIT ? L"" : TypeToString(info->Type);
