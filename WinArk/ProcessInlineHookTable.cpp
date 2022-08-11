@@ -458,7 +458,9 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 	cs_detail* d = jmpCode[0].detail;
 	if (d != nullptr) {
 		ULONG_PTR memAddress = targetAddress + jmpCode[0].size + d->x86.operands[0].mem.disp;
-		::ReadProcessMemory(m_hProcess, (LPVOID)memAddress, &codeAddress, sizeof(codeAddress), &dummy);
+		success = ::ReadProcessMemory(m_hProcess, (LPVOID)memAddress, &codeAddress, sizeof(codeAddress), &dummy);
+		if (!success)
+			return;
 	}
 	
 	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
