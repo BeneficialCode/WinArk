@@ -420,6 +420,16 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		// 排除循环跳转
 		return;
 	}
+
+	// 假设不在任何代码块
+	flag = true;
+	for (const auto& info : m_Items) {
+		if (targetAddress >= (ULONG_PTR)info->BaseAddress && targetAddress <= (ULONG_PTR)info->BaseAddress + info->RegionSize) {
+			flag = false;
+		}
+	}
+	if (flag)
+		return;
 	
 	flag = false;
 	for (const auto& m : m_Sys64Modules) {
@@ -444,15 +454,21 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 	if (0==count) {
 		return;
 	}
-
+	ULONG_PTR codeAddress;
 	cs_detail* d = jmpCode[0].detail;
 	if (d != nullptr) {
 		ULONG_PTR memAddress = targetAddress + jmpCode[0].size + d->x86.operands[0].mem.disp;
-		::ReadProcessMemory(m_hProcess, (LPVOID)memAddress, &targetAddress, sizeof(targetAddress), &dummy);
+		::ReadProcessMemory(m_hProcess, (LPVOID)memAddress, &codeAddress, sizeof(codeAddress), &dummy);
 	}
 	
+	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
 	InlineHookInfo info;
-	info.TargetAddress = targetAddress;
+	if (success) {
+		info.TargetAddress = codeAddress;
+	}
+	else {
+		info.TargetAddress = targetAddress;
+	}
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(info.TargetAddress);
 	if (m != nullptr) {

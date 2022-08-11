@@ -66,7 +66,7 @@ CString RegHelpers::GetErrorText(DWORD error) {
 }
 
 PCWSTR RegHelpers::GetSystemDir() {
-	static WCHAR dir[MAX_PATH];
+	static WCHAR dir[MAX_PATH] = { 0 };
 	if (dir[0] == 0)
 		::GetSystemDirectory(dir, _countof(dir));
 

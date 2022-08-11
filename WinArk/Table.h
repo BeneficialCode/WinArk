@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "SortHelper.h"
+#include "Helpers.h"
 
 constexpr int NBAR = 30;
 
@@ -532,8 +533,7 @@ void CTable<T>::PaintTable(HWND hw) {
 						int select = 0;
 						int symName = 0;
 						int len = ParseTableEntry(s, mask, select, info, col);
-						USES_CONVERSION;
-						std::string t = W2CA(s.GetString());
+						std::string t = Helpers::WstringToString(s.GetString());
 						HBRUSH hBkBrush;
 						if (!(m_Table.mode & TABLE_USERDEF)	// ·Ç×Ô»æ
 							&& i==m_Table.data.selected

@@ -48,6 +48,20 @@ SymbolInfo::~SymbolInfo() {
 	::free(m_Symbol);
 }
 
+ImagehlpSymbol::ImagehlpSymbol() {
+	auto size = sizeof(IMAGEHLP_SYMBOL) + MAX_SYM_NAME;
+	m_Symbol = static_cast<IMAGEHLP_SYMBOL*>(malloc(size));
+	if (m_Symbol) {
+		::memset(m_Symbol, 0, size);
+		m_Symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL);
+		m_Symbol->MaxNameLength = MAX_SYM_NAME;
+	}
+}
+
+ImagehlpSymbol::~ImagehlpSymbol() {
+	::free(m_Symbol);
+}
+
 SymbolHandler::SymbolHandler(HANDLE hProcess, PCSTR searchPath,DWORD symOptions){
 	m_hProcess = hProcess;
 	::SymSetOptions(symOptions);
@@ -199,7 +213,8 @@ IMAGEHLP_MODULE SymbolHandler::GetModuleInfo(DWORD64 address) {
 
 
 ULONG_PTR SymbolHandler::GetSymbolAddressFromName(PCSTR name) {
-	IMAGEHLP_SYMBOL symbol = { sizeof(symbol) };
-	::SymGetSymFromName(m_hProcess, name, &symbol);
-	return symbol.Address;
+	auto symbol = std::make_unique<ImagehlpSymbol>();
+	auto info = symbol->GetSymbolInfo();
+	::SymGetSymFromName(m_hProcess, name, info);
+	return info->Address;
 }

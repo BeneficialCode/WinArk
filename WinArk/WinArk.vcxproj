@@ -202,9 +202,8 @@
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WIN64;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\capstone\include;..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>MinSpace</Optimization>
-      <AdditionalOptions>/NODEFAULTLIB:"libcmt.lib" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

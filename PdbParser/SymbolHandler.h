@@ -166,6 +166,19 @@ private:
 	SYMBOL_INFO* m_Symbol;
 };
 
+
+class ImagehlpSymbol {
+public:
+	ImagehlpSymbol();
+	~ImagehlpSymbol();
+
+	IMAGEHLP_SYMBOL* GetSymbolInfo() const {
+		return m_Symbol;
+	}
+private:
+	IMAGEHLP_SYMBOL* m_Symbol;
+};
+
 class SymbolHandler final{
 public:
 	SymbolHandler(HANDLE hProcess = ::GetCurrentProcess(), PCSTR searchPath = nullptr,DWORD symOptions = 
