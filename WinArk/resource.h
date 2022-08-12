@@ -324,13 +324,14 @@
 #define ID_NOTIFY_EXPORT                32932
 #define ID_INLINEHOOK_COPY              32933
 #define ID_INLINEHOOK_EXPORT            32934
+#define ID_MEMORY_DUMP                  32935
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        272
-#define _APS_NEXT_COMMAND_VALUE         32935
+#define _APS_NEXT_COMMAND_VALUE         32936
 #define _APS_NEXT_CONTROL_VALUE         1079
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

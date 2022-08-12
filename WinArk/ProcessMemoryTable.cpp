@@ -10,7 +10,7 @@
 #include "Helpers.h"
 
 LRESULT CProcessMemoryTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION);
+	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION|PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
 		return -1;
 
@@ -70,7 +70,21 @@ LRESULT CProcessMemoryTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CProcessMemoryTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_PROC_CONTEXT);
+	hSubMenu = menu.GetSubMenu(2);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+
+	return 0;
 }
 LRESULT CProcessMemoryTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -327,4 +341,33 @@ CString CProcessMemoryTable::FormatWithCommas(long long size) {
 		i += 4;
 	}
 	return result;
+}
+
+LRESULT CProcessMemoryTable::OnMemoryDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+	
+	std::unique_ptr<byte[]> data = std::make_unique<byte[]>(info->RegionSize);
+	SIZE_T dummy;
+	bool success = ::ReadProcessMemory(m_hProcess, info->BaseAddress, data.get(), info->RegionSize, &dummy);
+	if (!success) {
+		AtlMessageBox(m_hWnd, L"Dump memory failed");
+		return FALSE;
+	}
+	CSimpleFileDialog dlg(FALSE, nullptr, nullptr, OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
+		L"All Files\0*.*\0", m_hWnd);
+	if (IDOK == dlg.DoModal()) {
+		HANDLE hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE) {
+			AtlMessageBox(m_hWnd, L"Failed to create file", IDS_TITLE, MB_ICONERROR);
+			return 0;
+		}
+		DWORD bytes;
+		if (!::WriteFile(hFile, data.get(), (ULONG)dummy, &bytes, nullptr)) {
+			AtlMessageBox(m_hWnd, L"Failed to write data", IDS_TITLE, MB_ICONERROR);
+		}
+		::CloseHandle(hFile);
+	}
+	return 0;
 }

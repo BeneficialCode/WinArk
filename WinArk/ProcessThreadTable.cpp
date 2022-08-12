@@ -336,7 +336,6 @@ PCWSTR CProcessThreadTable::ThreadStateToString(WinSys::ThreadState state) {
 }
 
 LRESULT CProcessThreadTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-
 	CMenu menu;
 	CMenuHandle hSubMenu;
 	menu.LoadMenu(IDR_PROC_CONTEXT);

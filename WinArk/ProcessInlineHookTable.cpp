@@ -835,9 +835,6 @@ std::wstring CProcessInlineHookTable::GetSingleHookInfo(InlineHookInfo& info) {
 	s += L"\t";
 	text += s;
 
-
-	
-
 	text += L"\r\n";
 
 	return text.GetString();

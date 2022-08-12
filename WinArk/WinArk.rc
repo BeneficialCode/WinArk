@@ -721,6 +721,10 @@ BEGIN
         MENUITEM "Copy",                        ID_INLINEHOOK_COPY
         MENUITEM "Export",                      ID_INLINEHOOK_EXPORT
     END
+    POPUP "memory"
+    BEGIN
+        MENUITEM "Dump",                        ID_MEMORY_DUMP
+    END
 END
 
 IDR_KERNEL_CONTEXT MENU
