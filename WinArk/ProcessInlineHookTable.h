@@ -6,7 +6,8 @@
 #include <capstone/capstone.h>
 
 enum class HookType {
-	x64HookType1,x64HookType2,x64HookType3,x64HookType4
+	x64HookType1,x64HookType2,x64HookType3,x64HookType4,
+	x86HookType1,x86HookType2,x86HookType3,x86HookType6,
 };
 
 struct InlineHookInfo {
@@ -24,7 +25,7 @@ class CProcessInlineHookTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CProcessInlineHookTable(BarInfo& bars, TableInfo& table,DWORD pid);
+	CProcessInlineHookTable(BarInfo& bars, TableInfo& table, DWORD pid,bool x64);
 	int ParseTableEntry(CString& s, char& mask, int& select, InlineHookInfo& info, int column);
 	bool CompareItems(const InlineHookInfo& s1, const InlineHookInfo& s2, int col, bool asc);
 
@@ -76,13 +77,21 @@ private:
 	void CheckX64HookType4(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
 		ULONG_PTR base, size_t size);
 
+	void CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize);
+	void CheckX86HookType2(cs_insn* insn, size_t j, size_t count);
+	void CheckX86HookType3(cs_insn* insn, size_t j, size_t count);
+	void CheckX86HookType6(cs_insn* insn, size_t j, size_t count);
+
+
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
 	void CheckInlineHook(uint8_t* code, size_t codeSize, uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize);
+
+	bool IsInCodeBlock(ULONG_PTR address);
 
 	CString TypeToString(HookType type);
 
 	enum class Column {
-		HookObject,HookType,Address,TargetAddress,Module
+		HookObject, HookType, Address, TargetAddress, Module
 	};
 
 private:
@@ -92,6 +101,9 @@ private:
 	std::vector<std::shared_ptr<WinSys::MemoryRegionItem>> m_Items;
 	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Modules;
 	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Sys64Modules;
+	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Sys32Modules;
 	WinSys::ProcessModuleTracker m_ModuleTracker;
 	csh _x64handle;
+	csh _x86handle;
+	bool _x64{ true };
 };

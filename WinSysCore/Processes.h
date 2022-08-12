@@ -7,6 +7,7 @@
 #include <memory>
 #include "Thread.h"
 
+
 namespace WinSys {
 	enum class ProcessAccessMask :uint32_t {
 		None = 0,

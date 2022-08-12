@@ -394,12 +394,12 @@ LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*
 	auto& process = m_Table.data.info[selected];
 
 	auto& px = GetProcessInfoEx(process.get());
-	if (px.GetBitness() == 32||process->Id==0 || process->Id==4) {
-		AtlMessageBox(*this, L"Only support x64 process now :)", IDS_TITLE, MB_ICONINFORMATION);
+	if (process->Id==0 || process->Id==4) {
+		AtlMessageBox(*this, L"Only support user mode process now :)", IDS_TITLE, MB_ICONINFORMATION);
 		return 0;
 	}
 
-	CInlineHookDlg dlg;
+	CInlineHookDlg dlg(m_ProcMgr,px);
 	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
 
 	return 0;

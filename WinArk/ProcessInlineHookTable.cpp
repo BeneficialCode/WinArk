@@ -3,6 +3,7 @@
 #include "DriverHelper.h"
 #include "SymbolManager.h"
 #include "Helpers.h"
+#include <Processes.h>
 
 #ifdef _WIN64
 #pragma comment(lib,"x64/capstone.lib")
@@ -12,8 +13,8 @@
 
 
 
-CProcessInlineHookTable::CProcessInlineHookTable(BarInfo& bars, TableInfo& table,DWORD pid)
-	:CTable(bars, table), m_Pid(pid),m_ModuleTracker(pid) {
+CProcessInlineHookTable::CProcessInlineHookTable(BarInfo& bars, TableInfo& table,DWORD pid,bool x64)
+	:CTable(bars, table), m_Pid(pid),m_ModuleTracker(pid),_x64(x64) {
 	SetTableWindowInfo(bars.nbar);
 }
 
@@ -28,6 +29,14 @@ CString CProcessInlineHookTable::TypeToString(HookType type) {
 			return L"x64HookType3";
 		case HookType::x64HookType4:
 			return L"x64HookType4";
+		case HookType::x86HookType1:
+			return L"x86HookType1";
+		case HookType::x86HookType2:
+			return L"x86HookType2";
+		case HookType::x86HookType3:
+			return L"x86HookType3";
+		case HookType::x86HookType6:
+			return L"x86HookType6";
 		default:
 			return L"Unknown Type";
 	}
@@ -84,6 +93,7 @@ LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lPara
 	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
 		return -1;
+	
 	m_VMTracker.reset(new WinSys::ProcessVMTracker(m_hProcess));
 	if (m_VMTracker == nullptr)
 		return -1;
@@ -92,6 +102,13 @@ LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lPara
 	cs_option(_x64handle, CS_OPT_DETAIL, CS_OPT_ON);
 	cs_option(_x64handle, CS_OPT_UNSIGNED, CS_OPT_ON);
 	cs_option(_x64handle, CS_OPT_SKIPDATA, CS_OPT_ON);
+
+	if (cs_open(CS_ARCH_X86, CS_MODE_32, &_x86handle) != CS_ERR_OK)
+		return -1;
+	
+	cs_option(_x86handle, CS_OPT_DETAIL, CS_OPT_ON);
+	cs_option(_x86handle, CS_OPT_UNSIGNED, CS_OPT_ON);
+	cs_option(_x86handle, CS_OPT_SKIPDATA, CS_OPT_ON);
 
 	Refresh();
 
@@ -184,19 +201,271 @@ const std::vector<std::shared_ptr<WinSys::MemoryRegionItem>>& CProcessInlineHook
 	return m_Items;
 }
 
+bool CProcessInlineHookTable::IsInCodeBlock(ULONG_PTR address) {
+	for (const auto& block : m_Items) {
+		if (address >= (ULONG_PTR)block->BaseAddress && address <= (ULONG_PTR)block->BaseAddress + block->RegionSize) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize) {
+	cs_detail* d1, * d2;
+	d1 = insn[j].detail;
+	if (d1 == nullptr)
+		return;
+	if (d1->x86.op_count != 1)
+		return;
+
+	if (d1->x86.operands[0].type != CS_OP_IMM)
+		return;
+
+	if (d1->x86.operands[0].size != 4)
+		return;
+
+	if (strcmp(insn[j].mnemonic, "jmp"))
+		return;
+
+	if (d1->x86.opcode[0] != 0xE9)
+		return;
+
+	int flag = true;
+
+	ULONG_PTR targetAddress = d1->x86.operands[0].imm;
+
+	if (!IsInCodeBlock(targetAddress))
+		return;
+
+	if (targetAddress >= moduleBase && targetAddress <= moduleBase + moduleSize)
+		return;
+
+	flag = false;
+
+	for (const auto& m : m_Sys32Modules) {
+		//printf("path: %ws\n", m->Path.c_str());
+		if (targetAddress >= (ULONG_PTR)m->Base && targetAddress <= (ULONG_PTR)m->Base + m->ModuleSize) {
+			flag = true;
+		}
+	}
+	if (flag) {
+		return;
+	}
+
+	InlineHookInfo info;
+	info.TargetAddress = targetAddress;
+	info.TargetModule = L"Unknown";
+	auto m = GetModuleByAddress(targetAddress);
+	if (m != nullptr) {
+		info.TargetModule = m->Path;
+	}
+	info.Type = HookType::x86HookType1;
+	info.Address = insn[j].address;
+	m = GetModuleByAddress(info.Address);
+	info.Name = L"Unknown";
+	if (m != nullptr)
+		info.Name = m->Name;
+	m_Table.data.info.push_back(info);
+}
+
+void CProcessInlineHookTable::CheckX86HookType2(cs_insn* insn, size_t j, size_t count) {
+	cs_detail* d1, * d2;
+
+	if (strcmp(insn[j].mnemonic, "push"))
+		return;
+
+
+	d1 = insn[j].detail;
+	if (d1 == nullptr)
+		return;
+	if (j + 1 >= count) {
+		return;
+	}
+	d2 = insn[j + 1].detail;
+	if (d2 == nullptr)
+		return;
+
+	if (d1->x86.op_count != 1)
+		return;
+	if (d1->x86.operands[0].type != CS_OP_IMM)
+		return;
+	if (d1->x86.operands[0].size != 4)
+		return;
+
+	if (strcmp(insn[j + 1].mnemonic, "ret"))
+		return;
+
+	if (d2->x86.op_count != 0)
+		return;
+
+	ULONG targetAddress = d1->x86.operands[0].imm;
+	size_t size;
+	ULONG dummy;
+	bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)targetAddress, &dummy, 4, &size);
+	if (!success)
+		return;
+
+	InlineHookInfo info;
+	info.TargetAddress = targetAddress;
+	info.TargetModule = L"Unknown";
+	auto m = GetModuleByAddress(targetAddress);
+	if (m != nullptr) {
+		info.TargetModule = m->Path;
+	}
+	info.Type = HookType::x86HookType2;
+	info.Address = insn[j].address;
+	m = GetModuleByAddress(info.Address);
+	info.Name = L"Unknown";
+	if (m != nullptr)
+		info.Name = m->Name;
+	m_Table.data.info.push_back(info);
+}
+
+void CProcessInlineHookTable::CheckX86HookType3(cs_insn* insn, size_t j, size_t count) {
+	cs_detail* d1, * d2;
+
+	d1 = insn[j].detail;
+	if (d1 == nullptr)
+		return;
+	if (j + 1 >= count) {
+		return;
+	}
+	d2 = insn[j + 1].detail;
+	if (d2 == nullptr)
+		return;
+
+	if (d1->x86.operands[0].type != CS_OP_REG)
+		return;
+
+	if (d1->x86.operands[0].access != CS_AC_WRITE)
+		return;
+
+	if (d1->x86.operands[0].size != 4)
+		return;
+
+	if (d1->x86.operands[1].type != CS_OP_IMM)
+		return;
+
+	if (d1->x86.operands[1].size != 4)
+		return;
+
+	if (d2->x86.operands[0].type != CS_OP_REG)
+		return;
+
+	if (d2->x86.operands[0].access != CS_AC_READ)
+		return;
+
+	if (d2->x86.operands[0].size != 4)
+		return;
+
+	if (strcmp(insn[j + 1].mnemonic, "jmp"))
+		return;
+
+	if (d1->x86.operands[0].reg != d2->x86.operands[0].reg)
+		return;
+
+	ULONG targetAddress = d1->x86.operands[1].imm;
+	// 排除无效的内存地址
+	size_t size;
+	ULONG dummy;
+	bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)targetAddress, &dummy, 4, &size);
+	if (!success)
+		return;
+
+	InlineHookInfo info;
+	info.TargetAddress = targetAddress;
+	info.TargetModule = L"Unknown";
+	auto m = GetModuleByAddress(targetAddress);
+	if (m != nullptr) {
+		info.TargetModule = m->Path;
+	}
+	info.Type = HookType::x86HookType3;
+	info.Address = insn[j].address;
+	m = GetModuleByAddress(info.Address);
+	info.Name = L"Unknown";
+	if (m != nullptr)
+		info.Name = m->Name;
+	m_Table.data.info.push_back(info);
+}
+
+void CProcessInlineHookTable::CheckX86HookType6(cs_insn* insn, size_t j, size_t count) {
+	if (strcmp(insn[j].mnemonic, "jmp"))
+		return;
+
+	cs_detail* d1, * d2;
+
+	d1 = insn[j].detail;
+	if (d1 == nullptr)
+		return;
+	if (j + 1 >= count) {
+		return;
+	}
+	d2 = insn[j + 1].detail;
+	if (d2 == nullptr)
+		return;
+
+	if (d2->x86.opcode[0] != 0xE8)
+		return;
+
+	if (strcmp(insn[j + 1].mnemonic, "jmp"))
+		return;
+
+	if (d1->x86.op_count != 1)
+		return;
+	if (d1->x86.operands[0].type != CS_OP_IMM)
+		return;
+	if (d1->x86.operands[0].size != 4)
+		return;
+
+	if (d2->x86.operands[0].type != CS_OP_IMM)
+		return;
+
+	if (d2->x86.operands[0].size != 4)
+		return;
+
+	ULONG_PTR targetAddress = d2->x86.operands[0].imm;
+	InlineHookInfo info;
+	info.TargetAddress = targetAddress;
+	info.TargetModule = L"Unknown";
+	auto m = GetModuleByAddress(targetAddress);
+	if (m != nullptr) {
+		info.TargetModule = m->Path;
+	}
+	info.Type = HookType::x86HookType3;
+	info.Address = insn[j].address;
+	m = GetModuleByAddress(info.Address);
+	info.Name = L"Unknown";
+	if (m != nullptr)
+		info.Name = m->Name;
+	m_Table.data.info.push_back(info);
+}
+
 void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize, uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize) {
 	// 反汇编时间较长的情况下，会卡UI
 	size_t count;
 	cs_insn* insn;
-
-	count = cs_disasm(_x64handle, code, codeSize, address, 0, &insn);
-	if (count > 0) {
-		for (size_t j = 0; j < count; j++) {
-			CheckX64HookType1(insn, j, count, moduleBase, moduleSize, address, codeSize);
-			CheckX64HookType2(insn, j, count);
-			CheckX64HookType4(insn, j, count, moduleBase, moduleSize, address, codeSize);
+	if (_x64) {
+		count = cs_disasm(_x64handle, code, codeSize, address, 0, &insn);
+		if (count > 0) {
+			for (size_t j = 0; j < count; j++) {
+				CheckX64HookType1(insn, j, count, moduleBase, moduleSize, address, codeSize);
+				CheckX64HookType2(insn, j, count);
+				CheckX64HookType4(insn, j, count, moduleBase, moduleSize, address, codeSize);
+			}
+			cs_free(insn, count);
 		}
-		cs_free(insn, count);
+	}
+	else {
+		count = cs_disasm(_x86handle, code, codeSize, address, 0, &insn);
+		if (count > 0) {
+			for (size_t j = 0; j < count; j++) {
+				CheckX86HookType1(insn, j, count, moduleBase, moduleSize);
+				CheckX86HookType2(insn, j, count);
+				CheckX86HookType3(insn, j, count);
+				CheckX86HookType6(insn, j, count);
+			}
+			cs_free(insn, count);
+		}
 	}
 }
 
@@ -209,11 +478,13 @@ void CProcessInlineHookTable::Refresh() {
 
 	m_Sys64Modules.clear();
 	m_Table.data.info.clear();
-
+	m_Sys32Modules.clear();
 	for (const auto& m : m_Modules) {
 		if (m->Path.find(L"System32") != std::wstring::npos) {
 			m_Sys64Modules.push_back(m);
 		}
+		if (m->Path.find(L"SysWOW64") != std::wstring::npos)
+			m_Sys32Modules.push_back(m);
 	}
 
 	uint8_t* code = nullptr;

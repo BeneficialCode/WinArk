@@ -7,6 +7,8 @@ class CInlineHookDlg :public CDialogImpl<CInlineHookDlg> {
 public:
 	enum { IDD = IDD_THREADS };
 
+	CInlineHookDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px):m_pm(pm),m_px(px){}
+
 	BEGIN_MSG_MAP_EX(CInlineHookDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
@@ -21,5 +23,6 @@ public:
 
 private:
 	CProcessInlineHookTable* m_ProcInlineHookTable;
-
+	ProcessInfoEx& m_px;
+	const WinSys::ProcessManager& m_pm;
 };

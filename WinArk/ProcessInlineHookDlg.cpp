@@ -8,7 +8,7 @@ LRESULT CInlineHookDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 LRESULT CInlineHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{12,"挂钩对象",0},
+		{20,"挂钩对象",0},
 		{14,"钩子类型",0},
 		{62,"挂钩位置",0},
 		{22,"目标地址",0},
@@ -29,7 +29,8 @@ LRESULT CInlineHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lP
 	}
 
 	DWORD pid = static_cast<DWORD>(lParam);
-	m_ProcInlineHookTable = new CProcessInlineHookTable(info, table, pid);
+	bool x64 = m_px.GetBitness() == x64 ? true : false;
+	m_ProcInlineHookTable = new CProcessInlineHookTable(info, table, pid, x64);
 	WCHAR proc[25];
 	_itow(pid, proc, 10);
 	std::wstring title = L"Process: pid = ";
