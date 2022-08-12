@@ -676,6 +676,8 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_KERNEL_REFRESH
         MENUITEM "Remove",                      ID_KERNEL_REMOVE
+        MENUITEM "Copy",                        ID_NOTIFY_COPY
+        MENUITEM "Export",                      ID_NOTIFY_EXPORT
     END
     POPUP "network"
     BEGIN
@@ -713,6 +715,11 @@ BEGIN
     BEGIN
         MENUITEM "Copy",                        ID_THREAD_COPY
         MENUITEM "Export",                      ID_THREAD_EXPORT
+    END
+    POPUP "inlinehook"
+    BEGIN
+        MENUITEM "Copy",                        ID_INLINEHOOK_COPY
+        MENUITEM "Export",                      ID_INLINEHOOK_EXPORT
     END
 END
 

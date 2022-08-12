@@ -29,7 +29,7 @@ LRESULT CInlineHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lP
 	}
 
 	DWORD pid = static_cast<DWORD>(lParam);
-	bool x64 = m_px.GetBitness() == x64 ? true : false;
+	bool x64 = m_px.GetBitness() == 64 ? true : false;
 	m_ProcInlineHookTable = new CProcessInlineHookTable(info, table, pid, x64);
 	WCHAR proc[25];
 	_itow(pid, proc, 10);

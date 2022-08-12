@@ -318,14 +318,19 @@
 #define ID_KERNEL_MODULE_COPY           32927
 #define ID_KERNEL_MODULE_EXPORT         32928
 #define ID_REG_GOTO                     32929
+#define ID_KERNEL_COPY32929             32929
 #define ID_KEY_GOTO                     32930
+#define ID_NOTIFY_COPY                  32931
+#define ID_NOTIFY_EXPORT                32932
+#define ID_INLINEHOOK_COPY              32933
+#define ID_INLINEHOOK_EXPORT            32934
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        272
-#define _APS_NEXT_COMMAND_VALUE         32929
+#define _APS_NEXT_COMMAND_VALUE         32935
 #define _APS_NEXT_CONTROL_VALUE         1079
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

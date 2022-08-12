@@ -35,8 +35,8 @@ LRESULT CMemoryDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 	DWORD pid = static_cast<DWORD>(lParam);
 	m_ProcMemoryTable = new CProcessMemoryTable(info, table, pid);
-	WCHAR proc[25];
-	_itow(pid, proc, 10);
+	CString proc;
+	proc.Format(L"%d <%x>", pid, pid);
 	std::wstring title = L"Process: pid = ";
 	title += proc;
 	SetWindowText(title.c_str());

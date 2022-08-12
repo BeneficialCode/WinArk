@@ -4,6 +4,7 @@
 #include "SymbolManager.h"
 #include "Helpers.h"
 #include <Processes.h>
+#include "ClipboardHelper.h"
 
 #ifdef _WIN64
 #pragma comment(lib,"x64/capstone.lib")
@@ -13,8 +14,8 @@
 
 
 
-CProcessInlineHookTable::CProcessInlineHookTable(BarInfo& bars, TableInfo& table,DWORD pid,bool x64)
-	:CTable(bars, table), m_Pid(pid),m_ModuleTracker(pid),_x64(x64) {
+CProcessInlineHookTable::CProcessInlineHookTable(BarInfo& bars, TableInfo& table, DWORD pid, bool x64)
+	:CTable(bars, table), m_Pid(pid), m_ModuleTracker(pid), _x64(x64) {
 	SetTableWindowInfo(bars.nbar);
 }
 
@@ -42,10 +43,10 @@ CString CProcessInlineHookTable::TypeToString(HookType type) {
 	}
 }
 
-int CProcessInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select, InlineHookInfo& info, int column){
+int CProcessInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select, InlineHookInfo& info, int column) {
 	switch (static_cast<Column>(column))
 	{
-		case Column::HookObject :
+		case Column::HookObject:
 			s = info.Name.c_str();
 			break;
 
@@ -85,15 +86,15 @@ int CProcessInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select
 	return s.GetLength();
 }
 
-bool CProcessInlineHookTable::CompareItems(const InlineHookInfo& s1, const InlineHookInfo& s2, int col, bool asc){
+bool CProcessInlineHookTable::CompareItems(const InlineHookInfo& s1, const InlineHookInfo& s2, int col, bool asc) {
 	return false;
 }
 
-LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
 		return -1;
-	
+
 	m_VMTracker.reset(new WinSys::ProcessVMTracker(m_hProcess));
 	if (m_VMTracker == nullptr)
 		return -1;
@@ -105,7 +106,7 @@ LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	if (cs_open(CS_ARCH_X86, CS_MODE_32, &_x86handle) != CS_ERR_OK)
 		return -1;
-	
+
 	cs_option(_x86handle, CS_OPT_DETAIL, CS_OPT_ON);
 	cs_option(_x86handle, CS_OPT_UNSIGNED, CS_OPT_ON);
 	cs_option(_x86handle, CS_OPT_SKIPDATA, CS_OPT_ON);
@@ -115,76 +116,90 @@ LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL&){
+LRESULT CProcessInlineHookTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL&) {
 	if (m_hProcess != INVALID_HANDLE_VALUE)
 		::CloseHandle(m_hProcess);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	PaintTable(m_hWnd);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnUserVabs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnUserVabs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnUserVrel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnUserVrel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnUserChgs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnUserChgs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CProcessInlineHookTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	return Tablefunction(m_hWnd, WM_VSCROLL, zDelta >= 0 ? 0 : 1, wParam);
 }
 
-LRESULT CProcessInlineHookTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_PROC_CONTEXT);
+	hSubMenu = menu.GetSubMenu(1);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+
+	return 0;
+}
+
+LRESULT CProcessInlineHookTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CProcessInlineHookTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
-}
-
-LRESULT CProcessInlineHookTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&){
+LRESULT CProcessInlineHookTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
@@ -193,7 +208,7 @@ const std::vector<std::shared_ptr<WinSys::MemoryRegionItem>>& CProcessInlineHook
 	DWORD value;
 	for (auto region : regions) {
 		value = region->Protect & 0xFF;
-		if (value & PAGE_EXECUTE || value & PAGE_EXECUTE_READ || 
+		if (value & PAGE_EXECUTE || value & PAGE_EXECUTE_READ ||
 			value & PAGE_EXECUTE_WRITECOPY || value & PAGE_EXECUTE_READWRITE) {
 			m_Items.push_back(region);
 		}
@@ -528,10 +543,10 @@ std::shared_ptr<WinSys::ModuleInfo> CProcessInlineHookTable::GetModuleByAddress(
 	return nullptr;
 }
 
-void CProcessInlineHookTable::CheckX64HookType1(cs_insn* insn, size_t j, size_t count, 
+void CProcessInlineHookTable::CheckX64HookType1(cs_insn* insn, size_t j, size_t count,
 	ULONG_PTR moduleBase, size_t moduleSize,
 	ULONG_PTR base, size_t size) {
-	cs_detail* d1, *d2;
+	cs_detail* d1, * d2;
 
 	d1 = insn[j].detail;
 	if (d1 == nullptr)
@@ -593,7 +608,7 @@ void CProcessInlineHookTable::CheckX64HookType1(cs_insn* insn, size_t j, size_t 
 	info.Address = insn[j].address;
 	m = GetModuleByAddress(info.Address);
 	info.Name = L"Unknown";
-	if(m!=nullptr)
+	if (m != nullptr)
 		info.Name = m->Name;
 	m_Table.data.info.push_back(info);
 }
@@ -701,7 +716,7 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 	}
 	if (flag)
 		return;
-	
+
 	flag = false;
 	for (const auto& m : m_Sys64Modules) {
 		// 排除调用API
@@ -722,7 +737,7 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 
 	cs_insn* jmpCode;
 	count = cs_disasm(_x64handle, code, sizeof(code) - 1, targetAddress, 0, &jmpCode);
-	if (0==count) {
+	if (0 == count) {
 		return;
 	}
 	ULONG_PTR codeAddress;
@@ -733,7 +748,7 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		if (!success)
 			return;
 	}
-	
+
 	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
 	InlineHookInfo info;
 	if (success) {
@@ -754,4 +769,76 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 	if (m != nullptr)
 		info.Name = m->Name;
 	m_Table.data.info.push_back(info);
+}
+
+LRESULT CProcessInlineHookTable::OnHookCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	std::wstring text = GetSingleHookInfo(info);
+	ClipboardHelper::CopyText(m_hWnd, text.c_str());
+	return 0;
+}
+
+LRESULT CProcessInlineHookTable::OnHookExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleHookInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
+}
+
+std::wstring CProcessInlineHookTable::GetSingleHookInfo(InlineHookInfo& info) {
+	CString text;
+	CString s;
+
+	s = info.Name.c_str();
+	s += L"\t";
+	text += s;
+
+	s = TypeToString(info.Type);
+	s += L"\t";
+	text += s;
+
+	auto& symbols = SymbolManager::Get();
+	DWORD64 offset = 0;
+	auto symbol = symbols.GetSymbolFromAddress(m_Pid, info.Address, &offset);
+	if (symbol) {
+		CStringA m;
+		auto sym = symbol->GetSymbolInfo();
+		m.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
+		std::string details = m.GetString();
+		std::wstring wdetails = Helpers::StringToWstring(details);
+		s.Format(L"0x%p (%s)", info.Address, wdetails.c_str());
+	}
+	else
+		s.Format(L"0x%p", info.Address);
+	s += L"\t";
+	text += s;
+
+	s.Format(L"0x%p", info.TargetAddress);
+	s += L"\t";
+	text += s;
+
+	s = info.TargetModule.c_str();
+	s += L"\t";
+	text += s;
+
+
+	
+
+	text += L"\r\n";
+
+	return text.GetString();
 }

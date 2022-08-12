@@ -48,6 +48,8 @@ public:
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_KERNEL_REFRESH,OnRefresh)
 		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE,OnRemove)
+		COMMAND_ID_HANDLER(ID_NOTIFY_COPY,OnNotifyCopy)
+		COMMAND_ID_HANDLER(ID_NOTIFY_EXPORT, OnNotifyExport)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -70,11 +72,13 @@ public:
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT OnNotifyCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnNotifyExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	std::wstring GetCompanyName(std::wstring path);
 
 private:
 	void Refresh();
 
-	
+	std::wstring GetSingleNotifyInfo(CallbackInfo& info);
 };

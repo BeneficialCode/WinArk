@@ -42,10 +42,13 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
+		COMMAND_ID_HANDLER(ID_INLINEHOOK_COPY,OnHookCopy)
+		COMMAND_ID_HANDLER(ID_INLINEHOOK_EXPORT, OnHookExport)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -65,6 +68,10 @@ public:
 	LRESULT OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+
+	LRESULT OnHookCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnHookExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	std::wstring GetSingleHookInfo(InlineHookInfo& info);
 
 	void Refresh();
 

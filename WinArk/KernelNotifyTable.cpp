@@ -5,6 +5,7 @@
 #include "Helpers.h"
 #include <filesystem>
 #include "SymbolHelper.h"
+#include "ClipboardHelper.h"
 
 CKernelNotifyTable::CKernelNotifyTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -17,7 +18,7 @@ LRESULT CKernelNotifyTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 }
 
 LRESULT CKernelNotifyTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
-	
+
 	return 0;
 }
 LRESULT CKernelNotifyTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -105,7 +106,7 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 		case 1:
 		{
 			switch (info.Type)
-			{		
+			{
 				case CallbackType::CreateProcessNotify:
 					s = L"CreateProcess";
 					break;
@@ -195,7 +196,7 @@ void CKernelNotifyTable::Refresh() {
 			}
 		}
 	}
-	
+
 	ULONG offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 	KernelNotifyInfo notifyInfo;
 	notifyInfo.Type = NotifyType::ProcessObjectNotify;
@@ -351,7 +352,7 @@ void CKernelNotifyTable::Refresh() {
 	m_Table.data.n = m_Table.data.info.size();
 }
 
-std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) { 
+std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 	BYTE buffer[1 << 12];
 	WCHAR* companyName = nullptr;
 	CString filePath = path.c_str();
@@ -363,7 +364,7 @@ std::wstring CKernelNotifyTable::GetCompanyName(std::wstring path) {
 		if (::VerQueryValue(buffer, L"\\VarFileInfo\\Translation", (void**)&langAndCodePage, &len)) {
 			CString text;
 			text.Format(L"\\StringFileInfo\\%04x%04x\\CompanyName", langAndCodePage[0], langAndCodePage[1]);
-			
+
 			if (::VerQueryValue(buffer, text, (void**)&companyName, &len))
 				return companyName;
 		}
@@ -383,7 +384,7 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"移除回调：%p?",p.Routine);
+	text.Format(L"移除回调：%p?", p.Routine);
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
@@ -432,5 +433,91 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	else
 		Refresh();
 	Invalidate(True);
+	return TRUE;
+}
+
+std::wstring CKernelNotifyTable::GetSingleNotifyInfo(CallbackInfo& info) {
+	CString text;
+	CString s;
+
+	s.Format(L"0x%p", info.Routine);
+	s += L"\t";
+	text += s;
+
+	switch (info.Type)
+	{
+		case CallbackType::CreateProcessNotify:
+			s = L"CreateProcess";
+			break;
+		case CallbackType::CreateThreadNotify:
+			s = L"CreateThread";
+			break;
+
+		case CallbackType::LoadImageNotify:
+			s = L"LoadImage";
+			break;
+
+		case CallbackType::ProcessObPostOperationNotify:
+			s = L"Process ObPostOperation";
+			break;
+
+		case CallbackType::ProcessObPreOperationNotify:
+			s = L"Process ObPreOperation";
+			break;
+
+		case CallbackType::ThreadObPostOperationNotify:
+			s = L"Thread ObPostOperation";
+			break;
+
+		case CallbackType::ThreadObPreOperationNotify:
+			s = L"Thread ObPreOperation";
+			break;
+
+		case CallbackType::RegistryNotify:
+			s = L"Registry Notify";
+			break;
+	}
+	s += L"\t";
+	text += s;
+
+	s = info.Company.c_str();
+	s += L"\t";
+	text += s;
+
+	s = Helpers::StringToWstring(info.Module).c_str();
+	s += L"\t";
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
+}
+
+LRESULT CKernelNotifyTable::OnNotifyCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	std::wstring text = GetSingleNotifyInfo(info);
+	ClipboardHelper::CopyText(m_hWnd, text.c_str());
+	return 0;
+}
+
+
+LRESULT CKernelNotifyTable::OnNotifyExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			std::wstring text = GetSingleNotifyInfo(info);
+			Helpers::WriteString(hFile, text);
+		}
+		::CloseHandle(hFile);
+	}
 	return TRUE;
 }
