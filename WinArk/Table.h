@@ -305,12 +305,14 @@ void CTable<T>::PaintBar(HDC hdc, LPRECT client, int iColumn) {
 	ATLASSERT(hdc && client);
 	int font;
 	RECT bar, col;
-
+	TEXTMETRIC tmFont;
 	if (client->left < client->right && client->top < client->bottom) {
 		font = m_Bar.font;
 		SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
 		SetBkColor(hdc, g_crLightGray);
-		SelectObject(hdc, g_hOemFixedFont);
+		SelectObject(hdc, g_hAppFont);
+		GetTextMetrics(hdc, &tmFont);
+		g_AvHighFont = tmFont.tmHeight;
 		memcpy(&bar, client, sizeof(bar));
 		client->top += g_AvHighFont + 4;
 		bar.bottom = client->top - 1;
@@ -431,7 +433,7 @@ void CTable<T>::PaintTable(HWND hw) {
 	HBITMAP hBitmap;
 	HGDIOBJ hgdiMem;
 	T info;
-
+	TEXTMETRIC tmFont;
 	Tablefunction(hw, WM_USER_SCR, 0, 0);	// ÖØ»æ¹ö¶¯Ìõ
 	hdc = BeginPaint(hw, &ps);
 	GetClientRect(hw, &client);
@@ -463,7 +465,9 @@ void CTable<T>::PaintTable(HWND hw) {
 		else {
 			hdcMem = hdc;
 		}
-		SelectObject(hdcMem, g_hOemFixedFont);
+		SelectObject(hdcMem, g_hAppFont);
+		GetTextMetrics(hdcMem, &tmFont);
+		g_AvHighFont = tmFont.tmHeight;
 		SetTextAlign(hdcMem, TA_LEFT | TA_BOTTOM);
 		SetBkMode(hdcMem, TRANSPARENT);
 		if (m_Table.mode & TABLE_USERDEF) {

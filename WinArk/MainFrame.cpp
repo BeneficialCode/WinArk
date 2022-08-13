@@ -13,6 +13,8 @@
 #include "SecurityInformation.h"
 #include "NewKeyDlg.h"
 #include "RenameKeyCommand.h"
+#include "ColorsSelectionDlg.h"
+#include "ThemeSystem.h"
 
 
 #define IDC_VIEW_PROCESS 0xDAD
@@ -805,4 +807,23 @@ void CMainFrame::InitRegToolBar(CToolBarCtrl& tb, int size) {
 			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, b.text, 0);
 		}
 	}
+}
+
+LRESULT CMainFrame::OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CColorsSelectionDlg dlg;
+	if (dlg.DoModal() == IDOK) {
+
+	}
+	return TRUE;
+}
+
+LRESULT CMainFrame::OnOptionsFont(WORD, WORD, HWND, BOOL&) {
+	LOGFONT lf;
+	CFontHandle(g_hAppFont).GetLogFont(lf);
+	CFontDialog dlg(&lf);
+	if (dlg.DoModal() == IDOK) {
+		dlg.GetCurrentFont(&lf);
+		g_hAppFont = CreateFontIndirect(&lf);
+	}
+	return 0;
 }

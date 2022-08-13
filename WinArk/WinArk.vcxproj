@@ -240,6 +240,7 @@
     <ClCompile Include="CallStackDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
+    <ClCompile Include="ColorsSelectionDlg.cpp" />
     <ClCompile Include="ColumnManager.cpp" />
     <ClCompile Include="CommandManager.cpp" />
     <ClCompile Include="CopyKeyCommand.cpp" />
@@ -372,6 +373,7 @@
     <ClInclude Include="CallStackDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
+    <ClInclude Include="ColorsSelectionDlg.h" />
     <ClInclude Include="ColumnManager.h" />
     <ClInclude Include="CommandManager.h" />
     <ClInclude Include="CopyKeyCommand.h" />

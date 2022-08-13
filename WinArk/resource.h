@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -86,6 +86,7 @@
 #define IDR_SSDT_CONTEXT                266
 #define IDR_SHADOW_SSDT_CONTEXT         267
 #define IDR_BIN5                        269
+#define IDD_COLORS                      272
 #define IDD_GOTOKEY                     274
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
@@ -325,14 +326,16 @@
 #define ID_INLINEHOOK_COPY              32933
 #define ID_INLINEHOOK_EXPORT            32934
 #define ID_MEMORY_DUMP                  32935
+#define ID_OPTIONS_COLORS               32936
+#define ID_OPTIONS_FONT                 32937
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        272
-#define _APS_NEXT_COMMAND_VALUE         32936
-#define _APS_NEXT_CONTROL_VALUE         1079
+#define _APS_NEXT_RESOURCE_VALUE        274
+#define _APS_NEXT_COMMAND_VALUE         32938
+#define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

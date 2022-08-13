@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -302,6 +302,15 @@ BEGIN
     CONTROL         "",IDC_KEY_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,7,461,154
 END
 
+IDD_COLORS DIALOGEX 0, 0, 231, 229
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Colors"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,43,208,50,14
+    PUSHBUTTON      "取消",IDCANCEL,124,208,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -438,6 +447,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 192
     END
+
+    IDD_COLORS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 222
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -555,6 +572,11 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 100
+END
+
+IDD_COLORS AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 
@@ -702,6 +724,9 @@ BEGIN
     BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
+        MENUITEM SEPARATOR
+        MENUITEM "&Colors...",                  ID_OPTIONS_COLORS
+        MENUITEM "&Font...",                    ID_OPTIONS_FONT
     END
     POPUP "&Help"
     BEGIN
@@ -804,12 +829,12 @@ IDI_SEARCH              ICON                    "res\\search.ico"
 
 IDI_GOTO                ICON                    "res\\goto.ico"
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1327,7 +1352,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

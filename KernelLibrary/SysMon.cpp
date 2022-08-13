@@ -673,16 +673,16 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 			
 		case NotifyType::CreateProcessNotify:
 		{
-			status = PsSetCreateProcessNotifyRoutine(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE>(notify->Address), TRUE);
-			if (status == STATUS_PROCEDURE_NOT_FOUND) {
+			// PsSetCreateProcessNotifyRoutineEx2
+			PPsSetCreateProcessNotifyRoutineEx2 pPsSetCreateProcessNotifyRoutineEx2 = nullptr;
+			pPsSetCreateProcessNotifyRoutineEx2 = (PPsSetCreateProcessNotifyRoutineEx2)khook::GetApiAddress(L"PsSetCreateProcessNotifyRoutineEx2");
+			if (nullptr != pPsSetCreateProcessNotifyRoutineEx2)
+				status = pPsSetCreateProcessNotifyRoutineEx2(0, notify->Address, TRUE);
+			if (status == STATUS_PROCEDURE_NOT_FOUND||!NT_SUCCESS(status)) {
 				status = PsSetCreateProcessNotifyRoutineEx(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE_EX>(notify->Address), TRUE);
 			}
 			if (status == STATUS_PROCEDURE_NOT_FOUND) {
-				// PsSetCreateProcessNotifyRoutineEx2
-				PPsSetCreateProcessNotifyRoutineEx2 pPsSetCreateProcessNotifyRoutineEx2 = nullptr;
-				pPsSetCreateProcessNotifyRoutineEx2 = (PPsSetCreateProcessNotifyRoutineEx2)khook::GetApiAddress(L"PsSetCreateProcessNotifyRoutineEx2");
-				if(nullptr != pPsSetCreateProcessNotifyRoutineEx2)
-					status = pPsSetCreateProcessNotifyRoutineEx2(0, notify->Address, TRUE);
+				status = PsSetCreateProcessNotifyRoutine(reinterpret_cast<PCREATE_PROCESS_NOTIFY_ROUTINE>(notify->Address), TRUE);
 			}
 			break;
 		}
