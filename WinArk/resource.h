@@ -180,10 +180,20 @@
 #define IDC_FINDNEXT                    1078
 #define IDC_WIN_VERSION                 1080
 #define IDC_BOOT_TIME                   1081
+#define IDC_OPACITY                     1081
 #define IDC_USABLE_RAM                  1082
+#define IDC_TEXT_COLOR                  1082
 #define IDC_PROCESSOR_COUNT             1083
+#define IDC_HIT_TEXT_COLOR              1083
 #define IDC_PROCESSOR                   1084
+#define IDC_LOW_COLOR                   1084
 #define IDC_KEY_LIST                    1085
+#define IDC_BK_COLOR                    1085
+#define IDC_SEL_BK_COLOR                1086
+#define IDC_LINE_COLOR                  1087
+#define IDC_AUX_COLOR                   1088
+#define IDC_TEXT_COLOR8                 1089
+#define IDC_CONDBK_COLOR                1089
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -335,7 +345,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        274
 #define _APS_NEXT_COMMAND_VALUE         32938
-#define _APS_NEXT_CONTROL_VALUE         1080
+#define _APS_NEXT_CONTROL_VALUE         1083
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
