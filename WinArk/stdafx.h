@@ -71,7 +71,7 @@ struct std::hash<CString> {
 
 extern int g_AvHighFont;
 extern int g_AvWidthFont;
-extern HFONT g_hOemFixedFont;
+extern HFONT g_hAppFont;
 
 extern HPEN g_hBlackPen, g_hWhitePen, g_hDarkGrayPen;
 extern HPEN g_myPen[20];
