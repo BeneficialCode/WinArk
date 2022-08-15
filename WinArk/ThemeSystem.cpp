@@ -3,7 +3,7 @@
 
 int g_AvHighFont = 0x10;
 int g_AvWidthFont = 0x8;
-HFONT g_hOemFixedFont;
+HFONT g_hAppFont;
 
 HPEN g_hBlackPen, g_hWhitePen, g_hDarkGrayPen;
 HPEN g_myPen[20];
@@ -49,7 +49,22 @@ void InitColorSys() {
 }
 
 void InitFontSys() {
-	g_hOemFixedFont = static_cast<HFONT>(GetStockObject(OEM_FIXED_FONT));
+	LOGFONT lf;
+	lf.lfHeight = -19;
+	lf.lfWidth = 0;
+	lf.lfEscapement = 0;
+	lf.lfOrientation = 0;
+	lf.lfWeight = FW_NORMAL;
+	lf.lfItalic = 0;
+	lf.lfUnderline = 0;
+	lf.lfStrikeOut = 0;
+	lf.lfCharSet = GB2312_CHARSET;
+	lf.lfOutPrecision = OUT_STROKE_PRECIS;
+	lf.lfClipPrecision = CLIP_STROKE_PRECIS;
+	lf.lfQuality = DRAFT_QUALITY;
+	lf.lfPitchAndFamily = VARIABLE_PITCH;
+	wcscpy_s(lf.lfFaceName, L"ËÎÌו");
+	g_hAppFont = CreateFontIndirect(&lf);
 }
 
 void InitPenSys() {
@@ -109,7 +124,7 @@ void InitSchemSys() {
 	g_myScheme[0].textcolor = Black;
 	g_myScheme[0].hitextcolor = Red;
 	g_myScheme[0].lowcolor = DarkGray;
-	g_myScheme[0].bkcolor = Cyan;
+	g_myScheme[0].bkcolor = White;
 	g_myScheme[0].selbkcolor = Yellow;
 	g_myScheme[0].linecolor = DarkBlue;
 	g_myScheme[0].auxcolor = Blue;

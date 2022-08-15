@@ -106,6 +106,8 @@ public:
 		COMMAND_ID_HANDLER(ID_MONITOR_STOP, OnMonitorStop)
 		COMMAND_ID_HANDLER(ID_MONITOR_PAUSE, OnMonitorPause)
 		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
+		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS,OnColors)
+		COMMAND_ID_HANDLER(ID_OPTIONS_FONT, OnOptionsFont)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
@@ -132,6 +134,9 @@ public:
 	LRESULT OnMonitorStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnForwardToActiveView(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnOptionsFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 private:
 	void InitProcessToolBar(CToolBarCtrl& tb);
