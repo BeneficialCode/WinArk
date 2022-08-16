@@ -2,6 +2,12 @@
 #include "Settings.h"
 #include "IniFile.h"
 
+void Settings::Set(PCWSTR name, std::vector<std::wstring> const& values) {
+	Setting s(name, values);
+	_settings.erase(name);
+	_settings.insert({ name, std::move(s) });
+}
+
 bool Settings::LoadFromKey(PCWSTR registryPath) {
 	if (registryPath == nullptr)
 		registryPath = _path.c_str();

@@ -16,6 +16,7 @@
 #include "SymbolHelper.h"
 
 CAppModule _Module;
+AppSettings _Settings;
 
 bool g_hasSymbol = true;
 HANDLE g_hSingleInstMutex{ nullptr };

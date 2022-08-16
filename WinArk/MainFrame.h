@@ -95,6 +95,9 @@ public:
 	void InitConfigView();
 	void InitEtwView();
 
+	void LoadSettings(PCWSTR filename = nullptr);
+	void SaveSettings(PCWSTR filename = nullptr);
+
 	BEGIN_MSG_MAP_EX(CMainFrame)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -144,6 +147,8 @@ private:
 	void ClearToolBarButtons(CToolBarCtrl& tb);
 	void InitCommandBar();
 	void InitRegToolBar(CToolBarCtrl& tb, int size = 24);
+	CString GetDefaultSettingsFile();
+	void SetColor(ThemeColor* colors, int count);
 
 private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;

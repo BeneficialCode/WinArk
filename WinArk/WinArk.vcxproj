@@ -240,6 +240,7 @@
     <ClCompile Include="CallStackDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
+    <ClCompile Include="ColorBox.cpp" />
     <ClCompile Include="ColorsSelectionDlg.cpp" />
     <ClCompile Include="ColumnManager.cpp" />
     <ClCompile Include="CommandManager.cpp" />
@@ -348,6 +349,7 @@
     <ClCompile Include="SystemConfigDlg.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Theme.cpp" />
+    <ClCompile Include="ThemeColor.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeSystem.cpp" />
     <ClCompile Include="ThreadObjectType.cpp" />
@@ -373,6 +375,7 @@
     <ClInclude Include="CallStackDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
+    <ClInclude Include="ColorBox.h" />
     <ClInclude Include="ColorsSelectionDlg.h" />
     <ClInclude Include="ColumnManager.h" />
     <ClInclude Include="CommandManager.h" />
@@ -486,6 +489,7 @@
     <ClInclude Include="SystemConfigDlg.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Theme.h" />
+    <ClInclude Include="ThemeColor.h" />
     <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeSystem.h" />
     <ClInclude Include="ThreadObjectType.h" />

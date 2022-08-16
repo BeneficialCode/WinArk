@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -313,21 +313,15 @@ BEGIN
     SCROLLBAR       IDC_OPACITY,49,11,118,17
     LTEXT           "1.00",IDC_VALUE,184,15,16,8
     LTEXT           "文本颜色:",IDC_STATIC,17,39,36,8
-    PUSHBUTTON      "",IDC_TEXT_COLOR,83,36,50,14
-    LTEXT           "文本高亮颜色:",IDC_STATIC,17,57,52,8
-    PUSHBUTTON      "",IDC_HIT_TEXT_COLOR,83,55,50,14
-    LTEXT           "辅助文本颜色:",IDC_STATIC,18,76,52,8
-    PUSHBUTTON      "",IDC_LOW_COLOR,84,74,50,14
-    LTEXT           "背景颜色:",IDC_STATIC,18,95,36,8
-    PUSHBUTTON      "",IDC_BK_COLOR,84,92,50,14
-    LTEXT           "选中背景颜色:",IDC_STATIC,18,113,52,8
-    PUSHBUTTON      "",IDC_SEL_BK_COLOR,84,111,50,14
-    LTEXT           "分割线颜色:",IDC_STATIC,18,132,44,8
-    PUSHBUTTON      "",IDC_LINE_COLOR,84,129,50,14
-    LTEXT           "辅助对象颜色:",IDC_STATIC,18,150,52,8
-    PUSHBUTTON      "",IDC_AUX_COLOR,84,148,50,14
-    LTEXT           "条件断点颜色:",IDC_STATIC,18,169,52,8
-    PUSHBUTTON      "",IDC_CONDBK_COLOR,84,166,50,14
+    LTEXT           "文本高亮颜色:",IDC_STATIC,17,58,52,8
+    LTEXT           "辅助文本颜色:",IDC_STATIC,17,77,52,8
+    LTEXT           "背景颜色:",IDC_STATIC,17,97,36,8
+    LTEXT           "选中背景颜色:",IDC_STATIC,17,115,52,8
+    LTEXT           "分割线颜色:",IDC_STATIC,17,136,44,8
+    LTEXT           "辅助对象颜色:",IDC_STATIC,17,156,52,8
+    LTEXT           "条件断点颜色:",IDC_STATIC,17,176,52,8
+    PUSHBUTTON      "Save...",IDC_SAVE,170,90,50,14
+    PUSHBUTTON      "Load...",IDC_LOAD,170,117,50,14
 END
 
 
@@ -848,12 +842,12 @@ IDI_SEARCH              ICON                    "res\\search.ico"
 
 IDI_GOTO                ICON                    "res\\goto.ico"
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1371,7 +1365,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

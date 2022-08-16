@@ -57,7 +57,6 @@ public:
 	
 	// IMainFrame
 	HWND GetHwnd() const override;
-	AppSettings& GetSettings() override;
 	void OnFindNext(PCWSTR path, PCWSTR name, PCWSTR data) override;
 	void OnFindStart();
 	void OnFindEnd(bool cancelled);
@@ -259,7 +258,6 @@ private:
 	CTreeItem m_hLocalRoot, m_hStdReg, m_hRealReg;
 	NodeType m_CurrentNodeType{ NodeType::None };
 	int m_CurrentSelectedItem{ -1 };
-	AppSettings m_Settings;
 	Operation m_CurrentOperation{ Operation::None };
 	HANDLE m_hSingleInstMutex{ nullptr };
 	CString m_StartKey;

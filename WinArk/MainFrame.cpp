@@ -308,6 +308,7 @@ void CMainFrame::InitConfigView() {
 
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	LoadSettings();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -424,6 +425,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	AppSettings::Get().Save();
+
+	SaveSettings();
+
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -810,9 +815,19 @@ void CMainFrame::InitRegToolBar(CToolBarCtrl& tb, int size) {
 }
 
 LRESULT CMainFrame::OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CColorsSelectionDlg dlg;
+	ThemeColor Colors[(int)TableColorIndex::COUNT]{
+		ThemeColor(L"文本颜色",g_myColor[Black]),
+		ThemeColor(L"文本高亮颜色",g_myColor[Red]),
+		ThemeColor(L"辅助文本颜色",g_myColor[DarkGray]),
+		ThemeColor(L"背景颜色",g_myColor[White]),
+		ThemeColor(L"选中时的背景颜色",g_myColor[Yellow]),
+		ThemeColor(L"分割线的颜色",g_myColor[DarkBlue]),
+		ThemeColor(L"辅助对象的颜色",g_myColor[Blue]),
+		ThemeColor(L"条件断点颜色",g_myColor[Magenta]),
+	};
+	CColorsSelectionDlg dlg(Colors, _countof(Colors));
 	if (dlg.DoModal() == IDOK) {
-
+		
 	}
 	return TRUE;
 }
@@ -824,6 +839,86 @@ LRESULT CMainFrame::OnOptionsFont(WORD, WORD, HWND, BOOL&) {
 	if (dlg.DoModal() == IDOK) {
 		dlg.GetCurrentFont(&lf);
 		g_hAppFont = CreateFontIndirect(&lf);
+		AppSettings::Get().Font(lf);
 	}
 	return 0;
+}
+
+CString CMainFrame::GetDefaultSettingsFile() {
+	WCHAR path[MAX_PATH];
+	::SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, path);
+	::StringCchCat(path, _countof(path), L"\\WinArk.ini");
+	return path;
+}
+
+void CMainFrame::SetColor(ThemeColor* colors,int count) {
+	for (int i = 0; i < count; i++) {
+		switch (i) {
+			case 0:
+				g_myColor[g_myScheme[0].textcolor] = colors[i].Color;
+				break;
+
+			case 1:
+				g_myScheme[0].hitextcolor = colors[i].Color;
+				break;
+
+			case 2:
+				g_myColor[g_myScheme[0].lowcolor] = colors[i].Color;
+				break;
+
+			case 3:
+				g_myColor[g_myScheme[0].bkcolor] = colors[i].Color;
+				break;
+
+			case 4:
+				g_myColor[g_myScheme[0].selbkcolor] = colors[i].Color;
+				break;
+
+			case 5:
+				g_myColor[g_myScheme[0].linecolor] = colors[i].Color;
+				break;
+
+			case 6:
+				g_myColor[g_myScheme[0].auxcolor] = colors[i].Color;
+				break;
+
+			case 7:
+				g_myColor[g_myScheme[0].condbkcolor] = colors[i].Color;
+				break;
+		}
+	}
+}
+
+void CMainFrame::LoadSettings(PCWSTR filename) {
+	CString path;
+	if (filename == nullptr) {
+		path = GetDefaultSettingsFile();
+		filename = path;
+	}
+	ThemeColor colors[(int)TableColorIndex::COUNT];
+	bool success = LoadColors(filename, L"TableColor", colors, _countof(colors));
+	if (success) {
+		SetColor(colors, _countof(colors));
+		InitPenSys();
+		InitBrushSys();
+	}
+}
+
+void CMainFrame::SaveSettings(PCWSTR filename) {
+	CString path;
+	if (filename == nullptr) {
+		path = GetDefaultSettingsFile();
+		filename = path;
+	}
+	ThemeColor Colors[(int)TableColorIndex::COUNT]{
+		ThemeColor(L"文本颜色",g_myColor[Black]),
+		ThemeColor(L"文本高亮颜色",g_myColor[Red]),
+		ThemeColor(L"辅助文本颜色",g_myColor[DarkGray]),
+		ThemeColor(L"背景颜色",g_myColor[White]),
+		ThemeColor(L"选中时的背景颜色",g_myColor[Yellow]),
+		ThemeColor(L"分割线的颜色",g_myColor[DarkBlue]),
+		ThemeColor(L"辅助对象的颜色",g_myColor[Blue]),
+		ThemeColor(L"条件断点颜色",g_myColor[Magenta]),
+	};
+	SaveColors(filename, L"TableColor", Colors, _countof(Colors));
 }

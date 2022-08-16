@@ -1,4 +1,8 @@
 #pragma once
+#include "ThemeColor.h"
+
+extern COLORREF g_myColor[20];
+
 
 struct t_scheme { // 颜色主题
 	std::string	name;          // 主题名字
@@ -12,7 +16,7 @@ struct t_scheme { // 颜色主题
 	int  condbkcolor;          // 条件断点的颜色
 };
 
-
+extern t_scheme g_myScheme[8];
 
 enum {
 	Black,
@@ -43,3 +47,18 @@ void InitFontSys();
 void InitPenSys();
 void InitBrushSys();
 void InitSchemSys();
+
+enum class TableColorIndex {
+	Text,
+	HitText,
+	Low,
+	Bkg,
+	SelBk,
+	Line,
+	Aux,
+	CondBk,
+	COUNT
+};
+
+bool SaveColors(PCWSTR path, PCWSTR prefix, const ThemeColor* colors, int count);
+bool LoadColors(PCWSTR path, PCWSTR prefix, ThemeColor* colors, int count);

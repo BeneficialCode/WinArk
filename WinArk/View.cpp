@@ -28,10 +28,6 @@ HWND CRegistryManagerView::GetHwnd() const {
 	return m_hWnd;
 }
 
-AppSettings& CRegistryManagerView::GetSettings() {
-	return m_Settings;
-}
-
 void CRegistryManagerView::RunOnUiThread(std::function<void()> f) {
 	SendMessage(WM_RUN, 0, reinterpret_cast<LPARAM>(&f));
 }
@@ -110,9 +106,10 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	::RegDeleteTree(HKEY_CURRENT_USER, DeletedPathBackup.Left(DeletedPathBackup.GetLength() - 1));
 
 	::ChangeWindowMessageFilterEx(m_hWnd, WM_COPYDATA, MSGFLT_ALLOW, nullptr);
-	if (m_Settings.Load(L"Software\\ScorpioSoftware\\RegExp"))
-		m_ReadOnly = m_Settings.ReadOnly();
-	m_Locations.Load(L"Software\\ScorpioSoftware\\RegExp");
+	m_Locations.Load(L"Software\\YuanOS\\WinArk");
+	if (AppSettings::Get().Load(L"Software\\YuanOS\\WinArk"))
+		m_ReadOnly = AppSettings::Get().ReadOnly();
+
 
 	CComPtr<IAutoComplete> spAC;
 	auto hr = spAC.CoCreateInstance(CLSID_AutoComplete);
@@ -242,7 +239,7 @@ void CRegistryManagerView::DoSort(const SortInfo* si) {
 		return false;
 	};
 
-	std::sort(m_Items.begin() + (m_Settings.ShowKeysInList() ? 1 : 0), m_Items.end(), compare);
+	std::sort(m_Items.begin() + (AppSettings::Get().ShowKeysInList() ? 1 : 0), m_Items.end(), compare);
 }
 
 bool CRegistryManagerView::IsSortable(HWND h, int col) const {
@@ -398,7 +395,7 @@ HTREEITEM CRegistryManagerView::BuildTree(HTREEITEM hRoot, HKEY hKey, PCWSTR nam
 
 LRESULT CRegistryManagerView::OnBuildTree(UINT, WPARAM, LPARAM, BOOL&) {
 	InitTree();
-	auto showExtra = m_Settings.ShowExtraHive();
+	auto showExtra = AppSettings::Get().ShowExtraHive();
 	m_Tree.LockWindowUpdate();
 
 	int i = 0;
@@ -585,7 +582,7 @@ void CRegistryManagerView::UpdateList(bool force) {
 	if (hItem == m_hRealReg)
 		m_CurrentKey.Attach(Registry::OpenRealRegistryKey());
 
-	if (m_Settings.ShowKeysInList() && (hItem == m_hStdReg || hItem == m_hRealReg ||
+	if (AppSettings::Get().ShowKeysInList() && (hItem == m_hStdReg || hItem == m_hRealReg ||
 		(GetNodeData(hItem) & NodeType::RemoteRegistry) == NodeType::RemoteRegistry)) {
 		// special case for root of registry
 		for (hItem = m_Tree.GetChildItem(hItem); hItem; hItem = m_Tree.GetNextSiblingItem(hItem)) {
@@ -611,11 +608,11 @@ void CRegistryManagerView::UpdateList(bool force) {
 
 	if (!m_CurrentPath.IsEmpty()) {
 		m_CurrentKey = Registry::OpenKey(m_CurrentPath,
-			KEY_QUERY_VALUE | (m_Settings.ShowKeysInList() ? KEY_ENUMERATE_SUB_KEYS : 0));
+			KEY_QUERY_VALUE | (AppSettings::Get().ShowKeysInList() ? KEY_ENUMERATE_SUB_KEYS : 0));
 		ATLASSERT(m_CurrentKey.IsValid());
 	}
 
-	if (m_Settings.ShowKeysInList()) {
+	if (AppSettings::Get().ShowKeysInList()) {
 		// insert up directory
 		RegistryItem up;
 		up.Name = L"..";

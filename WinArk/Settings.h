@@ -32,6 +32,19 @@ struct Setting {
 		::memcpy(Buffer.get(), value, Size);
 	}
 
+	Setting(std::wstring name, std::vector<std::wstring> const& value) : Name(std::move(name)), Type(SettingType::MultiString) {
+		size_t size = sizeof(WCHAR);
+		std::for_each(value.begin(), value.end(), [&](auto& str) { size += sizeof(WCHAR) * (1 + str.length()); });
+		Buffer = std::make_unique<uint8_t[]>(Size = (uint32_t)size);
+		auto p = Buffer.get();
+		std::for_each(value.begin(), value.end(), [&](auto& str) {
+			auto count = (str.length() + 1) * sizeof(WCHAR);
+			::memcpy(p, str.c_str(), count);
+			p += count;
+			});
+		p[0] = p[1] = 0;
+	}
+
 	template<typename T>
 	void Set(const T& value) {
 		Buffer = std::make_unique<uint8_t[]>(sizeof(T));
@@ -72,6 +85,10 @@ struct Setting {
 #define DEF_SETTING_REF(name,type) \
 	type& name() const { return GetValueRef<type>(L#name); }
 
+#define DEF_SETTING_MULTI(name) \
+	std::vector<std::wstring> name() const { return GetMultiString(L#name); }	\
+	void name(std::vector<std::wstring> const& value) { Set(L#name, value); }
+
 class Settings {
 public:
 	Settings() = default;
@@ -96,6 +113,7 @@ public:
 	}
 
 	void Set(PCWSTR name, int value);
+	void Set(PCWSTR name, std::vector<std::wstring> const& values);
 	void SetString(PCWSTR name, PCWSTR value);
 
 	std::wstring GetString(PCWSTR name) const;
@@ -126,6 +144,20 @@ public:
 	}
 
 	int GetInt32(PCWSTR name) const;
+
+	std::vector<std::wstring> GetMultiString(PCWSTR name) const {
+		auto it = _settings.find(name);
+		if (it == _settings.end())
+			return {};
+
+		auto p = it->second.Buffer.get();
+		std::vector<std::wstring> values;
+		while (*p) {
+			values.push_back(std::wstring((PCWSTR)p));
+			p += (wcslen((PCWSTR)p) + 1) * sizeof(WCHAR);
+		}
+		return values;
+	}
 
 	template<typename T>
 	T* GetBinary(PCWSTR name) const {

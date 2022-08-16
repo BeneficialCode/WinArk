@@ -420,6 +420,12 @@
     <ClCompile Include="ColorsSelectionDlg.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
+    <ClCompile Include="ColorBox.cpp">
+      <Filter>Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ThemeColor.cpp">
+      <Filter>Ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -834,6 +840,12 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ColorsSelectionDlg.h">
+      <Filter>Ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorBox.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ThemeColor.h">
       <Filter>Ui</Filter>
     </ClInclude>
   </ItemGroup>

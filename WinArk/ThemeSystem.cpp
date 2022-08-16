@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ThemeSystem.h"
+#include "AppSettings.h"
+#include "IniFile.h"
 
 int g_AvHighFont = 0x10;
 int g_AvWidthFont = 0x8;
@@ -50,20 +52,25 @@ void InitColorSys() {
 
 void InitFontSys() {
 	LOGFONT lf;
-	lf.lfHeight = -19;
-	lf.lfWidth = 0;
-	lf.lfEscapement = 0;
-	lf.lfOrientation = 0;
-	lf.lfWeight = FW_NORMAL;
-	lf.lfItalic = 0;
-	lf.lfUnderline = 0;
-	lf.lfStrikeOut = 0;
-	lf.lfCharSet = GB2312_CHARSET;
-	lf.lfOutPrecision = OUT_STROKE_PRECIS;
-	lf.lfClipPrecision = CLIP_STROKE_PRECIS;
-	lf.lfQuality = DRAFT_QUALITY;
-	lf.lfPitchAndFamily = VARIABLE_PITCH;
-	wcscpy_s(lf.lfFaceName, L"ËÎÌו");
+	if (AppSettings::Get().Load(L"Software\\YuanOS\\WinArk")) {
+		lf = AppSettings::Get().Font();
+	}
+	if (!lf.lfHeight) {
+		lf.lfHeight = -19;
+		lf.lfWidth = 0;
+		lf.lfEscapement = 0;
+		lf.lfOrientation = 0;
+		lf.lfWeight = FW_NORMAL;
+		lf.lfItalic = 0;
+		lf.lfUnderline = 0;
+		lf.lfStrikeOut = 0;
+		lf.lfCharSet = GB2312_CHARSET;
+		lf.lfOutPrecision = OUT_STROKE_PRECIS;
+		lf.lfClipPrecision = CLIP_STROKE_PRECIS;
+		lf.lfQuality = DRAFT_QUALITY;
+		lf.lfPitchAndFamily = VARIABLE_PITCH;
+		wcscpy_s(lf.lfFaceName, L"ËÎÌו");
+	}
 	g_hAppFont = CreateFontIndirect(&lf);
 }
 
@@ -129,4 +136,33 @@ void InitSchemSys() {
 	g_myScheme[0].linecolor = DarkBlue;
 	g_myScheme[0].auxcolor = Blue;
 	g_myScheme[0].condbkcolor = Magenta;
+}
+
+bool SaveColors(PCWSTR path, PCWSTR prefix, const ThemeColor* colors, int count) {
+	IniFile file(path);
+	CString text;
+
+	for (int i = 0; i < count; i++) {
+		text.Format(L"%s%d", prefix, i);
+		auto& info = colors[i];
+		if (!file.WriteColor(text, L"Color", info.Color))
+			return false;
+		file.WriteString(text, L"Name", info.Name);
+	}
+	return true;
+}
+
+bool LoadColors(PCWSTR path, PCWSTR prefix, ThemeColor* colors, int count) {
+	IniFile file(path);
+	if (!file.IsValid())
+		return false;
+
+	CString text;
+	for (int i = 0; i < count; i++) {
+		text.Format(L"%s%d", prefix, i);
+		auto& info = colors[i];
+		info.Color = file.ReadColor(text, L"Color", info.Color);
+		info.Name = file.ReadString(text, L"Name", info.Name);
+	}
+	return true;
 }
