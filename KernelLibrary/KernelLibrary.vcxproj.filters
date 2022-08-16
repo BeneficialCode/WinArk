@@ -32,6 +32,9 @@
     <Filter Include="Bypass">
       <UniqueIdentifier>{9fd85ddb-fd28-4534-beee-8241d4811182}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hook">
+      <UniqueIdentifier>{5efc8128-07c3-4b26-a1a1-3182a8d2adfc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -53,9 +56,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="khook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Helpers.h">
@@ -142,6 +142,12 @@
     <ClInclude Include="BypassObCallback.h">
       <Filter>Bypass</Filter>
     </ClInclude>
+    <ClInclude Include="khook.h">
+      <Filter>hook</Filter>
+    </ClInclude>
+    <ClInclude Include="disasm.h">
+      <Filter>hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -160,9 +166,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DevMonManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="khook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Helpers.cpp">
@@ -236,6 +239,12 @@
     </ClCompile>
     <ClCompile Include="BypassObCallback.cpp">
       <Filter>Bypass</Filter>
+    </ClCompile>
+    <ClCompile Include="khook.cpp">
+      <Filter>hook</Filter>
+    </ClCompile>
+    <ClCompile Include="disasm.cpp">
+      <Filter>hook</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

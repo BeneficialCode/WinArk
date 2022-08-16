@@ -237,6 +237,7 @@
     <ClInclude Include="CyclicBuffer.h" />
     <ClInclude Include="DbgDefender.h" />
     <ClInclude Include="DevMonManager.h" />
+    <ClInclude Include="disasm.h" />
     <ClInclude Include="ExecutiveResource.h" />
     <ClInclude Include="FastMutex.h" />
     <ClInclude Include="FileManager.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
+    <ClCompile Include="disasm.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />
     <ClCompile Include="FastMutex.cpp" />
     <ClCompile Include="FileManager.cpp" />
