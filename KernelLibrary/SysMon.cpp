@@ -512,20 +512,23 @@ bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCal
 	int i = 0;
 	while (nextEntry != callbackListHead) {
 		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
-		LogInfo("PreOperation %p, PostOperation: %p\n", callbackEntry->PreOperation, callbackEntry->PostOperation);
-		if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_CREATE))
-			LogInfo("Protect handle from creating\n");
-		if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_DUPLICATE))
-			LogInfo("Protect handle from duplicating\n");
+		if (ExAcquireRundownProtection(&callbackEntry->RundownProtect)) {
+			LogInfo("PreOperation %p, PostOperation: %p\n", callbackEntry->PreOperation, callbackEntry->PostOperation);
+			if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_CREATE))
+				LogInfo("Protect handle from creating\n");
+			if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_DUPLICATE))
+				LogInfo("Protect handle from duplicating\n");
 
-		info[i].PostOperation = callbackEntry->PostOperation;
-		info[i].PreOperation = callbackEntry->PreOperation;
-		info[i].RegistrationHandle = callbackEntry->RegistrationHandle;
-		i++;
+			info[i].PostOperation = callbackEntry->PostOperation;
+			info[i].PreOperation = callbackEntry->PreOperation;
+			info[i].RegistrationHandle = callbackEntry->RegistrationHandle;
+			i++;
+			ExReleaseRundownProtection(&callbackEntry->RundownProtect);
+		}
 		nextEntry = nextEntry->Flink;
 	}
 
-	return false;
+	return true;
 }
 
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
@@ -696,6 +699,7 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 		case NotifyType::ProcessObjectNotify:
 		{
 			ObUnRegisterCallbacks(notify->Address);
+			break;
 		}
 
 		case NotifyType::RegistryNotify:

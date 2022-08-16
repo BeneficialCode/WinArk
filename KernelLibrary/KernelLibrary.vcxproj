@@ -231,6 +231,7 @@
   <ItemGroup>
     <ClInclude Include="AutoEnter.h" />
     <ClInclude Include="AutoLock.h" />
+    <ClInclude Include="BypassObCallback.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="CriticalRegion.h" />
     <ClInclude Include="CyclicBuffer.h" />
@@ -268,6 +269,7 @@
   <ItemGroup>
     <ClCompile Include="AutoEnter.cpp" />
     <ClCompile Include="AutoLock.cpp" />
+    <ClCompile Include="BypassObCallback.cpp" />
     <ClCompile Include="CriticalRegion.cpp" />
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />

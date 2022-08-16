@@ -72,16 +72,19 @@ typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
 } CM_CALLBACK_CONTEXT_BLOCKEX, * PCM_CALLBACK_CONTEXT_BLOCKEX;
 
 
+struct _OB_CALLBACK_BLOCK;
+
 typedef struct _OB_CALLBACK_ENTRY {
 	LIST_ENTRY EntryItemList;
-	OB_OPERATION Operations; // magic bit
+	OB_OPERATION Operations;						// magic bit
 	ULONG Flags;
-	PVOID RegistrationHandle; // Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
+	struct _OB_CALLBACK_BLOCK* RegistrationHandle;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
 	POB_PRE_OPERATION_CALLBACK PreOperation;
 	POB_POST_OPERATION_CALLBACK PostOperation;
-	ULONG_PTR Reserved;
+	EX_RUNDOWN_REF RundownProtect;
 }OB_CALLBACK_ENTRY, * POB_CALLBACK_ENTRY;
+
 
 // x86 0x10	0x24	16	36
 // x64 0x20 0x40	32	64
@@ -92,6 +95,14 @@ typedef struct _OB_CALLBACK_BLOCK {
 	UNICODE_STRING Altitude;
 	OB_CALLBACK_ENTRY Items[ANYSIZE_ARRAY]; // Callback array
 }OB_CALLBACK_BLOCK, * POB_CALLBACK_BLOCK;
+
+
+
+typedef struct _OB_POST_CALLBACK_ENTRY {
+	LIST_ENTRY Entry;
+	POB_CALLBACK_ENTRY CallbackEntry;
+	PVOID CallContext;
+}OB_POST_CALLBACK_ENTRY,*POB_POST_CALLBACK_ENTRY;
 
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;

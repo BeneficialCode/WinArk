@@ -52,11 +52,12 @@ void InitColorSys() {
 
 void InitFontSys() {
 	LOGFONT lf;
+	lf.lfHeight = 0;
 	if (AppSettings::Get().Load(L"Software\\YuanOS\\WinArk")) {
 		lf = AppSettings::Get().Font();
 	}
 	if (!lf.lfHeight) {
-		lf.lfHeight = -19;
+		lf.lfHeight = -16;
 		lf.lfWidth = 0;
 		lf.lfEscapement = 0;
 		lf.lfOrientation = 0;
@@ -94,7 +95,7 @@ void InitPenSys() {
 	g_myPen[12] = CreatePen(PS_SOLID, 0, g_myColor[12]);
 	g_myPen[13] = CreatePen(PS_SOLID, 0, g_myColor[13]);
 	g_myPen[14] = CreatePen(PS_SOLID, 0, g_myColor[14]);
-	g_myPen[15] = (HPEN)GetStockObject(WHITE_PEN);
+	g_myPen[15] = CreatePen(PS_SOLID, 0, g_myColor[15]);
 	g_myPen[16] = CreatePen(PS_SOLID, 0, g_myColor[16]);
 	g_myPen[17] = CreatePen(PS_SOLID, 0, g_myColor[17]);
 	g_myPen[18] = CreatePen(PS_SOLID, 0, g_myColor[18]);
@@ -119,7 +120,7 @@ void InitBrushSys() {
 	g_myBrush[12] = CreateSolidBrush(g_myColor[12]);
 	g_myBrush[13] = CreateSolidBrush(g_myColor[13]);
 	g_myBrush[14] = CreateSolidBrush(g_myColor[14]);
-	g_myBrush[15] = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	g_myBrush[15] =  CreateSolidBrush(g_myColor[15]);
 	g_myBrush[16] = CreateSolidBrush(g_myColor[16]);
 	g_myBrush[17] = CreateSolidBrush(g_myColor[17]);
 	g_myBrush[18] = CreateSolidBrush(g_myColor[18]);

@@ -29,6 +29,9 @@
     <Filter Include="DbgCore">
       <UniqueIdentifier>{d16ecf0f-c2bb-4c5b-9769-755333485338}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Bypass">
+      <UniqueIdentifier>{9fd85ddb-fd28-4534-beee-8241d4811182}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -136,6 +139,9 @@
     <ClInclude Include="Teb.h">
       <Filter>DbgCore</Filter>
     </ClInclude>
+    <ClInclude Include="BypassObCallback.h">
+      <Filter>Bypass</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -227,6 +233,9 @@
     </ClCompile>
     <ClCompile Include="kDbgUtil.cpp">
       <Filter>DbgCore</Filter>
+    </ClCompile>
+    <ClCompile Include="BypassObCallback.cpp">
+      <Filter>Bypass</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

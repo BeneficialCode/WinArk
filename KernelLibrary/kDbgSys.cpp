@@ -12,7 +12,8 @@ FAST_MUTEX	DbgkpProcessDebugPortMutex;
 
 PSYSTEM_DLL* PspSystemDlls;
 
-NTSTATUS NtCreateDebugObject(
+NTSTATUS NTAPI 
+NtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
