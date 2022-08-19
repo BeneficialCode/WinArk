@@ -20,7 +20,7 @@
 #include "QuickFindDlg.h"
 #include "SerializerFactory.h"
 
-CEtwView::CEtwView(IEtwFrame* frame) :CViewBase(frame) {
+CEtwView::CEtwView(IMainFrame* frame) :CViewBase(frame) {
 }
 
 void CEtwView::Activate(bool active) {

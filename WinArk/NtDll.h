@@ -33,6 +33,8 @@ typedef const UNICODE_STRING* PCUNICODE_STRING;
 
 extern "C" ULONG NTAPI RtlNtStatusToDosError(NTSTATUS Status);
 
+
+
 typedef enum _PROCESSINFOCLASS {
 	ProcessBasicInformation = 0,
 	ProcessDebugPort = 7,
@@ -269,6 +271,8 @@ extern "C" {
 	typedef enum _SYSTEM_INFORMATION_CLASS {
 		SystemObjectInformation = 17,
 		SystemExtendedHandleInformation = 64, // q: SYSTEM_HANDLE_INFORMATION_EX
+		SystemPoolTagInformation = 22,
+		SystemSessionPoolTagInformation = 67,
 	} SYSTEM_INFORMATION_CLASS;
 
 	typedef struct _OBJECT_BASIC_INFORMATION {
@@ -725,3 +729,53 @@ extern "C" NTSTATUS NTAPI NtQueryObject(
 	_Out_opt_ PULONG ReturnLength);
 
 #define ExtendedHandleInformation (64)
+
+struct SYSTEM_POOLTAG {
+	union {
+		UCHAR Tag[4];
+		ULONG TagUlong;
+	};
+	ULONG PagedAllocs;
+	ULONG PagedFrees;
+	SIZE_T PagedUsed;
+	ULONG NonPagedAllocs;
+	ULONG NonPagedFrees;
+	SIZE_T NonPagedUsed;
+};
+
+struct SYSTEM_POOLTAG_INFORMATION {
+	ULONG Count;
+	SYSTEM_POOLTAG TagInfo[1];
+};
+
+struct SYSTEM_BIGPOOL_ENTRY {
+	union {
+		PVOID VirtualAddress;
+		ULONG_PTR NonPaged : 1;
+	};
+	SIZE_T SizeInBytes;
+	union{
+		UCHAR Tag[4];
+		ULONG TagUlong;
+	};
+};
+
+struct SYSTEM_BIGPOOL_INFORMATION {
+	ULONG Count;
+	SYSTEM_BIGPOOL_ENTRY AllocateInfo[1];
+};
+
+typedef struct _SYSTEM_SESSION_PROCESS_INFORMATION
+{
+	ULONG SessionId;
+	ULONG SizeOfBuf;
+	PVOID Buffer;
+} SYSTEM_SESSION_PROCESS_INFORMATION, * PSYSTEM_SESSION_PROCESS_INFORMATION;
+
+typedef struct _SYSTEM_SESSION_POOLTAG_INFORMATION
+{
+	SIZE_T NextEntryOffset;
+	ULONG SessionId;
+	ULONG Count;
+	SYSTEM_POOLTAG TagInfo[1];
+} SYSTEM_SESSION_POOLTAG_INFORMATION, * PSYSTEM_SESSION_POOLTAG_INFORMATION;

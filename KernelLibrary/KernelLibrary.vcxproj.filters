@@ -148,6 +148,9 @@
     <ClInclude Include="disasm.h">
       <Filter>hook</Filter>
     </ClInclude>
+    <ClInclude Include="detours.h">
+      <Filter>hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -244,6 +247,9 @@
       <Filter>hook</Filter>
     </ClCompile>
     <ClCompile Include="disasm.cpp">
+      <Filter>hook</Filter>
+    </ClCompile>
+    <ClCompile Include="detours.cpp">
       <Filter>hook</Filter>
     </ClCompile>
   </ItemGroup>

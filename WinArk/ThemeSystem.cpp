@@ -57,7 +57,7 @@ void InitFontSys() {
 		lf = AppSettings::Get().Font();
 	}
 	if (!lf.lfHeight) {
-		lf.lfHeight = -16;
+		lf.lfHeight = -14;
 		lf.lfWidth = 0;
 		lf.lfEscapement = 0;
 		lf.lfOrientation = 0;
@@ -69,8 +69,8 @@ void InitFontSys() {
 		lf.lfOutPrecision = OUT_STROKE_PRECIS;
 		lf.lfClipPrecision = CLIP_STROKE_PRECIS;
 		lf.lfQuality = DRAFT_QUALITY;
-		lf.lfPitchAndFamily = VARIABLE_PITCH;
-		wcscpy_s(lf.lfFaceName, L"ËÎÌå");
+		lf.lfPitchAndFamily = FF_SWISS | VARIABLE_PITCH;
+		wcscpy_s(lf.lfFaceName, L"Î¢ÈíÑÅºÚ");
 	}
 	g_hAppFont = CreateFontIndirect(&lf);
 }

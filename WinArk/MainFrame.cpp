@@ -295,17 +295,15 @@ void CMainFrame::InitKernelHookView() {
 }
 
 void CMainFrame::InitKernelView() {
-	HWND hWnd = m_KernelView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_hwndArray[static_cast<int>(TabColumn::Kernel)] = m_KernelView.m_hWnd;
+	m_KernelView = new CKernelView(this);
+	HWND hWnd = m_KernelView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::Kernel)] = m_KernelView->m_hWnd;
 }
 
 void CMainFrame::InitConfigView() {
 	HWND hWnd = m_SysConfigView.Create(m_hWnd, rcDefault);
 	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
 }
-
-
-
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	LoadSettings();
@@ -501,7 +499,7 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_pServiceTable->SetFocus();
 			break;
 		case TabColumn::Kernel:
-			m_KernelView.ShowWindow(SW_SHOW);
+			m_KernelView->ShowWindow(SW_SHOW);
 			break;
 		case TabColumn::Config:
 			m_SysConfigView.ShowWindow(SW_SHOW);

@@ -236,6 +236,7 @@
     <ClInclude Include="CriticalRegion.h" />
     <ClInclude Include="CyclicBuffer.h" />
     <ClInclude Include="DbgDefender.h" />
+    <ClInclude Include="detours.h" />
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
     <ClInclude Include="ExecutiveResource.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="CriticalRegion.cpp" />
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />
+    <ClCompile Include="detours.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="disasm.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />

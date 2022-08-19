@@ -2,7 +2,7 @@
 
 #include "resource.h"
 #include "VirtualListView.h"
-#include "IMainFrame.h"
+#include "Interfaces.h"
 #include "Registry.h"
 #include "CommandManager.h"
 #include "EnumStrings.h"
@@ -40,7 +40,7 @@ class CRegistryManagerView :
 	public CVirtualListView<CRegistryManagerView>,
 	public CAutoUpdateUI<CRegistryManagerView>,
 	public COwnerDraw<CRegistryManagerView>,
-	public IMainFrame {
+	public IRegView {
 public:
 	DECLARE_WND_CLASS(L"RegExpWndClass")
 	

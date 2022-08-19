@@ -37,7 +37,7 @@ class CMainFrame :
 	public CAutoUpdateUI<CMainFrame>,
 	public CMessageFilter, 
 	public CIdleHandler,
-	public IEtwFrame,
+	public IMainFrame,
 	public IQuickFind
 {
 public:
@@ -54,7 +54,7 @@ public:
 	void DoFind(PCWSTR text, const QuickFindOptions& options) override;
 	void WindowClosed() override;
 
-	// Inherited via IEtwFrame
+	// Inherited via IMainFrame
 	BOOL TrackPopupMenu(HMENU hMenu, HWND hWnd, POINT* pt = nullptr, UINT flags = 0) override;
 	HFONT GetMonoFont() override;
 	void ViewDestroyed(void*) override;
@@ -143,9 +143,9 @@ public:
 
 private:
 	void InitProcessToolBar(CToolBarCtrl& tb);
-	void InitEtwToolBar(CToolBarCtrl& tb, int size = 24);
-	void ClearToolBarButtons(CToolBarCtrl& tb);
 	void InitCommandBar();
+	void ClearToolBarButtons(CToolBarCtrl& tb);
+	void InitEtwToolBar(CToolBarCtrl& tb, int size = 24);
 	void InitRegToolBar(CToolBarCtrl& tb, int size = 24);
 	CString GetDefaultSettingsFile();
 	void SetColor(ThemeColor* colors, int count);
@@ -167,7 +167,7 @@ private:
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
 	CKernelHookView m_KernelHookView;
-	CKernelView m_KernelView;
+	CKernelView* m_KernelView;
 
 	CSystemConfigDlg m_SysConfigView;
 

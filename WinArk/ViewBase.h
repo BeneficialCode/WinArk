@@ -10,7 +10,7 @@ class CViewBase abstract :
 public:
 	//	DECLARE_WND_CLASS(nullptr)
 
-	CViewBase(IEtwFrame* frame) : m_pFrame(frame) {
+	CViewBase(IMainFrame* frame) : m_pFrame(frame) {
 		ATLASSERT(frame);
 	}
 
@@ -24,7 +24,7 @@ protected:
 		return FALSE;
 	}
 
-	IEtwFrame* GetFrame() const {
+	IMainFrame* GetFrame() const {
 		return m_pFrame;
 	}
 
@@ -71,5 +71,5 @@ protected:
 	}
 
 private:
-	IEtwFrame* m_pFrame;
+	IMainFrame* m_pFrame;
 };

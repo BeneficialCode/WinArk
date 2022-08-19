@@ -90,6 +90,7 @@
 #define IDD_GOTOKEY                     274
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
+#define IDR_POOLTAG                     277
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -194,7 +195,6 @@
 #define IDC_AUX_COLOR                   1088
 #define IDC_TEXT_COLOR8                 1089
 #define IDC_CONDBK_COLOR                1089
-#define IDC_BUTTON2                     1092
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -339,13 +339,14 @@
 #define ID_MEMORY_DUMP                  32935
 #define ID_OPTIONS_COLORS               32936
 #define ID_OPTIONS_FONT                 32937
+#define ID_POOLTAG_REFRESH              32938
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        274
-#define _APS_NEXT_COMMAND_VALUE         32938
+#define _APS_NEXT_RESOURCE_VALUE        278
+#define _APS_NEXT_COMMAND_VALUE         32939
 #define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

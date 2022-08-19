@@ -426,6 +426,9 @@
     <ClCompile Include="ThemeColor.cpp">
       <Filter>Ui</Filter>
     </ClCompile>
+    <ClCompile Include="KernelPoolView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -680,9 +683,6 @@
     <ClInclude Include="FindOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IMainFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LocationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -848,6 +848,9 @@
     <ClInclude Include="ThemeColor.h">
       <Filter>Ui</Filter>
     </ClInclude>
+    <ClInclude Include="KernelPoolView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -1003,5 +1006,8 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\pooltag.txt" />
   </ItemGroup>
 </Project>

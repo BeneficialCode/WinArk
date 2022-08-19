@@ -17,7 +17,7 @@ class CEtwView :
 	public CCustomDraw<CEtwView>
 {
 public:
-	CEtwView(IEtwFrame* frame);
+	CEtwView(IMainFrame* frame);
 
 	DECLARE_WND_CLASS(NULL)
 

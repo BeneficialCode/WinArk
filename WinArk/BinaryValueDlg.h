@@ -3,7 +3,7 @@
 #include "HexControl.h"
 #include "MemoryBuffer.h"
 #include "RegistryKey.h"
-#include "IMainFrame.h"
+#include "Interfaces.h"
 
 
 class CBinaryValueDlg :
@@ -15,7 +15,7 @@ public:
 
 	enum { ID_DATA_BYTE = 500, ID_LINE = 520 };
 
-	CBinaryValueDlg(RegistryKey& key, PCWSTR name, bool readOnly, IMainFrame* frame);
+	CBinaryValueDlg(RegistryKey& key, PCWSTR name, bool readOnly, IRegView* frame);
 
 	const std::vector<BYTE>& GetValue() const;
 	bool IsModified() const;
@@ -48,7 +48,7 @@ private:
 	MemoryBuffer m_Buffer;
 	std::vector<BYTE> m_Value;
 	DWORD m_Type{ 0 };
-	IMainFrame* m_pFrame;
+	IRegView* m_pFrame;
 	bool m_ReadOnly;
 	bool m_Modified{ false };
 };

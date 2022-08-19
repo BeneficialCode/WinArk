@@ -779,6 +779,10 @@ BEGIN
         MENUITEM "Copy",                        ID_UNLOADEDDRIVERS_COPY
         MENUITEM "Export",                      ID_UNLOADEDDRIVERS_EXPORT
     END
+    POPUP "PoolTag"
+    BEGIN
+        MENUITEM "Refresh",                     ID_POOLTAG_REFRESH
+    END
 END
 
 IDR_ETW_CONTEXT MENU
@@ -841,6 +845,14 @@ IDI_FIND                ICON                    "res\\find.ico"
 IDI_SEARCH              ICON                    "res\\search.ico"
 
 IDI_GOTO                ICON                    "res\\goto.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// TXT
+//
+
+IDR_POOLTAG             TXT                     "res\\pooltag.txt"
 
 #endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////

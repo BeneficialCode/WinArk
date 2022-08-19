@@ -274,6 +274,7 @@
     <ClCompile Include="GotoKeyDlg.cpp" />
     <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
+    <ClCompile Include="KernelPoolView.cpp" />
     <ClCompile Include="KernelRoutineDlg.cpp" />
     <ClCompile Include="KernelView.cpp" />
     <ClCompile Include="PiDDBCacheTable.cpp" />
@@ -413,6 +414,7 @@
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="KernelNotifyTable.h" />
+    <ClInclude Include="KernelPoolView.h" />
     <ClInclude Include="KernelRoutineDlg.h" />
     <ClInclude Include="KernelView.h" />
     <ClInclude Include="PiDDBCacheTable.h" />
@@ -428,7 +430,6 @@
     <ClInclude Include="RegHelpers.h" />
     <ClInclude Include="HexControl.h" />
     <ClInclude Include="ImageHelper.h" />
-    <ClInclude Include="IMainFrame.h" />
     <ClInclude Include="Internals.h" />
     <ClInclude Include="NumberValueDlg.h" />
     <ClInclude Include="JobObjectType.h" />
@@ -579,6 +580,9 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\pooltag.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
