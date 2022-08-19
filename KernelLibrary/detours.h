@@ -79,8 +79,10 @@ struct DetourOperation {
 //////////////////////////////////////////////////////////// Transaction APIs.
 //
 NTSTATUS NTAPI DetourTransactionBegin();
-
+NTSTATUS NTAPI DetourTransactionAbort();
 NTSTATUS NTAPI DetourTransactionCommit();
+NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer);
+NTSTATUS NTAPI DetourUpdateThread(_In_ HANDLE hThread);
 
 ////////////////////////////////////////////////////////////// Code Functions.
 //
@@ -97,3 +99,10 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 	_Out_opt_ PDETOUR_TRAMPOLINE* ppRealTrampoline,
 	_Out_opt_ PVOID* ppRealTarget,
 	_Out_opt_ PVOID* ppRealDetour);
+
+NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
+	_In_ PVOID pDetour);
+
+using PZwProtectVirtualMemory = NTSTATUS(NTAPI*)(HANDLE, PVOID*, PULONG, ULONG, PULONG);
+
+extern PZwProtectVirtualMemory pZwProtectVirtualMemory;

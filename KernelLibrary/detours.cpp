@@ -3,9 +3,18 @@
 #include "detours.h"
 #include "Logging.h"
 #include "Memory.h"
+#include "disasm.h"
 
+
+extern "C" {
+	NTSYSAPI NTSTATUS NTAPI ZwFlushInstructionCache(_In_ HANDLE 	ProcessHandle,
+		_In_ PVOID 	BaseAddress,
+		_In_ ULONG 	NumberOfBytesToFlush
+	);
+}
 
 static bool s_fIgnoreTooSmall = false;
+static bool s_fRetainRegions = false;
 
 static LONG s_PendingThreadId = 0;
 static NTSTATUS s_PendingError = STATUS_SUCCESS;
@@ -119,7 +128,7 @@ PUCHAR DetourSkipJmp(PUCHAR pCode, PVOID* ppGlobals) {
 	// First, skip over the import vector if there is one
 	if (pCode[0] == 0xff && pCode[1] == 0x25) { // jmp [+imm32]
 		// Looks like an import alias jump, then get the code it points to.
-		PUCHAR pTarget =  *(UNALIGNED PUCHAR*)&pCode[2];
+		PUCHAR pTarget = *(UNALIGNED PUCHAR*) & pCode[2];
 		if (DetourIsImported(pCode, pTarget)) {
 			PUCHAR pNew = *(UNALIGNED PUCHAR*)pTarget;
 			LogDebug("%p->%p: skipped over import table.", pCode, pNew);
@@ -275,7 +284,8 @@ struct _DETOUR_TRAMPOLINE {
 	UCHAR rbCode[30];		// target code + jmp to pRemain
 	UCHAR cbCode;			// size of moved target code
 	UCHAR cbCodeBreak;		// padding to make debugging easier
-	UCHAR cbRestore[30];	// original target code.
+	UCHAR rbRestore[30];	// original target code.
+	UCHAR cbRestore;		// size of original code.
 	UCHAR cbRestoreBreak;	// padding to make debugging easier
 	_DETOUR_ALIGN rAlign[8];// instruction alignment array.
 	PUCHAR pRemain;			// first instruction after moved code. [free list]
@@ -488,13 +498,15 @@ struct DETOUR_REGION {
 };
 typedef DETOUR_REGION* PDETOUR_REGION;
 
+const ULONG DETOUR_REGION_SIGNATURE = 'Rrtd';
 const ULONG DETOUR_REGION_SIZE = 0x10000;
-
+const ULONG DETOUR_TRAMPOLINES_PER_REGION = (DETOUR_REGION_SIZE
+	/ sizeof(DETOUR_TRAMPOLINE)) - 1;
 
 static PDETOUR_REGION s_pRegions = nullptr;	// List of all regions.
 static PDETOUR_REGION s_pRegion = nullptr;  // Default region
 
-using PZwProtectVirtualMemory = NTSTATUS(NTAPI*)(HANDLE, PVOID*, PULONG, ULONG, PULONG);
+
 
 PZwProtectVirtualMemory pZwProtectVirtualMemory = nullptr;
 
@@ -705,8 +717,6 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 	 // Round pTarget down to 64KB block.
 	// /RTCc RuntimeChecks breaks PtrToUlong.
 	pTarget = pTarget - (ULONG)((ULONG_PTR)pTarget & 0xffff);
-
-
 }
 
 static void DetourFreeTrampoline(PDETOUR_TRAMPOLINE pTrampoline) {
@@ -718,6 +728,56 @@ static void DetourFreeTrampoline(PDETOUR_TRAMPOLINE pTrampoline) {
 	pRegion->pFree = pTrampoline;
 }
 
+static void DetourRunnableTrampolineRegions() {
+	// Mark all of the regions as executable.
+	for (PDETOUR_REGION pRegion = s_pRegions; pRegion != nullptr; pRegion = pRegion->pNext) {
+		ULONG old;
+		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pRegion,
+			(PULONG)&DETOUR_REGION_SIZE, PAGE_EXECUTE_READ, &old);
+		ZwFlushInstructionCache(ZwCurrentProcess(), pRegion, DETOUR_REGION_SIZE);
+	}
+}
+
+static bool DetourIsRegionEmpty(PDETOUR_REGION pRegion) {
+	// Stop if the region isn't a region (this would be bad).
+	if (pRegion->Signature != DETOUR_REGION_SIGNATURE) {
+		return FALSE;
+	}
+
+	PUCHAR pRegionBeg = (PUCHAR)pRegion;
+	PUCHAR pRegionLim = pRegionBeg + DETOUR_REGION_SIZE;
+
+	// Stop if any of the trampolines aren't free.
+	PDETOUR_TRAMPOLINE pTrampoline = ((PDETOUR_TRAMPOLINE)pRegion) + 1;
+	for (int i = 0; i < DETOUR_TRAMPOLINES_PER_REGION; i++) {
+		if (pTrampoline[i].pRemain != NULL &&
+			(pTrampoline[i].pRemain < pRegionBeg ||
+				pTrampoline[i].pRemain >= pRegionLim)) {
+			return FALSE;
+		}
+	}
+
+	// OK, the region is empty.
+	return TRUE;
+}
+
+static void DetourFreeUnusedTrampolineRegions() {
+	PDETOUR_REGION* ppRegionBase = &s_pRegions;
+	PDETOUR_REGION pRegion = s_pRegions;
+
+	while (pRegion != NULL) {
+		if (DetourIsRegionEmpty(pRegion)) {
+			*ppRegionBase = pRegion->pNext;
+			SIZE_T size = 0;
+			ZwFreeVirtualMemory(ZwCurrentProcess(), (PVOID*)&pRegion, &size, MEM_RELEASE);
+			s_pRegion = NULL;
+		}
+		else {
+			ppRegionBase = &pRegion->pNext;
+		}
+		pRegion = *ppRegionBase;
+	}
+}
 
 PVOID NTAPI DetourCodeFromPointer(_In_ PVOID pPointer,
 	_Out_opt_ PVOID* ppGlobals) {
@@ -747,7 +807,8 @@ LONG NTAPI DetourTransactionBegin() {
 
 NTSTATUS NTAPI DetourUpdateThread(_In_ HANDLE hThread) {
 	NTSTATUS error;
-	// If any of the pending operation falied, then we don't need to do this
+
+	//If any of the pending operations failed, then we don't need to do this.
 	if (s_PendingError != STATUS_SUCCESS) {
 		return s_PendingError;
 	}
@@ -757,13 +818,254 @@ NTSTATUS NTAPI DetourUpdateThread(_In_ HANDLE hThread) {
 		return STATUS_SUCCESS;
 	}
 
+	DetourThread* t = new (NonPagedPool) DetourThread;
+	if (t == NULL) {
+		error = STATUS_NO_MEMORY;
+	fail:
+		if (t != NULL) {
+			delete t;
+			t = NULL;
+		}
+		s_PendingError = error;
+		s_ppPendingError = NULL;
+		DbgBreakPoint();
+		return error;
+	}
+
+	t->hThread = hThread;
+	t->pNext = s_pPendingThreads;
+	s_pPendingThreads = t;
+
 	return STATUS_SUCCESS;
 }
 
 NTSTATUS NTAPI DetourTransactionCommit() {
-	
+	return DetourTransactionCommitEx(nullptr);
+}
+
+NTSTATUS NTAPI DetourTransactionAbort() {
+	if (s_PendingThreadId != (LONG)PsGetCurrentThreadId()) {
+		return STATUS_REQUEST_NOT_ACCEPTED;
+	}
+
+	// Restore all of the page permissions.
+	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
+		// We don't care if this fails, because the code is still accessible
+		ULONG old = 0;
+		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&o->pTarget,
+			(PULONG)&o->pTrampoline->cbRestore, o->Perm, &old);
+		if (!o->fIsRemove) {
+			if (o->pTrampoline) {
+				DetourFreeTrampoline(o->pTrampoline);
+				o->pTrampoline = nullptr;
+			}
+		}
+
+		DetourOperation* n = o->pNext;
+		delete o;
+		o = n;
+	}
+	s_pPendingOperations = nullptr;
+
+	// Make sure the trampoline pages are no longer writable
+	DetourRunnableTrampolineRegions();
+
+	s_pPendingThreads = nullptr;
+	s_PendingThreadId = 0;
+
 	return STATUS_SUCCESS;
 }
+
+NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
+	if (pppFailedPointer != nullptr) {
+		// Used to get the last error
+		*pppFailedPointer = s_ppPendingError;
+	}
+	if (s_PendingThreadId != HandleToUlong(PsGetCurrentThreadId())) {
+		return STATUS_REQUEST_NOT_ACCEPTED;
+	}
+
+	// If any of the pending operation failed, then we abort the whole transaction.
+	if (s_PendingError != STATUS_SUCCESS) {
+		DbgBreakPoint();
+		DetourTransactionAbort();
+		return s_PendingError;
+	}
+
+	// Common variables
+	DetourOperation* o;
+	DetourThread* t;
+	bool freed = false;
+
+	// Insert or remove each of the detours
+	for (o = s_pPendingOperations; o != nullptr; o = o->pNext) {
+		if (o->fIsRemove) {
+			RtlCopyMemory(o->pTarget, o->pTrampoline->rbRestore,
+				o->pTrampoline->cbRestore);
+#ifdef DETOURS_IA64
+			* o->ppbPointer = (PBYTE)o->pTrampoline->ppldTarget;
+#endif // DETOURS_IA64
+
+#ifdef DETOURS_X86
+			* o->ppPointer = o->pTarget;
+#endif // DETOURS_X86
+
+#ifdef DETOURS_X64
+			* o->ppPointer = o->pTarget;
+#endif // DETOURS_X64
+
+#ifdef DETOURS_ARM
+			* o->ppbPointer = DETOURS_PBYTE_TO_PFUNC(o->pbTarget);
+#endif // DETOURS_ARM
+
+#ifdef DETOURS_ARM64
+			* o->ppbPointer = o->pbTarget;
+#endif // DETOURS_ARM
+
+		}
+		else {
+			LogDebug("detours: pbTramp =%p, pbRemain=%p, pbDetour=%p, cbRestore=%u\n",
+				o->pTrampoline,
+				o->pTrampoline->pRemain,
+				o->pTrampoline->pDetour,
+				o->pTrampoline->cbRestore);
+
+			LogDebug("detours: pbTarget=%p: "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x [before]\n",
+				o->pTarget,
+				o->pTarget[0], o->pTarget[1], o->pTarget[2], o->pTarget[3],
+				o->pTarget[4], o->pTarget[5], o->pTarget[6], o->pTarget[7],
+				o->pTarget[8], o->pTarget[9], o->pTarget[10], o->pTarget[11]);
+
+#ifdef DETOURS_IA64
+			((DETOUR_IA64_BUNDLE*)o->pbTarget)
+				->SetBrl((UINT64)&o->pTrampoline->bAllocFrame);
+			*o->ppbPointer = (PBYTE)&o->pTrampoline->pldTrampoline;
+#endif // DETOURS_IA64
+
+#ifdef DETOURS_X64
+			DetourGenJmpIndirect(o->pTrampoline->rbCodeIn, &o->pTrampoline->pDetour);
+			PUCHAR pCode = DetourGenJmpImmediate(o->pTarget, o->pTrampoline->rbCodeIn);
+			pCode = DetourGenBrk(pCode, o->pTrampoline->pRemain);
+			*o->ppPointer = o->pTrampoline->rbCode;
+			UNREFERENCED_PARAMETER(pCode);
+#endif // DETOURS_X64
+
+#ifdef DETOURS_X86
+			PUCHAR pbCode = DetourGenJmpImmediate(o->pTarget, o->pTrampoline->pDetour);
+			pCode = detour_gen_brk(pCode, o->pTrampoline->pRemain);
+			*o->ppPointer = o->pTrampoline->rbCode;
+			UNREFERENCED_PARAMETER(pCode);
+#endif // DETOURS_X86
+
+#ifdef DETOURS_ARM
+			PBYTE pbCode = detour_gen_jmp_immediate(o->pbTarget, NULL, o->pTrampoline->pbDetour);
+			pbCode = detour_gen_brk(pbCode, o->pTrampoline->pbRemain);
+			*o->ppbPointer = DETOURS_PBYTE_TO_PFUNC(o->pTrampoline->rbCode);
+			UNREFERENCED_PARAMETER(pbCode);
+#endif // DETOURS_ARM
+
+#ifdef DETOURS_ARM64
+			PBYTE pbCode = detour_gen_jmp_indirect(o->pbTarget, (ULONG64*)&(o->pTrampoline->pbDetour));
+			pbCode = detour_gen_brk(pbCode, o->pTrampoline->pbRemain);
+			*o->ppbPointer = o->pTrampoline->rbCode;
+			UNREFERENCED_PARAMETER(pbCode);
+#endif // DETOURS_ARM64
+
+			LogDebug("detours: pbTarget=%p: "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x [after]\n",
+				o->pTarget,
+				o->pTarget[0], o->pTarget[1], o->pTarget[2], o->pTarget[3],
+				o->pTarget[4], o->pTarget[5], o->pTarget[6], o->pTarget[7],
+				o->pTarget[8], o->pTarget[9], o->pTarget[10], o->pTarget[11]);
+
+			LogDebug("detours: pbTramp =%p: "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x\n",
+				o->pTrampoline,
+				o->pTrampoline->rbCode[0], o->pTrampoline->rbCode[1],
+				o->pTrampoline->rbCode[2], o->pTrampoline->rbCode[3],
+				o->pTrampoline->rbCode[4], o->pTrampoline->rbCode[5],
+				o->pTrampoline->rbCode[6], o->pTrampoline->rbCode[7],
+				o->pTrampoline->rbCode[8], o->pTrampoline->rbCode[9],
+				o->pTrampoline->rbCode[10], o->pTrampoline->rbCode[11]);
+
+#ifdef DETOURS_IA64
+			DETOUR_TRACE(("\n"));
+			DETOUR_TRACE(("detours:  &pldTrampoline  =%p\n",
+				&o->pTrampoline->pldTrampoline));
+			DETOUR_TRACE(("detours:  &bMovlTargetGp  =%p [%p]\n",
+				&o->pTrampoline->bMovlTargetGp,
+				o->pTrampoline->bMovlTargetGp.GetMovlGp()));
+			DETOUR_TRACE(("detours:  &rbCode         =%p [%p]\n",
+				&o->pTrampoline->rbCode,
+				((DETOUR_IA64_BUNDLE&)o->pTrampoline->rbCode).GetBrlTarget()));
+			DETOUR_TRACE(("detours:  &bBrlRemainEip  =%p [%p]\n",
+				&o->pTrampoline->bBrlRemainEip,
+				o->pTrampoline->bBrlRemainEip.GetBrlTarget()));
+			DETOUR_TRACE(("detours:  &bMovlDetourGp  =%p [%p]\n",
+				&o->pTrampoline->bMovlDetourGp,
+				o->pTrampoline->bMovlDetourGp.GetMovlGp()));
+			DETOUR_TRACE(("detours:  &bBrlDetourEip  =%p [%p]\n",
+				&o->pTrampoline->bCallDetour,
+				o->pTrampoline->bCallDetour.GetBrlTarget()));
+			DETOUR_TRACE(("detours:  pldDetour       =%p [%p]\n",
+				o->pTrampoline->ppldDetour->EntryPoint,
+				o->pTrampoline->ppldDetour->GlobalPointer));
+			DETOUR_TRACE(("detours:  pldTarget       =%p [%p]\n",
+				o->pTrampoline->ppldTarget->EntryPoint,
+				o->pTrampoline->ppldTarget->GlobalPointer));
+			DETOUR_TRACE(("detours:  pbRemain        =%p\n",
+				o->pTrampoline->pbRemain));
+			DETOUR_TRACE(("detours:  pbDetour        =%p\n",
+				o->pTrampoline->pbDetour));
+			DETOUR_TRACE(("\n"));
+#endif // DETOURS_IA64
+		}
+	}
+
+	// Restore all of the page permissions and flush the icache.
+	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
+		// We don't care if this fails, because the code is still accessible
+		ULONG old = 0;
+		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&o->pTarget,
+			(PULONG)&o->pTrampoline->cbRestore, o->Perm, &old);
+		if (!o->fIsRemove && o->pTrampoline) {
+			DetourFreeTrampoline(o->pTrampoline);
+			o->pTrampoline = nullptr;
+			freed = true;
+		}
+
+		DetourOperation* n = o->pNext;
+		delete o;
+		o = n;
+	}
+	s_pPendingOperations = nullptr;
+
+	// Free any trampoline regions that are now unused.
+	if (freed && !s_fRetainRegions) {
+		DetourFreeUnusedTrampolineRegions();
+	}
+
+	// Make sure the trampoline pages are no longer writable.
+	DetourRunnableTrampolineRegions();
+
+	s_pPendingThreads = nullptr;
+	s_PendingThreadId = 0;
+
+	if (pppFailedPointer != NULL) {
+		*pppFailedPointer = s_ppPendingError;
+	}
+
+	return s_PendingError;
+}
+
+
 
 NTSTATUS NTAPI DetourAttach(_Inout_ PVOID* ppPointer,
 	_In_ PVOID pDetour) {
@@ -821,17 +1123,7 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 	DetourOperation* o = nullptr;
 
 #ifdef DETOURS_IA64
-	PPLABEL_DESCRIPTOR ppldDetour = (PPLABEL_DESCRIPTOR)pDetour;
-	PPLABEL_DESCRIPTOR ppldTarget = (PPLABEL_DESCRIPTOR)pbTarget;
-	PVOID pDetourGlobals = NULL;
-	PVOID pTargetGlobals = NULL;
 
-	pDetour = (PBYTE)DetourCodeFromPointer(ppldDetour, &pDetourGlobals);
-	pbTarget = (PBYTE)DetourCodeFromPointer(ppldTarget, &pTargetGlobals);
-	DETOUR_TRACE(("  ppldDetour=%p, code=%p [gp=%p]\n",
-		ppldDetour, pDetour, pDetourGlobals));
-	DETOUR_TRACE(("  ppldTarget=%p, code=%p [gp=%p]\n",
-		ppldTarget, pbTarget, pTargetGlobals));
 #else // DETOURS_IA64
 	pTarget = (PUCHAR)DetourCodeFromPointer(pTarget, NULL);
 	pDetour = DetourCodeFromPointer(pDetour, NULL);
@@ -884,5 +1176,271 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 		return status;
 	}
 
-	
+	pTrampoline = DetourAllocTrampoline(pTarget);
+	if (pTrampoline == nullptr) {
+		status = STATUS_NO_MEMORY;
+		DbgBreakPoint();
+		goto fail;
+	}
+
+	if (ppRealTrampoline != nullptr) {
+		*ppRealTrampoline = pTrampoline;
+	}
+
+	LogDebug("detours: pTramp=%p, pDetour=%p\n", pTrampoline, pDetour);
+
+	memset(pTrampoline->rAlign, 0, sizeof(pTrampoline->rAlign));
+
+	// Detour the number of movable target instructions.
+	PUCHAR pSrc = pTarget;
+	PUCHAR prbCode = pTrampoline->rbCode;
+
+#ifdef DETOURS_IA64
+
+#else
+	PUCHAR pPool = prbCode + sizeof(pTrampoline->rbCode);
+#endif
+
+	ULONG target = 0;
+	ULONG jump = SIZE_OF_JMP;
+	ULONG align = 0;
+
+#ifdef DETOURS_ARM
+
+#endif
+
+	while (target < jump) {
+		PUCHAR pOp = pSrc;
+		LONG extra = 0;
+
+		LogDebug("DetourCopyInstruction(%p,%p)\n",
+			prbCode, pSrc);
+		pSrc = (PUCHAR)DetourCopyInstruction(prbCode, (PVOID*)&pPool, pSrc, nullptr, &extra);
+		LogDebug("DetourCopyInstruction() = %p (%d bytes)\n", pSrc, (int)(pSrc - pOp));
+		prbCode += (pSrc - pOp) + extra;
+		target = (LONG)(pSrc - pTarget);
+		pTrampoline->rAlign[align].obTarget = target;
+		pTrampoline->rAlign[align].obTrampoline = prbCode - pTrampoline->rbCode;
+		align++;
+
+		if (align >= ARRAYSIZE(pTrampoline->rAlign)) {
+			break;
+		}
+		if (DetourDoesCodeEndFunction(pOp)) {
+			break;
+		}
+	}
+
+	// Consume, but don't duplicate padding if it is needed and available
+	while (target < jump) {
+		LONG filler = DetourIsCodeFiller(pSrc);
+		if (filler == 0)
+			break;
+
+		pSrc += filler;
+		target = (LONG)(pSrc - pTarget);
+	}
+
+#if DETOUR_DEBUG
+	{
+		DETOUR_TRACE((" detours: rAlign ["));
+		LONG n = 0;
+		for (n = 0; n < ARRAYSIZE(pTrampoline->rAlign); n++) {
+			if (pTrampoline->rAlign[n].obTarget == 0 &&
+				pTrampoline->rAlign[n].obTrampoline == 0) {
+				break;
+			}
+			DETOUR_TRACE((" %u/%u",
+				pTrampoline->rAlign[n].obTarget,
+				pTrampoline->rAlign[n].obTrampoline
+				));
+
+		}
+		DETOUR_TRACE((" ]\n"));
+	}
+#endif
+
+	if (target<jump || align>ARRAYSIZE(pTrampoline->rAlign)) {
+		// Too few instruction
+
+		status = STATUS_INVALID_BLOCK_LENGTH;
+		if (s_fIgnoreTooSmall) {
+			goto stop;
+		}
+		else {
+			DbgBreakPoint();
+			goto fail;
+		}
+	}
+
+	if (prbCode > pPool) {
+		DbgBreakPoint();
+	}
+
+	pTrampoline->cbCode = (UCHAR)(prbCode - pTrampoline->rbCode);
+	pTrampoline->cbRestore = (UCHAR)target;
+	RtlCopyMemory(pTrampoline->rbRestore, pTarget, target);
+
+#if !defined(DETOURS_IA64)
+	if (target > sizeof(pTrampoline->rbCode) - jump) {
+		// Too many instructions.
+		status = STATUS_INVALID_HANDLE;
+		DbgBreakPoint();
+		goto fail;
+	}
+#endif // !DETOURS_IA64
+
+	pTrampoline->pRemain = pTarget + target;
+	pTrampoline->pDetour = (PUCHAR)pDetour;
+
+#ifdef DETOURS_IA64
+
+#endif // DETOURS_IA64
+
+	prbCode = pTrampoline->rbCode + pTrampoline->cbCode;
+#ifdef DETOURS_X64
+	prbCode = DetourGenJmpIndirect(prbCode, &pTrampoline->pRemain);
+	prbCode = DetourGenBrk(prbCode, pPool);
+#endif
+
+#ifdef DETOURS_X86
+	prbCode = DetourGenJmpIndirect(prbCode, pTrampoline->pbRemain);
+	prbCode = DetourGenBrk(prbCode, pbPool);
+#endif // DETOURS_X86
+
+#ifdef DETOURS_ARM
+
+#endif // DETOURS_ARM
+
+#ifdef DETOURS_ARM64
+
+#endif // DETOURS_ARM64
+
+	ULONG old = 0;
+	status = pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pTarget,
+		&target, PAGE_EXECUTE_READWRITE, &old);
+	if (!NT_SUCCESS(status)) {
+		goto fail;
+	}
+
+	LogDebug("detours: pbTarget=%p: "
+		"%02x %02x %02x %02x "
+		"%02x %02x %02x %02x "
+		"%02x %02x %02x %02x\n",
+		pTarget,
+		pTarget[0], pTarget[1], pTarget[2], pTarget[3],
+		pTarget[4], pTarget[5], pTarget[6], pTarget[7],
+		pTarget[8], pTarget[9], pTarget[10], pTarget[11]);
+	LogDebug("detours: pbTramp =%p: "
+		"%02x %02x %02x %02x "
+		"%02x %02x %02x %02x "
+		"%02x %02x %02x %02x\n",
+		pTrampoline,
+		pTrampoline->rbCode[0], pTrampoline->rbCode[1],
+		pTrampoline->rbCode[2], pTrampoline->rbCode[3],
+		pTrampoline->rbCode[4], pTrampoline->rbCode[5],
+		pTrampoline->rbCode[6], pTrampoline->rbCode[7],
+		pTrampoline->rbCode[8], pTrampoline->rbCode[9],
+		pTrampoline->rbCode[10], pTrampoline->rbCode[11]);
+
+	o->fIsRemove = FALSE;
+	o->ppPointer = (PUCHAR*)ppPointer;
+	o->pTrampoline = pTrampoline;
+	o->pTarget = pTarget;
+	o->Perm = old;
+	o->pNext = s_pPendingOperations;
+	s_pPendingOperations = o;
+
+	return STATUS_SUCCESS;
+}
+
+NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
+	_In_ PVOID pDetour) {
+	NTSTATUS error = STATUS_SUCCESS;
+
+	if (s_PendingThreadId != (LONG)PsGetCurrentThreadId()) {
+		return STATUS_REQUEST_NOT_ACCEPTED;
+	}
+
+	if (pDetour == nullptr) {
+		return STATUS_INVALID_HANDLE;
+	}
+	if (ppPointer == NULL) {
+		return STATUS_INVALID_HANDLE;
+	}
+	if (*ppPointer == NULL) {
+		error = STATUS_INVALID_HANDLE;
+		s_PendingError = error;
+		s_ppPendingError = ppPointer;
+		DbgBreakPoint();
+		return error;
+	}
+
+	DetourOperation* o = new (NonPagedPool) DetourOperation;
+	if (o == NULL) {
+		error = STATUS_NO_MEMORY;
+	fail:
+		s_PendingError = error;
+		DbgBreakPoint();
+	stop:
+		if (o != NULL) {
+			delete o;
+			o = NULL;
+		}
+		s_ppPendingError = ppPointer;
+		return error;
+	}
+
+#ifdef DETOURS_IA64
+
+#else // !DETOURS_IA64
+	PDETOUR_TRAMPOLINE pTrampoline =
+		(PDETOUR_TRAMPOLINE)DetourCodeFromPointer(*ppPointer, NULL);
+	pDetour = DetourCodeFromPointer(pDetour, NULL);
+#endif // !DETOURS_IA64
+
+	////////////////////////////////////// Verify that Trampoline is in place.
+   //
+	LONG target = pTrampoline->cbRestore;
+	PUCHAR pTarget = pTrampoline->pRemain - target;
+	if (target == 0 || target > sizeof(pTrampoline->rbCode)) {
+		error = STATUS_INVALID_BLOCK_LENGTH;
+		if (s_fIgnoreTooSmall) {
+			goto stop;
+		}
+		else {
+			DbgBreakPoint();
+			goto fail;
+		}
+	}
+
+	if (pTrampoline->pDetour != pDetour) {
+		error = STATUS_INVALID_BLOCK_LENGTH;
+		if (s_fIgnoreTooSmall) {
+			goto stop;
+		}
+		else {
+			DbgBreakPoint();
+			goto fail;
+		}
+	}
+
+
+	ULONG old = 0;
+	auto status = pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pTarget,
+		(PULONG)&target, PAGE_EXECUTE_READWRITE, &old);
+	if (!NT_SUCCESS(status)) {
+		DbgBreakPoint();
+		goto fail;
+	}
+
+	o->fIsRemove = TRUE;
+	o->ppPointer = (PUCHAR*)ppPointer;
+	o->pTrampoline = pTrampoline;
+	o->pTarget = pTarget;
+	o->Perm = old;
+	o->pNext = s_pPendingOperations;
+	s_pPendingOperations = o;
+
+	return STATUS_SUCCESS;
 }

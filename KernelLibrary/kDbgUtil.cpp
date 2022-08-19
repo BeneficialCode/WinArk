@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "kDbgUtil.h"
+#include "detours.h"
 
 extern POBJECT_TYPE* DbgkDebugObjectType;
 
@@ -10,15 +11,37 @@ PEX_RUNDOWN_REF kDbgUtil::GetProcessRundownProtect(PEPROCESS Process) {
 bool kDbgUtil::HookDbgSys() {
 	bool success = false;
 	g_pNtCreateDebugObject = (PNtCreateDebugObject)_info.NtCreateDebugObjectAddress;
-	if(g_pNtCreateDebugObject)
-		success = _hookNtCreateDebugObject.HookKernelApi(g_pNtCreateDebugObject, NtCreateDebugObject, true);
+	if (g_pNtCreateDebugObject) {
+		NTSTATUS status = DetourTransactionBegin();
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourUpdateThread(ZwCurrentThread());
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+	// success = _hookNtCreateDebugObject.HookKernelApi(g_pNtCreateDebugObject, NtCreateDebugObject, true);
 	return success;
 }
 
 bool kDbgUtil::UnhookDbgSys() {
 	bool success = false;
-	if (_hookNtCreateDebugObject._success)
-		success = _hookNtCreateDebugObject.UnhookKernelApi(true);
+	NTSTATUS status = DetourTransactionBegin();
+	if (!NT_SUCCESS(status))
+		return false;
+	status = DetourUpdateThread(ZwCurrentThread());
+	if (!NT_SUCCESS(status))
+		return false;
+
+	status = DetourDetach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	status = DetourTransactionCommit();
+	if (!NT_SUCCESS(status))
+		return false;
 
 	return success;
 }
@@ -27,6 +50,8 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 	if (_first) {
 		_info.NtCreateDebugObjectAddress = info->NtCreateDebugObjectAddress;
 		_info.DbgkDebugObjectTypeAddress = info->DbgkDebugObjectTypeAddress;
+		_info.ZwProtectVirtualMemory = info->ZwProtectVirtualMemory;
+		pZwProtectVirtualMemory = (PZwProtectVirtualMemory)_info.ZwProtectVirtualMemory;
 		_first = false;
 	}
 	DbgkDebugObjectType = (POBJECT_TYPE*)_info.DbgkDebugObjectTypeAddress;

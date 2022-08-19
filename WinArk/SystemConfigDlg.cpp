@@ -120,5 +120,8 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->DbgkDebugObjectTypeAddress)
 		return false;
 
+	pInfo->ZwProtectVirtualMemory = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ZwProtectVirtualMemory");
+	if (!pInfo->ZwProtectVirtualMemory)
+		return false;
 	return true;
 }
