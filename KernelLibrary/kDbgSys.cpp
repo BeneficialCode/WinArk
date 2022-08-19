@@ -1361,7 +1361,7 @@ NTSTATUS DbgkpSendApiMessage(
 		((Flag & 0x2) << 0x5),
 		nullptr
 	);
-	ZwFlushInstructionCache();
+	ZwFlushInstructionCache(ZwCurrentProcess(), 0, 0);
 	if (isSuspend) {
 		// PsThawProcess()
 	}

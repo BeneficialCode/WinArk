@@ -314,7 +314,7 @@ void CProcessInlineHookTable::CheckX86HookType2(cs_insn* insn, size_t j, size_t 
 		return;
 
 	ULONG targetAddress = d1->x86.operands[0].imm;
-	size_t size;
+	SIZE_T size;
 	ULONG dummy;
 	bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)targetAddress, &dummy, 4, &size);
 	if (!success)
@@ -381,7 +381,7 @@ void CProcessInlineHookTable::CheckX86HookType3(cs_insn* insn, size_t j, size_t 
 
 	ULONG targetAddress = d1->x86.operands[1].imm;
 	// 排除无效的内存地址
-	size_t size;
+	SIZE_T size;
 	ULONG dummy;
 	bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)targetAddress, &dummy, 4, &size);
 	if (!success)

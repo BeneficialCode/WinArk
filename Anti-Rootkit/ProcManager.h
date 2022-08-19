@@ -2,7 +2,7 @@
 #include<ntifs.h>
 
 extern "C" {
-	NTKERNELAPI UCHAR* PsGetProcessImageFileName(IN PEPROCESS Process);
+	NTKERNELAPI UCHAR* NTAPI PsGetProcessImageFileName(_In_ PEPROCESS Process);
 	NTKERNELAPI HANDLE PsGetProcessInheritedFromUniqueProcessId(IN PEPROCESS Process);
 	NTKERNELAPI PPEB PsGetProcessPeb(PEPROCESS Process);
 	NTKERNELAPI NTSTATUS ZwOpenThread(

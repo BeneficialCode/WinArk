@@ -119,7 +119,7 @@ PUCHAR DetourSkipJmp(PUCHAR pCode, PVOID* ppGlobals) {
 	// First, skip over the import vector if there is one
 	if (pCode[0] == 0xff && pCode[1] == 0x25) { // jmp [+imm32]
 		// Looks like an import alias jump, then get the code it points to.
-		PUCHAR pTarget = pCode + 6 + *(UNALIGNED PUCHAR*) & pCode[2];
+		PUCHAR pTarget =  *(UNALIGNED PUCHAR*)&pCode[2];
 		if (DetourIsImported(pCode, pTarget)) {
 			PUCHAR pNew = *(UNALIGNED PUCHAR*)pTarget;
 			LogDebug("%p->%p: skipped over import table.", pCode, pNew);
@@ -136,7 +136,7 @@ PUCHAR DetourSkipJmp(PUCHAR pCode, PVOID* ppGlobals) {
 		// First, skip over the import vector if there is one.
 		if (pCode[0] == 0xff && pCode[1] == 0x25) { // jmp [+imm32]
 			 // Looks like an import alias jump, then get the code it points to.
-			PUCHAR pTarget = pCode + 6 + *(UNALIGNED PUCHAR*) & pCode[2];
+			PUCHAR pTarget = *(UNALIGNED PUCHAR*) & pCode[2];
 			if (DetourIsImported(pCode, pTarget)) {
 				pNew = *(UNALIGNED PUCHAR*)pTarget;
 				LogDebug("%p->%p: skipped over import table.\n", pCode, pNew);

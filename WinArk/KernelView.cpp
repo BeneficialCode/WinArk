@@ -41,7 +41,7 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	}columns[] = {
 		L"PiDDBCache",
 		L"UnloadedDrivers",
-		L"ÄÚºËPoolTag"
+		L"KernelPoolTag"
 	};
 
 	int i = 0;

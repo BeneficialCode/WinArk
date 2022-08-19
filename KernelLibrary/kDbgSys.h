@@ -27,9 +27,13 @@ PsReferenceProcessFilePointer(
 	_Out_ PFILE_OBJECT* FileObject
 );
 
-extern "C"
-NTSTATUS ZwFlushInstructionCache(
-);
+extern "C"{
+	NTSYSAPI NTSTATUS NTAPI ZwFlushInstructionCache(_In_ HANDLE 	ProcessHandle,
+		_In_ PVOID 	BaseAddress,
+		_In_ ULONG 	NumberOfBytesToFlush
+	);
+}
+
 
 extern "C"
 NTSTATUS ObDuplicateObject(

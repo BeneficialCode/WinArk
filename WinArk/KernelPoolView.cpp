@@ -147,7 +147,7 @@ void CKernelPoolView::UpdatePoolTags() {
 		SetItemCountEx(count, LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 		UpdateVisible();
 	}
-
+	UpdatePaneText();
 }
 
 void CKernelPoolView::AddTag(const SYSTEM_POOLTAG& info, int index) {
@@ -303,9 +303,9 @@ LRESULT CKernelPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 			{
 				auto value = info.TagInfo.PagedUsed;
 				if (value < 1 << 12)
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%lld B", value);
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
 				else
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%lld KB", value >> 10);
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
 
 				break;
 			}
@@ -326,9 +326,9 @@ LRESULT CKernelPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 			{
 				auto value = info.TagInfo.NonPagedUsed;
 				if (value < 1 << 12)
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%lld B", value);
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
 				else
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%lld KB", value >> 10);
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
 				break;
 			}
 
