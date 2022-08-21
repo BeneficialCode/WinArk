@@ -127,7 +127,8 @@ bool CPiDDBCacheTable::CompareItems(const PiDDBCacheInfo& s1, const PiDDBCacheIn
 	switch (col)
 	{
 		case 0:
-
+			return SortHelper::SortStrings(s1.DriverName, s2.DriverName, asc);
+			break;
 		default:
 			break;
 	}
