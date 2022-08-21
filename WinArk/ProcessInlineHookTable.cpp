@@ -108,8 +108,6 @@ LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lPara
 		return -1;
 
 	cs_option(_x86handle, CS_OPT_DETAIL, CS_OPT_ON);
-	cs_option(_x86handle, CS_OPT_UNSIGNED, CS_OPT_ON);
-	cs_option(_x86handle, CS_OPT_SKIPDATA, CS_OPT_ON);
 
 	Refresh();
 

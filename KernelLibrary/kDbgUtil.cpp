@@ -9,33 +9,21 @@ PEX_RUNDOWN_REF kDbgUtil::GetProcessRundownProtect(PEPROCESS Process) {
 }
 
 bool kDbgUtil::HookDbgSys() {
-	bool success = false;
 	g_pNtCreateDebugObject = (PNtCreateDebugObject)_info.NtCreateDebugObjectAddress;
 	if (g_pNtCreateDebugObject) {
-		NTSTATUS status = DetourTransactionBegin();
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
-		status = DetourUpdateThread(ZwCurrentThread());
-		if (!NT_SUCCESS(status))
-			return false;
-		status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+		status = DetourTransactionCommit();
 		if (!NT_SUCCESS(status))
 			return false;
 	}
 	// success = _hookNtCreateDebugObject.HookKernelApi(g_pNtCreateDebugObject, NtCreateDebugObject, true);
-	return success;
+	return true;
 }
 
 bool kDbgUtil::UnhookDbgSys() {
-	bool success = false;
-	NTSTATUS status = DetourTransactionBegin();
-	if (!NT_SUCCESS(status))
-		return false;
-	status = DetourUpdateThread(ZwCurrentThread());
-	if (!NT_SUCCESS(status))
-		return false;
-
-	status = DetourDetach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+	NTSTATUS status = DetourDetach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -43,7 +31,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	if (!NT_SUCCESS(status))
 		return false;
 
-	return success;
+	return true;
 }
 
 bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {

@@ -16,10 +16,6 @@ extern "C" {
 static bool s_fIgnoreTooSmall = false;
 static bool s_fRetainRegions = false;
 
-static LONG s_PendingThreadId = 0;
-static NTSTATUS s_PendingError = STATUS_SUCCESS;
-static PVOID* s_ppPendingError = nullptr;
-static DetourThread* s_pPendingThreads = nullptr;
 static DetourOperation* s_pPendingOperations = nullptr;
 
 bool DetourIsImported(PUCHAR pCode, PUCHAR pAddress) {
@@ -72,6 +68,62 @@ ULONG_PTR Detour2gbAbove(ULONG_PTR address) {
 #endif
 }
 
+void MapLockedCopyMemory(PUCHAR pDst, PVOID pSrc, ULONG length) {
+	UCHAR code[4] = { 0 };
+
+	PHYSICAL_ADDRESS physicalAddress = { 0 };
+	PVOID virtualAddress = nullptr;
+
+	if (length > sizeof(ULONG)) {
+		RtlCopyMemory(code, pSrc, sizeof(ULONG));
+	}
+	else {
+		RtlCopyMemory(code, pSrc, length);
+		RtlCopyMemory(code + length, pDst + length, sizeof(ULONG) - length);
+	}
+
+	physicalAddress = MmGetPhysicalAddress(pDst);
+	virtualAddress = MmMapIoSpace(physicalAddress, length, MmNonCached);
+	if (virtualAddress != nullptr) {
+		if (length > sizeof(ULONG)) {
+			InterlockedExchange(reinterpret_cast<LONG*>(virtualAddress), 0xfeebUI32);
+			RtlCopyMemory(reinterpret_cast<PCHAR>(virtualAddress) + sizeof(ULONG),
+				reinterpret_cast<PCHAR>(pSrc) + sizeof(ULONG),
+				length - sizeof(ULONG));
+		}
+		InterlockedExchange(reinterpret_cast<LONG*>(virtualAddress), *reinterpret_cast<PLONG>(code));
+		MmUnmapIoSpace(virtualAddress, length);
+	}
+}
+
+#pragma pack(push,1)
+struct JmpImmediate {
+	unsigned char jmp = 0xe9;
+	INT32 imm32 = 0;
+};
+
+struct JmpIndirect {
+	unsigned short int jmp = 0x25FF;
+	INT32 imm32 = 0;
+};
+
+struct Brk {
+	unsigned char int3[1];
+};
+
+struct JmpCode {
+	unsigned char push = 0x68;
+	ULONG lowAddr;				// push xxxxxxxx
+	unsigned char op1 = 0xc7;
+	unsigned char op2 = 0x44;
+	unsigned char op3 = 0x24;
+	unsigned char op4 = 0x04;
+	ULONG highAddr;
+	unsigned char ret = 0xc3;
+};
+
+#pragma pack(pop)
+
 ///////////////////////////////////////////////////////////////////////// X86.
 //
 #ifdef DETOURS_X86
@@ -92,27 +144,39 @@ struct _DETOUR_TRAMPOLINE
 C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 72);
 
 enum {
-	SIZE_OF_JMP = 5
+	SIZE_OF_JUMP_CODE = 5
 };
 
-PUCHAR DetourGenJmpImmedate(PUCHAR pCode, PUCHAR pJmpVal) {
+PUCHAR DetourGenJmpImmediate(PUCHAR pCode, PUCHAR pJmpVal) {
 	PUCHAR pJmpSrc = pCode + 5;
-	*pCode++ = 0xE9; // jmp +imm32
-	*((INT32*&)pCode)++ = (INT32)(pJmpVal - pJmpSrc);
+	JmpImmediate code;
+	code.imm32 = (INT32)(pJmpVal - pJmpSrc);
+	MapLockedCopyMemory(pCode, &code, sizeof(code));
+	pCode++; // jmp +imm32
+	((INT32*&)pCode)++;
 	return pCode;
 }
 
 PUCHAR DetourGenJmpIndirect(PUCHAR pCode, PUCHAR* ppJmpVal) {
 	PUCHAR pJmpSrc = pCode + 6;
-	*pCode++ = 0xff; // jmp [+imm32]
-	*pCode++ = 0x25;
-	*((INT32*&)pCode)++ = (INT32)((PUCHAR)ppJmpVal - pJmpSrc);
+	JmpIndirect code;
+	code.imm32 = (INT32)((PUCHAR)ppJmpVal - pJmpSrc);
+	MapLockedCopyMemory(pCode, &code, sizeof(code));
+	pCode++; // jmp [+imm32]
+	pCode++;
+	((INT32*&)pCode)++;
 	return pCode;
 }
 
-PUCHAR DetourGenBrk(PUCHAR pCode, PUCHAR pLimie) {
-	while (pCode < pLimie) {
-		*pCode++ = 0xcc;
+PUCHAR DetourGenBrk(PUCHAR pCode, PUCHAR pLimit) {
+	ULONG count = pLimit - pCode;
+	Brk* pBrk = (Brk*)ExAllocatePoolWithTag(NonPagedPool, sizeof(Brk) + count, 'oted');
+	if (pBrk != nullptr) {
+		MapLockedCopyMemory(pCode, pBrk->int3, count);
+		ExFreePool(pBrk);
+		while (pCode < pLimit) {
+			pCode++;
+		}
 	}
 	return pCode;
 }
@@ -296,27 +360,41 @@ struct _DETOUR_TRAMPOLINE {
 C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 96);
 
 enum {
-	SIZE_OF_JMP = 5
+	SIZE_OF_JUMP_CODE = 14,
 };
 
-PUCHAR DetourGenJmpImmediate(PUCHAR pCode, PUCHAR pJmpVal) {
-	PUCHAR pJmpSrc = pCode + 5;
-	*pCode++ = 0xe9; // jmp + imm32
-	*((INT32*&)pCode)++ = (INT32)(pJmpVal - pJmpSrc);
+
+
+PUCHAR DetourGenJmpAddress(PUCHAR pCode, PUCHAR pJmpVal) {
+	JmpCode code;
+	ULONG_PTR addr = (ULONG_PTR)pJmpVal;
+	code.lowAddr = addr & 0xFFFFFFFF;
+	code.highAddr = (addr >> 32) & 0xFFFFFFFF;
+	MapLockedCopyMemory(pCode, &code, sizeof(code));
+	pCode += sizeof(code);
 	return pCode;
 }
 
 PUCHAR DetourGenJmpIndirect(PUCHAR pCode, PUCHAR* ppJmpVal) {
 	PUCHAR pJmpSrc = pCode + 6;
-	*pCode++ = 0xff; // jmp [+imm32]
-	*pCode++ = 0x25;
-	*((INT32*&)pCode)++ = (INT32)((PUCHAR)ppJmpVal - pJmpSrc);
+	JmpIndirect code;
+	code.imm32 = (INT32)((PUCHAR)ppJmpVal - pJmpSrc);
+	MapLockedCopyMemory(pCode, &code, sizeof(code));
+	pCode++;
+	pCode++;
+	((INT32*&)pCode)++;
 	return pCode;
 }
 
-PUCHAR DetourGenBrk(PUCHAR pCode, PUCHAR pLimie) {
-	while (pCode < pLimie) {
-		*pCode++ = 0xcc;
+PUCHAR DetourGenBrk(PUCHAR pCode, PUCHAR pLimit) {
+	ULONG count = pLimit - pCode;
+	Brk* pBrk = (Brk*)ExAllocatePoolWithTag(NonPagedPool, sizeof(Brk) + count,'oted');
+	if (pBrk != nullptr) {
+		MapLockedCopyMemory(pCode, pBrk->int3, count);
+		ExFreePool(pBrk);
+		while (pCode < pLimit) {
+			pCode++;
+		}
 	}
 	return pCode;
 }
@@ -364,41 +442,6 @@ PUCHAR DetourSkipJmp(PUCHAR pCode, PVOID* ppGlobals) {
 		}
 	}
 	return pCode;
-}
-
-void DetourFindJmpBounds(PUCHAR pCode, PDETOUR_TRAMPOLINE* ppLower,
-	PDETOUR_TRAMPOLINE* ppUpper) {
-	// We have to place trampolines within +/- 2GB of code
-	ULONG_PTR lo = Detour2gbBelow((ULONG_PTR)pCode);
-	ULONG_PTR hi = Detour2gbAbove((ULONG_PTR)pCode);
-	LogDebug("[%p..%p..%p]\n", (PVOID)lo, pCode, (PVOID)hi);
-
-	// And, within +/- 2GB of relative jmp vectors.
-	if (pCode[0] == 0xff && pCode[1] == 0x25) {
-		PUCHAR pNew = pCode + 6 + *(UNALIGNED INT32*) & pCode[2];
-		if (pNew < pCode) {
-			hi = Detour2gbAbove((ULONG_PTR)pNew);
-		}
-		else {
-			lo = Detour2gbBelow((ULONG_PTR)pNew);
-		}
-		LogDebug("[%p..%p..%p] [+imm32]\n", (PVOID)lo, pCode, (PVOID)hi);
-	}
-	// And, within +/- 2GB of relative jmp targets.
-	else if (pCode[0] == 0xe9) {   // jmp +imm32
-		PUCHAR pNew = pCode + 5 + *(UNALIGNED INT32*) & pCode[1];
-
-		if (pNew < pCode) {
-			hi = Detour2gbAbove((ULONG_PTR)pNew);
-		}
-		else {
-			lo = Detour2gbBelow((ULONG_PTR)pNew);
-		}
-		LogDebug("[%p..%p..%p] +imm32\n", (PVOID)lo, pCode, (PVOID)hi);
-	}
-
-	*ppLower = (PDETOUR_TRAMPOLINE)lo;
-	*ppUpper = (PDETOUR_TRAMPOLINE)hi;
 }
 
 bool DetourDoesCodeEndFunction(PUCHAR pCode) {
@@ -508,180 +551,20 @@ static PDETOUR_REGION s_pRegion = nullptr;  // Default region
 
 
 
+
 PZwProtectVirtualMemory pZwProtectVirtualMemory = nullptr;
-
-
-NTSTATUS DetourWritableTrampolineRegions() {
-	if (pZwProtectVirtualMemory == nullptr) {
-		return STATUS_UNSUCCESSFUL;
-	}
-	ULONG size = DETOUR_REGION_SIZE;
-	// Mark all of the regions as writable.
-	for (PDETOUR_REGION pRegion = s_pRegions; pRegion != nullptr; pRegion = pRegion->pNext) {
-		NTSTATUS status;
-		ULONG dummy;
-		status = pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pRegion,
-			&size, PAGE_EXECUTE_READWRITE, &dummy);
-		if (!NT_SUCCESS(status)) {
-			return status;
-		}
-	}
-	return STATUS_SUCCESS;
-}
-
-static PUCHAR DetourAllocRoundDownToRegion(PUCHAR pTry) {
-	// WinXP64 returns free areas that aren't REGION aligned to 32-bit applications.
-	ULONG_PTR extra = ((ULONG_PTR)pTry) & (DETOUR_REGION_SIZE - 1);
-	if (extra != 0) {
-		pTry -= extra;
-	}
-	return pTry;
-}
-
-static PUCHAR DetourAllocRoundUpToRegion(PUCHAR pTry) {
-	// WinXP64 returns free areas that aren't REGION aligned to 32-bit applications.
-	ULONG_PTR extra = ((ULONG_PTR)pTry) & (DETOUR_REGION_SIZE - 1);
-	if (extra != 0) {
-		ULONG_PTR adjust = DETOUR_REGION_SIZE - extra;
-		pTry += adjust;
-	}
-	return pTry;
-}
-
-// Starting at pLo, try to allocate a memory region, continue until pHi.
-static PVOID DetourAllocRegionFromLo(PUCHAR pLo, PUCHAR pHi) {
-	PUCHAR pTry = DetourAllocRoundUpToRegion(pLo);
-	LogDebug("Looking for free region in %p..%p from %p:\n", pLo, pHi, pTry);
-
-	for (; pTry < pHi;) {
-		MEMORY_BASIC_INFORMATION mbi;
-
-		RtlZeroMemory(&mbi, sizeof(mbi));
-		SIZE_T len;
-		NTSTATUS status = ZwQueryVirtualMemory(ZwCurrentProcess(),
-			pTry,
-			MemoryBasicInformation,
-			&mbi,
-			sizeof(mbi),
-			&len);
-		if (!NT_SUCCESS(status)) {
-			break;
-		}
-
-		LogDebug("Try %p => %p..%p %61x\n", pTry,
-			mbi.BaseAddress, (PUCHAR)mbi.BaseAddress + mbi.RegionSize - 1,
-			mbi.State);
-		if (mbi.State == MEM_FREE && mbi.RegionSize >= DETOUR_REGION_SIZE) {
-			PVOID pv = nullptr;
-			SIZE_T size = DETOUR_REGION_SIZE;
-			status = ZwAllocateVirtualMemory(ZwCurrentProcess(), &pv, 0, &size,
-				MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-			if (pv != nullptr) {
-				return pv;
-			}
-			else if (status == STATUS_DYNAMIC_CODE_BLOCKED) {
-				return nullptr;
-			}
-			pTry += DETOUR_REGION_SIZE;
-		}
-		else {
-			pTry = DetourAllocRoundUpToRegion((PUCHAR)mbi.BaseAddress + mbi.RegionSize);
-		}
-	}
-	return nullptr;
-}
-
-// Starting at pHi, try to allocate a memory region, continue until pLo.
-static PVOID DetourAllocRegionFromHi(PUCHAR pLo, PUCHAR pHi) {
-	PUCHAR pTry = DetourAllocRoundUpToRegion(pHi - DETOUR_REGION_SIZE);
-
-	LogDebug("Looking for free region in %p..%p from %p:\n", pLo, pHi, pTry);
-
-	for (; pTry > pLo;) {
-		MEMORY_BASIC_INFORMATION mbi;
-
-		LogDebug("Try %p\n", pTry);
-
-		RtlZeroMemory(&mbi, sizeof(mbi));
-		SIZE_T len;
-		NTSTATUS status = ZwQueryVirtualMemory(ZwCurrentProcess(),
-			pTry,
-			MemoryBasicInformation,
-			&mbi,
-			sizeof(mbi),
-			&len);
-		if (!NT_SUCCESS(status)) {
-			break;
-		}
-
-		LogDebug("Try %p => %p..%p %61x\n",
-			pTry, mbi.BaseAddress, (PUCHAR)mbi.BaseAddress + mbi.RegionSize - 1,
-			mbi.State);
-		if (mbi.State == MEM_FREE && mbi.RegionSize >= DETOUR_REGION_SIZE) {
-			PVOID pv = nullptr;
-			SIZE_T size = DETOUR_REGION_SIZE;
-			status = ZwAllocateVirtualMemory(ZwCurrentProcess(), &pv, 0, &size,
-				MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-			if (pv != nullptr) {
-				return pv;
-			}
-			else if (status == STATUS_DYNAMIC_CODE_BLOCKED) {
-				return nullptr;
-			}
-			pTry -= DETOUR_REGION_SIZE;
-		}
-		else {
-			pTry = DetourAllocRoundDownToRegion((PUCHAR)mbi.AllocationBase - DETOUR_REGION_SIZE);
-		}
-	}
-	return nullptr;
-}
 
 static PVOID DetourAllocTrampolineAllocateNew(PUCHAR pTarget,
 	PDETOUR_TRAMPOLINE pLo,
 	PDETOUR_TRAMPOLINE pHi) {
 	PVOID pTry = nullptr;
-	// NB: We must always also start the search at an offset from pTarget
-	//     in order to maintain ASLR entropy.
 
-#if defined(DETOURS_64BIT)
-// Try looking 1GB below or lower.
-	if (pTry == NULL && pTarget > (PUCHAR)0x40000000) {
-		pTry = DetourAllocRegionFromHi((PUCHAR)pLo, pTarget - 0x40000000);
-	}
-	// Try looking 1GB above or higher.
-	if (pTry == NULL && pTarget < (PUCHAR)0xffffffff40000000) {
-		pTry = DetourAllocRegionFromLo(pTarget + 0x40000000, (PUCHAR)pHi);
-	}
-	// Try looking 1GB below or higher.
-	if (pTry == NULL && pTarget > (PUCHAR)0x40000000) {
-		pTry = DetourAllocRegionFromLo(pTarget - 0x40000000, pTarget);
-	}
-	// Try looking 1GB above or lower.
-	if (pTry == NULL && pTarget < (PUCHAR)0xffffffff40000000) {
-		pTry = DetourAllocRegionFromHi(pTarget, pTarget + 0x40000000);
-	}
-#endif
+	pTry = ExAllocatePoolWithTag(NonPagedPool, DETOUR_REGION_SIZE, 'oted');
 
-	// Try anything below.
-	if (pTry == nullptr) {
-		pTry = DetourAllocRegionFromHi((PUCHAR)pLo, pTarget);
-	}
-	// Try anything above
-	if (pTry == nullptr) {
-		pTry = DetourAllocRegionFromLo((PUCHAR)pTarget, (PUCHAR)pHi);
-	}
 	return pTry;
 }
 
 static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
-	// We have to place trampolines within +/- 2GB of target.
-
-	PDETOUR_TRAMPOLINE pLo;
-	PDETOUR_TRAMPOLINE pHi;
-
-	DetourFindJmpBounds(pTarget, &pLo, &pHi);
-
 	PDETOUR_TRAMPOLINE pTrampoline = nullptr;
 
 	// Insure that there is a default region.
@@ -690,15 +573,10 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 	}
 
 	// First check the default region for an valid free block.
-	if (s_pRegion != nullptr && s_pRegion->pFree != nullptr &&
-		s_pRegion->pFree >= pLo && s_pRegion->pFree <= pHi) {
+	if (s_pRegion != nullptr && s_pRegion->pFree != nullptr) {
 
 	found_region:
 		pTrampoline = s_pRegion->pFree;
-		// do a last sanity check on region
-		if (pTrampoline<pLo || pTrampoline>pHi) {
-			return nullptr;
-		}
 		s_pRegion->pFree = (PDETOUR_TRAMPOLINE)pTrampoline->pRemain;
 		memset(pTrampoline, 0xcc, sizeof(*pTrampoline));
 		return pTrampoline;
@@ -706,8 +584,7 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 
 	// Then check the existing regions for a valid free block.
 	for (s_pRegion = s_pRegions; s_pRegion != nullptr; s_pRegion = s_pRegion->pNext) {
-		if (s_pRegion != nullptr && s_pRegion->pFree != nullptr &&
-			s_pRegion->pFree >= pLo && s_pRegion->pFree <= pHi) {
+		if (s_pRegion != nullptr && s_pRegion->pFree != nullptr) {
 			goto found_region;
 		}
 	}
@@ -717,6 +594,30 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 	 // Round pTarget down to 64KB block.
 	// /RTCc RuntimeChecks breaks PtrToUlong.
 	pTarget = pTarget - (ULONG)((ULONG_PTR)pTarget & 0xffff);
+
+	PVOID pNewlyAllocated = DetourAllocTrampolineAllocateNew(pTarget, nullptr, nullptr);
+	if (pNewlyAllocated != nullptr) {
+		s_pRegion = (DETOUR_REGION*)pNewlyAllocated;
+		s_pRegion->Signature = DETOUR_REGION_SIGNATURE;
+		s_pRegion->pFree = NULL;
+		s_pRegion->pNext = s_pRegions;
+		s_pRegions = s_pRegion;
+		LogDebug("  Allocated region %p..%p\n\n",
+			s_pRegion, ((PUCHAR)s_pRegion) + DETOUR_REGION_SIZE - 1);
+
+		// Put everything but the first trampoline on the free list.
+		PUCHAR pFree = NULL;
+		pTrampoline = ((PDETOUR_TRAMPOLINE)s_pRegion) + 1;
+		for (int i = DETOUR_TRAMPOLINES_PER_REGION - 1; i > 1; i--) {
+			pTrampoline[i].pRemain = pFree;
+			pFree = (PUCHAR)&pTrampoline[i];
+		}
+		s_pRegion->pFree = (PDETOUR_TRAMPOLINE)pFree;
+		goto found_region;
+	}
+
+	LogError("Couldn't find available memory region!\n");
+	return nullptr;
 }
 
 static void DetourFreeTrampoline(PDETOUR_TRAMPOLINE pTrampoline) {
@@ -726,16 +627,6 @@ static void DetourFreeTrampoline(PDETOUR_TRAMPOLINE pTrampoline) {
 	memset(pTrampoline, 0, sizeof(*pTrampoline));
 	pTrampoline->pRemain = (PUCHAR)pRegion->pFree;
 	pRegion->pFree = pTrampoline;
-}
-
-static void DetourRunnableTrampolineRegions() {
-	// Mark all of the regions as executable.
-	for (PDETOUR_REGION pRegion = s_pRegions; pRegion != nullptr; pRegion = pRegion->pNext) {
-		ULONG old;
-		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pRegion,
-			(PULONG)&DETOUR_REGION_SIZE, PAGE_EXECUTE_READ, &old);
-		ZwFlushInstructionCache(ZwCurrentProcess(), pRegion, DETOUR_REGION_SIZE);
-	}
 }
 
 static bool DetourIsRegionEmpty(PDETOUR_REGION pRegion) {
@@ -769,7 +660,7 @@ static void DetourFreeUnusedTrampolineRegions() {
 		if (DetourIsRegionEmpty(pRegion)) {
 			*ppRegionBase = pRegion->pNext;
 			SIZE_T size = 0;
-			ZwFreeVirtualMemory(ZwCurrentProcess(), (PVOID*)&pRegion, &size, MEM_RELEASE);
+			ExFreePoolWithTag(pRegion, 'oted');
 			s_pRegion = NULL;
 		}
 		else {
@@ -784,123 +675,19 @@ PVOID NTAPI DetourCodeFromPointer(_In_ PVOID pPointer,
 	return DetourSkipJmp((PUCHAR)pPointer, ppGlobals);
 }
 
-LONG NTAPI DetourTransactionBegin() {
-	// Only one transaction is allowed at a time
-
-	if (s_PendingThreadId != 0) {
-		return STATUS_UNSUCCESSFUL;
-	}
-
-	if (InterlockedCompareExchange(&s_PendingThreadId, HandleToUlong(PsGetCurrentThreadId()), 0) != 0) {
-		return STATUS_UNSUCCESSFUL;
-	}
-
-	s_pPendingOperations = nullptr;
-	s_pPendingThreads = nullptr;
-	s_ppPendingError = nullptr;
-
-	// Make sure the trampoline pages are writable
-	s_PendingError = DetourWritableTrampolineRegions();
-
-	return s_PendingError;
-}
-
-NTSTATUS NTAPI DetourUpdateThread(_In_ HANDLE hThread) {
-	NTSTATUS error;
-
-	//If any of the pending operations failed, then we don't need to do this.
-	if (s_PendingError != STATUS_SUCCESS) {
-		return s_PendingError;
-	}
-
-	// Silently (and safely) drop any attempt to suspend our own thread.
-	if (hThread == ZwCurrentThread()) {
-		return STATUS_SUCCESS;
-	}
-
-	DetourThread* t = new (NonPagedPool) DetourThread;
-	if (t == NULL) {
-		error = STATUS_NO_MEMORY;
-	fail:
-		if (t != NULL) {
-			delete t;
-			t = NULL;
-		}
-		s_PendingError = error;
-		s_ppPendingError = NULL;
-		DbgBreakPoint();
-		return error;
-	}
-
-	t->hThread = hThread;
-	t->pNext = s_pPendingThreads;
-	s_pPendingThreads = t;
-
-	return STATUS_SUCCESS;
-}
-
 NTSTATUS NTAPI DetourTransactionCommit() {
-	return DetourTransactionCommitEx(nullptr);
+	return DetourTransactionCommitEx();
 }
 
-NTSTATUS NTAPI DetourTransactionAbort() {
-	if (s_PendingThreadId != (LONG)PsGetCurrentThreadId()) {
-		return STATUS_REQUEST_NOT_ACCEPTED;
-	}
-
-	// Restore all of the page permissions.
-	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
-		// We don't care if this fails, because the code is still accessible
-		ULONG old = 0;
-		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&o->pTarget,
-			(PULONG)&o->pTrampoline->cbRestore, o->Perm, &old);
-		if (!o->fIsRemove) {
-			if (o->pTrampoline) {
-				DetourFreeTrampoline(o->pTrampoline);
-				o->pTrampoline = nullptr;
-			}
-		}
-
-		DetourOperation* n = o->pNext;
-		delete o;
-		o = n;
-	}
-	s_pPendingOperations = nullptr;
-
-	// Make sure the trampoline pages are no longer writable
-	DetourRunnableTrampolineRegions();
-
-	s_pPendingThreads = nullptr;
-	s_PendingThreadId = 0;
-
-	return STATUS_SUCCESS;
-}
-
-NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
-	if (pppFailedPointer != nullptr) {
-		// Used to get the last error
-		*pppFailedPointer = s_ppPendingError;
-	}
-	if (s_PendingThreadId != HandleToUlong(PsGetCurrentThreadId())) {
-		return STATUS_REQUEST_NOT_ACCEPTED;
-	}
-
-	// If any of the pending operation failed, then we abort the whole transaction.
-	if (s_PendingError != STATUS_SUCCESS) {
-		DbgBreakPoint();
-		DetourTransactionAbort();
-		return s_PendingError;
-	}
-
+NTSTATUS NTAPI DetourTransactionCommitEx() {
 	// Common variables
 	DetourOperation* o;
-	DetourThread* t;
 	bool freed = false;
 
 	// Insert or remove each of the detours
 	for (o = s_pPendingOperations; o != nullptr; o = o->pNext) {
 		if (o->fIsRemove) {
-			RtlCopyMemory(o->pTarget, o->pTrampoline->rbRestore,
+			MapLockedCopyMemory(o->pTarget, o->pTrampoline->rbRestore,
 				o->pTrampoline->cbRestore);
 #ifdef DETOURS_IA64
 			* o->ppbPointer = (PBYTE)o->pTrampoline->ppldTarget;
@@ -947,31 +734,25 @@ NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
 
 #ifdef DETOURS_X64
 			DetourGenJmpIndirect(o->pTrampoline->rbCodeIn, &o->pTrampoline->pDetour);
-			PUCHAR pCode = DetourGenJmpImmediate(o->pTarget, o->pTrampoline->rbCodeIn);
+			PUCHAR pCode = DetourGenJmpAddress(o->pTarget, o->pTrampoline->rbCodeIn);
 			pCode = DetourGenBrk(pCode, o->pTrampoline->pRemain);
 			*o->ppPointer = o->pTrampoline->rbCode;
 			UNREFERENCED_PARAMETER(pCode);
 #endif // DETOURS_X64
 
 #ifdef DETOURS_X86
-			PUCHAR pbCode = DetourGenJmpImmediate(o->pTarget, o->pTrampoline->pDetour);
-			pCode = detour_gen_brk(pCode, o->pTrampoline->pRemain);
+			PUCHAR pCode = DetourGenJmpImmediate(o->pTarget, o->pTrampoline->pDetour);
+			pCode = DetourGenBrk(pCode, o->pTrampoline->pRemain);
 			*o->ppPointer = o->pTrampoline->rbCode;
 			UNREFERENCED_PARAMETER(pCode);
 #endif // DETOURS_X86
 
 #ifdef DETOURS_ARM
-			PBYTE pbCode = detour_gen_jmp_immediate(o->pbTarget, NULL, o->pTrampoline->pbDetour);
-			pbCode = detour_gen_brk(pbCode, o->pTrampoline->pbRemain);
-			*o->ppbPointer = DETOURS_PBYTE_TO_PFUNC(o->pTrampoline->rbCode);
-			UNREFERENCED_PARAMETER(pbCode);
+			
 #endif // DETOURS_ARM
 
 #ifdef DETOURS_ARM64
-			PBYTE pbCode = detour_gen_jmp_indirect(o->pbTarget, (ULONG64*)&(o->pTrampoline->pbDetour));
-			pbCode = detour_gen_brk(pbCode, o->pTrampoline->pbRemain);
-			*o->ppbPointer = o->pTrampoline->rbCode;
-			UNREFERENCED_PARAMETER(pbCode);
+
 #endif // DETOURS_ARM64
 
 			LogDebug("detours: pbTarget=%p: "
@@ -996,35 +777,7 @@ NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
 				o->pTrampoline->rbCode[10], o->pTrampoline->rbCode[11]);
 
 #ifdef DETOURS_IA64
-			DETOUR_TRACE(("\n"));
-			DETOUR_TRACE(("detours:  &pldTrampoline  =%p\n",
-				&o->pTrampoline->pldTrampoline));
-			DETOUR_TRACE(("detours:  &bMovlTargetGp  =%p [%p]\n",
-				&o->pTrampoline->bMovlTargetGp,
-				o->pTrampoline->bMovlTargetGp.GetMovlGp()));
-			DETOUR_TRACE(("detours:  &rbCode         =%p [%p]\n",
-				&o->pTrampoline->rbCode,
-				((DETOUR_IA64_BUNDLE&)o->pTrampoline->rbCode).GetBrlTarget()));
-			DETOUR_TRACE(("detours:  &bBrlRemainEip  =%p [%p]\n",
-				&o->pTrampoline->bBrlRemainEip,
-				o->pTrampoline->bBrlRemainEip.GetBrlTarget()));
-			DETOUR_TRACE(("detours:  &bMovlDetourGp  =%p [%p]\n",
-				&o->pTrampoline->bMovlDetourGp,
-				o->pTrampoline->bMovlDetourGp.GetMovlGp()));
-			DETOUR_TRACE(("detours:  &bBrlDetourEip  =%p [%p]\n",
-				&o->pTrampoline->bCallDetour,
-				o->pTrampoline->bCallDetour.GetBrlTarget()));
-			DETOUR_TRACE(("detours:  pldDetour       =%p [%p]\n",
-				o->pTrampoline->ppldDetour->EntryPoint,
-				o->pTrampoline->ppldDetour->GlobalPointer));
-			DETOUR_TRACE(("detours:  pldTarget       =%p [%p]\n",
-				o->pTrampoline->ppldTarget->EntryPoint,
-				o->pTrampoline->ppldTarget->GlobalPointer));
-			DETOUR_TRACE(("detours:  pbRemain        =%p\n",
-				o->pTrampoline->pbRemain));
-			DETOUR_TRACE(("detours:  pbDetour        =%p\n",
-				o->pTrampoline->pbDetour));
-			DETOUR_TRACE(("\n"));
+
 #endif // DETOURS_IA64
 		}
 	}
@@ -1032,10 +785,7 @@ NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
 	// Restore all of the page permissions and flush the icache.
 	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
 		// We don't care if this fails, because the code is still accessible
-		ULONG old = 0;
-		pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&o->pTarget,
-			(PULONG)&o->pTrampoline->cbRestore, o->Perm, &old);
-		if (!o->fIsRemove && o->pTrampoline) {
+		if (o->fIsRemove && o->pTrampoline) {
 			DetourFreeTrampoline(o->pTrampoline);
 			o->pTrampoline = nullptr;
 			freed = true;
@@ -1052,17 +802,7 @@ NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer) {
 		DetourFreeUnusedTrampolineRegions();
 	}
 
-	// Make sure the trampoline pages are no longer writable.
-	DetourRunnableTrampolineRegions();
-
-	s_pPendingThreads = nullptr;
-	s_PendingThreadId = 0;
-
-	if (pppFailedPointer != NULL) {
-		*pppFailedPointer = s_ppPendingError;
-	}
-
-	return s_PendingError;
+	return STATUS_SUCCESS;
 }
 
 
@@ -1093,16 +833,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 		return STATUS_INVALID_PARAMETER;
 	}
 
-	if (s_PendingThreadId != HandleToUlong(PsGetCurrentThreadId())) {
-		LogDebug("transaction conflict with thread id = %ld\n", s_PendingThreadId);
-		return STATUS_INVALID_PARAMETER;
-	}
-
-	// If any the pending operations failed, then we don't need to do this.
-	if (s_PendingError != STATUS_SUCCESS) {
-		LogDebug("pending transaction error=0x%X", s_PendingError);
-		return s_PendingError;
-	}
 
 	if (ppPointer == nullptr) {
 		LogDebug("ppPointer is null\n");
@@ -1111,8 +841,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 
 	if (*ppPointer == nullptr) {
 		status = STATUS_INVALID_HANDLE;
-		s_PendingError = status;
-		s_ppPendingError = ppPointer;
 		LogDebug("*ppPointer is null (ppPointer=%p)\n", ppPointer);
 		DbgBreakPoint();
 		return status;
@@ -1152,7 +880,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 	if (o == nullptr) {
 		status = STATUS_NO_MEMORY;
 	fail:
-		s_PendingError = status;
 		DbgBreakPoint();
 	stop:
 		if (pTrampoline != nullptr) {
@@ -1172,7 +899,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 		if (ppRealTarget != nullptr) {
 			*ppRealTarget = nullptr;
 		}
-		s_ppPendingError = ppPointer;
 		return status;
 	}
 
@@ -1202,7 +928,7 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 #endif
 
 	ULONG target = 0;
-	ULONG jump = SIZE_OF_JMP;
+	ULONG jump = SIZE_OF_JUMP_CODE;
 	ULONG align = 0;
 
 #ifdef DETOURS_ARM
@@ -1304,8 +1030,8 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 #endif
 
 #ifdef DETOURS_X86
-	prbCode = DetourGenJmpIndirect(prbCode, pTrampoline->pbRemain);
-	prbCode = DetourGenBrk(prbCode, pbPool);
+	prbCode = DetourGenJmpImmediate(prbCode, pTrampoline->pRemain);
+	prbCode = DetourGenBrk(prbCode, pPool);
 #endif // DETOURS_X86
 
 #ifdef DETOURS_ARM
@@ -1316,12 +1042,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 
 #endif // DETOURS_ARM64
 
-	ULONG old = 0;
-	status = pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pTarget,
-		&target, PAGE_EXECUTE_READWRITE, &old);
-	if (!NT_SUCCESS(status)) {
-		goto fail;
-	}
 
 	LogDebug("detours: pbTarget=%p: "
 		"%02x %02x %02x %02x "
@@ -1347,7 +1067,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 	o->ppPointer = (PUCHAR*)ppPointer;
 	o->pTrampoline = pTrampoline;
 	o->pTarget = pTarget;
-	o->Perm = old;
 	o->pNext = s_pPendingOperations;
 	s_pPendingOperations = o;
 
@@ -1358,10 +1077,6 @@ NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
 	_In_ PVOID pDetour) {
 	NTSTATUS error = STATUS_SUCCESS;
 
-	if (s_PendingThreadId != (LONG)PsGetCurrentThreadId()) {
-		return STATUS_REQUEST_NOT_ACCEPTED;
-	}
-
 	if (pDetour == nullptr) {
 		return STATUS_INVALID_HANDLE;
 	}
@@ -1370,8 +1085,6 @@ NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
 	}
 	if (*ppPointer == NULL) {
 		error = STATUS_INVALID_HANDLE;
-		s_PendingError = error;
-		s_ppPendingError = ppPointer;
 		DbgBreakPoint();
 		return error;
 	}
@@ -1380,14 +1093,12 @@ NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
 	if (o == NULL) {
 		error = STATUS_NO_MEMORY;
 	fail:
-		s_PendingError = error;
 		DbgBreakPoint();
 	stop:
 		if (o != NULL) {
 			delete o;
 			o = NULL;
 		}
-		s_ppPendingError = ppPointer;
 		return error;
 	}
 
@@ -1425,20 +1136,10 @@ NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
 		}
 	}
 
-
-	ULONG old = 0;
-	auto status = pZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&pTarget,
-		(PULONG)&target, PAGE_EXECUTE_READWRITE, &old);
-	if (!NT_SUCCESS(status)) {
-		DbgBreakPoint();
-		goto fail;
-	}
-
 	o->fIsRemove = TRUE;
 	o->ppPointer = (PUCHAR*)ppPointer;
 	o->pTrampoline = pTrampoline;
 	o->pTarget = pTarget;
-	o->Perm = old;
 	o->pNext = s_pPendingOperations;
 	s_pPendingOperations = o;
 

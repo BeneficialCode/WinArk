@@ -19,6 +19,8 @@ NtCreateDebugObject(
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
 	_In_ ULONG Flags
 ) {
+	return kDbgUtil::g_pNtCreateDebugObject(DebugObjectHandle,
+		DesiredAccess, ObjectAttributes, Flags);
 	NTSTATUS status;
 	HANDLE handle;
 	PDEBUG_OBJECT DebugObject;

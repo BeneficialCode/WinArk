@@ -61,10 +61,7 @@ typedef struct _DETOUR_TRAMPOLINE DETOUR_TRAMPOLINE, * PDETOUR_TRAMPOLINE;
 
 ///////////////////////////////////////////////////////// Transaction Structs.
 //
-struct DetourThread {
-	DetourThread* pNext;
-	HANDLE hThread;
-};
+
 
 struct DetourOperation {
 	DetourOperation* pNext;
@@ -72,17 +69,23 @@ struct DetourOperation {
 	PUCHAR* ppPointer;
 	PUCHAR pTarget;
 	PDETOUR_TRAMPOLINE pTrampoline;
-	ULONG Perm;
 };
 
+/*
+---- Detours定义了三个概念：
+
+-- (1) Target函数：要拦截的函数，通常为Windows的API。
+-- (2) Trampoline函数：Target函数的复制品。
+	因为Detours将会改写Target函数，所以先把Target函数复制保存好，
+	一方面仍然保存Target函数的过程调用语义，
+	另一方面便于以后的恢复。
+-- (3) Detour 函数：用来替代Target函数的函数。
+*/
 
 //////////////////////////////////////////////////////////// Transaction APIs.
 //
-NTSTATUS NTAPI DetourTransactionBegin();
-NTSTATUS NTAPI DetourTransactionAbort();
 NTSTATUS NTAPI DetourTransactionCommit();
-NTSTATUS NTAPI DetourTransactionCommitEx(_Out_opt_ PVOID** pppFailedPointer);
-NTSTATUS NTAPI DetourUpdateThread(_In_ HANDLE hThread);
+NTSTATUS NTAPI DetourTransactionCommitEx();
 
 ////////////////////////////////////////////////////////////// Code Functions.
 //
@@ -91,6 +94,8 @@ PVOID NTAPI DetourCodeFromPointer(_In_ PVOID pPointer,
 
 ///////////////////////////////////////////////////////////// Transacted APIs.
 //
+// 寻找可以Hook的地址（当前地址可能无法Hook），分配Trampline块，
+// 并且确定Trampline中的拷贝的指令字节数，加入操作（Operation）列表
 NTSTATUS NTAPI DetourAttach(_Inout_ PVOID* ppPointer,
 	_In_ PVOID pDetour);
 
