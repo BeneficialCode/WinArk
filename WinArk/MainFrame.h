@@ -111,10 +111,12 @@ public:
 		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
 		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS,OnColors)
 		COMMAND_ID_HANDLER(ID_OPTIONS_FONT, OnOptionsFont)
+		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFindReplaceMessage)
+		COMMAND_ID_HANDLER(ID_EDIT_FIND, OnEditFind)
+		COMMAND_RANGE_HANDLER(0x8000, 0xefff, OnForwardToActiveView)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
-		COMMAND_RANGE_HANDLER(0x8000,0xefff,OnForwardToActiveView)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 public:
@@ -132,6 +134,9 @@ public:
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& handled);
+
+
 	LRESULT OnMonitorStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnMonitorPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnMonitorStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -139,7 +144,7 @@ public:
 	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnOptionsFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
+	LRESULT OnEditFind(WORD, WORD, HWND, BOOL&);
 
 private:
 	void InitProcessToolBar(CToolBarCtrl& tb);
@@ -167,7 +172,7 @@ private:
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
 	CKernelHookView m_KernelHookView;
-	CKernelView* m_KernelView;
+	CKernelView* m_KernelView{ nullptr };
 
 	CSystemConfigDlg m_SysConfigView;
 
@@ -187,4 +192,9 @@ private:
 	CommandManager m_CmdMgr;
 	CEdit m_Edit;
 	bool m_AllowModify{ true };
+
+	CFindReplaceDialog* m_pFindDlg{ nullptr };
+	inline static CString m_FindText;
+	inline static DWORD m_FindFlags{ 0 };
+	inline static IView* m_IView;
 };

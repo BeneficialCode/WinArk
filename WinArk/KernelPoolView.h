@@ -40,7 +40,8 @@ struct CellColor :CellColorKey {
 class CKernelPoolView :
 	public CWindowImpl<CKernelPoolView, CListViewCtrl>,
 	public CCustomDraw<CKernelPoolView>,
-	public CIdleHandler {
+	public CIdleHandler,
+	public IView{
 public:
 	enum ColumnType {
 		TagName,
@@ -94,6 +95,12 @@ public:
 
 	BOOL OnIdle() override;
 
+	// IView
+	bool IsFindSupported() const override {
+		return true;
+	}
+	void DoFind(const CString& text, DWORD flags) override;
+
 	BEGIN_MSG_MAP(CKernelPoolView)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -120,12 +127,12 @@ public:
 	void UpdatePaneText();
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+
 private:
 	std::unordered_map<CellColorKey, CellColor> m_CellColors;
 
 	int m_SortColumn = -1;
 	CImageList m_Images;
-	CFindReplaceDialog* m_pFindDialog{ nullptr };
 	int m_UpdateInterval = 1000;
 	size_t m_TotalPaged = 0, m_TotalNonPaged = 0;
 	std::unordered_map<ULONG, std::shared_ptr<TagItem>> m_TagsMap;

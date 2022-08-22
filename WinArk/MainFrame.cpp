@@ -311,14 +311,19 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
+	if (SecurityHelper::IsRunningElevated()) {
+		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMIN, MF_BYCOMMAND);
+		CString text;
+		GetWindowText(text);
+		SetWindowText(text + L"  (Administrator)");
+	}
+
 	UIAddMenu(hMenu);
 	/*m_CmdBar.AttachMenu(hMenu);
 	m_CmdBar.m_bAlphaImages = true;
 	SetMenu(nullptr);*/
 
 	InitCommandBar();
-
-	AddSimpleReBarBand(hWndCmdBar);
 
 	/*auto submenu = menu.GetSubMenu(1);
 	WCHAR text[64];
@@ -349,7 +354,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	r.bottom = 25;
 	auto hTabCtrl = tabCtrl.Create(m_hWnd, &r, nullptr, WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS
 		| TCS_HOTTRACK | TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TABS,
-		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY, TabId);
+		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY,TabId);
 	m_TabCtrl.SubclassWindow(hTabCtrl);
 	// 初始化选择夹
 	struct {
@@ -373,10 +378,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	for (auto& col : columns) {
 		m_TabCtrl.InsertItem(i++, col.Name);
 	}
-	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
-	m_TabCtrl.SetFont(hFont, true);
-	::DeleteObject(hFont);
-	AddSimpleReBarBand(m_TabCtrl);
+	m_TabCtrl.SetFont(g_hAppFont, true);
+	AddSimpleReBarBand(m_TabCtrl, nullptr, TRUE, 0, TRUE);
 
 	auto hWndToolBar = m_tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	m_tb.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
@@ -919,4 +922,84 @@ void CMainFrame::SaveSettings(PCWSTR filename) {
 		ThemeColor(L"条件断点颜色",g_myColor[Magenta]),
 	};
 	SaveColors(filename, L"TableColor", Colors, _countof(Colors));
+}
+
+LRESULT CMainFrame::OnEditFind(WORD, WORD, HWND, BOOL&) {
+	int index = m_TabCtrl.GetCurSel();
+
+	m_hWndClient = m_hwndArray[index];
+	switch (static_cast<TabColumn>(index)) {
+		case TabColumn::Process:
+			//m_pProcTable->ShowWindow(SW_SHOW);
+			//m_pProcTable->SetFocus();
+			break;
+		case TabColumn::Network:
+			/*m_pNetTable->ShowWindow(SW_SHOW);
+			m_pNetTable->SetFocus();*/
+			break;
+		case TabColumn::KernelModule:
+		/*	m_pKernelModuleTable->ShowWindow(SW_SHOW);
+			m_pKernelModuleTable->SetFocus();*/
+			break;
+		case TabColumn::Driver:
+			/*m_pDriverTable->ShowWindow(SW_SHOW);
+			m_pDriverTable->SetFocus();*/
+			break;
+		case TabColumn::Registry:
+			//m_RegView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Device:
+			//m_DevView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Windows:
+			//m_WinView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::KernelHook:
+			//m_KernelHookView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Service:
+			/*m_pServiceTable->ShowWindow(SW_SHOW);
+			m_pServiceTable->SetFocus();*/
+			break;
+		case TabColumn::Kernel:
+		{
+			m_IView = m_KernelView->GetCurView();
+			if (m_IView && m_IView->IsFindSupported()) {
+				if (!m_pFindDlg) {
+					m_pFindDlg = new CFindReplaceDialog;
+					m_pFindDlg->Create(TRUE, m_FindText, nullptr, FR_DOWN, m_hWnd);
+				}
+				if (!m_pFindDlg->IsWindowVisible()) {
+					m_pFindDlg->ShowWindow(SW_SHOW);
+				}
+				m_pFindDlg->BringWindowToTop();
+				m_pFindDlg->SetFocus();
+			}
+			break;
+		}
+		case TabColumn::Config:
+			//m_SysConfigView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Etw:
+			//m_pEtwView->ShowWindow(SW_SHOW);
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& handled) {
+	auto fr = reinterpret_cast<FINDREPLACE*>(lParam);
+	if (fr->Flags & FR_DIALOGTERM) {
+		m_pFindDlg->DestroyWindow();
+		m_pFindDlg = nullptr;
+		return 0;
+	}
+	m_FindText = fr->lpstrFindWhat;
+	m_FindFlags = fr->Flags;
+
+	m_IView->DoFind(m_FindText, m_FindFlags);
+
+	return 0;
 }

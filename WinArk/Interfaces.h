@@ -18,7 +18,10 @@ struct IRegView abstract {
 };
 
 struct IView {
-
+	virtual bool IsFindSupported() const {
+		return false;
+	}
+	virtual void DoFind(const CString& text,DWORD flags){}
 };
 
 struct QuickFindOptions {

@@ -1,7 +1,7 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
-
+#include "Interfaces.h"
 
 struct PiDDBCacheInfo {
 	std::wstring DriverName;
@@ -11,7 +11,8 @@ struct PiDDBCacheInfo {
 
 class CPiDDBCacheTable :
 	public CTable<PiDDBCacheInfo>,
-	public CWindowImpl<CPiDDBCacheTable> {
+	public CWindowImpl<CPiDDBCacheTable>,
+	public IView{
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW,COLOR_WINDOW);
 
@@ -19,6 +20,11 @@ public:
 	int ParseTableEntry(CString& s, char& mask, int& select, PiDDBCacheInfo& info, int column);
 	bool CompareItems(const PiDDBCacheInfo& s1, const PiDDBCacheInfo& s2, int col, bool asc);
 
+	// IView
+	bool IsFindSupported() const override {
+		return true;
+	}
+	void DoFind(const CString& text, DWORD flags) override;
 
 	BEGIN_MSG_MAP(CPiDDBCacheTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)

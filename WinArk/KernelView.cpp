@@ -165,3 +165,19 @@ void CKernelView::InitUnloadedDriverTable() {
 	m_hwndArray[static_cast<int>(TabColumn::UnloadedDriverTable)] = m_UnloadedDriverTable->m_hWnd;
 	m_UnloadedDriverTable->ShowWindow(SW_HIDE);
 }
+
+IView* CKernelView::GetCurView() {
+	int index = 0;
+
+	index = m_TabCtrl.GetCurSel();
+	switch (static_cast<TabColumn>(index)) {
+		case TabColumn::PiDDBCacheTable:
+			return m_PiDDBCacheTable;
+		case TabColumn::UnloadedDriverTable:
+			break;
+		case TabColumn::KernelPoolTable:
+			return m_KernelPoolView;
+	}
+
+	return nullptr;
+}

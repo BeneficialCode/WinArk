@@ -239,3 +239,44 @@ LRESULT CPiDDBCacheTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 	return TRUE;
 }
+
+void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
+	auto searchDown = flags & FR_DOWN;
+
+	int start = m_Table.data.selected;
+	CString find(text);
+	auto ignoreCase = !(flags & FR_MATCHCASE);
+	if (ignoreCase)
+		find.MakeLower();
+
+	int from = searchDown ? start + 1 : start - 1 + m_Table.data.n;
+	int to = searchDown ? m_Table.data.n + start : start + 1;
+	int step = searchDown ? 1 : -1;
+
+	int findIndex = -1;
+	for (int i = from; i != to; i += step) {
+		int index = i % m_Table.data.n;
+		const auto& item = m_Table.data.info[i];
+		CString text(item.DriverName.c_str());
+		if (ignoreCase)
+			text.MakeLower();
+		if (text.Find(find) >= 0) {
+			findIndex = index;
+			break;
+		}
+		
+		text.Format(L"0x%X ", item.TimeDateStamp);
+		if (ignoreCase)
+			text.MakeLower();
+		if (text.Find(find) >= 0) {
+			findIndex = index;
+			break;
+		}
+	}
+
+	if (findIndex >= 0) {
+		
+	}
+	else
+		AtlMessageBox(m_hWnd, L"Not found");
+}

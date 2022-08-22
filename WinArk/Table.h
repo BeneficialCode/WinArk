@@ -212,8 +212,6 @@ public:
 		return t.pid;
 	}
 
-
-
 	static void Addsorteddata(const T& t);
 
 	static void Deletesorteddata(ulong addr);

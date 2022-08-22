@@ -2,6 +2,7 @@
 #include "PiDDBCacheTable.h"
 #include "UnloadedDriverTable.h"
 #include "KernelPoolView.h"
+#include "Interfaces.h"
 
 class CKernelView :
 	public CWindowImpl<CKernelView> {
@@ -25,6 +26,7 @@ public:
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTcnSelChange(int, LPNMHDR hdr, BOOL&);
 
+	IView* GetCurView();
 
 	enum class TabColumn : int {
 		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,
