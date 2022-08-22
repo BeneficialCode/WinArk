@@ -12,7 +12,7 @@ NTSTATUS NTAPI
 ObpCallPreOperationCallbacks(POBJECT_TYPE ObjectType,
 	POB_PRE_OPERATION_INFORMATION Info,
 	PLIST_ENTRY PostCallbackListHead) {
-	if (!strcmp((char*)PsGetProcessImageFileName(PsGetCurrentProcess()), "WinArk")) {
+	if (!strstr((char*)PsGetProcessImageFileName(PsGetCurrentProcess()), "WinArk")) {
 		return STATUS_SUCCESS;
 	}
 	return g_pObpCallPreOperationCallbacks(ObjectType, Info, PostCallbackListHead);
