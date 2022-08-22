@@ -561,9 +561,8 @@ LRESULT CMainFrame::OnMonitorStart(WORD, WORD, HWND, BOOL&) {
 			}, flags);
 	}
 
-	UIEnable(ID_MONITOR_STOP, TRUE);
-	UIEnable(ID_MONITOR_START, FALSE);
-	UIEnable(ID_MONITOR_PAUSE, TRUE);
+	ClearToolBarButtons(m_tb);
+	InitEtwToolBar(m_tb);
 
 	SetTimer(1, 5000, nullptr);
 	SetPaneIcon(1, m_RunIcon);
@@ -578,10 +577,8 @@ LRESULT CMainFrame::OnMonitorStop(WORD, WORD, HWND, BOOL&) {
 	m_pEtwView->StartMonitoring(m_tm, false);
 	SetPaneIcon(1, m_StopIcon);
 
-	UIEnable(ID_MONITOR_STOP, FALSE);
-	UIEnable(ID_MONITOR_START, TRUE);
-	UIEnable(ID_MONITOR_PAUSE, FALSE);
-	UISetCheck(ID_MONITOR_PAUSE, FALSE);
+	ClearToolBarButtons(m_tb);
+	InitEtwToolBar(m_tb);
 
 	return 0;
 }
