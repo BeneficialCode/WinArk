@@ -243,7 +243,7 @@ LRESULT CPiDDBCacheTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
 	auto searchDown = flags & FR_DOWN;
 
-	int start = m_Table.data.selected;
+	int start = 0;
 	CString find(text);
 	auto ignoreCase = !(flags & FR_MATCHCASE);
 	if (ignoreCase)
@@ -273,9 +273,21 @@ void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
 			break;
 		}
 	}
-
+	RECT client, bar;
+	GetClientRect(&client);
+	memcpy(&bar, &client, sizeof(bar));
+	if (m_Table.showbar == 1) {
+		client.top = g_AvHighFont + 4;
+		bar.bottom = g_AvHighFont + 4;
+	}
+	else {
+		bar.bottom = bar.top;
+	}
+	int rows = (client.bottom - client.top) / g_AvHighFont;
 	if (findIndex >= 0) {
-		
+		m_Table.offset = findIndex - findIndex%rows;
+		m_Table.data.selected = findIndex;
+		InvalidateRect(nullptr);
 	}
 	else
 		AtlMessageBox(m_hWnd, L"Not found");

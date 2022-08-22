@@ -23,6 +23,10 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (m_pQuickFindDlg && m_pQuickFindDlg->IsDialogMessage(pMsg))
 		return TRUE;
 
+	// 用于响应搜索快捷回车键
+	if (m_pFindDlg && m_pFindDlg->IsDialogMessage(pMsg))
+		return TRUE;
+
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
 	return FALSE;
