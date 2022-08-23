@@ -216,6 +216,7 @@ LRESULT CBigPoolView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*
 	InsertColumn(ColumnType::TagName, L"Tag", LVCFMT_CENTER, 80);
 	InsertColumn(ColumnType::VirtualAddress, L"Virtual Address", LVCFMT_RIGHT, 150);
 	InsertColumn(ColumnType::NonPaged, L"NonPaged", LVCFMT_RIGHT,80);
+	InsertColumn(ColumnType::Size, L"Size", LVCFMT_RIGHT, 80);
 	InsertColumn(ColumnType::SourceName, L"Source", LVCFMT_LEFT, 150);
 	InsertColumn(ColumnType::SourceDescription, L"Source Description", LVCFMT_LEFT, 350);
 
@@ -264,6 +265,16 @@ LRESULT CBigPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 			case ColumnType::VirtualAddress:
 				StringCchPrintf(item.pszText, item.cchTextMax, L"0x%p", info.BigPoolInfo.VirtualAddress);
 				break;
+			
+			case ColumnType::Size:
+			{
+				auto value = info.BigPoolInfo.SizeInBytes;
+				if (value < 1 << 12)
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
+				else
+					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
+				break;
+			}
 
 			case ColumnType::NonPaged:
 				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.BigPoolInfo.NonPaged);
@@ -361,6 +372,11 @@ bool CBigPoolView::CompareItems(const BigPoolItem& item1, const BigPoolItem& ite
 				return item1.BigPoolInfo.VirtualAddress < item2.BigPoolInfo.VirtualAddress;
 			else
 				return item1.BigPoolInfo.VirtualAddress > item2.BigPoolInfo.VirtualAddress;
+		case ColumnType::Size:
+			if (m_Ascending)
+				return item1.BigPoolInfo.SizeInBytes < item2.BigPoolInfo.SizeInBytes;
+			else
+				return item1.BigPoolInfo.SizeInBytes > item2.BigPoolInfo.SizeInBytes;
 	}
 	ATLASSERT(false);
 	return false;
