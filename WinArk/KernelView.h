@@ -3,6 +3,7 @@
 #include "UnloadedDriverTable.h"
 #include "KernelPoolView.h"
 #include "Interfaces.h"
+#include "BigPoolView.h"
 
 class CKernelView :
 	public CWindowImpl<CKernelView> {
@@ -19,6 +20,8 @@ public:
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
 		if(m_KernelPoolView!=nullptr)
 			CHAIN_MSG_MAP_MEMBER((*m_KernelPoolView))
+		if(m_BigPoolView!=nullptr)
+			CHAIN_MSG_MAP_MEMBER((*m_BigPoolView))
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
@@ -29,7 +32,7 @@ public:
 	IView* GetCurView();
 
 	enum class TabColumn : int {
-		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,
+		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable
 	};
 
 	void InitPiDDBCacheTable();
@@ -42,6 +45,7 @@ private:
 	CPiDDBCacheTable* m_PiDDBCacheTable;
 	CUnloadedDriverTable* m_UnloadedDriverTable;
 	CKernelPoolView* m_KernelPoolView{ nullptr };
+	CBigPoolView* m_BigPoolView{ nullptr };
 	IMainFrame* m_pFrame;
 	HWND m_hwndArray[16];
 	int _index = 0;

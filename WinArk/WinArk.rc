@@ -787,6 +787,10 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_POOLTAG_REFRESH
     END
+    POPUP "BigPool"
+    BEGIN
+        MENUITEM "Refresh",                     ID_BIGPOOL_REFRESH
+    END
 END
 
 IDR_ETW_CONTEXT MENU

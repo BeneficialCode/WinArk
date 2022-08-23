@@ -12,23 +12,8 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_TabCtrl.SubclassWindow(hTabCtrl);
 
 	//m_TabCtrl.SetFont()
-	LOGFONT lf;
-	lf.lfHeight = -14;
-	lf.lfWidth = 0;
-	lf.lfEscapement = 0;
-	lf.lfOrientation = 0;
-	lf.lfWeight = FW_NORMAL;
-	lf.lfItalic = 0;
-	lf.lfUnderline = 0;
-	lf.lfStrikeOut = 0;
-	lf.lfCharSet = GB2312_CHARSET;
-	lf.lfOutPrecision = OUT_STROKE_PRECIS;
-	lf.lfClipPrecision = CLIP_STROKE_PRECIS;
-	lf.lfQuality = DRAFT_QUALITY;
-	lf.lfPitchAndFamily = FF_SWISS | VARIABLE_PITCH;
-	wcscpy_s(lf.lfFaceName, L"Î¢ÈíÑÅºÚ");
 
-	HFONT hFont = CreateFontIndirect(&lf);
+	HFONT hFont = g_hAppFont;
 	m_TabCtrl.SetFont(hFont, true);
 
 	m_KernelPoolView = new CKernelPoolView(m_pFrame);
@@ -36,12 +21,18 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA,
 		WS_EX_CLIENTEDGE);
 
+	m_BigPoolView = new CBigPoolView(m_pFrame);
+	m_hwndArray[static_cast<int>(TabColumn::BigPoolTable)] = m_BigPoolView->Create(m_hWnd, rcDefault, NULL,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA,
+		WS_EX_CLIENTEDGE);
+
 	struct {
 		PCWSTR Name;
 	}columns[] = {
-		L"PiDDBCache",
-		L"UnloadedDrivers",
-		L"KernelPoolTag"
+		L"PiDDB Cache",
+		L"Unloaded Drivers",
+		L"Kernel Pool Tag",
+		L"Big Pool"
 	};
 
 	int i = 0;
@@ -94,6 +85,9 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::KernelPoolTable:
 			m_KernelPoolView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::BigPoolTable:
+			m_BigPoolView->ShowWindow(SW_SHOW);
 			break;
 	}
 	_index = index;
@@ -177,6 +171,8 @@ IView* CKernelView::GetCurView() {
 			break;
 		case TabColumn::KernelPoolTable:
 			return m_KernelPoolView;
+		case TabColumn::BigPoolTable:
+			return m_BigPoolView;
 	}
 
 	return nullptr;

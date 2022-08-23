@@ -5,8 +5,8 @@
 #include "Interfaces.h"
 #include "ThemeColor.h"
 
-struct TagItem {
-	SYSTEM_POOLTAG TagInfo;
+struct BigPoolItem {
+	SYSTEM_BIGPOOL_ENTRY BigPoolInfo;
 	PCWSTR SourceName = L"";
 	PCWSTR SourceDesc = L"";
 	CStringA Tag;
@@ -14,47 +14,37 @@ struct TagItem {
 };
 
 
-
-class CKernelPoolView :
-	public CWindowImpl<CKernelPoolView, CListViewCtrl>,
-	public CCustomDraw<CKernelPoolView>,
+class CBigPoolView :
+	public CWindowImpl<CBigPoolView, CListViewCtrl>,
+	public CCustomDraw<CBigPoolView>,
 	public CIdleHandler,
-	public IView{
+	public IView {
 public:
 	enum ColumnType {
 		TagName,
-		PagedAllocs,
-		PagedFrees,
-		PagedDiff,
-		PagedUsage,
-
-		NonPagedAllocs,
-		NonPagedFrees,
-		NonPagedDiff,
-		NonPagedUsage,
-
+		VirtualAddress,
+		NonPaged,
+		Size,
 		SourceName,
 		SourceDescription,
 		NumColumns
 	};
-	
+
 	DECLARE_WND_SUPERCLASS(nullptr,CListViewCtrl::GetWndClassName())
 
-	CKernelPoolView(IMainFrame* pFrame):m_pFrame(pFrame){}
+	CBigPoolView(IMainFrame* pFrame):m_pFrame(pFrame){}
 
 	void LoadPoolTagText();
-	void UpdatePoolTags();
-	ULONG UpdateSystemPoolTags();
-	ULONG UpdateSessionPoolTags(ULONG sessionId);
-	void AddTag(const SYSTEM_POOLTAG& info, int index);
+	void UpdateBigPools();
+	void AddTag(const SYSTEM_BIGPOOL_ENTRY& info, int index);
 	void UpdateVisible();
-	bool CompareItems(const TagItem& i1, const TagItem& i2);
+	bool CompareItems(const BigPoolItem& i1, const BigPoolItem& i2);
 	void DoSort();
 	void SetToolBar(HWND hWnd);
 
 	void AddCellColor(CellColor& cell, DWORD64 targetTime = 0);
 	void RemoveCellColor(const CellColorKey& cell);
-	int GetChange(const SYSTEM_POOLTAG& info, const SYSTEM_POOLTAG& newinfo, ColumnType type) const;
+	int GetChange(const SYSTEM_BIGPOOL_ENTRY& info, const SYSTEM_BIGPOOL_ENTRY& newinfo, ColumnType type) const;
 
 	size_t GetTotalPaged() const {
 		return m_TotalPaged;
@@ -79,17 +69,17 @@ public:
 	}
 	void DoFind(const CString& text, DWORD flags) override;
 
-	BEGIN_MSG_MAP(CKernelPoolView)
+	BEGIN_MSG_MAP(CBigPoolView)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
-		CHAIN_MSG_MAP_ALT(CCustomDraw<CKernelPoolView>,1)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
+		CHAIN_MSG_MAP_ALT(CCustomDraw<CBigPoolView>, 1)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDisplayInfo)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK, OnColumnClick)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
-		COMMAND_ID_HANDLER(ID_POOLTAG_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_BIGPOOL_REFRESH, OnRefresh)
 		DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 
@@ -105,20 +95,18 @@ public:
 	void UpdatePaneText();
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-
 private:
 	std::unordered_map<CellColorKey, CellColor> m_CellColors;
 
 	int m_SortColumn = -1;
 	CImageList m_Images;
 	int m_UpdateInterval = 1000;
-	size_t m_TotalPaged = 0, m_TotalNonPaged = 0;
-	std::unordered_map<ULONG, std::shared_ptr<TagItem>> m_TagsMap;
-	std::vector<std::shared_ptr<TagItem>> m_Tags;
+	std::unordered_map<ULONG, std::shared_ptr<BigPoolItem>> m_PoolsMap;
+	std::vector<std::shared_ptr<BigPoolItem>> m_Pools;
 	std::map<CStringA, std::pair<CString, CString>> m_TagSource;
+	size_t m_TotalPaged = 0, m_TotalNonPaged = 0;
 
-	SYSTEM_POOLTAG_INFORMATION* m_PoolTags{ nullptr };
-	SYSTEM_SESSION_POOLTAG_INFORMATION* m_SessionPoolTags{ nullptr };
+	SYSTEM_BIGPOOL_INFORMATION* m_BigPools{ nullptr };
 	bool m_Running{ true };
 	bool m_Ascending = true;
 

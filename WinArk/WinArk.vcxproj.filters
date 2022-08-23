@@ -429,6 +429,9 @@
     <ClCompile Include="KernelPoolView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="BigPoolView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -849,6 +852,9 @@
       <Filter>Ui</Filter>
     </ClInclude>
     <ClInclude Include="KernelPoolView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="BigPoolView.h">
       <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>

@@ -273,6 +273,7 @@ extern "C" {
 		SystemExtendedHandleInformation = 64, // q: SYSTEM_HANDLE_INFORMATION_EX
 		SystemPoolTagInformation = 22,
 		SystemSessionPoolTagInformation = 67,
+		SystemBigPoolInformation = 66,
 	} SYSTEM_INFORMATION_CLASS;
 
 	typedef struct _OBJECT_BASIC_INFORMATION {
