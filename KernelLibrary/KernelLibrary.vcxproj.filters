@@ -151,6 +151,9 @@
     <ClInclude Include="detours.h">
       <Filter>hook</Filter>
     </ClInclude>
+    <ClInclude Include="BypassAntiKernelDbg.h">
+      <Filter>Bypass</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -251,6 +254,9 @@
     </ClCompile>
     <ClCompile Include="detours.cpp">
       <Filter>hook</Filter>
+    </ClCompile>
+    <ClCompile Include="BypassAntiKernelDbg.cpp">
+      <Filter>Bypass</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
