@@ -152,7 +152,13 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 }
 
 bool CKernelNotifyTable::CompareItems(const CallbackInfo& s1, const CallbackInfo& s2, int col, bool asc) {
-
+	switch (col)
+	{
+		case 2:
+			return SortHelper::SortStrings(s1.Company, s2.Company, asc);
+		default:
+			break;
+	}
 	return false;
 }
 
