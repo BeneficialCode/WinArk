@@ -63,7 +63,7 @@ public:
 	std::wstring GetSingleKernelModuleInfo(std::shared_ptr<WinSys::KernelModuleInfo>& info);
 
 	void DoRefresh();
-	enum class KernemModuleColumn {
+	enum class KernelModuleColumn {
 		Name, ImageBase, ImageSize, LoadOrderIndex,CommpanyName, FullPath,
 	};
 
