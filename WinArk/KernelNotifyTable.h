@@ -50,6 +50,7 @@ public:
 		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE,OnRemove)
 		COMMAND_ID_HANDLER(ID_NOTIFY_COPY,OnNotifyCopy)
 		COMMAND_ID_HANDLER(ID_NOTIFY_EXPORT, OnNotifyExport)
+		COMMAND_ID_HANDLER(ID_KERNEL_ERASE,OnErase)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -71,6 +72,8 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnErase(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	LRESULT OnNotifyCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNotifyExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

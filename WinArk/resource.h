@@ -342,13 +342,14 @@
 #define ID_POOLTAG_REFRESH              32938
 #define ID_EDIT_FIND32939               32939
 #define ID_BIGPOOL_REFRESH              32942
+#define ID_KERNEL_ERASE                 32943
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        278
-#define _APS_NEXT_COMMAND_VALUE         32943
+#define _APS_NEXT_COMMAND_VALUE         32944
 #define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

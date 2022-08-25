@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "SymbolHelper.h"
 #include "ClipboardHelper.h"
+#include "resource.h"
 
 CKernelNotifyTable::CKernelNotifyTable(BarInfo& bars, TableInfo& table)
 	:CTable(bars, table) {
@@ -73,6 +74,15 @@ LRESULT CKernelNotifyTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	::GetCursorPos(&pt);
 	int selected = m_Table.data.selected;
 	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+	EnableMenuItem(hSubMenu, ID_KERNEL_ERASE, MF_DISABLED);
+	switch (p.Type)
+	{
+		case CallbackType::ProcessObPreOperationNotify:
+		case CallbackType::ThreadObPreOperationNotify:
+			EnableMenuItem(hSubMenu, ID_KERNEL_ERASE, MF_ENABLED);
+			break;
+	}
 
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
@@ -216,26 +226,22 @@ void CKernelNotifyTable::Refresh() {
 		if (p != nullptr) {
 			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
 			for (int i = 0; i < count; i++) {
-				if (p[i].PostOperation) {
-					CallbackInfo info;
-					info.Routine = p[i].PostOperation;
-					info.Type = CallbackType::ProcessObPostOperationNotify;
-					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path = Helpers::StringToWstring(info.Module);
-					info.Company = GetCompanyName(path);
-					info.Address = p[i].RegistrationHandle;
-					m_Table.data.info.push_back(std::move(info));
-				}
-				if (p[i].PreOperation) {
-					CallbackInfo info;
-					info.Routine = p[i].PreOperation;
-					info.Type = CallbackType::ProcessObPreOperationNotify;
-					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path = Helpers::StringToWstring(info.Module);
-					info.Company = GetCompanyName(path);
-					info.Address = p[i].RegistrationHandle;
-					m_Table.data.info.push_back(std::move(info));
-				}
+				CallbackInfo info;
+				info.Routine = p[i].PostOperation;
+				info.Type = CallbackType::ProcessObPostOperationNotify;
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
+				std::wstring path = Helpers::StringToWstring(info.Module);
+				info.Company = GetCompanyName(path);
+				info.Address = p[i].RegistrationHandle;
+				m_Table.data.info.push_back(std::move(info));
+
+				info.Routine = p[i].PreOperation;
+				info.Type = CallbackType::ProcessObPreOperationNotify;
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
+				path = Helpers::StringToWstring(info.Module);
+				info.Company = GetCompanyName(path);
+				info.Address = p[i].RegistrationHandle;
+				m_Table.data.info.push_back(std::move(info));
 			}
 		}
 	}
@@ -441,6 +447,45 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	Invalidate(True);
 	return TRUE;
 }
+
+LRESULT CKernelNotifyTable::OnErase(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+	CString text;
+	text.Format(L"Ä¨³ý»Øµ÷£º%p?", p.Routine);
+	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
+		return 0;
+
+	
+	ObPreOperationData data;
+	
+	switch (p.Type)
+	{
+		case CallbackType::ProcessObPreOperationNotify:
+			data.Type = NotifyType::ProcessObjectNotify;
+			break;
+
+		case CallbackType::ThreadObPreOperationNotify:
+			data.Type = NotifyType::ThreadObjectNotify;
+			break;
+		default:
+			break;
+	}
+	data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+	data.Address = p.Routine;
+
+	bool ok = DriverHelper::EraseObPreOperation(&data);
+	if (!ok)
+		AtlMessageBox(*this, L"Failed to erase notify", IDS_TITLE, MB_ICONERROR);
+	else
+		Refresh();
+	Invalidate(True);
+
+	return TRUE;
+}
+
 
 std::wstring CKernelNotifyTable::GetSingleNotifyInfo(CallbackInfo& info) {
 	CString text;

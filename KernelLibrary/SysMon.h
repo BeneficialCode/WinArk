@@ -125,6 +125,7 @@ VOID PsCallImageNotifyRoutines(
 bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
+bool EraseObPreOperation(POBJECT_TYPE objectType, ULONG callbackListOffset, void* address);
 
 bool EnumRegistryNotify(PLIST_ENTRY pListHead, CmCallbackInfo* info);
 
