@@ -1147,34 +1147,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_UNSUCCESSFUL;
 			break;
 		}
-
-		case IOCTL_ARK_ERASE_OB_PREOPERATION:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ObPreOperationData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			ObPreOperationData* pData = (ObPreOperationData*)Irp->AssociatedIrp.SystemBuffer;
-			POBJECT_TYPE pObjectType = nullptr;
-			switch (pData->Type) {
-				case NotifyType::ProcessObjectNotify:
-					pObjectType = *PsProcessType;
-					break;
-
-				case NotifyType::ThreadObjectNotify:
-					pObjectType = *PsThreadType;
-					break;
-			}
-			bool success = EraseObPreOperation(pObjectType, pData->Offset, pData->Address);
-			if(success)
-				status = STATUS_SUCCESS;
-
-			break;
-		}
 	}
 
 	Irp->IoStatus.Status = status;

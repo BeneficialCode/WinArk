@@ -74,15 +74,6 @@ LRESULT CKernelNotifyTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	::GetCursorPos(&pt);
 	int selected = m_Table.data.selected;
 	ATLASSERT(selected >= 0);
-	auto& p = m_Table.data.info[selected];
-	EnableMenuItem(hSubMenu, ID_KERNEL_ERASE, MF_DISABLED);
-	switch (p.Type)
-	{
-		case CallbackType::ProcessObPreOperationNotify:
-		case CallbackType::ThreadObPreOperationNotify:
-			EnableMenuItem(hSubMenu, ID_KERNEL_ERASE, MF_ENABLED);
-			break;
-	}
 
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
@@ -421,11 +412,13 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		case CallbackType::ProcessObPreOperationNotify:
 			data.Type = NotifyType::ProcessObjectNotify;
 			data.Address = p.Address;
+			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 			break;
 		case CallbackType::ThreadObPostOperationNotify:
 		case CallbackType::ThreadObPreOperationNotify:
 			data.Type = NotifyType::ThreadObjectNotify;
 			data.Address = p.Address;
+			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
 			break;
 
 		case CallbackType::RegistryNotify:
@@ -445,44 +438,6 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	else
 		Refresh();
 	Invalidate(True);
-	return TRUE;
-}
-
-LRESULT CKernelNotifyTable::OnErase(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int selected = m_Table.data.selected;
-	ATLASSERT(selected >= 0);
-	auto& p = m_Table.data.info[selected];
-
-	CString text;
-	text.Format(L"Ä¨³ý»Øµ÷£º%p?", p.Routine);
-	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
-		return 0;
-
-	
-	ObPreOperationData data;
-	
-	switch (p.Type)
-	{
-		case CallbackType::ProcessObPreOperationNotify:
-			data.Type = NotifyType::ProcessObjectNotify;
-			break;
-
-		case CallbackType::ThreadObPreOperationNotify:
-			data.Type = NotifyType::ThreadObjectNotify;
-			break;
-		default:
-			break;
-	}
-	data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-	data.Address = p.Routine;
-
-	bool ok = DriverHelper::EraseObPreOperation(&data);
-	if (!ok)
-		AtlMessageBox(*this, L"Failed to erase notify", IDS_TITLE, MB_ICONERROR);
-	else
-		Refresh();
-	Invalidate(True);
-
 	return TRUE;
 }
 

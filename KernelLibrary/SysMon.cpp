@@ -553,41 +553,6 @@ LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
 	return count;
 }
 
-bool EraseObPreOperation(POBJECT_TYPE objectType, ULONG callbackListOffset, void* address) {
-	PLIST_ENTRY callbackListHead = nullptr;
-	PLIST_ENTRY nextEntry = nullptr;
-	POB_CALLBACK_ENTRY callbackEntry = nullptr;
-	ULONG count = 0;
-
-	if (!objectType) {
-		return false;
-	}
-
-	callbackListHead = (PLIST_ENTRY)((PUCHAR)objectType + callbackListOffset);
-	nextEntry = callbackListHead->Flink;
-	int i = 0;
-	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
-		if (ExAcquireRundownProtection(&callbackEntry->RundownProtect)) {
-			LogInfo("PreOperation %p, PostOperation: %p\n", callbackEntry->PreOperation, callbackEntry->PostOperation);
-			if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_CREATE))
-				LogInfo("Protect handle from creating\n");
-			if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_DUPLICATE))
-				LogInfo("Protect handle from duplicating\n");
-
-			if (address == callbackEntry->PreOperation) {
-				callbackEntry->PreOperation = nullptr;
-				return true;
-			}
-			i++;
-			ExReleaseRundownProtection(&callbackEntry->RundownProtect);
-		}
-		nextEntry = nextEntry->Flink;
-	}
-
-	return false;
-}
-
 NTSTATUS BackupFile(_In_ PUNICODE_STRING FileName) {
 	NTSTATUS status = STATUS_SUCCESS;
 	FileManager mgrS,mgrT;
@@ -731,9 +696,13 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 			break;
 		}
 		case NotifyType::ThreadObjectNotify:
+		{
+			RemoveObCallbackNotify(*PsThreadType, notify->Offset, notify->Address);
+			break;
+		}
 		case NotifyType::ProcessObjectNotify:
 		{
-			ObUnRegisterCallbacks(notify->Address);
+			RemoveObCallbackNotify(*PsProcessType, notify->Offset, notify->Address);
 			break;
 		}
 
@@ -747,4 +716,35 @@ NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 	}
 	
 	return status;
+}
+
+bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, void* handle) {
+	PLIST_ENTRY callbackListHead = nullptr;
+	PLIST_ENTRY nextEntry = nullptr;
+	POB_CALLBACK_ENTRY callbackEntry = nullptr;
+	ULONG count = 0;
+
+	if (!objectType) {
+		return false;
+	}
+
+	callbackListHead = (PLIST_ENTRY)((PUCHAR)objectType + callbackListOffset);
+	nextEntry = callbackListHead->Flink;
+	int i = 0;
+	while (nextEntry != callbackListHead) {
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		if (ExAcquireRundownProtection(&callbackEntry->RundownProtect)) {
+			if (callbackEntry->RegistrationHandle == handle) {
+				break;
+			}
+			i++;
+			ExReleaseRundownProtection(&callbackEntry->RundownProtect);
+		}
+		nextEntry = nextEntry->Flink;
+	}
+	if (callbackEntry && callbackEntry->RegistrationHandle == handle) {
+		callbackEntry->RegistrationHandle->Count = 0;
+		RemoveEntryList(nextEntry);
+	}
+	return false;
 }

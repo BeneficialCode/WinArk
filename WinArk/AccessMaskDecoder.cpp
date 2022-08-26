@@ -95,6 +95,7 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 		{ PROCESS_SUSPEND_RESUME           , L"SUSPEND_RESUME" },
 		{ PROCESS_QUERY_LIMITED_INFORMATION, L"QUERY_LIMITED_INFORMATION" },
 		{ PROCESS_SET_LIMITED_INFORMATION  , L"SET_LIMITED_INFORMATION" },
+		{ PROCESS_TERMINATE,			     L"TERMINATE"},
 		},
 	},
 

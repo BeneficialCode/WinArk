@@ -711,7 +711,6 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_KERNEL_REFRESH
         MENUITEM "Remove",                      ID_KERNEL_REMOVE
-        MENUITEM "Erase",                       ID_KERNEL_ERASE
         MENUITEM SEPARATOR
         MENUITEM "Copy",                        ID_NOTIFY_COPY
         MENUITEM "Export",                      ID_NOTIFY_EXPORT

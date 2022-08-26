@@ -422,16 +422,6 @@ bool DriverHelper::EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallback
 	return true;
 }
 
-bool DriverHelper::EraseObPreOperation(ObPreOperationData* pData) {
-	if (!OpenDevice())
-		return false;
-
-	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_ERASE_OB_PREOPERATION, pData, sizeof(ObPreOperationData),
-		nullptr, 0, &bytes, nullptr);
-	return true;
-}
-
 LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
 	if (!OpenDevice())
 		return 0;

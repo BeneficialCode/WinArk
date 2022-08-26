@@ -42,7 +42,6 @@ struct DriverHelper final {
 	static bool RemoveNotify(NotifyData* pData);
 	static bool EnableDbgSys(DbgSysCoreInfo* pInfo);
 	static bool DisableDbgSys();
-	static bool EraseObPreOperation(ObPreOperationData* pData);
 
 private:
 	static bool OpenDevice();
