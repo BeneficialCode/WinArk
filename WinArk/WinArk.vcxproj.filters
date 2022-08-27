@@ -432,6 +432,9 @@
     <ClCompile Include="BigPoolView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="DPCTimerTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -856,6 +859,9 @@
     </ClInclude>
     <ClInclude Include="BigPoolView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="DPCTimerTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

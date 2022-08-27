@@ -13,6 +13,7 @@
 #include "..\KernelLibrary\Logging.h"
 #include "..\KernelLibrary\SysMonCommon.h"
 #include "..\KernelLibrary\kDbgUtil.h"
+#include "..\KernelLibrary\KernelTimer.h"
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -1145,6 +1146,23 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_SUCCESS;
 			else
 				status = STATUS_UNSUCCESSFUL;
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_KERNEL_TIMER:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(KernelTimerData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
+			KernelTimer::EnumKernelTimer(pData);
+			len = 0;
+			status = STATUS_SUCCESS;
 			break;
 		}
 	}

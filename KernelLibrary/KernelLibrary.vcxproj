@@ -240,6 +240,7 @@
     <ClInclude Include="detours.h" />
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
+    <ClInclude Include="KernelTimer.h" />
     <ClInclude Include="ExecutiveResource.h" />
     <ClInclude Include="FastMutex.h" />
     <ClInclude Include="FileManager.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="detours.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="disasm.cpp" />
+    <ClCompile Include="KernelTimer.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />
     <ClCompile Include="FastMutex.cpp" />
     <ClCompile Include="FileManager.cpp" />

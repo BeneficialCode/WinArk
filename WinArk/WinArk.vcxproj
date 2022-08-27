@@ -257,6 +257,7 @@
     <ClCompile Include="DeviceObjectType.cpp" />
     <ClCompile Include="DialogHelper.cpp" />
     <ClCompile Include="DispatchRoutinesTable.cpp" />
+    <ClCompile Include="DPCTimerTable.cpp" />
     <ClCompile Include="DriverTable.cpp" />
     <ClCompile Include="EnumString.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
@@ -395,6 +396,7 @@
     <ClInclude Include="DeviceObjectType.h" />
     <ClInclude Include="DialogHelper.h" />
     <ClInclude Include="DispatchRoutinesTable.h" />
+    <ClInclude Include="DPCTimerTable.h" />
     <ClInclude Include="DriverTable.h" />
     <ClInclude Include="EnumStrings.h" />
     <ClInclude Include="EnvironmentDlg.h" />

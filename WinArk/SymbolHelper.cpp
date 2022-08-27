@@ -79,3 +79,11 @@ ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
 DWORD SymbolHelper::GetKernelStructMemberOffset(std::string name, std::string memberName) {
 	return _kernel.GetStructMemberOffset(name, memberName);
 }
+
+DWORD SymbolHelper::GetKernelSturctMemberSize(std::string name, std::string memberName) {
+	return _kernel.GetStructMemberSize(name, memberName);
+}
+
+DWORD SymbolHelper::GetKernelStructSize(std::string name) {
+	return _kernel.GetStructSize(name);
+}

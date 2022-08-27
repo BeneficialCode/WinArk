@@ -35,6 +35,9 @@
     <Filter Include="hook">
       <UniqueIdentifier>{5efc8128-07c3-4b26-a1a1-3182a8d2adfc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{c59f543e-d208-4f78-899d-a0147ca066cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -154,6 +157,9 @@
     <ClInclude Include="BypassAntiKernelDbg.h">
       <Filter>Bypass</Filter>
     </ClInclude>
+    <ClInclude Include="KernelTimer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -257,6 +263,9 @@
     </ClCompile>
     <ClCompile Include="BypassAntiKernelDbg.cpp">
       <Filter>Bypass</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelTimer.cpp">
+      <Filter>Timer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

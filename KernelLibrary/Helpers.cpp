@@ -23,3 +23,16 @@ NTSTATUS Helpers::OpenProcess(ACCESS_MASK accessMask, ULONG pid, PHANDLE phProce
 	OBJECT_ATTRIBUTES procAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, OBJ_KERNEL_HANDLE);
 	return ZwOpenProcess(phProcess, accessMask, &procAttributes, &cid);
 }
+
+ULONG_PTR Helpers::KiDecodePointer(_In_ ULONG_PTR pointer, _In_ ULONG_PTR salt) {
+	ULONG_PTR value = pointer;
+
+#ifdef _WIN64
+	value = RotateLeft64(value ^ KiWaitNever, KiWaitNever & 0xFF);
+	value = RtlUlonglongByteSwap(value ^ salt)^ KiWaitAlways;
+#else
+	value = RotateLeft32(value ^ (ULONG)KiWaitNever, KiWaitNever & 0xFF);
+	value = RtlUlongByteSwap(value ^ salt) ^ (ULONG)KiWaitAlways;
+#endif // _WIN64
+	return value;
+}

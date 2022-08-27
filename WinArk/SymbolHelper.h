@@ -8,6 +8,8 @@ public:
 	static ULONG64 GetKernelSymbolAddressFromName(PCSTR name);
 	static ULONG64 GetWin32kSymbolAddressFromName(PCSTR name);
 	static DWORD GetKernelStructMemberOffset(std::string name, std::string memberName);
+	static DWORD GetKernelSturctMemberSize(std::string name, std::string memberName);
+	static DWORD GetKernelStructSize(std::string name);
 	static void Init();
 private:
 	

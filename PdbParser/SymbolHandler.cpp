@@ -138,8 +138,10 @@ DWORD SymbolHandler::GetStructMemberOffset(std::string name,std::string memberNa
 	for (ULONG i = 0; i < childrenParams->Count; i++) {
 		ULONG child = childrenParams->ChildId[i];
 		SymFromIndex(m_hProcess, _address, child, pMemberInfo);
-
-		SymGetTypeInfo(m_hProcess, _address, child, TI_GET_OFFSET, &offset);
+		if (!::strcmp(pMemberInfo->Name, memberName.c_str())) {
+			SymGetTypeInfo(m_hProcess, _address, child, TI_GET_OFFSET, &offset);
+			break;
+		}
 	}
 
 	free(pMemberInfo);
@@ -170,6 +172,48 @@ DWORD64 SymbolHandler::LoadKernelModule(DWORD64 address) {
 	}
 
 	return 0;
+}
+
+DWORD SymbolHandler::GetStructMemberSize(std::string name, std::string memberName) {
+	DWORD size = 0;
+
+	auto symbol = std::make_unique<SymbolInfo>();
+	auto info = symbol->GetSymbolInfo();
+	SymGetTypeFromName(m_hProcess, _address, name.c_str(), symbol->GetSymbolInfo());
+
+	ULONG childrenCount;
+	SymGetTypeInfo(m_hProcess, _address, info->TypeIndex, TI_GET_CHILDRENCOUNT, &childrenCount);
+	TI_FINDCHILDREN_PARAMS* childrenParams = (TI_FINDCHILDREN_PARAMS*)malloc(sizeof(TI_FINDCHILDREN_PARAMS) + sizeof(ULONG) * childrenCount);
+	if (childrenParams == nullptr) {
+		return size;
+	}
+	childrenParams->Count = childrenCount;
+	childrenParams->Start = 0;
+	PSYMBOL_INFO pMemberInfo = (PSYMBOL_INFO)malloc((sizeof(SYMBOL_INFO) +
+		MAX_SYM_NAME * sizeof(TCHAR) +
+		sizeof(ULONG64) - 1) /
+		sizeof(ULONG64));
+	if (pMemberInfo == nullptr) {
+		free(childrenParams);
+		return size;
+	}
+	pMemberInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+	pMemberInfo->MaxNameLen = MAX_SYM_NAME;
+	SymGetTypeInfo(m_hProcess, _address, info->TypeIndex, TI_FINDCHILDREN, childrenParams);
+
+	for (ULONG i = 0; i < childrenParams->Count; i++) {
+		ULONG child = childrenParams->ChildId[i];
+		SymFromIndex(m_hProcess, _address, child, pMemberInfo);
+		if (!::strcmp(pMemberInfo->Name, memberName.c_str())) {
+			size = pMemberInfo->Size;
+			break;
+		}
+	}
+
+	free(pMemberInfo);
+	free(childrenParams);
+
+	return size;
 }
 
 std::unique_ptr<SymbolInfo> SymbolHandler::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {

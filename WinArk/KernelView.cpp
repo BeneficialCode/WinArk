@@ -32,7 +32,8 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		L"PiDDB Cache",
 		L"Unloaded Drivers",
 		L"Kernel Pool Tag",
-		L"Big Pool"
+		L"Big Pool",
+		L"DPC Timer",
 	};
 
 	int i = 0;
@@ -42,7 +43,7 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	InitPiDDBCacheTable();
 	InitUnloadedDriverTable();
-
+	InitDPCTimerTable();
 
 	return 0;
 }
@@ -70,9 +71,11 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 
 	index = m_TabCtrl.GetCurSel();
-	m_PiDDBCacheTable->ShowWindow(SW_HIDE);
-	m_UnloadedDriverTable->ShowWindow(SW_HIDE);
-	m_KernelPoolView->ShowWindow(SW_HIDE);
+	for (auto hwnd : m_hwndArray) {
+		if (::IsWindow(hwnd)) {
+			::ShowWindow(hwnd, SW_HIDE);
+		}
+	}
 
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::PiDDBCacheTable:
@@ -88,6 +91,9 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::BigPoolTable:
 			m_BigPoolView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::DPCTimer:
+			m_DPCTimerTable->ShowWindow(SW_SHOW);
 			break;
 	}
 	_index = index;
@@ -158,6 +164,41 @@ void CKernelView::InitUnloadedDriverTable() {
 	m_UnloadedDriverTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
 	m_hwndArray[static_cast<int>(TabColumn::UnloadedDriverTable)] = m_UnloadedDriverTable->m_hWnd;
 	m_UnloadedDriverTable->ShowWindow(SW_HIDE);
+}
+
+void CKernelView::InitDPCTimerTable() {
+	BarDesc bars[] = {
+		{22,"定时器对象",0},
+		{20,"DPC对象",0},
+		{20,"函数入口",0},
+		{10,"触发周期",0},
+		{30,"文件厂商",0},
+		{260,"函数入口所在内核模块",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_DPCTimerTable = new CDPCTimerTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_DPCTimerTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::DPCTimer)] = m_DPCTimerTable->m_hWnd;
+	m_DPCTimerTable->ShowWindow(SW_HIDE);
 }
 
 IView* CKernelView::GetCurView() {
