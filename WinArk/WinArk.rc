@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -30,10 +30,10 @@ CAPTION "About"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,264,147,50,14
-    CTEXT           "WinArk Application v1.0\n\n(c) Copyright 2021",IDC_STATIC,25,57,78,32
+    CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Copyright 2022",IDC_STATIC,25,57,78,32
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
     GROUPBOX        "",IDC_STATIC,7,7,115,154
-    LTEXT           "致谢:\n\nL0x1c；Pepsi；砍老板；小路哥哥 :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；黎叔；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,106
+    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；路总 :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；黎叔；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
 END
 
 
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -874,12 +874,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1398,7 +1398,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
