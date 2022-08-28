@@ -796,6 +796,10 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_DPCTIMER_REFRESH
     END
+    POPUP "IoTimer"
+    BEGIN
+        MENUITEM "Refresh",                     ID_IOTIMER_REFRESH
+    END
 END
 
 IDR_ETW_CONTEXT MENU

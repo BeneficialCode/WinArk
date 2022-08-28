@@ -14,6 +14,7 @@
 #include "..\KernelLibrary\SysMonCommon.h"
 #include "..\KernelLibrary\kDbgUtil.h"
 #include "..\KernelLibrary\KernelTimer.h"
+#include "..\KernelLibrary\IoTimer.h"
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -869,7 +870,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
 			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
 			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-			ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
+			//ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
 			if (PiDDBCacheTable != nullptr) {
 				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
 					p != nullptr;
@@ -1059,7 +1060,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		case IOCTL_ARK_REMOVE_KERNEL_NOTIFY:
 		{
-			ULONG size = 0;
+			//ULONG size = 0;
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
@@ -1188,6 +1189,49 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			ULONG count = KernelTimer::GetKernelTimerCount(pData);
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(count);
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_GET_IO_TIMER_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = *pCount;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(count);
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_IO_TIMER:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(IoTimerData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(IoTimerInfo)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			IoTimerData* pData = (IoTimerData*)Irp->AssociatedIrp.SystemBuffer;
+			IoTimer::EnumIoTimer(pData, (IoTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
+			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
 			break;
 		}

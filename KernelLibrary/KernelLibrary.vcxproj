@@ -240,6 +240,7 @@
     <ClInclude Include="detours.h" />
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
+    <ClInclude Include="IoTimer.h" />
     <ClInclude Include="KernelTimer.h" />
     <ClInclude Include="ExecutiveResource.h" />
     <ClInclude Include="FastMutex.h" />
@@ -281,6 +282,7 @@
     <ClCompile Include="detours.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="disasm.cpp" />
+    <ClCompile Include="IoTimer.cpp" />
     <ClCompile Include="KernelTimer.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />
     <ClCompile Include="FastMutex.cpp" />

@@ -432,11 +432,14 @@
     <ClCompile Include="BigPoolView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
-    <ClCompile Include="DPCTimerTable.cpp">
+    <ClCompile Include="DpcTimerTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
     <ClCompile Include="FileVersionInfoHelper.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="IoTimerTable.cpp">
+      <Filter>Table</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -863,11 +866,14 @@
     <ClInclude Include="BigPoolView.h">
       <Filter>Views</Filter>
     </ClInclude>
-    <ClInclude Include="DPCTimerTable.h">
+    <ClInclude Include="DpcTimerTable.h">
       <Filter>Table</Filter>
     </ClInclude>
     <ClInclude Include="FileVersionInfoHelper.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="IoTimerTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

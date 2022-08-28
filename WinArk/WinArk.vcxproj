@@ -257,7 +257,7 @@
     <ClCompile Include="DeviceObjectType.cpp" />
     <ClCompile Include="DialogHelper.cpp" />
     <ClCompile Include="DispatchRoutinesTable.cpp" />
-    <ClCompile Include="DPCTimerTable.cpp" />
+    <ClCompile Include="DpcTimerTable.cpp" />
     <ClCompile Include="DriverTable.cpp" />
     <ClCompile Include="EnumString.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
@@ -277,6 +277,7 @@
     <ClCompile Include="FormatHelper.cpp" />
     <ClCompile Include="GotoKeyDlg.cpp" />
     <ClCompile Include="IniFile.cpp" />
+    <ClCompile Include="IoTimerTable.cpp" />
     <ClCompile Include="KernelNotifyTable.cpp" />
     <ClCompile Include="KernelPoolView.cpp" />
     <ClCompile Include="KernelRoutineDlg.cpp" />
@@ -397,7 +398,7 @@
     <ClInclude Include="DeviceObjectType.h" />
     <ClInclude Include="DialogHelper.h" />
     <ClInclude Include="DispatchRoutinesTable.h" />
-    <ClInclude Include="DPCTimerTable.h" />
+    <ClInclude Include="DpcTimerTable.h" />
     <ClInclude Include="DriverTable.h" />
     <ClInclude Include="EnumStrings.h" />
     <ClInclude Include="EnvironmentDlg.h" />
@@ -420,6 +421,7 @@
     <ClInclude Include="IEventDataSerializer.h" />
     <ClInclude Include="IniFile.h" />
     <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="IoTimerTable.h" />
     <ClInclude Include="KernelNotifyTable.h" />
     <ClInclude Include="KernelPoolView.h" />
     <ClInclude Include="KernelRoutineDlg.h" />

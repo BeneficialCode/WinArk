@@ -160,6 +160,9 @@
     <ClInclude Include="KernelTimer.h">
       <Filter>Timer</Filter>
     </ClInclude>
+    <ClInclude Include="IoTimer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -265,6 +268,9 @@
       <Filter>Bypass</Filter>
     </ClCompile>
     <ClCompile Include="KernelTimer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="IoTimer.cpp">
       <Filter>Timer</Filter>
     </ClCompile>
   </ItemGroup>

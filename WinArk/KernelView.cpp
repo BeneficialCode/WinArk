@@ -34,6 +34,7 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		L"Kernel Pool Tag",
 		L"Big Pool",
 		L"DPC Timer",
+		L"IO Timer"
 	};
 
 	int i = 0;
@@ -43,7 +44,8 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	InitPiDDBCacheTable();
 	InitUnloadedDriverTable();
-	InitDPCTimerTable();
+	InitDpcTimerTable();
+	InitIoTimerTable();
 
 	return 0;
 }
@@ -92,8 +94,11 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::BigPoolTable:
 			m_BigPoolView->ShowWindow(SW_SHOW);
 			break;
-		case TabColumn::DPCTimer:
-			m_DPCTimerTable->ShowWindow(SW_SHOW);
+		case TabColumn::DpcTimer:
+			m_DpcTimerTable->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::IoTimer:
+			m_IoTimerTable->ShowWindow(SW_SHOW);
 			break;
 	}
 	_index = index;
@@ -166,7 +171,7 @@ void CKernelView::InitUnloadedDriverTable() {
 	m_UnloadedDriverTable->ShowWindow(SW_HIDE);
 }
 
-void CKernelView::InitDPCTimerTable() {
+void CKernelView::InitDpcTimerTable() {
 	BarDesc bars[] = {
 		{22,"定时器对象",0},
 		{20,"DPC对象",0},
@@ -190,16 +195,51 @@ void CKernelView::InitDPCTimerTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_DPCTimerTable = new CDpcTimerTable(info, table);
+	m_DpcTimerTable = new CDpcTimerTable(info, table);
 	RECT rect;
 	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
 	int height = rect.bottom - rect.top;
 	GetClientRect(&rect);
 	rect.top += height;
 	rect.bottom -= height;
-	m_DPCTimerTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::DPCTimer)] = m_DPCTimerTable->m_hWnd;
-	m_DPCTimerTable->ShowWindow(SW_HIDE);
+	m_DpcTimerTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::DpcTimer)] = m_DpcTimerTable->m_hWnd;
+	m_DpcTimerTable->ShowWindow(SW_HIDE);
+}
+
+void CKernelView::InitIoTimerTable() {
+	BarDesc bars[] = {
+		{22,"设备对象",0},
+		{20,"Type",0},
+		{18,"TimerFlag",0},
+		{20,"函数入口",0},
+		{30,"文件厂商",0},
+		{260,"函数入口所在内核模块",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_IoTimerTable = new CIoTimerTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_IoTimerTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::IoTimer)] = m_IoTimerTable->m_hWnd;
+	m_IoTimerTable->ShowWindow(SW_HIDE);
 }
 
 IView* CKernelView::GetCurView() {

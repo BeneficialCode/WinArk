@@ -444,6 +444,17 @@ ULONG DriverHelper::GetCmCallbackCount(PULONG* pCount) {
 	return count;
 }
 
+ULONG DriverHelper::GetIoTimerCount(PULONG* pCount) {
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	ULONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_IO_TIMER_COUNT, pCount, sizeof(pCount),
+		&count, sizeof(ULONG), &bytes, nullptr);
+	return count;
+}
+
 bool DriverHelper::EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo, ULONG size){
 	if (!OpenDevice())
 		return 0;
@@ -510,6 +521,16 @@ bool DriverHelper::EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SI
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_KERNEL_TIMER, pData, sizeof(KernelTimerData),
 		pInfo, size, &bytes, nullptr);
 }
+
+bool DriverHelper::EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo, SIZE_T size) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_IO_TIMER, pData, sizeof(KernelTimerData),
+		pInfo, size, &bytes, nullptr);
+}
+
 
 ULONG DriverHelper::GetKernelTimerCount(KernelTimerData* pData) {
 	if (!OpenDevice())

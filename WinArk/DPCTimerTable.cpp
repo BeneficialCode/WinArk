@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DPCTimerTable.h"
+#include "DpcTimerTable.h"
 #include "SymbolHelper.h"
 #include "DriverHelper.h"
 #include "FileVersionInfoHelper.h"
@@ -198,4 +198,5 @@ bool CDpcTimerTable::CompareItems(const std::shared_ptr<DpcTimerInfo>& p1, const
 			return SortHelper::SortStrings(name1, name2, asc);
 		}
 	}
+	return false;
 }

@@ -4,7 +4,8 @@
 #include "KernelPoolView.h"
 #include "Interfaces.h"
 #include "BigPoolView.h"
-#include "DPCTimerTable.h"
+#include "DpcTimerTable.h"
+#include "IoTimerTable.h"
 
 class CKernelView :
 	public CWindowImpl<CKernelView> {
@@ -33,12 +34,13 @@ public:
 	IView* GetCurView();
 
 	enum class TabColumn : int {
-		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable,DPCTimer,IOTimer,
+		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable,DpcTimer,IoTimer,
 	};
 
 	void InitPiDDBCacheTable();
 	void InitUnloadedDriverTable();
-	void InitDPCTimerTable();
+	void InitDpcTimerTable();
+	void InitIoTimerTable();
 
 private:
 	// 动态创建出来的控件
@@ -48,7 +50,8 @@ private:
 	CUnloadedDriverTable* m_UnloadedDriverTable{nullptr};
 	CKernelPoolView* m_KernelPoolView{ nullptr };
 	CBigPoolView* m_BigPoolView{ nullptr };
-	CDpcTimerTable* m_DPCTimerTable{ nullptr };
+	CDpcTimerTable* m_DpcTimerTable{ nullptr };
+	CIoTimerTable* m_IoTimerTable{ nullptr };
 	IMainFrame* m_pFrame;
 	HWND m_hwndArray[16];
 	int _index = 0;

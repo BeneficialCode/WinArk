@@ -35,6 +35,7 @@ struct DriverHelper final {
 	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
 	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
 	static ULONG GetCmCallbackCount(PULONG* pCount);
+	static ULONG GetIoTimerCount(PULONG* pCount);
 	static bool EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo,ULONG size);
 	static bool GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines);
 	static bool SetImageLoadNotify();
@@ -43,6 +44,8 @@ struct DriverHelper final {
 	static bool EnableDbgSys(DbgSysCoreInfo* pInfo);
 	static bool DisableDbgSys();
 	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
+	static bool EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo, SIZE_T size);
+
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
 private:
 	static bool OpenDevice();
