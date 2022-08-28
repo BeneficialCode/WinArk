@@ -160,7 +160,7 @@ void CDpcTimerTable::Refresh() {
 			memset(p, 0, size);
 			DriverHelper::EnumKernelTimer(&data, p, size);
 			for (int i = 0; i < maxCount; i++) {
-				if (p[i].KDpc != nullptr) {
+				if (p[i].Routine != nullptr) {
 					std::shared_ptr<DpcTimerInfo> info = std::make_shared<DpcTimerInfo>();
 					info->DueTime = p[i].DueTime;
 					info->KDpc = p[i].KDpc;

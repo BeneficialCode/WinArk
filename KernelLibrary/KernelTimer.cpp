@@ -77,9 +77,19 @@ void KernelTimer::EnumKernelTimer(KernelTimerData* pData, DpcTimerInfo* pInfo) {
 				pInfo[k].Period = pTimer->Period;
 				k++;
 #else
+				if (!MmIsAddressValid(pTimer->Dpc))
+					continue;
 				LogInfo("KTIMER: 0x%p \t KDPC: 0x%p \tº¯ÊýÈë¿Ú: 0x%p\t\n", pTimer, pTimer->Dpc, pTimer->Dpc->DeferredRoutine);
+				pInfo[k].DueTime = pTimer->DueTime;
+				pInfo[k].KDpc = pTimer->Dpc;
+				pInfo[k].KTimer = pTimer;
+				pInfo[k].Routine = pTimer->Dpc->DeferredRoutine;
+				pInfo[k].Period = pTimer->Period;
+				k++;
 #endif // _WIN64
 			}
 		}
 	}
+
+	LogInfo("Total Kernel Timer: %d\n", k);
 }
