@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x8A
+#define DRIVER_CURRENT_VERSION 0x8B
 
 
 // 用MDL锁定用户内存
@@ -85,7 +85,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_ENABLE_DBGSYS						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x824,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_DISABLE_DBGSYS					CTL_CODE(ANTI_ROOTKIT_DEVICE,0x825,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_KERNEL_TIMER					CTL_CODE(ANTI_ROOTKIT_DEVICE,0x826,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
+#define IOCTL_ARK_GET_KERNEL_TIMER_COUNT			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x827,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer

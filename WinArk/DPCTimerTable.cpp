@@ -142,6 +142,7 @@ void CDpcTimerTable::Refresh() {
 	ULONG size = SymbolHelper::GetKernelStructSize("_KTIMER_TABLE_ENTRY");
 	KernelTimerData data;
 	if (size != 0) {
+		
 		ULONG entryCount = memberSize / size;
 		data.entriesOffset = SymbolHelper::GetKernelStructMemberOffset("_KTIMER_TABLE", "TimerEntries");
 		data.maxEntryCount = entryCount;
@@ -151,16 +152,17 @@ void CDpcTimerTable::Refresh() {
 		data.pKiWaitAlways = (void*)SymbolHelper::GetKernelSymbolAddressFromName("KiWaitAlways");
 		data.pKiWaitNever = (void*)SymbolHelper::GetKernelSymbolAddressFromName("KiWaitNever");
 #endif // _WIN64
-		int cpuCount = ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
-		SIZE_T size = cpuCount * entryCount * sizeof(DpcTimerInfo);
-		ULONG maxCount = cpuCount * entryCount;
-		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
-		DpcTimerInfo* p = (DpcTimerInfo*)buffer.get();
-		if (p != nullptr) {
-			memset(p, 0, size);
-			DriverHelper::EnumKernelTimer(&data, p, size);
-			for (int i = 0; i < maxCount; i++) {
-				if (p[i].Routine != nullptr) {
+		ULONG count = DriverHelper::GetKernelTimerCount(&data);
+		if (count != 0) {
+			int cpuCount = ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+			SIZE_T size = cpuCount * entryCount * sizeof(DpcTimerInfo);
+			ULONG maxCount = cpuCount * entryCount;
+			wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
+			DpcTimerInfo* p = (DpcTimerInfo*)buffer.get();
+			if (p != nullptr) {
+				memset(p, 0, size);
+				DriverHelper::EnumKernelTimer(&data, p, size);
+				for (int i = 0; i < count; i++) {
 					std::shared_ptr<DpcTimerInfo> info = std::make_shared<DpcTimerInfo>();
 					info->DueTime = p[i].DueTime;
 					info->KDpc = p[i].KDpc;
@@ -170,7 +172,6 @@ void CDpcTimerTable::Refresh() {
 					m_Table.data.info.push_back(std::move(info));
 				}
 			}
-			
 		}
 	}
 	

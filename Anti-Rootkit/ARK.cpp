@@ -1169,6 +1169,28 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = STATUS_SUCCESS;
 			break;
 		}
+
+		case IOCTL_ARK_GET_KERNEL_TIMER_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(KernelTimerData)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = KernelTimer::GetKernelTimerCount(pData);
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(count);
+			status = STATUS_SUCCESS;
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;

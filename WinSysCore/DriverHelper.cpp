@@ -511,6 +511,19 @@ bool DriverHelper::EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SI
 		pInfo, size, &bytes, nullptr);
 }
 
+ULONG DriverHelper::GetKernelTimerCount(KernelTimerData* pData) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	ULONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_KERNEL_TIMER_COUNT, pData, sizeof(KernelTimerData),
+		&count, sizeof(count), &bytes, nullptr);
+
+	return count;
+}
+
+
 
 bool DriverHelper::DisableDbgSys() {
 	if (!OpenDevice())

@@ -15,6 +15,6 @@ struct KernelTimer {
 	void Cancel();
 
 	static void EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo);
-
+	static ULONG GetKernelTimerCount(KernelTimerData* pData);
 	KTIMER _Timer;
 };

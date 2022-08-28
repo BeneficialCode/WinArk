@@ -43,7 +43,7 @@ struct DriverHelper final {
 	static bool EnableDbgSys(DbgSysCoreInfo* pInfo);
 	static bool DisableDbgSys();
 	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
-
+	static ULONG GetKernelTimerCount(KernelTimerData* pData);
 private:
 	static bool OpenDevice();
 
