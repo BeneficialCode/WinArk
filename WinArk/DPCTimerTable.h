@@ -1,18 +1,18 @@
 #pragma once
 #include "resource.h"
 #include "Table.h"
+#include "DriverHelper.h"
 
-struct DPCTimerInfo {
 
-};
-
-class CDPCTimerTable :
-	public CTable<std::shared_ptr<DPCTimerInfo>>,
-	public CWindowImpl<CDPCTimerTable> {
+class CDpcTimerTable :
+	public CTable<std::shared_ptr<DpcTimerInfo>>,
+	public CWindowImpl<CDpcTimerTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	BEGIN_MSG_MAP(CDPCTimerTable)
+	bool CompareItems(const std::shared_ptr<DpcTimerInfo>& p1, const std::shared_ptr<DpcTimerInfo>& p2, int col, bool asc = true);
+
+	BEGIN_MSG_MAP(CDpcTimerTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -24,17 +24,19 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
+		COMMAND_ID_HANDLER(ID_DPCTIMER_REFRESH,OnRefresh)
 	END_MSG_MAP()
 
-	CDPCTimerTable(BarInfo& bars, TableInfo& table);
+	CDpcTimerTable(BarInfo& bars, TableInfo& table);
 
-	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<DPCTimerInfo>& info, int column);
+	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<DpcTimerInfo>& info, int column);
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);
@@ -55,11 +57,12 @@ public:
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void Refresh();
 
 	enum class Column {
-		Timer,DPC,Routine,Period,CompanyName,DriverPath
+		Timer,DPC,Routine,DueTime,Period,CompanyName,DriverPath
 	};
 private:
 

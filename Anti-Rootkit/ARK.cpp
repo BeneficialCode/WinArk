@@ -1159,9 +1159,13 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_BUFFER_SIZE;
 				break;
 			}
+			if (dic.OutputBufferLength < sizeof(DpcTimerInfo)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 			KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
-			KernelTimer::EnumKernelTimer(pData);
-			len = 0;
+			KernelTimer::EnumKernelTimer(pData,(DpcTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
+			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
 			break;
 		}

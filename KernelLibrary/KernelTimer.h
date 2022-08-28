@@ -7,13 +7,14 @@ typedef struct _KTIMER_TABLE_ENTRY {
 }KTIMER_TABLE_ENTRY,*PKTIMER_TABLE_ENTRY;
 
 struct KernelTimerData;
+struct DpcTimerInfo;
 struct KernelTimer {
 	void Init();
 	bool SetOneShot(LARGE_INTEGER interval,PKDPC Dpc);
 	bool SetPeriod(LARGE_INTEGER interval,ULONG period,PKDPC Dpc);
 	void Cancel();
 
-	static void EnumKernelTimer(KernelTimerData* pData);
+	static void EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo);
 
 	KTIMER _Timer;
 };

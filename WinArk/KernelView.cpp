@@ -171,6 +171,7 @@ void CKernelView::InitDPCTimerTable() {
 		{22,"定时器对象",0},
 		{20,"DPC对象",0},
 		{20,"函数入口",0},
+		{18,"DueTime",0},
 		{10,"触发周期",0},
 		{30,"文件厂商",0},
 		{260,"函数入口所在内核模块",0},
@@ -189,7 +190,7 @@ void CKernelView::InitDPCTimerTable() {
 		info.bar[i].name = bars[i].name;
 	}
 
-	m_DPCTimerTable = new CDPCTimerTable(info, table);
+	m_DPCTimerTable = new CDpcTimerTable(info, table);
 	RECT rect;
 	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
 	int height = rect.bottom - rect.top;

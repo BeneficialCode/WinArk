@@ -2,96 +2,142 @@
 #include "DPCTimerTable.h"
 #include "SymbolHelper.h"
 #include "DriverHelper.h"
+#include "FileVersionInfoHelper.h"
+#include "Helpers.h"
 
-LRESULT CDPCTimerTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Refresh();
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
 	return 0;
 }
-LRESULT CDPCTimerTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	PaintTable(m_hWnd);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnUserVabs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnUserVabs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnUserVrel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnUserVrel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnUserChgs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnUserChgs(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	return 0;
 }
 
-LRESULT CDPCTimerTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	return Tablefunction(m_hWnd, WM_VSCROLL, zDelta >= 0 ? 0 : 1, wParam);
 }
-LRESULT CDPCTimerTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_KERNEL_CONTEXT);
+	hSubMenu = menu.GetSubMenu(4);
+	POINT pt;
+	::GetCursorPos(&pt);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+
+	return 0;
+}
+LRESULT CDpcTimerTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
-LRESULT CDPCTimerTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
-}
-LRESULT CDPCTimerTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT CDPCTimerTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CDpcTimerTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	return DLGC_WANTARROWS;
 }
 
 
-CDPCTimerTable::CDPCTimerTable(BarInfo& bars, TableInfo& table)
+CDpcTimerTable::CDpcTimerTable(BarInfo& bars, TableInfo& table)
 	: CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	
 }
 
-int CDPCTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<DPCTimerInfo>& info, int column) {
-	switch (column) {
-		
+int CDpcTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<DpcTimerInfo>& info, int column) {
+	// Timer,DPC,Routine,DueTime,Period,CompanyName,DriverPath
+	switch (static_cast<Column>(column)) {
+		case Column::CompanyName:
+		{
+			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine);
+			s = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path)).c_str();
+			break;
+		}
+
+		case Column::DPC:
+			s.Format(L"0x%p", info->KDpc);
+			break;
+
+		case Column::Period:
+			s.Format(L"%u", info->Period);
+			break;
+
+		case Column::Timer:
+			s.Format(L"0x%p", info->KTimer);
+
+			break;
+
+		case Column::DriverPath:
+			s = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine).c_str();
+			break;
+
+		case Column::Routine:
+			s.Format(L"0x%p", info->Routine);
+			break;
+
+		case Column::DueTime:
+			s.Format(L"0x%x", info->DueTime);
+			break;
 	}
 	return s.GetLength();
 }
 
 
-
-
-void CDPCTimerTable::Refresh() {
+void CDpcTimerTable::Refresh() {
+	m_Table.data.info.clear();
 	ULONG memberSize = SymbolHelper::GetKernelSturctMemberSize("_KTIMER_TABLE", "TimerEntries");
 	ULONG size = SymbolHelper::GetKernelStructSize("_KTIMER_TABLE_ENTRY");
 	KernelTimerData data;
@@ -105,12 +151,50 @@ void CDPCTimerTable::Refresh() {
 		data.pKiWaitAlways = (void*)SymbolHelper::GetKernelSymbolAddressFromName("KiWaitAlways");
 		data.pKiWaitNever = (void*)SymbolHelper::GetKernelSymbolAddressFromName("KiWaitNever");
 #endif // _WIN64
-
-		DriverHelper::EnumKernelTimer(&data);
+		int cpuCount = ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+		SIZE_T size = cpuCount * entryCount * sizeof(DpcTimerInfo);
+		ULONG maxCount = cpuCount * entryCount;
+		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
+		DpcTimerInfo* p = (DpcTimerInfo*)buffer.get();
+		if (p != nullptr) {
+			memset(p, 0, size);
+			DriverHelper::EnumKernelTimer(&data, p, size);
+			for (int i = 0; i < maxCount; i++) {
+				if (p[i].KDpc != nullptr) {
+					std::shared_ptr<DpcTimerInfo> info = std::make_shared<DpcTimerInfo>();
+					info->DueTime = p[i].DueTime;
+					info->KDpc = p[i].KDpc;
+					info->KTimer = p[i].KTimer;
+					info->Routine = p[i].Routine;
+					info->Period = p[i].Period;
+					m_Table.data.info.push_back(std::move(info));
+				}
+			}
+			
+		}
 	}
 	
 	auto count = static_cast<int>(m_Table.data.info.size());
 	m_Table.data.n = count;
 
 	return;
+}
+
+LRESULT CDpcTimerTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Refresh();
+
+	return TRUE;
+}
+
+bool CDpcTimerTable::CompareItems(const std::shared_ptr<DpcTimerInfo>& p1, const std::shared_ptr<DpcTimerInfo>& p2, int col, bool asc) {
+	switch (static_cast<Column>(col)) {
+		case Column::CompanyName:
+		{
+			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p1->Routine);
+			std::wstring name1 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+			path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p2->Routine);
+			std::wstring name2 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+			return SortHelper::SortStrings(name1, name2, asc);
+		}
+	}
 }

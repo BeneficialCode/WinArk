@@ -502,13 +502,13 @@ bool DriverHelper::EnableDbgSys(DbgSysCoreInfo* pInfo) {
 		nullptr, 0, &bytes, nullptr);
 }
 
-bool DriverHelper::EnumKernelTimer(KernelTimerData* pData) {
+bool DriverHelper::EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_KERNEL_TIMER, pData, sizeof(KernelTimerData),
-		nullptr, 0, &bytes, nullptr);
+		pInfo, size, &bytes, nullptr);
 }
 
 

@@ -270,6 +270,7 @@
     <ClCompile Include="ExportDlg.cpp" />
     <ClCompile Include="FileManagerView.cpp" />
     <ClCompile Include="FileObjectType.cpp" />
+    <ClCompile Include="FileVersionInfoHelper.cpp" />
     <ClCompile Include="FilterConfiguration.cpp" />
     <ClCompile Include="FilterFactory.cpp" />
     <ClCompile Include="FiltersDlg.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="ExportDlg.h" />
     <ClInclude Include="FileManagerView.h" />
     <ClInclude Include="FileObjectType.h" />
+    <ClInclude Include="FileVersionInfoHelper.h" />
     <ClInclude Include="FilterConfiguration.h" />
     <ClInclude Include="FilterFactory.h" />
     <ClInclude Include="FiltersDlg.h" />

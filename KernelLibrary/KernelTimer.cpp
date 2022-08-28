@@ -12,6 +12,15 @@ struct KernelTimerData {
 	void* pKiProcessorBlock;
 };
 
+struct DpcTimerInfo {
+	void* KTimer;
+	void* KDpc;
+	void* Routine;
+	ULARGE_INTEGER DueTime;
+	ULONG Period;
+	ULONG Count;
+};
+
 void KernelTimer::Init() {
 	KeInitializeTimer(&_Timer);
 }
@@ -28,31 +37,45 @@ void KernelTimer::Cancel() {
 	KeCancelTimer(&_Timer);
 }
 
-void KernelTimer::EnumKernelTimer(KernelTimerData* pData) {
+void KernelTimer::EnumKernelTimer(KernelTimerData* pData, DpcTimerInfo* pInfo) {
 	PULONG_PTR KiProcessorBlock = (PULONG_PTR)pData->pKiProcessorBlock;
+	int k = 0;
+
+#ifdef _WIN64
+	Helpers::KiWaitAlways = *(ULONG_PTR*)pData->pKiWaitAlways;
+	Helpers::KiWaitNever = *(ULONG_PTR*)pData->pKiWaitNever;
+#endif // _WIN64
+	ULONG maxCount = pData->maxEntryCount;
+	ULONG tableOffset = pData->tableOffset;
+	ULONG entriesOffset = pData->entriesOffset;
+
 	for (KAFFINITY i = 0; i < KeNumberProcessors; i++) {
 		ULONG_PTR kprcbAddr = KiProcessorBlock[i];
-		ULONG_PTR tableAddr = kprcbAddr + pData->tableOffset;
-		ULONG_PTR entriesAddr = tableAddr + pData->entriesOffset;
+		ULONG_PTR tableAddr = kprcbAddr + tableOffset;
+		ULONG_PTR entriesAddr = tableAddr + entriesOffset;
 		PKTIMER_TABLE_ENTRY pTableEntry = (PKTIMER_TABLE_ENTRY)entriesAddr;
 		if (!MmIsAddressValid(pTableEntry)) {
 			return;
 		}
-		for (int i = 0; i < pData->maxEntryCount; i++) {
-			PLIST_ENTRY pListHead = &pTableEntry[i].Entry;
+		for (int j = 0; j < maxCount; j++) {
+			PLIST_ENTRY pListHead = &pTableEntry[j].Entry;
 
 			for (PLIST_ENTRY pListEntry = pListHead->Flink; pListEntry != pListHead; pListEntry = pListEntry->Flink) {
 				if (!MmIsAddressValid(pListEntry))
 					continue;
 				PKTIMER pTimer = CONTAINING_RECORD(pListEntry, KTIMER, TimerListEntry);
 #ifdef _WIN64
-				Helpers::KiWaitAlways = *(ULONG_PTR*)pData->pKiWaitAlways;
-				Helpers::KiWaitNever = *(ULONG_PTR*)pData->pKiWaitNever;
 				ULONG_PTR salt = (ULONG_PTR)pTimer;
 				PKDPC pKDpc = (PKDPC)Helpers::KiDecodePointer((ULONG_PTR)pTimer->Dpc, salt);
 				if (!MmIsAddressValid(pKDpc))
 					continue;
 				LogInfo("KTIMER: 0x%p \t KDPC: 0x%p \t函数入口: 0x%p\t\n", pTimer, pKDpc,pKDpc->DeferredRoutine);
+				pInfo[k].DueTime = pTimer->DueTime;
+				pInfo[k].KDpc = pKDpc;
+				pInfo[k].KTimer = pTimer;
+				pInfo[k].Routine = pKDpc->DeferredRoutine;
+				pInfo[k].Period = pTimer->Period;
+				k++;
 #else
 				LogInfo("KTIMER: 0x%p \t KDPC: 0x%p \t函数入口: 0x%p\t\n", pTimer, pTimer->Dpc, pTimer->Dpc->DeferredRoutine);
 #endif // _WIN64

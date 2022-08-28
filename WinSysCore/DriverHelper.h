@@ -42,7 +42,7 @@ struct DriverHelper final {
 	static bool RemoveNotify(NotifyData* pData);
 	static bool EnableDbgSys(DbgSysCoreInfo* pInfo);
 	static bool DisableDbgSys();
-	static bool EnumKernelTimer(KernelTimerData* pData);
+	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
 
 private:
 	static bool OpenDevice();

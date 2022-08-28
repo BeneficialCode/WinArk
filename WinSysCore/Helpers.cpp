@@ -161,6 +161,7 @@ std::string Helpers::GetKernelModuleByAddress(ULONG_PTR address) {
 	return "";
 }
 
+
 std::wstring Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
 	std::wstring moduleName = L"";
 	if (pid == 0||pid==4) {
