@@ -435,6 +435,9 @@
     <ClCompile Include="DPCTimerTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="FileVersionInfoHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -862,6 +865,9 @@
     </ClInclude>
     <ClInclude Include="DPCTimerTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="FileVersionInfoHelper.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

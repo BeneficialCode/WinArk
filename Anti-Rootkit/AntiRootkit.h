@@ -44,7 +44,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x83
+#define DRIVER_CURRENT_VERSION 0x8A
 
 
 // 用MDL锁定用户内存
@@ -220,4 +220,12 @@ struct KernelTimerData {
 	void* pKiWaitNever;
 	void* pKiWaitAlways;
 	void* pKiProcessorBlock;
+};
+
+struct DpcTimerInfo {
+	void* KTimer;
+	void* KDpc;
+	void* Routine;
+	ULARGE_INTEGER DueTime;
+	ULONG Period;
 };

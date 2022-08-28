@@ -48,7 +48,7 @@ private:
 	CUnloadedDriverTable* m_UnloadedDriverTable{nullptr};
 	CKernelPoolView* m_KernelPoolView{ nullptr };
 	CBigPoolView* m_BigPoolView{ nullptr };
-	CDPCTimerTable* m_DPCTimerTable{ nullptr };
+	CDpcTimerTable* m_DPCTimerTable{ nullptr };
 	IMainFrame* m_pFrame;
 	HWND m_hwndArray[16];
 	int _index = 0;
