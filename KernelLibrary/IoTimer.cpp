@@ -45,19 +45,20 @@ void IoTimer::EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo) {
         timerEntry = timerEntry->Flink) {
 
         timer = CONTAINING_RECORD(timerEntry, IO_TIMER, TimerList);
-        
-        LogInfo("Type: %d,TimerRoutine: 0x%p,DeviceObject: 0x%p,TimerFlag: 0x%d",
-            timer->Type,
-        timer->TimerRoutine,
-        timer->DeviceObject,
-        timer->TimerFlag);
+        if (timer->TimerFlag) {
+            LogInfo("Type: %d,TimerRoutine: 0x%p,DeviceObject: 0x%p,TimerFlag: 0x%d",
+                timer->Type,
+                timer->TimerRoutine,
+                timer->DeviceObject,
+                timer->TimerFlag);
 
-        pInfo[j].DeviceObject = timer->DeviceObject;
-        pInfo[j].TimerFlag = timer->TimerFlag;
-        pInfo[j].TimerRoutine = timer->TimerRoutine;
-        pInfo[j].Type = timer->Type;
-        j++;
-        count--;
+            pInfo[j].DeviceObject = timer->DeviceObject;
+            pInfo[j].TimerFlag = timer->TimerFlag;
+            pInfo[j].TimerRoutine = timer->TimerRoutine;
+            pInfo[j].Type = timer->Type;
+            j++;
+            count--;
+        }
     }
     KeReleaseSpinLock(pIopTimerLock, irql);
 }
