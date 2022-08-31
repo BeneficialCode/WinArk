@@ -89,6 +89,7 @@ LRESULT CKernelModuleTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 }
 
 void CKernelModuleTable::DoRefresh() {
+	m_Table.data.info.clear();
 	auto count = m_Tracker.EnumModules();
 	m_Table.data.info = m_Tracker.GetModules();
 	m_Table.data.n = m_Table.data.info.size();
