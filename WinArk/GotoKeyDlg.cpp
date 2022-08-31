@@ -51,7 +51,8 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{L"RunOnce 1",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce)"},
 		{L"RunOnce 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce)"},
 		{L"RunOnceEx 1",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx)"},
-		{L"RunOnceEx 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx)"}
+		{L"RunOnceEx 2",LR"(HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnceEx)"},
+		{L"Application Registration",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths)"},
 	};
 
 	for (const auto& [name, path] : locations) {
