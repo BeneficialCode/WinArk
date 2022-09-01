@@ -5,6 +5,7 @@
 
 #pragma comment(lib,"wtsapi32")
 
+int Error(const char* msg, DWORD error = ::GetLastError());
 void WINAPI ServiceMain(DWORD dwNumServicesArgs, LPTSTR* args);
 DWORD WINAPI ServiceHandler(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext);
 void SetStatus(DWORD status);
@@ -13,6 +14,15 @@ void NTAPI OnTimerExpired(
 	_Inout_     PTP_CALLBACK_INSTANCE Instance,
 	_Inout_opt_ PVOID                 Context,
 	_Inout_     PTP_TIMER             Timer);
+int HandleCommandLine(int argc, const char* argv[]);
+bool IsRunningElevated();
+
+// service control
+int InstallService();
+int StartWinArkService();
+int StopService();
+int UninstallService();
+
 
 SERVICE_STATUS_HANDLE g_hService;
 SERVICE_STATUS g_Status;
@@ -20,7 +30,15 @@ HANDLE g_hStopEvent;
 HANDLE g_hMainsolt;
 PTP_TIMER g_Timer;
 
-int main(){
+int Error(const char* msg, DWORD error) {
+	printf("%s (%u)\n", msg, error);
+	return 1;
+}
+
+int main(int argc,const char* argv[]){
+	if (argc > 1)
+		return HandleCommandLine(argc, argv);
+
 	// Note that the service name is typed as LPTSTR, meaning it should not be part of readonly
 	// memory, and that¡¯s why the name is first set to a variable on the stack(which is
 	// always read / write), before passing it to the structure.
@@ -225,5 +243,133 @@ DWORD WINAPI ServiceHandler(DWORD dwControl, DWORD dwEventType, LPVOID lpEventDa
 			::SetEvent(g_hStopEvent);
 			break;
 	}
+	return 0;
+}
+
+bool IsRunningElevated() {
+	HANDLE hToken;
+	if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &hToken))
+		return false;
+
+	ULONG elevated = 0;
+	DWORD len;
+	::GetTokenInformation(hToken, TokenElevation, &elevated, sizeof(elevated), &len);
+	::CloseHandle(hToken);
+
+	return elevated ? true : false;
+}
+
+int HandleCommandLine(int argc, const char* argv[]) {
+	if (!IsRunningElevated()) {
+		printf("You must run elevated to configure the service.\n");
+		return 1;
+	}
+
+	if (!_stricmp(argv[1], "install") || !_stricmp(argv[1], "/install")
+		||!_stricmp(argv[1],"-install")) {
+		bool start = argc > 2 && _stricmp(argv[2], "start") == 0;
+		auto error = InstallService();
+		if (error == 0 && start)
+			return StartWinArkService();
+		return error;
+	}
+	if (!_stricmp(argv[1], "uninstall")||!_stricmp(argv[1],"-uninstall")
+	||!_stricmp(argv[1],"/uinstall")){
+		return UninstallService();
+	}
+	if (!_stricmp(argv[1], "start")||!_stricmp(argv[1],"-start")) {
+		return StartWinArkService();
+	}
+	if (!_stricmp(argv[1], "stop")|| !_stricmp(argv[1], "-stop")) {
+		return StopService();
+	}
+	return 0;
+}
+
+int InstallService() {
+	SC_HANDLE hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
+	if (!hScm)
+		return Error("Failed to open SCM database");
+
+	WCHAR path[MAX_PATH];
+	::GetModuleFileName(nullptr, path, _countof(path));
+
+	SC_HANDLE hService = ::CreateService(hScm,
+		L"WinArkSvc",
+		L"WinArk Demo Service",
+		SERVICE_ALL_ACCESS,
+		SERVICE_WIN32_OWN_PROCESS,
+		SERVICE_DEMAND_START,
+		SERVICE_ERROR_NORMAL,
+		path,
+		L"Base",
+		nullptr, nullptr, L"NT AUTHORITY\\LocalService", nullptr);
+	if (!hService)
+		return Error("Failed to install service");
+
+	printf("Service installed successfully.\n");
+
+	::CloseServiceHandle(hService);
+	::CloseServiceHandle(hScm);
+
+	return 0;
+}
+
+int StartWinArkService() {
+	SC_HANDLE hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT);
+	if (!hScm)
+		return Error("Failed to open SCM database");
+
+	SC_HANDLE hService = ::OpenService(hScm, L"alarmsvc", SERVICE_START);
+	if (!hService)
+		return Error("Failed to open service");
+
+	if (::StartService(hService, 0, nullptr))
+		printf("Service started successfully.\n");
+	else
+		return Error("Failed to start service");
+	::CloseServiceHandle(hService);
+	::CloseServiceHandle(hScm);
+
+	return 0;
+}
+
+int StopService() {
+	auto hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT);
+	if (!hScm)
+		return Error("Failed to open SCM database");
+
+	auto hService = ::OpenService(hScm, L"alarmsvc", SERVICE_STOP);
+	if (!hService)
+		return Error("Failed to open service");
+
+	if (::ControlService(hService, SERVICE_CONTROL_STOP, &g_Status))
+		printf("Service stopped successfully.\n");
+	else
+		return Error("Failed to stop service");
+	::CloseServiceHandle(hService);
+	::CloseServiceHandle(hScm);
+
+	return 0;
+}
+
+int UninstallService() {
+	auto hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT);
+	if (!hScm)
+		return Error("Failed to open SCM database");
+
+	auto hService = ::OpenService(hScm, L"alarmsvc", DELETE | SERVICE_QUERY_STATUS);
+	if (!hService)
+		return Error("Failed to open service");
+	SERVICE_STATUS status;
+	if (::QueryServiceStatus(hService, &status) && status.dwCurrentState == SERVICE_RUNNING)
+		StopService();
+
+	if (::DeleteService(hService))
+		printf("Service uninstalled successfully.\n");
+	else
+		Error("Failed to uninstall service");
+	::CloseServiceHandle(hService);
+	::CloseServiceHandle(hScm);
 	return 0;
 }
