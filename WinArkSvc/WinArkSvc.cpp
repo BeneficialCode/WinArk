@@ -320,7 +320,7 @@ int StartWinArkService() {
 	if (!hScm)
 		return Error("Failed to open SCM database");
 
-	SC_HANDLE hService = ::OpenService(hScm, L"alarmsvc", SERVICE_START);
+	SC_HANDLE hService = ::OpenService(hScm, L"WinArkSvc", SERVICE_START);
 	if (!hService)
 		return Error("Failed to open service");
 
@@ -339,7 +339,7 @@ int StopService() {
 	if (!hScm)
 		return Error("Failed to open SCM database");
 
-	auto hService = ::OpenService(hScm, L"alarmsvc", SERVICE_STOP);
+	auto hService = ::OpenService(hScm, L"WinArkSvc", SERVICE_STOP);
 	if (!hService)
 		return Error("Failed to open service");
 
@@ -358,7 +358,7 @@ int UninstallService() {
 	if (!hScm)
 		return Error("Failed to open SCM database");
 
-	auto hService = ::OpenService(hScm, L"alarmsvc", DELETE | SERVICE_QUERY_STATUS);
+	auto hService = ::OpenService(hScm, L"WinArkSvc", DELETE | SERVICE_QUERY_STATUS);
 	if (!hService)
 		return Error("Failed to open service");
 	SERVICE_STATUS status;
