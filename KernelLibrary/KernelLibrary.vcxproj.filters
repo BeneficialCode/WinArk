@@ -163,6 +163,9 @@
     <ClInclude Include="IoTimer.h">
       <Filter>Timer</Filter>
     </ClInclude>
+    <ClInclude Include="Section.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -272,6 +275,9 @@
     </ClCompile>
     <ClCompile Include="IoTimer.cpp">
       <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Section.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

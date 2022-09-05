@@ -263,6 +263,7 @@
     <ClInclude Include="ProcessProtect.h" />
     <ClInclude Include="QueuedSpinLock.h" />
     <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="Section.h" />
     <ClInclude Include="SpinLock.h" />
     <ClInclude Include="SysMon.h" />
     <ClInclude Include="SysMonCommon.h" />
@@ -313,6 +314,7 @@
     <ClCompile Include="ProcessProtect.cpp" />
     <ClCompile Include="QueuedSpinLock.cpp" />
     <ClCompile Include="RegistryManager.cpp" />
+    <ClCompile Include="Section.cpp" />
     <ClCompile Include="SpinLock.cpp" />
     <ClCompile Include="SysMon.cpp" />
     <ClCompile Include="Thread.cpp" />

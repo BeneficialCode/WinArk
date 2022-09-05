@@ -136,3 +136,43 @@ struct IrpCompletedInfo :CommonInfoHeader {
 };
 
 #pragma pack(pop)	// »Ö¸´¶ÔÆë×´Ì¬
+
+struct KernelTimerData {
+	ULONG tableOffset;
+	ULONG entriesOffset;
+	ULONG maxEntryCount;
+	void* pKiWaitNever;
+	void* pKiWaitAlways;
+	void* pKiProcessorBlock;
+};
+
+struct DpcTimerInfo {
+	void* KTimer;
+	void* KDpc;
+	void* Routine;
+	ULARGE_INTEGER DueTime;
+	ULONG Period;
+	ULONG Count;
+};
+
+struct IoTimerData {
+	void* pIopTimerQueueHead;
+	void* pIopTimerLock;
+	PULONG pIopTimerCount;
+};
+
+struct IoTimerInfo {
+	short Type;
+	short TimerFlag;
+	void* TimerRoutine;
+	void* DeviceObject;
+};
+
+#define INJECTED_DLL_FILE_NAME64 L"\\KnownDlls\\ProcMon64.dll"
+#define INJECTED_DLL_FILE_NAME32 L"\\KnownDlls32\\ProcMon32.dll"
+
+#ifdef _WIN64
+#define INJECTED_DLL_FILE_NAME INJECTED_DLL_FILE_NAME64
+#else
+#define INJECTED_DLL_FINE_NAME INJECTED_DLL_FILE_NAME32
+#endif

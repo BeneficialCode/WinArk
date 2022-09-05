@@ -2,24 +2,7 @@
 #include "KernelTimer.h"
 #include "Helpers.h"
 #include "Logging.h"
-
-struct KernelTimerData {
-	ULONG tableOffset;
-	ULONG entriesOffset;
-	ULONG maxEntryCount;
-	void* pKiWaitNever;
-	void* pKiWaitAlways;
-	void* pKiProcessorBlock;
-};
-
-struct DpcTimerInfo {
-	void* KTimer;
-	void* KDpc;
-	void* Routine;
-	ULARGE_INTEGER DueTime;
-	ULONG Period;
-	ULONG Count;
-};
+#include "typesdefs.h"
 
 void KernelTimer::Init() {
 	KeInitializeTimer(&_Timer);

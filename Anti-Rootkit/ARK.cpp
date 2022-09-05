@@ -54,6 +54,7 @@ typedef struct _UNLOADED_DRIVERS {
 
 UNICODE_STRING g_RegisterPath;
 PDEVICE_OBJECT g_DeviceObject;
+PDRIVER_OBJECT g_DriverObject;
 
 DRIVER_UNLOAD AntiRootkitUnload;
 DRIVER_DISPATCH AntiRootkitDeviceControl, AntiRootkitCreateClose;
@@ -111,6 +112,8 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	if (DriverObject == nullptr) {
 		return STATUS_UNSUCCESSFUL;
 	}
+
+	g_DriverObject = DriverObject;
 
 	TraceLoggingRegister(g_Provider);
 
@@ -208,7 +211,6 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 
 	//KdPrint(("Copied registry path: %wZ\n", &g_RegisterPath));
 
-	//test();
 	// More generally, if DriverEntry returns any failure status,the Unload routine is not called.
 	return STATUS_SUCCESS;
 }
@@ -1038,6 +1040,19 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 					RtlAppendUnicodeToString(&g_BackupDir, path->Buffer);
 				}
 			}
+			status = g_sec.Initialize(SectionType::Native);
+			if (!NT_SUCCESS(status)) {
+				LogError("failed to Initialize sec (status=%08X)\n", status);
+				break;
+			}
+#ifdef _WIN64
+			status = g_secWow.Initialize(SectionType::Wow);
+			if (!NT_SUCCESS(status)) {
+				LogError("failed to Initialize g_secWow (status=%08X)\n", status);
+				break;
+			}
+#endif // _WIN64
+
 			status = PsSetLoadImageNotifyRoutine(OnImageLoadNotify);
 			if (!NT_SUCCESS(status)) {
 				LogError("failed to set image load callbacks (status=%08X)\n", status);
@@ -1347,15 +1362,7 @@ void CreateThreadTest() {
 }
 
 void test() {
-	//ULONG ul = 1234, ul0 = 0;
-	//PKEY_VALUE_PARTIAL_INFORMATION pkvi;
-	//RegCreateKey(L"\\Registry\\Machine\\Software\\AppDataLow\\Tencent\\{61B942F7-A946-4585-B624-B2C0228FFE8C}");
-	//RegSetValueKey(L"\\Registry\\Machine\\Software\\AppDataLow\\Tencent\\{61B942F7-A946-4585-B624-B2C0228FFE8C}", L"key", REG_DWORD, &ul, sizeof(ul));
-	//RegQueryValueKey(L"\\Registry\\Machine\\Software\\AppDataLow\\Tencent\\{61B942F7-A946-4585-B624-B2C0228FFE8C}", L"key", &pkvi);
 	EnumSubKeyTest();
-	/*memcpy(&ul0, pkvi->Data, pkvi->DataLength);
-	KdPrint(("key: %d\n", ul0));*/
-	/*ExFreePool(pkvi);*/
 }
 
 

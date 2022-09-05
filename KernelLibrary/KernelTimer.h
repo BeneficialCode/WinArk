@@ -1,13 +1,7 @@
 #pragma once
 
-typedef struct _KTIMER_TABLE_ENTRY {
-	ULONG_PTR Lock;
-	LIST_ENTRY Entry;
-	ULARGE_INTEGER Time;
-}KTIMER_TABLE_ENTRY,*PKTIMER_TABLE_ENTRY;
+#include "Common.h"
 
-struct KernelTimerData;
-struct DpcTimerInfo;
 struct KernelTimer {
 	void Init();
 	bool SetOneShot(LARGE_INTEGER interval,PKDPC Dpc);

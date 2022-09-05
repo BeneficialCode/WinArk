@@ -9,7 +9,7 @@ enum class LogLevel {
 };
 
 #ifndef DRIVER_PREFIX
-#define DRIVER_PREFIX "[Log]: "
+#define DRIVER_PREFIX "[Log]: " // Prefix to be added to the log lib
 #endif // !DRIVER_PREFIX
 
 ULONG Log(LogLevel level, PCSTR format, ...);

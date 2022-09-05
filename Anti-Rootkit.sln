@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinArkSvc", "WinArkSvc\WinA
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "alarm", "alarm\alarm.vcxproj", "{23435BC0-4F45-4D8D-917D-90C86B5F0DA0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcMon", "ProcMon\ProcMon.vcxproj", "{495C31CF-8DD9-45AC-B53E-E70F3791C925}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -168,6 +170,18 @@ Global
 		{23435BC0-4F45-4D8D-917D-90C86B5F0DA0}.Release|x64.Build.0 = Release|x64
 		{23435BC0-4F45-4D8D-917D-90C86B5F0DA0}.Release|x86.ActiveCfg = Release|Win32
 		{23435BC0-4F45-4D8D-917D-90C86B5F0DA0}.Release|x86.Build.0 = Release|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|ARM.ActiveCfg = Debug|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|x64.ActiveCfg = Debug|x64
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|x64.Build.0 = Debug|x64
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|x86.ActiveCfg = Debug|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Debug|x86.Build.0 = Debug|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|ARM.ActiveCfg = Release|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|ARM64.ActiveCfg = Release|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x64.ActiveCfg = Release|x64
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x64.Build.0 = Release|x64
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x86.ActiveCfg = Release|Win32
+		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,16 +1,7 @@
 #pragma once
 
-typedef struct _IO_TIMER {
-    CSHORT Type;
-    CSHORT TimerFlag;
-    LIST_ENTRY TimerList;
-    PIO_TIMER_ROUTINE TimerRoutine;
-    PVOID Context;
-    struct _DEVICE_OBJECT* DeviceObject;
-}IO_TIMER;
+#include "Common.h"
 
-struct IoTimerInfo;
-struct IoTimerData;
 struct IoTimer {
 	NTSTATUS Init(PDEVICE_OBJECT DeviceObject, PIO_TIMER_ROUTINE TimerRoutine,
 		PVOID Context);

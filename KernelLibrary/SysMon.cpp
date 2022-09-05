@@ -8,13 +8,22 @@
 #include "FileManager.h"
 #include "Memory.h"
 #include "khook.h"
+#include "Helpers.h"
+#include "Section.h"
 
-
+#define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
 ULONG	PspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
 UNICODE_STRING g_BackupDir;
+
+Section g_sec;		// native section object
+
+#ifdef _WIN64
+Section g_secWow;	// Wow64 section object
+#endif // _WIN64
+
 
 PUCHAR GetProcessNameByProcessId(HANDLE ProcessId) {
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -145,6 +154,8 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		}
 		return;
 	}
+	ASSERT(ImageInfo);
+
 	// exe or dll image file
 	auto size = sizeof(FullItem<ImageLoadInfo>);
 	auto info = (FullItem<ImageLoadInfo>*)ExAllocatePoolWithTag(PagedPool, size, SYSMON_TAG);
@@ -172,6 +183,54 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 	}
 
 	PushItem(&info->Entry);
+
+	static UNICODE_STRING kernel32 = RTL_CONSTANT_STRING(L"\\kernel32.dll");
+	// We are looking for kernel32.dll only - skip the rest
+	if (!ImageInfo->SystemModeImage && // skip anything mapped into kernel
+		ProcessId == PsGetCurrentProcessId() &&
+		Helpers::IsSuffixedUnicodeString(FullImageName, &kernel32) && // Need kernel32.dll only
+		Helpers::IsMappedByLdrLoadDll(&kernel32)		// Make sure that it's a call from the LdrLoadDll() function
+#if defined(DBG) && defined(LIMIT_INJECTION_TO_PROC)
+		&& Helpers::IsSpecificProcess(ProcessId, LIMIT_INJECTION_TO_PROC, FALSE) // for debug build limit to specific process only (for debug purpose)
+#endif
+		) {
+#ifdef _WIN64
+		// Is it a 32-bit process running in a 64-bit OS
+		bool wowProc = IoIs32bitProcess(nullptr);
+#else
+		// Cannot be a WOW64 process on a 32-bit OS
+		bool wowProc = false;
+#endif // _WIN64
+
+		// Now we can prceed with our injection
+		LogDebug("Image load for (WOW=%d) PID=%u: \"%wZ\"", wowProc, HandleToUlong(ProcessId), FullImageName);
+
+		// Get our (DLL) section to inject
+		DllStats* pDllState;
+		NTSTATUS status = g_sec.GetSection(&pDllState);
+		if (NT_SUCCESS(status)) {
+			// Add inject now
+
+		}
+		else {
+			LogError("Error: 0x%x g_sec.GetSection PID=%u\n", status, HandleToUlong(ProcessId));
+		}
+
+		// The following only applies to a 64-bit build
+		// INFO: We need to inject our dll into a 32 bit process too...
+#ifdef _WIN64
+		if (wowProc) {
+			status = g_secWow.GetSection(&pDllState);
+			if (NT_SUCCESS(status)) {
+				// Add inject now
+			}
+			else {
+				// Error
+				LogError("Error: 0x%x g_secWow.GetSection PID=%u\n", status, HandleToUlong(ProcessId));
+			}
+		}
+#endif
+	}
 }
 
 NTSTATUS OnRegistryNotify(PVOID context, PVOID arg1, PVOID arg2) {
@@ -657,6 +716,17 @@ void RemoveImageNotify(_In_ PVOID context) {
 		auto entry = RemoveHeadList(&g_SysMonGlobals.ItemHead);
 		ExFreePool(CONTAINING_RECORD(entry, FullItem<ItemHeader>, Entry));
 	}
+	status = g_sec.FreeSection();
+	if (!NT_SUCCESS(status)) {
+		LogDebug("free section failed 0x%x\n", status);
+	}
+#ifdef _WIN64
+	status = g_secWow.FreeSection();
+	if (!NT_SUCCESS(status)) {
+		LogDebug("free wow section failed 0x%x\n", status);
+	}
+#endif // 
+
 	PsTerminateSystemThread(status);
 }
 

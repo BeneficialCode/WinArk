@@ -1,6 +1,7 @@
 #pragma once
 #include "FastMutex.h"
 #include "CriticalRegion.h"
+#include "Section.h"
 
 #define SYSMON_PREFIX "SysMon: "
 #define SYSMON_TAG 'nmys'
@@ -107,6 +108,12 @@ typedef struct _OB_POST_CALLBACK_ENTRY {
 extern SysMonGlobals g_SysMonGlobals;
 extern ULONG	PspNotifyEnableMask;
 extern UNICODE_STRING g_BackupDir;
+
+extern Section g_sec;		// native section object
+
+#ifdef _WIN64
+extern Section g_secWow;	// Wow64 section object
+#endif // _WIN64
 
 void PushItem(LIST_ENTRY* entry);
 

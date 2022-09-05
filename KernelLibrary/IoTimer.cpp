@@ -1,19 +1,7 @@
 #include "pch.h"
 #include "IoTimer.h"
 #include "Logging.h"
-
-struct IoTimerData {
-    void* pIopTimerQueueHead;
-    void* pIopTimerLock;
-    PULONG pIopTimerCount;
-};
-
-struct IoTimerInfo {
-    CSHORT Type;
-    CSHORT TimerFlag;
-    void* TimerRoutine;
-    void* DeviceObject;
-};
+#include "typesdefs.h"
 
 NTSTATUS IoTimer::Init(PDEVICE_OBJECT DeviceObject, PIO_TIMER_ROUTINE TimerRoutine,
 	PVOID Context) {

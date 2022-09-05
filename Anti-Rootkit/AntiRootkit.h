@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../KernelLibrary/Common.h"
 /*
 DeviceType - identifies a type of device. 
 This can be one of the FILE_DEVICE_xxx constants defined in the WDK headers, 
@@ -44,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x9B
+#define DRIVER_CURRENT_VERSION 0x9F
 
 
 // 用MDL锁定用户内存
@@ -214,34 +215,4 @@ struct ObPreOperationData {
 	NotifyType Type;
 	ULONG Offset;
 	void* Address;
-};
-
-struct KernelTimerData {
-	ULONG tableOffset;
-	ULONG entriesOffset;
-	ULONG maxEntryCount;
-	void* pKiWaitNever;
-	void* pKiWaitAlways;
-	void* pKiProcessorBlock;
-};
-
-struct DpcTimerInfo {
-	void* KTimer;
-	void* KDpc;
-	void* Routine;
-	ULARGE_INTEGER DueTime;
-	ULONG Period;
-};
-
-struct IoTimerData {
-	void* pIopTimerQueueHead;
-	void* pIopTimerLock;
-	PULONG pIopTimerCount;
-};
-
-struct IoTimerInfo {
-	short Type;
-	short TimerFlag;
-	void* TimerRoutine;
-	void* DeviceObject;
 };
