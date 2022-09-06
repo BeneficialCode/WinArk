@@ -818,3 +818,11 @@ bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, v
 	}
 	return false;
 }
+
+NTSTATUS EnumMiniFilterOperations(ULONG operationsOffset) {
+	NTSTATUS status = STATUS_SUCCESS;
+
+
+
+	return status;
+}

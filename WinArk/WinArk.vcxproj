@@ -274,6 +274,7 @@
     <ClCompile Include="FilterConfiguration.cpp" />
     <ClCompile Include="FilterFactory.cpp" />
     <ClCompile Include="FiltersDlg.cpp" />
+    <ClCompile Include="MiniFilterTable.cpp" />
     <ClCompile Include="FormatHelper.cpp" />
     <ClCompile Include="GotoKeyDlg.cpp" />
     <ClCompile Include="IniFile.cpp" />
@@ -415,6 +416,7 @@
     <ClInclude Include="FilterConfiguration.h" />
     <ClInclude Include="FilterFactory.h" />
     <ClInclude Include="FiltersDlg.h" />
+    <ClInclude Include="MiniFilterTable.h" />
     <ClInclude Include="FindOptions.h" />
     <ClInclude Include="FormatHelper.h" />
     <ClInclude Include="GotoKeyDlg.h" />

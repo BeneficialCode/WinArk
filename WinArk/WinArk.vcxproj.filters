@@ -441,6 +441,9 @@
     <ClCompile Include="IoTimerTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="MiniFilterTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -873,6 +876,9 @@
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="IoTimerTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniFilterTable.h">
       <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>

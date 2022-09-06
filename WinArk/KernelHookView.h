@@ -2,6 +2,8 @@
 #include "SSDTHookTable.h"
 #include "ShadowSSDTTable.h"
 #include "KernelNotifyTable.h"
+#include "MiniFilterTable.h"
+
 
 class CKernelHookView:
 	public CWindowImpl<CKernelHookView>{
@@ -25,9 +27,10 @@ public:
 	void InitSSDTHookTable();
 	void InitShadowSSDTHookTable();
 	void InitKernelNotifyTable();
+	void InitMiniFilterTable();
 
 	enum class TabColumn : int {
-		SSDT,ShadowSSDT,ObjectCallback
+		SSDT,ShadowSSDT,ObjectCallback,MiniFilter
 	};
 private:
 	// 动态创建出来的控件
@@ -36,7 +39,7 @@ private:
 	CSSDTHookTable* m_SSDTHookTable;
 	CShadowSSDTHookTable* m_ShadowSSDTHookTable;
 	CKernelNotifyTable* m_KernelNotifyTable;
-
+	CMiniFilterTable* m_MiniFilterTable{ nullptr };
 	HWND m_hwndArray[16];
 	int _index = 0;
 };

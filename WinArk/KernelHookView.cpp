@@ -11,16 +11,17 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_TabCtrl.SubclassWindow(hTabCtrl);
 	
 	//m_TabCtrl.SetFont()
-	HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
+	HFONT hFont = g_hAppFont;
 	m_TabCtrl.SetFont(hFont, true);
-	::DeleteObject(hFont);
+
 
 	struct {
 		PCWSTR Name;
 	}columns[] = {
 		L"SSDT",
 		L"Shadow SSDT",
-		L"Kernel Notifications"
+		L"Kernel Notifications",
+		L"MiniFilter"
 	};
 
 	int i = 0;
@@ -31,9 +32,7 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitSSDTHookTable();
 	InitShadowSSDTHookTable();
 	InitKernelNotifyTable();
-
-
-
+	InitMiniFilterTable();
 
 	return 0;
 }
@@ -127,14 +126,49 @@ void CKernelHookView::InitShadowSSDTHookTable() {
 	m_ShadowSSDTHookTable->ShowWindow(SW_HIDE);
 }
 
+void CKernelHookView::InitMiniFilterTable() {
+	BarDesc bars[] = {
+		{15,"过滤服务名",0},
+		{15,"实例个数",0},
+		{20,"海拔",0},
+		{210,"框架ID",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_MiniFilterTable = new CMiniFilterTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_MiniFilterTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::MiniFilter)] = m_MiniFilterTable->m_hWnd;
+	m_MiniFilterTable->ShowWindow(SW_HIDE);
+}
 
 LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 	
 	index = m_TabCtrl.GetCurSel();
-	m_SSDTHookTable->ShowWindow(SW_HIDE);
-	m_ShadowSSDTHookTable->ShowWindow(SW_HIDE);
-	m_KernelNotifyTable->ShowWindow(SW_HIDE);
+	for (auto hwnd : m_hwndArray) {
+		if (::IsWindow(hwnd)) {
+			::ShowWindow(hwnd, SW_HIDE);
+		}
+	}
+	
 
 	switch (static_cast<TabColumn>(index)) {
 		case TabColumn::SSDT:
@@ -148,6 +182,10 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::ObjectCallback:
 			m_KernelNotifyTable->ShowWindow(SW_SHOW);
 			m_KernelNotifyTable->SetFocus();
+			break;
+		case TabColumn::MiniFilter:
+			m_MiniFilterTable->ShowWindow(SW_SHOW);
+			m_MiniFilterTable->SetFocus();
 			break;
 	}
 	_index = index;

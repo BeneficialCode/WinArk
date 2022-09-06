@@ -216,3 +216,11 @@ struct ObPreOperationData {
 	ULONG Offset;
 	void* Address;
 };
+
+struct MinifilterInfo {
+	PVOID FilterHandle;
+	ULONG Flags;
+	UCHAR MajorFunction;
+	void* PreOperation;
+	void* PostOperation;
+};

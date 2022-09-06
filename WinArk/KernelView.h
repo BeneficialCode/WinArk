@@ -41,6 +41,7 @@ public:
 	void InitUnloadedDriverTable();
 	void InitDpcTimerTable();
 	void InitIoTimerTable();
+	void InitMiniFilterTable();
 
 private:
 	// 动态创建出来的控件
@@ -52,6 +53,7 @@ private:
 	CBigPoolView* m_BigPoolView{ nullptr };
 	CDpcTimerTable* m_DpcTimerTable{ nullptr };
 	CIoTimerTable* m_IoTimerTable{ nullptr };
+
 	IMainFrame* m_pFrame;
 	HWND m_hwndArray[16];
 	int _index = 0;
