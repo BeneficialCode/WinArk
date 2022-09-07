@@ -188,4 +188,4 @@ using PPsSetCreateProcessNotifyRoutineEx2 = NTSTATUS
 	_In_ BOOLEAN Remove
 );
 
-NTSTATUS EnumMiniFilterOperations(ULONG operationsOffset);
+NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo);

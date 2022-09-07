@@ -133,6 +133,7 @@ int CIoTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 
 
 void CIoTimerTable::Refresh() {
+	m_Table.data.n = 0;
 	m_Table.data.info.clear();
 	IoTimerData data;
 

@@ -116,7 +116,7 @@ DWORD SymbolHandler::GetStructMemberOffset(std::string name,std::string memberNa
 	auto info = symbol->GetSymbolInfo();
 	SymGetTypeFromName(m_hProcess, _address, name.c_str(), symbol->GetSymbolInfo());
 
-	ULONG childrenCount;
+	ULONG childrenCount = 0;
 	SymGetTypeInfo(m_hProcess, _address, info->TypeIndex, TI_GET_CHILDRENCOUNT, &childrenCount);
 	TI_FINDCHILDREN_PARAMS* childrenParams = (TI_FINDCHILDREN_PARAMS*)malloc(sizeof(TI_FINDCHILDREN_PARAMS) + sizeof(ULONG) * childrenCount);
 	if (childrenParams == nullptr) {

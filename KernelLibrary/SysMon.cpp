@@ -11,6 +11,7 @@
 #include "Helpers.h"
 #include "Section.h"
 
+
 #define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
 ULONG	PspNotifyEnableMask;
@@ -819,9 +820,67 @@ bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, v
 	return false;
 }
 
-NTSTATUS EnumMiniFilterOperations(ULONG operationsOffset) {
+NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo) {
 	NTSTATUS status = STATUS_SUCCESS;
 
+	WCHAR name[128] = { 0 };
+	WCHAR filterName[128] = { 0 };
+	if (pData->Length < sizeof(filterName) / sizeof(WCHAR)) {
+		RtlCopyMemory(name, pData->Name, pData->Length * sizeof(WCHAR));
+		name[pData->Length] = L'\0';
+	}
+	ULONG offset = pData->OperationsOffset;
+	ULONG filtersCount = { 0 };
+	ULONG size = 0;
+	PFILTER_FULL_INFORMATION pFullInfo = nullptr;
+	PFLT_FILTER* ppFltList = nullptr;
+	status = FltEnumerateFilters(nullptr, 0, &filtersCount);
+	if ((status == STATUS_BUFFER_TOO_SMALL) && filtersCount) {
+		size = sizeof(PFLT_FILTER) * filtersCount;
+		ppFltList = (PFLT_FILTER*)ExAllocatePoolWithTag(NonPagedPool, size, 'tsil');
+		if (ppFltList) {
+			status = FltEnumerateFilters(ppFltList, size, &filtersCount);
+			for (decltype(filtersCount) i = 0; NT_SUCCESS(status) && (i < filtersCount); i++) {
+				status = FltGetFilterInformation(ppFltList[i], FilterFullInformation, nullptr, 0, &size);
+				if ((status == STATUS_BUFFER_TOO_SMALL) && size) {
+					pFullInfo = (PFILTER_FULL_INFORMATION)ExAllocatePoolWithTag(NonPagedPool, size, 'ofni');
+					if (pFullInfo) {
+						status = FltGetFilterInformation(ppFltList[i], FilterFullInformation, pFullInfo, size, &size);
+						if (NT_SUCCESS(status)) {
+							if (pFullInfo->FilterNameLength < sizeof(filterName)/sizeof(WCHAR)) {
+								RtlCopyMemory(filterName, pFullInfo->FilterNameBuffer,
+									pFullInfo->FilterNameLength);
+								filterName[pFullInfo->FilterNameLength/sizeof(WCHAR)] = L'\0';
+							}
+							if (!_wcsicmp(filterName, name)) {
+								PFLT_OPERATION_REGISTRATION* ppOperationReg = (PFLT_OPERATION_REGISTRATION*)((PUCHAR)ppFltList[i] + offset);
+								PFLT_OPERATION_REGISTRATION pOperationReg = *ppOperationReg;
+								int j = 0;
+								for (j = 0; pOperationReg->MajorFunction != IRP_MJ_OPERATION_END; j++,pOperationReg++) {
+									pInfo[j].FilterHandle = ppFltList[i];
+									pInfo[j].Flags = pOperationReg->Flags;
+									pInfo[j].MajorFunction = pOperationReg->MajorFunction;
+									pInfo[j].PostOperation = pOperationReg->PostOperation;
+									pInfo[j].PreOperation = pOperationReg->PreOperation;
+								}
+								pInfo[j].MajorFunction = pOperationReg->MajorFunction;
+								break;
+							}
+						}
+						ExFreePool(pFullInfo);
+						pFullInfo = nullptr;
+					}
+				}
+			}
+			ExFreePoolWithTag(ppFltList, 'tsil');
+			ppFltList = nullptr;
+		}
+	}
+	if(pFullInfo!=nullptr)
+		ExFreePool(pFullInfo);
+
+	if(ppFltList!=nullptr)
+		ExFreePoolWithTag(ppFltList, 'tsil');
 
 
 	return status;

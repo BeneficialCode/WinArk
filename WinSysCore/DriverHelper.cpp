@@ -554,3 +554,12 @@ bool DriverHelper::DisableDbgSys() {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DISABLE_DBGSYS, nullptr,0,
 		nullptr, 0, &bytes, nullptr);
 }
+
+bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, sizeof(KernelTimerData),
+		pInfo, size, &bytes, nullptr);
+}

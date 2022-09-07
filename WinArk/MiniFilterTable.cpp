@@ -2,6 +2,10 @@
 #include "MiniFilterTable.h"
 #include "FormatHelper.h"
 #include "ClipboardHelper.h"
+#include <fltUser.h>
+#include "MiniFilterDlg.h"
+
+#pragma comment(lib,"FltLib")
 
 LRESULT CMiniFilterTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return 0;
@@ -54,9 +58,9 @@ LRESULT CMiniFilterTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT CMiniFilterTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	/*CMenu menu;
+	CMenu menu;
 	CMenuHandle hSubMenu;
-	menu.LoadMenu(IDR_KERNEL_CONTEXT);
+	menu.LoadMenu(IDR_KERNEL_HOOK_CONTEXT);
 	hSubMenu = menu.GetSubMenu(0);
 	POINT pt;
 	::GetCursorPos(&pt);
@@ -66,7 +70,7 @@ LRESULT CMiniFilterTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 		if (id) {
 			PostMessage(WM_COMMAND, id);
 		}
-	}*/
+	}
 
 	return 0;
 }
@@ -89,10 +93,24 @@ CMiniFilterTable::CMiniFilterTable(BarInfo& bars, TableInfo& table) :CTable(bars
 }
 
 int CMiniFilterTable::ParseTableEntry(CString& s, char& mask, int& select, MiniFilterInfo& info, int column) {
-	// Name,LoadStatus,TimeDateStamp
-	switch (column)
+	
+	switch (static_cast<TableColumn>(column))
 	{
-		
+		case TableColumn::Altitude:
+			s = info.Altitude.c_str();
+			break;
+
+		case TableColumn::FilterName:
+			s = info.FilterName.c_str();
+			break;
+
+		case TableColumn::FrameID:
+			s.Format(L"%lu", info.FrameID);
+			break;
+
+		case TableColumn::NumberOfInstance:
+			s.Format(L"%lu", info.NumberOfInstance);
+			break;
 	}
 	return s.GetLength();
 }
@@ -109,8 +127,73 @@ bool CMiniFilterTable::CompareItems(const MiniFilterInfo& s1, const MiniFilterIn
 	return false;
 }
 
+void CMiniFilterTable::BuildFilterInfo(PVOID buffer, bool isNewStyle) {
+	WCHAR filterName[128] = { 0 };
+	WCHAR altitude[64] = { 0 };
+	MiniFilterInfo filterInfo;
+	if (isNewStyle) {
+		PFILTER_AGGREGATE_STANDARD_INFORMATION info;
+		info = (PFILTER_AGGREGATE_STANDARD_INFORMATION)buffer;
+		if (info->Flags == FLTFL_ASI_IS_MINIFILTER) {
+			if (info->Type.MiniFilter.FilterNameLength < 128) {
+				CopyMemory(filterName,
+					(PUCHAR)info + info->Type.MiniFilter.FilterNameBufferOffset,
+					info->Type.MiniFilter.FilterNameLength);
+				filterName[info->Type.MiniFilter.FilterNameLength] = UNICODE_NULL;
+			}
+			if (info->Type.MiniFilter.FilterAltitudeLength < 64) {
+				CopyMemory(altitude, (PCHAR)info + info->Type.MiniFilter.FilterAltitudeBufferOffset,
+					info->Type.MiniFilter.FilterAltitudeLength);
+				filterName[info->Type.MiniFilter.FilterAltitudeLength] = UNICODE_NULL;
+			}
+			filterInfo.FrameID = info->Type.MiniFilter.FrameID;
+			filterInfo.NumberOfInstance = info->Type.MiniFilter.NumberOfInstances;
+			filterInfo.Altitude = altitude;
+			filterInfo.FilterName = filterName;
+
+
+			m_Table.data.info.push_back(filterInfo);
+		}
+	}
+}
+
 void CMiniFilterTable::Refresh() {
-	
+	BYTE buffer[1 << 10];
+	DWORD bytes;
+	HANDLE hFind;
+	bool isNewStyle = true;
+	m_Table.data.info.clear();
+
+	HRESULT hr;
+	hr = FilterFindFirst(FilterAggregateStandardInformation, buffer, sizeof(buffer), &bytes, &hFind);
+	if (!SUCCEEDED(hr)) {
+		isNewStyle = false;
+		hr = FilterFindFirst(FilterFullInformation, buffer, sizeof(buffer), &bytes, &hFind);
+	}
+
+	if (SUCCEEDED(hr)) {
+		BuildFilterInfo(buffer, isNewStyle);
+		do
+		{
+			hr = FilterFindNext(hFind, isNewStyle ? FilterAggregateStandardInformation : FilterFullInformation,
+				buffer, sizeof(buffer), &bytes);
+			if (SUCCEEDED(hr)) {
+				BuildFilterInfo(buffer, isNewStyle);
+			}
+		} while (SUCCEEDED(hr));
+
+		FilterFindClose(hFind);
+	}
+
+	if (!SUCCEEDED(hr) && hr != HRESULT_FROM_WIN32(ERROR_NO_MORE_ITEMS)) {
+		WCHAR errorText[256];
+		if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, hr, 0, errorText, sizeof(errorText),
+			0)) {
+			AtlMessageBox(m_hWnd, errorText, IDS_TITLE, MB_ICONERROR);
+		}
+	}
+
+	m_Table.data.n = m_Table.data.info.size();
 }
 
 std::wstring CMiniFilterTable::GetSingleMiniFilterInfo(MiniFilterInfo& info) {
@@ -124,37 +207,37 @@ std::wstring CMiniFilterTable::GetSingleMiniFilterInfo(MiniFilterInfo& info) {
 	return text.GetString();
 }
 
-LRESULT CMiniFilterTable::OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int selected = m_Table.data.selected;
-	ATLASSERT(selected >= 0);
-	auto& info = m_Table.data.info[selected];
-
-	CString text;
-	CString s;
-
-	
-
-	ClipboardHelper::CopyText(m_hWnd, text);
-	return 0;
-}
-
-LRESULT CMiniFilterTable::OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
-		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
-		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
-	if (dlg.DoModal() == IDOK) {
-		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-		if (hFile == INVALID_HANDLE_VALUE)
-			return FALSE;
-		for (int i = 0; i < m_Table.data.n; ++i) {
-			auto& info = m_Table.data.info[i];
-			std::wstring text = GetSingleMiniFilterInfo(info);
-			Helpers::WriteString(hFile, text);
-		}
-		::CloseHandle(hFile);
-	}
-	return TRUE;
-}
+//LRESULT CMiniFilterTable::OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+//	int selected = m_Table.data.selected;
+//	ATLASSERT(selected >= 0);
+//	auto& info = m_Table.data.info[selected];
+//
+//	CString text;
+//	CString s;
+//
+//	
+//
+//	ClipboardHelper::CopyText(m_hWnd, text);
+//	return 0;
+//}
+//
+//LRESULT CMiniFilterTable::OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+//	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+//		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+//		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+//	if (dlg.DoModal() == IDOK) {
+//		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+//		if (hFile == INVALID_HANDLE_VALUE)
+//			return FALSE;
+//		for (int i = 0; i < m_Table.data.n; ++i) {
+//			auto& info = m_Table.data.info[i];
+//			std::wstring text = GetSingleMiniFilterInfo(info);
+//			Helpers::WriteString(hFile, text);
+//		}
+//		::CloseHandle(hFile);
+//	}
+//	return TRUE;
+//}
 
 LRESULT CMiniFilterTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	Refresh();
@@ -162,3 +245,13 @@ LRESULT CMiniFilterTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return TRUE;
 }
 
+LRESULT CMiniFilterTable::OnCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CMiniFilterDlg dlg(info.FilterName);
+	dlg.DoModal(m_hWnd);
+
+	return TRUE;
+}

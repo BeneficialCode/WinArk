@@ -10,6 +10,7 @@ public:
 	static DWORD GetKernelStructMemberOffset(std::string name, std::string memberName);
 	static DWORD GetKernelSturctMemberSize(std::string name, std::string memberName);
 	static DWORD GetKernelStructSize(std::string name);
+	static DWORD GetFltmgrStructMemberOffset(std::string name, std::string memberName);
 	static void Init();
 private:
 	
@@ -19,4 +20,9 @@ private:
 	static inline std::string _win32kModule, _kernelModule;
 	static inline SymbolHandler _win32k;
 	static inline SymbolHandler _kernel;
+	static inline DWORD _fltmgrSize;
+	static inline DWORD64 _fltmgrBase;
+	static inline std::string _fltmgrPdb;
+	static inline std::string _fltmgrModule;
+	static inline SymbolHandler _fltmgr;
 };

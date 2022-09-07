@@ -43,6 +43,8 @@ void SymbolHelper::Init() {
 
 	ATLTRACE("%s", name.c_str());
 
+
+
 	pdbFile = pdbPath + "\\" + name;
 	_kernelSize = size;
 	_kernelPdb = pdbFile;
@@ -52,8 +54,29 @@ void SymbolHelper::Init() {
 #else
 	_kernelBase = (DWORD)kernelBase;
 #endif
+
+	void* flgmgrBase = Helpers::GetKernelModuleBase("fltmgr.sys");
+	size = Helpers::GetKernelModuleImageSize("fltmgr.sys");
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("flt") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	pdbFile = pdbPath + "\\" + name;
+	_fltmgrSize = size;
+	_fltmgrPdb = pdbFile;
+	_fltmgrModule = std::string(name, 0, name.find("."));
+#ifdef _WIN64
+	_fltmgrBase = (DWORD64)flgmgrBase;
+#else
+	_fltmgrBase = (DWORD)flgmgrBase;
+#endif
+
 	_win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
 	_kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
+	_fltmgr.LoadSymbolsForModule(_fltmgrPdb.c_str(), _fltmgrBase, _fltmgrSize);
 }
 
 std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
@@ -78,6 +101,10 @@ ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
 
 DWORD SymbolHelper::GetKernelStructMemberOffset(std::string name, std::string memberName) {
 	return _kernel.GetStructMemberOffset(name, memberName);
+}
+
+DWORD SymbolHelper::GetFltmgrStructMemberOffset(std::string name, std::string memberName) {
+	return _fltmgr.GetStructMemberOffset(name, memberName);
 }
 
 DWORD SymbolHelper::GetKernelSturctMemberSize(std::string name, std::string memberName) {

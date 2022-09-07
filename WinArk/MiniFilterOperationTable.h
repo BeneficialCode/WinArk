@@ -3,24 +3,33 @@
 #include "resource.h"
 #include "Interfaces.h"
 
-struct MiniFilterInfo {
-	std::wstring FilterName;
-	std::wstring Altitude;
-	ULONG FrameID;
-	ULONG NumberOfInstance;
+
+enum class FilterType {
+	PreOperation,
+	PostOperation
 };
 
-class CMiniFilterTable :
-	public CTable<MiniFilterInfo>,
-	public CWindowImpl<CMiniFilterTable>{
+struct OperationCallbackInfo {
+	void* FilterHandle;
+	void* Routine;
+	ULONG Flags;
+	UCHAR MajorCode;
+	FilterType Type;
+	std::wstring Company;
+	std::string Module;
+};
+
+class COperationTable :
+	public CTable<OperationCallbackInfo>,
+	public CWindowImpl<COperationTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CMiniFilterTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, MiniFilterInfo& info, int column);
-	bool CompareItems(const MiniFilterInfo& s1, const MiniFilterInfo& s2, int col, bool asc);
+	COperationTable(BarInfo& bars, TableInfo& table,std::wstring filterName);
+	int ParseTableEntry(CString& s, char& mask, int& select, OperationCallbackInfo& info, int column);
+	bool CompareItems(const OperationCallbackInfo& s1, const OperationCallbackInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(CMiniFilterTable)
+	BEGIN_MSG_MAP(COperationTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -39,7 +48,6 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_MINIFILTER_REFRESH, OnRefresh)
-		COMMAND_ID_HANDLER(ID_MINIFILTER_CALLBACK,OnCallback)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -63,17 +71,16 @@ public:
 	//LRESULT OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	//LRESULT OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-
-	void BuildFilterInfo(PVOID buffer, bool isNewStyle);
-
+	PCWSTR OperationTypeToString(UCHAR type);
+	CString FlagToString(DWORD flag);
 private:
-	enum class TableColumn {
-		FilterName, NumberOfInstance, Altitude,FrameID
+	enum class Column {
+		FilterHandle,MajorCode,OperationType,Flag,Address,CallbackType,Company,Module
 	};
 
 	void Refresh();
 
-	std::wstring GetSingleMiniFilterInfo(MiniFilterInfo& info);
+	std::wstring GetSingleOperationInfo(OperationCallbackInfo& info);
+	std::wstring m_Name;
 };

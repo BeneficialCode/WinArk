@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -91,6 +91,7 @@
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
 #define IDR_POOLTAG                     277
+#define IDR_KERNEL_HOOK_CONTEXT         278
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -345,13 +346,15 @@
 #define ID_KERNEL_ERASE                 32943
 #define ID_DPCTIMER_REFRESH             32944
 #define ID_IOTIMER_REFRESH              32945
+#define ID_MINIFILTER_REFRESH           32946
+#define ID_MINIFILTER_CALLBACK          32947
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        278
-#define _APS_NEXT_COMMAND_VALUE         32946
+#define _APS_NEXT_RESOURCE_VALUE        279
+#define _APS_NEXT_COMMAND_VALUE         32948
 #define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

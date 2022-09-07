@@ -45,6 +45,7 @@ struct DriverHelper final {
 	static bool DisableDbgSys();
 	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
 	static bool EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo, SIZE_T size);
+	static bool EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size);
 
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
 private:

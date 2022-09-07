@@ -558,6 +558,8 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (!MmIsAddressValid(address))
+				break;
 			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
 			khook::_ntTable = pServiceTable;
 			status = STATUS_SUCCESS;
@@ -580,6 +582,8 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			
 			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (!MmIsAddressValid(address))
+				break;
 			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = pServiceTable->NumberOfServices;
 			len = sizeof(ULONG);
@@ -1248,6 +1252,25 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			IoTimer::EnumIoTimer(pData, (IoTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
 			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
+			break;
+		}
+		case IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(MiniFilterData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(OperationInfo)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
+			status = EnumMiniFilterOperations(pData, (OperationInfo*)Irp->AssociatedIrp.SystemBuffer);
+			len = dic.OutputBufferLength;
 			break;
 		}
 	}

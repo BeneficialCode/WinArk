@@ -1,5 +1,6 @@
 #pragma once
 
+
 enum class DataItemType : short {
 	IrpArrived,
 	IrpCompleted,
@@ -166,6 +167,20 @@ struct IoTimerInfo {
 	short TimerFlag;
 	void* TimerRoutine;
 	void* DeviceObject;
+};
+
+struct MiniFilterData {
+	ULONG Length;
+	ULONG OperationsOffset;
+	WCHAR Name[1];
+};
+
+struct OperationInfo {
+	PVOID FilterHandle;
+	ULONG Flags;
+	UCHAR MajorFunction;
+	void* PreOperation;
+	void* PostOperation;
 };
 
 #define INJECTED_DLL_FILE_NAME64 L"\\KnownDlls\\ProcMon64.dll"

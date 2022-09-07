@@ -28,16 +28,21 @@ void InitSymbols(std::wstring fileName) {
 	wcscat_s(path, fileName.c_str());
 	PEParser parser(path);
 	auto dir = parser.GetDataDirectory(IMAGE_DIRECTORY_ENTRY_DEBUG);
-	SymbolFileInfo info;
-	auto entry = static_cast<PIMAGE_DEBUG_DIRECTORY>(parser.GetAddress(dir->VirtualAddress));
-	ULONG_PTR VA = reinterpret_cast<ULONG_PTR>(parser.GetBaseAddress());
-	info.GetPdbSignature(VA, entry);
-	::GetCurrentDirectory(MAX_PATH, path);
-	wcscat_s(path, L"\\Symbols");
-	std::filesystem::create_directory(path);
-	bool success = info.SymDownloadSymbol(path);
-	if (!success)
+	if (dir != nullptr) {
+		SymbolFileInfo info;
+		auto entry = static_cast<PIMAGE_DEBUG_DIRECTORY>(parser.GetAddress(dir->VirtualAddress));
+		ULONG_PTR VA = reinterpret_cast<ULONG_PTR>(parser.GetBaseAddress());
+		info.GetPdbSignature(VA, entry);
+		::GetCurrentDirectory(MAX_PATH, path);
+		wcscat_s(path, L"\\Symbols");
+		std::filesystem::create_directory(path);
+		bool success = info.SymDownloadSymbol(path);
+		if (!success)
+			g_hasSymbol = false;
+	}
+	else {
 		g_hasSymbol = false;
+	}
 }
 
 void ClearSymbols() {
@@ -66,13 +71,17 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		InitSymbols(L"win32k.sys");
 		if (!g_hasSymbol)
 			return -1;
+		InitSymbols(L"drivers\\fltmgr.sys");
+		if (!g_hasSymbol)
+			return -1;
+
 
 		return 0;
 		}, nullptr, 0, nullptr);
 
 	::WaitForSingleObject(hThread, INFINITE);
 	if (!g_hasSymbol||NULL == hThread) {
-		AtlMessageBox(0, L"Failed init symbols,WinArk will exit...\r\n·ûºÅ³õÊ¼»¯Ê§°Ü£¬³ÌÐòÍË³ö...", L"WinArk", MB_ICONERROR);
+		AtlMessageBox(0, L"Failed init symbols,\r\nWinArk will exit...\r\n·ûºÅ³õÊ¼»¯Ê§°Ü£¬³ÌÐòÍË³ö...", L"WinArk", MB_ICONERROR);
 		ClearSymbols();
 		return 0;
 	}

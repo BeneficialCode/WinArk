@@ -444,6 +444,12 @@
     <ClCompile Include="MiniFilterTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="MiniFilterOperationTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniFilterDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -880,6 +886,12 @@
     </ClInclude>
     <ClInclude Include="MiniFilterTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniFilterOperationTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniFilterDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

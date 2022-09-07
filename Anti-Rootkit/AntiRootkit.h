@@ -45,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0x9F
+#define DRIVER_CURRENT_VERSION 0xA6
 
 
 // 用MDL锁定用户内存
@@ -89,6 +89,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_GET_KERNEL_TIMER_COUNT			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x827,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_IO_TIMER_COUNT				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x828,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_IO_TIMER						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x829,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS		CTL_CODE(ANTI_ROOTKIT_DEVICE,0x82A,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 
 // 原始方式
@@ -217,10 +218,4 @@ struct ObPreOperationData {
 	void* Address;
 };
 
-struct MinifilterInfo {
-	PVOID FilterHandle;
-	ULONG Flags;
-	UCHAR MajorFunction;
-	void* PreOperation;
-	void* PostOperation;
-};
+
