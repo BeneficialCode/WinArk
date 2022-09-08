@@ -162,6 +162,7 @@
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="KernelEvents.cpp" />
     <ClCompile Include="KernelModuleTracker.cpp" />
+    <ClCompile Include="LsaSecurity.cpp" />
     <ClCompile Include="NetworkInformation.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -194,6 +195,7 @@
     <ClInclude Include="KernelEvents.h" />
     <ClInclude Include="KernelModuleTracker.h" />
     <ClInclude Include="Keys.h" />
+    <ClInclude Include="LsaSecurity.h" />
     <ClInclude Include="NetworkInformation.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="pch.h" />

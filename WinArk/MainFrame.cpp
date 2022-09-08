@@ -375,7 +375,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"窗口",
 		L"服务",
 		L"配置",
-		L"事件追踪"
+		L"事件追踪",
+		L"Logon Sessions"
 	};
 
 	int i = 0;
@@ -422,6 +423,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitKernelView();
 	InitConfigView();
 	InitEtwView();
+	InitLogonSessionsView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -515,6 +517,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			InitEtwToolBar(m_tb);
 			UIAddToolBar(m_tb.m_hWnd);
 			m_pEtwView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::LogonSession:
+			m_pLogonSessionView->ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -718,6 +723,13 @@ void CMainFrame::InitEtwView() {
 	m_pEtwView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 	m_hwndArray[static_cast<int>(TabColumn::Etw)] = m_pEtwView->m_hWnd;
 }
+
+void CMainFrame::InitLogonSessionsView() {
+	m_pLogonSessionView = new CLogonSessionsView(this);
+	m_pLogonSessionView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
+	m_hwndArray[static_cast<int>(TabColumn::LogonSession)] = m_pLogonSessionView->m_hWnd;
+}
+
 
 void CMainFrame::InitProcessToolBar(CToolBarCtrl& tb) {
 	CImageList tbImages;

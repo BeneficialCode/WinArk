@@ -20,6 +20,7 @@
 #include "EtwView.h"
 #include "TraceManager.h"
 #include "QuickFindDlg.h"
+#include "LogonSessionsView.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -27,7 +28,7 @@ enum class TabColumn :int {
 	Process, KernelModule, 
 	Kernel, 
 	KernelHook,
-	Network,Driver,Registry,Device,Windows,Service,Config,Etw
+	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -94,6 +95,7 @@ public:
 	void InitKernelView();
 	void InitConfigView();
 	void InitEtwView();
+	void InitLogonSessionsView();
 
 	void LoadSettings(PCWSTR filename = nullptr);
 	void SaveSettings(PCWSTR filename = nullptr);
@@ -181,6 +183,8 @@ private:
 	CIcon m_RunIcon, m_StopIcon, m_PauseIcon;
 	CFont m_MonoFont;
 	CQuickFindDlg* m_pQuickFindDlg{ nullptr };
+
+	CLogonSessionsView* m_pLogonSessionView{ nullptr };
 
 	CString m_StatusText;
 

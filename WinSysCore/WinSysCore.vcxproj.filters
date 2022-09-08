@@ -105,6 +105,9 @@
     <ClCompile Include="StringCompareFilterBase.cpp">
       <Filter>EventTracing</Filter>
     </ClCompile>
+    <ClCompile Include="LsaSecurity.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processes.h">
@@ -199,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="StringCompareFilterBase.h">
       <Filter>EventTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="LsaSecurity.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

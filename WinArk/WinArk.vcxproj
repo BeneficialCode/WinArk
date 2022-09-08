@@ -274,6 +274,7 @@
     <ClCompile Include="FilterConfiguration.cpp" />
     <ClCompile Include="FilterFactory.cpp" />
     <ClCompile Include="FiltersDlg.cpp" />
+    <ClCompile Include="LogonSessionsView.cpp" />
     <ClCompile Include="MiniFilterDlg.cpp" />
     <ClCompile Include="MiniFilterOperationTable.cpp" />
     <ClCompile Include="MiniFilterTable.cpp" />
@@ -418,6 +419,7 @@
     <ClInclude Include="FilterConfiguration.h" />
     <ClInclude Include="FilterFactory.h" />
     <ClInclude Include="FiltersDlg.h" />
+    <ClInclude Include="LogonSessionsView.h" />
     <ClInclude Include="MiniFilterDlg.h" />
     <ClInclude Include="MiniFilterOperationTable.h" />
     <ClInclude Include="MiniFilterTable.h" />
