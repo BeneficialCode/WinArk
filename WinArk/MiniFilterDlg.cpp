@@ -11,7 +11,7 @@ LRESULT CMiniFilterDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lP
 	BarDesc bars[] = {
 		{22,"FilterHandle",0},
 		{12,"MajorCode",0},
-		{26,"I/O Operation 类型",0},
+		{32,"I/O Operation 类型",0},
 		{22,"Flag",0},
 		{22,"函数地址",0},
 		{25,"回调类型",0},

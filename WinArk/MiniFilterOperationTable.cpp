@@ -372,6 +372,14 @@ PCWSTR COperationTable::OperationTypeToString(UCHAR type) {
 		case IRP_MJ_RELEASE_FOR_SECTION_SYNCHRONIZATION: return L"ReleaseForSectionSynchronization";
 		case IRP_MJ_SHUTDOWN: return L"Shutdown";
 		case IRP_MJ_VOLUME_DISMOUNT: return L"DismountVolume";
+		case IRP_MJ_POWER: return L"Power";
+		case IRP_MJ_SYSTEM_CONTROL: return L"SystemControl";
+		case IRP_MJ_DEVICE_CHANGE: return L"DeviceChange";
+		case (UCHAR)-8: return L"Reserved-8";
+		case (UCHAR)-9: return L"Reserved-9";
+		case (UCHAR)-10: return L"Reserved-10";
+		case (UCHAR)-11: return L"Reserved-11";
+		case (UCHAR)-12: return L"Reserved-12";
 	}
 	return L"";
 }
