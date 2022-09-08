@@ -21,8 +21,11 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::string deleteFile(oldFileName.begin(), oldFileName.end());
 	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
 	bool isExist = std::filesystem::is_regular_file(fileName);
-	if (isExist)
-		return true;
+	if (isExist) {
+		auto fileSize = std::filesystem::file_size(fileName);
+		if(fileSize)
+			return true;
+	}
 	
 	for (auto& iter : std::filesystem::directory_iterator(localPath)) {
 		auto filename = iter.path().filename().string();
@@ -92,6 +95,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	HINTERNET hInternet = nullptr;
 	HINTERNET hUrl = nullptr;
 	HANDLE hFile = nullptr;
+	HINTERNET hConnect = nullptr;
 
 	Cleanup cleanup([&]()
 	{
@@ -110,6 +114,8 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 			::InternetCloseHandle(hUrl);
 		if (hInternet != NULL)
 			::InternetCloseHandle(hInternet);
+		if (hConnect != nullptr)
+			::InternetCloseHandle(hConnect);
 		::SetLastError(lastError);
 	});
 
@@ -124,14 +130,38 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	if (!hInternet)
 		return downslib_error::inetopen;
 
+	DWORD flags;
+	DWORD len = sizeof(flags);
+	
 	::InternetSetOptionA(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
-	DWORD flags = INTERNET_FLAG_RELOAD;
+	flags = INTERNET_FLAG_RELOAD;
 	if (strncmp(url.c_str(), "https://", 8) == 0)
 		flags |= INTERNET_FLAG_SECURE;
 
 	hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
-
 	DWORD error = ::GetLastError();
+	if (error == ERROR_INTERNET_INVALID_CA) {
+		std::string serviceName = "msdl.microsoft.com";
+		// Connect to the http server
+		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
+			INTERNET_DEFAULT_HTTP_PORT, nullptr,
+			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
+		int pos = url.find(".com") + 4;
+		std::string objName(url.begin() + pos, url.end());
+		hUrl = HttpOpenRequestA(hConnect, "GET",
+			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
+		
+		HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+		error = ::GetLastError();
+		if (error == ERROR_INTERNET_INVALID_CA) {
+			// https://stackoverflow.com/questions/41357008/how-to-ignore-certificate-in-httppost-request-in-winapi
+			flags = 0;
+			InternetQueryOption(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, &len);
+			flags |= SECURITY_SET_MASK;
+			InternetSetOptionA(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, sizeof(flags));
+			HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+		}
+	}
 	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
 		url.insert(4, "s");
 		flags |= INTERNET_FLAG_SECURE;
@@ -143,7 +173,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	// Get HTTP content length
 	char buffer[1<<11];
 	memset(buffer, 0, sizeof(buffer));
-	DWORD len = sizeof(buffer);
+	len = sizeof(buffer);
 	unsigned long long totalBytes = 0;
 	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_CONTENT_LENGTH, buffer, &len, 0)) {
 		if (sscanf_s(buffer, "%llu", &totalBytes) != 1)

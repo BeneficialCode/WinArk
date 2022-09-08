@@ -304,6 +304,8 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			void* p = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (!MmIsAddressValid(p))
+				break;
 			SystemServiceTable* pSystemServiceTable = (SystemServiceTable*)p;
 			// 获得输出缓冲区的长度
 			if (dic.OutputBufferLength < sizeof(PULONG)) {
