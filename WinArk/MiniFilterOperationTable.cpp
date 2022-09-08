@@ -159,7 +159,7 @@ LRESULT COperationTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 LRESULT COperationTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	CMenu menu;
+	/*CMenu menu;
 	CMenuHandle hSubMenu;
 	menu.LoadMenu(IDR_KERNEL_HOOK_CONTEXT);
 	hSubMenu = menu.GetSubMenu(0);
@@ -171,7 +171,7 @@ LRESULT COperationTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		if (id) {
 			PostMessage(WM_COMMAND, id);
 		}
-	}
+	}*/
 
 	return 0;
 }
