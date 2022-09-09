@@ -5,6 +5,7 @@
 #include <wil\resource.h>
 #include "KernelModuleTracker.h"
 #include "ProcessModuleTracker.h"
+#include <shellapi.h>
 
 
 std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
@@ -316,3 +317,5 @@ bool Helpers::WriteString(HANDLE hFile, std::wstring const& text) {
 	std::string txt = WstringToString(text);
 	return ::WriteFile(hFile, txt.data(), txt.length(),&bytes,nullptr);
 }
+
+

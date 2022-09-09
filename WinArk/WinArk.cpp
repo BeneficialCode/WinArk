@@ -16,6 +16,7 @@
 #include "SymbolHelper.h"
 
 CAppModule _Module;
+HWND _hMainWnd;
 AppSettings _Settings;
 
 bool g_hasSymbol = true;
@@ -50,6 +51,52 @@ void ClearSymbols() {
 	::GetCurrentDirectory(MAX_PATH, path);
 	wcscat_s(path, L"\\Symbols");
 	std::filesystem::remove_all(path);
+}
+
+// {A67605F7-BCFA-47F0-970D-92799D8F375E}
+static const GUID iconGuid =
+{ 0xa67605f7, 0xbcfa, 0x47f0, { 0x97, 0xd, 0x92, 0x79, 0x9d, 0x8f, 0x37, 0x5e } };
+
+bool ShowBalloonTip(PCWSTR title, PCWSTR text, ULONG timeout) {
+	NOTIFYICONDATA notifyIcon = { sizeof(NOTIFYICONDATA) };
+	
+
+	notifyIcon.uFlags = NIF_INFO | NIF_GUID;
+	notifyIcon.hWnd = _hMainWnd;
+	notifyIcon.uID = IDR_MAINFRAME;
+	notifyIcon.guidItem = iconGuid;
+	wcsncpy_s(notifyIcon.szInfoTitle, RTL_NUMBER_OF(notifyIcon.szInfoTitle), title, _TRUNCATE);
+	wcsncpy_s(notifyIcon.szInfo, RTL_NUMBER_OF(notifyIcon.szInfo), text, _TRUNCATE);
+	notifyIcon.uTimeout = timeout;
+	notifyIcon.dwInfoFlags = NIIF_INFO;
+
+	return Shell_NotifyIcon(NIM_MODIFY, &notifyIcon);
+}
+
+bool ShowIconNotication(PCWSTR title, PCWSTR text) {
+	bool success = ShowBalloonTip(title, text, 10);
+	return success;
+}
+
+bool AddNotifyIcon() {
+	NOTIFYICONDATA notifyIcon = { sizeof(NOTIFYICONDATA) };
+	notifyIcon.hWnd = _hMainWnd;
+	notifyIcon.uID = IDR_MAINFRAME;
+	notifyIcon.uFlags = NIF_ICON | NIF_GUID;
+	notifyIcon.guidItem = iconGuid;
+
+	return Shell_NotifyIcon(NIM_ADD, &notifyIcon);
+}
+
+bool RemoveNotifyIcon() {
+	NOTIFYICONDATA notifyIcon = { sizeof(NOTIFYICONDATA) };
+
+	notifyIcon.uFlags = NIF_GUID;
+	notifyIcon.hWnd = _hMainWnd;
+	notifyIcon.uID = IDR_MAINFRAME;
+	notifyIcon.guidItem = iconGuid;
+
+	return Shell_NotifyIcon(NIM_DELETE, &notifyIcon);
 }
 
 int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
@@ -87,6 +134,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	}
 	::CloseHandle(hThread);
 
+
 	SymbolHelper::Init();
 
 	InitColorSys();
@@ -102,15 +150,20 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	if(!cmdLine.IsEmpty()&&cmdLine.Right(11).CompareNoCase(L"regedit.exe")!=0)*/
 		
 	// CreateEx才会加载 IDR_MAINFRAME相关的资源
-	if (wndMain.CreateEx(NULL) == NULL) {
+	_hMainWnd = wndMain.CreateEx(NULL);
+	if (_hMainWnd == NULL) {
 		ATLTRACE(_T("Main dialog creation failed!\n"));
 		return 0;
 	}
+	AddNotifyIcon();
+
+	ShowIconNotication(L"WinArk Initialization", L"WinArk Initialize successfully!");
 
 	wndMain.ShowWindow(nCmdShow);
 
 	int nRet = theLoop.Run();
 
+	RemoveNotifyIcon();
 	_Module.RemoveMessageLoop();
 	return nRet;
 }

@@ -7,7 +7,6 @@
 CString CLogonSessionsView::GetColumnText(HWND, int row, int col) const {
 	const auto& item = m_Sessions[row];
 
-
 	switch (col){
 		case 0: return std::format(L"{:2d}", item.Index).c_str();
 		case 1: return std::format(L"{:#08x}`{:08X}", item.LogonId.HighPart, item.LogonId.LowPart).c_str();
