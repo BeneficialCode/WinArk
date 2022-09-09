@@ -145,8 +145,8 @@ int CDriverTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::D
 PCWSTR CDriverTable::ServiceStateToString(WinSys::ServiceState state) {
 	switch (state) {
 		case ServiceState::Running:return L"Running";
-		case ServiceState::Stoppend:return L"Stopped";
-		case ServiceState::Pause:return L"Paused";
+		case ServiceState::Stopped:return L"Stopped";
+		case ServiceState::Paused:return L"Paused";
 		case ServiceState::StartPending:return L"Start Pending";
 		case ServiceState::StopPending:return L"Stop Pending";
 		case ServiceState::PausePending:return L"Pause Pending";

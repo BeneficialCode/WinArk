@@ -725,6 +725,16 @@ BEGIN
         MENUITEM "Copy",                        ID_KERNEL_MODULE_COPY
         MENUITEM "Export",                      ID_KERNEL_MODULE_EXPORT
     END
+    POPUP "service"
+    BEGIN
+        MENUITEM "Start",                       ID_SERVICE_START
+        MENUITEM "Stop",                        ID_SERVICE_STOP
+        MENUITEM "Pause",                       ID_SERVICE_PAUSE
+        MENUITEM "Continue",                    ID_SERVICE_CONTINUE
+        MENUITEM SEPARATOR
+        MENUITEM "Uninstall",                   ID_SERVICE_UNINSTALL
+        MENUITEM "&Properties",                 ID_SERVICE_PROPERTIES
+    END
 END
 
 IDR_MAINFRAME MENU

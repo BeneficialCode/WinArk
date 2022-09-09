@@ -348,13 +348,20 @@
 #define ID_IOTIMER_REFRESH              32945
 #define ID_MINIFILTER_REFRESH           32946
 #define ID_MINIFILTER_CALLBACK          32947
+#define ID_SERVICE_START                32948
+#define ID_SERVICE_STOP                 32949
+#define ID_SERVICE_PAUSE                32950
+#define ID_SERVICE_CONTINUE             32951
+#define ID_SERVICE_UNINSTALL            32952
+#define ID_SERVICE_                     32953
+#define ID_SERVICE_PROPERTIES           32954
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32948
+#define _APS_NEXT_COMMAND_VALUE         32955
 #define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -82,7 +82,7 @@ bool AddNotifyIcon() {
 	NOTIFYICONDATA notifyIcon = { sizeof(NOTIFYICONDATA) };
 	notifyIcon.hWnd = _hMainWnd;
 	notifyIcon.uID = IDR_MAINFRAME;
-	notifyIcon.uFlags = NIF_ICON | NIF_GUID;
+	notifyIcon.uFlags = NIF_ICON | NIF_GUID | NIF_TIP;
 	notifyIcon.guidItem = iconGuid;
 
 	return Shell_NotifyIcon(NIM_ADD, &notifyIcon);

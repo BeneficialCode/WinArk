@@ -35,13 +35,13 @@ namespace WinSys {
 
 	enum class ServiceState {
 		Unknown = 0,
-		Stoppend = SERVICE_STOPPED,
+		Stopped = SERVICE_STOPPED,
 		StartPending = SERVICE_START_PENDING,
 		PausePending = SERVICE_PAUSE_PENDING,
 		Running = SERVICE_RUNNING,
 		ContinuePending = SERVICE_CONTINUE_PENDING,
 		StopPending = SERVICE_STOP_PENDING,
-		Pause = SERVICE_PAUSED,
+		Paused = SERVICE_PAUSED,
 	};
 
 	enum class ServiceControlsAccepted {

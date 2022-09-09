@@ -3,6 +3,7 @@
 #include "SortHelper.h"
 #include "ProcessPropertiesDlg.h"
 #include "ProcessInfoEx.h"
+#include "ProgressDlg.h"
 
 using namespace WinSys;
 
@@ -54,27 +55,67 @@ LRESULT CServiceTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	return Tablefunction(m_hWnd, WM_VSCROLL, zDelta >= 0 ? 0 : 1, wParam);
 }
+
 LRESULT CServiceTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	CMenu menu;
+	CMenuHandle hSubMenu;
+	menu.LoadMenu(IDR_CONTEXT);
+	hSubMenu = menu.GetSubMenu(11);
+	POINT pt;
+	::GetCursorPos(&pt);
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+	auto& pdata = svc.GetStatusProcess();
+	auto& state = pdata.CurrentState;
+	bool enable = state == ServiceState::Stopped &&
+		GetServiceInfoEx(svc.GetName()).GetConfiguration()->StartType != ServiceStartType::Disabled;
+	if(!enable)
+		EnableMenuItem(hSubMenu, ID_SERVICE_START, MF_DISABLED);
+	enable = state == ServiceState::Running;
+	if (!enable) {
+		EnableMenuItem(hSubMenu, ID_SERVICE_STOP, MF_DISABLED);
+		EnableMenuItem(hSubMenu, ID_SERVICE_PAUSE, MF_DISABLED);
+		EnableMenuItem(hSubMenu, ID_SERVICE_STOP, MF_DISABLED);
+	}
+	enable = state == ServiceState::Paused;
+	if(!enable)
+		EnableMenuItem(hSubMenu, ID_SERVICE_CONTINUE, MF_DISABLED);
+	
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	if (show) {
+		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
+		if (id) {
+			PostMessage(WM_COMMAND, id);
+		}
+	}
+	return 0;
 }
+
 LRESULT CServiceTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CServiceTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
@@ -153,8 +194,8 @@ int CServiceTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::
 PCWSTR CServiceTable::ServiceStateToString(WinSys::ServiceState state) {
 	switch (state) {
 		case ServiceState::Running:return L"Running";
-		case ServiceState::Stoppend:return L"Stopped";
-		case ServiceState::Pause:return L"Paused";
+		case ServiceState::Stopped:return L"Stopped";
+		case ServiceState::Paused:return L"Paused";
 		case ServiceState::StartPending:return L"Start Pending";
 		case ServiceState::StopPending:return L"Stop Pending";
 		case ServiceState::PausePending:return L"Pause Pending";
@@ -394,4 +435,163 @@ bool CServiceTable::CompareItems(const WinSys::ServiceInfo& s1, const WinSys::Se
 	}
 	
 	return false;
+}
+
+LRESULT CServiceTable::OnServiceStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	auto service = Service::Open(svc.GetName(), ServiceAccessMask::Start | ServiceAccessMask::QueryStatus);
+	if (service == nullptr) {
+		AtlMessageBox(*this, L"Failed to open service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	if (!service->Start()) {
+		AtlMessageBox(*this, L"Failed to start service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	CProgressDlg dlg;
+	dlg.ShowCancelButton(false);
+	dlg.SetMessageText((L"Starting service" + svc.GetName() + L"...").c_str());
+	dlg.SetProgressMarquee(true);
+	auto now = ::GetTickCount64();
+	dlg.SetTimerCallback([&]() {
+		service->Refresh(svc);
+		if (svc.GetStatusProcess().CurrentState == ServiceState::Running)
+			dlg.Close();
+		if (::GetTickCount64() - now > 5000)
+			dlg.Close(IDCANCEL);
+		}, 500);
+	if (dlg.DoModal() == IDCANCEL) {
+		AtlMessageBox(*this, L"Failed to start service within 5 seconds", IDS_TITLE, MB_ICONEXCLAMATION);
+	}
+	Refresh();
+
+	return 0;
+}
+
+LRESULT CServiceTable::OnServiceStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	ATLASSERT(svc.GetStatusProcess().CurrentState == ServiceState::Running);
+
+	auto service = Service::Open(svc.GetName(), ServiceAccessMask::Stop | ServiceAccessMask::QueryStatus);
+	if (service == nullptr) {
+		AtlMessageBox(*this, L"Failed to open service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	if (!service->Stop()) {
+		AtlMessageBox(*this, L"Failed to stop service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	CProgressDlg dlg;
+	dlg.ShowCancelButton(false);
+	dlg.SetMessageText((L"Stopping service " + svc.GetName() + L"...").c_str());
+	dlg.SetProgressMarquee(true);
+	dlg.SetTimerCallback([&]() {
+		service->Refresh(svc);
+		if (svc.GetStatusProcess().CurrentState == ServiceState::Stopped)
+			dlg.Close();
+		}, 500);
+	dlg.DoModal();
+	Refresh();
+
+	return 0;
+}
+
+LRESULT CServiceTable::OnServicePause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	ATLASSERT(svc.GetStatusProcess().CurrentState == ServiceState::Running);
+
+	auto service = Service::Open(svc.GetName(), ServiceAccessMask::PauseContinue | ServiceAccessMask::QueryStatus);
+	if (service == nullptr) {
+		AtlMessageBox(*this, L"Failed to open service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	if (!service->Pause()) {
+		AtlMessageBox(*this, L"Failed to pause service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	CProgressDlg dlg;
+	dlg.ShowCancelButton(false);
+	dlg.SetMessageText((L"Pausing service " + svc.GetName() + L"...").c_str());
+	dlg.SetProgressMarquee(true);
+	dlg.SetTimerCallback([&]() {
+		service->Refresh(svc);
+		if (svc.GetStatusProcess().CurrentState == ServiceState::Paused)
+			dlg.Close();
+		}, 500);
+	dlg.DoModal();
+
+	return 0;
+}
+
+LRESULT CServiceTable::OnServiceContinue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	ATLASSERT(svc.GetStatusProcess().CurrentState == ServiceState::Paused);
+
+	auto service = Service::Open(svc.GetName(), ServiceAccessMask::PauseContinue | ServiceAccessMask::QueryStatus);
+	if (service == nullptr) {
+		AtlMessageBox(*this, L"Failed to open service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	if (!service->Continue()) {
+		AtlMessageBox(*this, L"Failed to resume service", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	CProgressDlg dlg;
+	dlg.ShowCancelButton(false);
+	dlg.SetMessageText((L"Resuming service " + svc.GetName() + L"...").c_str());
+	dlg.SetProgressMarquee(true);
+	dlg.SetTimerCallback([&]() {
+		service->Refresh(svc);
+		if (svc.GetStatusProcess().CurrentState == ServiceState::Running)
+			dlg.Close();
+		}, 500);
+	dlg.DoModal();
+
+	return 0;
+}
+
+LRESULT CServiceTable::OnServiceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	AtlMessageBox(*this, L"Not implement yet!");
+
+	return LRESULT();
+}
+
+LRESULT CServiceTable::OnServiceDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	CString text;
+	text.Format(L"Uninstall the service %s?\n", svc.GetName().c_str());
+	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2) == IDYES) {
+		auto success = WinSys::ServiceManager::Uninstall(svc.GetName());
+		AtlMessageBox(*this, success ? L"Service uninstalled successfully" : L"Failed to uninstall service",
+			IDS_TITLE, success ? MB_ICONINFORMATION : MB_ICONERROR);
+		Refresh();
+	}
+	return 0;
 }
