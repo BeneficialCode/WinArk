@@ -30,10 +30,10 @@ CAPTION "About"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,264,147,50,14
-    CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Copyright 2022",IDC_STATIC,25,57,78,32
+    CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Technology Copyright 2022",IDC_STATIC,25,57,78,38
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
     GROUPBOX        "",IDC_STATIC,7,7,115,154
-    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；路总 :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；黎叔；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
+    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；CanineTooth :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；重黎；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
 END
 
 
@@ -1319,7 +1319,7 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "YuanOS Corporation"
+            VALUE "CompanyName", "YuanOS Technology Corporation"
             VALUE "FileDescription", "WinArk Antirootkit"
             VALUE "FileVersion", "1.0.0.2"
             VALUE "InternalName", "WinArk"
