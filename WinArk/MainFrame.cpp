@@ -239,7 +239,11 @@ void CMainFrame::InitDriverInterface() {
 	if (!DriverHelper::IsDriverLoaded()) {
 		if (!SecurityHelper::IsRunningElevated()) {
 			if (AtlMessageBox(nullptr, L"Kernel Driver not loaded. Some functionality will not be available. Install?", IDS_TITLE, MB_YESNO | MB_ICONQUESTION) == IDYES) {
-				if (!SecurityHelper::RunElevated(L"install", false)) {
+				if (SecurityHelper::IsSysRun()) {
+					if(!SecurityHelper::SysRun(L"install"))
+						AtlMessageBox(*this, L"Error running driver installer", IDS_TITLE, MB_ICONERROR);
+				}
+				else if (!SecurityHelper::RunElevated(L"install", false)) {
 					AtlMessageBox(*this, L"Error running driver installer", IDS_TITLE, MB_ICONERROR);
 				}
 			}
@@ -261,7 +265,12 @@ void CMainFrame::InitDriverInterface() {
 				}
 				else {
 					DriverHelper::CloseDevice();
-					SecurityHelper::RunElevated(L"update", false);
+					if (SecurityHelper::IsSysRun()) {
+						if (!SecurityHelper::SysRun(L"update"))
+							AtlMessageBox(*this, L"Error update driver service", IDS_TITLE, MB_ICONERROR);
+					}
+					else
+						SecurityHelper::RunElevated(L"update", false);
 				}
 			}
 		}
@@ -310,6 +319,12 @@ void CMainFrame::InitConfigView() {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true)) {
+		if (!SecurityHelper::IsSysRun()) {
+			if (SecurityHelper::SysRun(L"runas"))
+				SendMessage(WM_CLOSE);
+		}
+	}
 	LoadSettings();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 
@@ -319,7 +334,11 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMIN, MF_BYCOMMAND);
 		CString text;
 		GetWindowText(text);
-		SetWindowText(text + L"  (Administrator)");
+		CString append = L"  (Administrator)";
+		if (SecurityHelper::IsSysRun()) {
+			append = L"  (System)";
+		}
+		SetWindowText(text + append);
 	}
 
 	UIAddMenu(hMenu);
@@ -410,6 +429,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddIdleHandler(this);
 
 	InitDriverInterface();
+
 	InitProcessTable();
 	InitNetworkTable();
 	InitKernelModuleTable();
