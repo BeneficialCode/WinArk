@@ -319,12 +319,6 @@ void CMainFrame::InitConfigView() {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true)) {
-		if (!SecurityHelper::IsSysRun()) {
-			if (SecurityHelper::SysRun(L"runas"))
-				SendMessage(WM_CLOSE);
-		}
-	}
 	LoadSettings();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 
