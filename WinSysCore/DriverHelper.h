@@ -48,6 +48,9 @@ struct DriverHelper final {
 	static bool EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size);
 
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
+
+	static bool Bypass(DWORD flag);
+	static bool Unbypass(DWORD flag);
 private:
 	static bool OpenDevice();
 

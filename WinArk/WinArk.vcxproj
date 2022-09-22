@@ -239,6 +239,7 @@
     <ClCompile Include="BigPoolView.cpp" />
     <ClCompile Include="BinaryEventDataSerializer.cpp" />
     <ClCompile Include="BinaryValueDlg.cpp" />
+    <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
@@ -383,6 +384,7 @@
     <ClInclude Include="BigPoolView.h" />
     <ClInclude Include="BinaryEventDataSerializer.h" />
     <ClInclude Include="BinaryValueDlg.h" />
+    <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />

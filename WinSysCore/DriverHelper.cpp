@@ -563,3 +563,21 @@ bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, sizeof(KernelTimerData),
 		pInfo, size, &bytes, nullptr);
 }
+
+bool DriverHelper::Bypass(DWORD flag) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_BYPASS_DETECT, &flag, sizeof(flag),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::Unbypass(DWORD flag) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_UNBYPASS_DETECT, &flag, sizeof(flag),
+		nullptr, 0, &bytes, nullptr);
+}

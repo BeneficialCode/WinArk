@@ -453,6 +453,9 @@
     <ClCompile Include="LogonSessionsView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="BypassDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -898,6 +901,9 @@
     </ClInclude>
     <ClInclude Include="LogonSessionsView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="BypassDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

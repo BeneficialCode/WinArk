@@ -318,6 +318,11 @@ void CMainFrame::InitConfigView() {
 	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
 }
 
+void CMainFrame::InitBypassDectectView() {
+	HWND hWnd = m_BypassView.Create(m_hWnd, rcDefault);
+	m_hwndArray[static_cast<int>(TabColumn::BypassDectect)] = m_BypassView.m_hWnd;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	LoadSettings();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
@@ -389,7 +394,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"服务",
 		L"配置",
 		L"事件追踪",
-		L"Logon Sessions"
+		L"Logon Sessions",
+		L"检测对抗"
 	};
 
 	int i = 0;
@@ -438,6 +444,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitConfigView();
 	InitEtwView();
 	InitLogonSessionsView();
+	InitBypassDectectView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -534,6 +541,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::LogonSession:
 			m_pLogonSessionView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::BypassDectect:
+			m_BypassView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;

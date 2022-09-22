@@ -88,6 +88,7 @@
 #define IDR_BIN5                        269
 #define IDD_COLORS                      272
 #define IDD_GOTOKEY                     274
+#define IDD_BYPASS                      275
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
 #define IDR_POOLTAG                     277
@@ -196,6 +197,8 @@
 #define IDC_AUX_COLOR                   1088
 #define IDC_TEXT_COLOR8                 1089
 #define IDC_CONDBK_COLOR                1089
+#define IDC_BYPASS_KDBG                 1094
+#define IDC_BYPASS                      1095
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -362,7 +365,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
 #define _APS_NEXT_COMMAND_VALUE         32955
-#define _APS_NEXT_CONTROL_VALUE         1093
+#define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
