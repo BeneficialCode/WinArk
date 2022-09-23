@@ -55,6 +55,8 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Application Registration",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths)"},
 		{ L"Eventlog",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog)"},
 		{ L"ServiceGroupOrder",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\ServiceGroupOrder)"},
+		{ L"Winlogon",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon)"},
+		{ L"Winmgmt",LR"(HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Services\Winmgmt)"},
 	};
 
 	for (const auto& [name, path] : locations) {
