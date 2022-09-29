@@ -873,6 +873,7 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_MINIFILTER_REFRESH
         MENUITEM "Callback",                    ID_MINIFILTER_CALLBACK
+        MENUITEM "Remove",                      ID_MINIFILTER_REMOVE
     END
 END
 

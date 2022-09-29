@@ -4,6 +4,7 @@
 using namespace WinSys;
 
 uint32_t WinSys::KernelModuleTracker::EnumModules() {
+	_modules.clear();
 	DWORD size = 1 << 18;
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size,MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 

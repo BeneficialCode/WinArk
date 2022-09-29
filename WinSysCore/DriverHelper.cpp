@@ -555,13 +555,22 @@ bool DriverHelper::DisableDbgSys() {
 		nullptr, 0, &bytes, nullptr);
 }
 
-bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size) {
+bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData,SIZE_T dataSize, OperationInfo* pInfo, SIZE_T size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, sizeof(KernelTimerData),
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, dataSize,
 		pInfo, size, &bytes, nullptr);
+}
+
+bool DriverHelper::RemoveMiniFilter(MiniFilterData* pData, SIZE_T dataSize) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_REMOVE_MINIFILTER, pData, dataSize,
+		nullptr, 0, &bytes, nullptr);
 }
 
 bool DriverHelper::Bypass(DWORD flag) {

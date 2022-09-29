@@ -275,6 +275,8 @@ void COperationTable::Refresh() {
 	data->Length = len;
 	::wcscpy_s(data->Name, len + 1, m_Name.c_str());
 
+	DWORD dataSize = size;
+
 	int maxCount = IRP_MJ_MAXIMUM_FUNCTION + FLT_INTERNAL_OPERATION_COUNT;
 	size = maxCount * sizeof(OperationInfo);
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
@@ -282,7 +284,7 @@ void COperationTable::Refresh() {
 
 	if (p != nullptr) {
 		memset(p, 0, size);
-		DriverHelper::EnumMiniFilterOperations(data, p, size);
+		DriverHelper::EnumMiniFilterOperations(data, dataSize,p, size);
 		for (int i = 0; (p->MajorFunction != IRP_MJ_OPERATION_END&& i<maxCount); i++) {
 			OperationCallbackInfo info;
 			info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)p->PostOperation);

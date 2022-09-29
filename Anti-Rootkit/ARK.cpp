@@ -1309,6 +1309,21 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			break;
 		}
+
+		case IOCTL_ARK_REMOVE_MINIFILTER:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(MiniFilterData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
+			status = RemoveMiniFilter(pData);
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;
