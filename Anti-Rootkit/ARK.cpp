@@ -642,6 +642,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			
 			EnumSystemNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+
 			status = STATUS_SUCCESS;
 			len = dic.OutputBufferLength;
 			break;

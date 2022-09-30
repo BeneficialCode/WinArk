@@ -731,6 +731,15 @@ void RemoveImageNotify(_In_ PVOID context) {
 	PsTerminateSystemThread(status);
 }
 
+void RemoveFilter(_In_ PVOID context) {
+	NTSTATUS status = STATUS_SUCCESS;
+	PFLT_FILTER pFilter = (PFLT_FILTER)context;
+
+	FltUnregisterFilter(pFilter);
+
+	PsTerminateSystemThread(status);
+}
+
 NTSTATUS RemoveSystemNotify(_In_ PVOID context) {
 	auto notify = (NotifyData*)context;
 	NTSTATUS status = STATUS_SUCCESS;
@@ -886,6 +895,8 @@ NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo) {
 	return status;
 }
 
+
+
 NTSTATUS RemoveMiniFilter(MiniFilterData* pData) {
 	NTSTATUS status = STATUS_SUCCESS;
 
@@ -920,9 +931,13 @@ NTSTATUS RemoveMiniFilter(MiniFilterData* pData) {
 								filterName[pFullInfo->FilterNameLength / sizeof(WCHAR)] = L'\0';
 							}
 							if (!_wcsicmp(filterName, name)) {
-								PEX_RUNDOWN_REF RunRefs = (PEX_RUNDOWN_REF)((char*)ppFltList[i] + offset);
-								ExReleaseRundownProtection(RunRefs);
-								FltUnregisterFilter(ppFltList[i]);
+								HANDLE hThread;
+								status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, RemoveFilter, ppFltList[i]);
+								if (!NT_SUCCESS(status)) {
+									LogError("PsCreateSystemThread failed!\n");
+									break;
+								}
+								status = ZwClose(hThread);
 								break;
 							}
 						}

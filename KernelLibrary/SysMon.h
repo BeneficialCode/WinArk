@@ -191,3 +191,5 @@ using PPsSetCreateProcessNotifyRoutineEx2 = NTSTATUS
 NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo);
 
 NTSTATUS RemoveMiniFilter(MiniFilterData* pData);
+
+KSTART_ROUTINE RemoveFilter;
