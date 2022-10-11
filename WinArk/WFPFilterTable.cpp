@@ -156,14 +156,16 @@ void CWFPFilterTable::Refresh() {
 		status = WFPHelpers::HlprFwpmFilterEnum(engineHandle,
 			enumHandle, INFINITE, &ppFilters, &numEntries);
 
+		WFPFilterInfo info;
 		if (status == NO_ERROR &&
 			ppFilters && numEntries) {
 			for (UINT32 filterIndex = 0; filterIndex < numEntries; filterIndex++) {
-				WFPFilterInfo info;
+				
 				info.FilterId = ppFilters[filterIndex]->filterId;
 				info.Flags = ppFilters[filterIndex]->flags;
-				info.Name = ppFilters[filterIndex]->displayData.name;
-				info.Description = ppFilters[filterIndex]->displayData.description;
+				info.Name = ppFilters[filterIndex]->displayData.name == nullptr ? L"" : ppFilters[filterIndex]->displayData.name;
+				info.Description = ppFilters[filterIndex]->displayData.description == nullptr ? L"" :
+					ppFilters[filterIndex]->displayData.description;
 				m_Table.data.info.push_back(std::move(info));
 			}
 
