@@ -108,6 +108,9 @@
     <ClCompile Include="LsaSecurity.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="WFPHelpers.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processes.h">
@@ -204,6 +207,9 @@
       <Filter>EventTracing</Filter>
     </ClInclude>
     <ClInclude Include="LsaSecurity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WFPHelpers.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

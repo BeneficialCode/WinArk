@@ -21,7 +21,8 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		L"SSDT",
 		L"Shadow SSDT",
 		L"Kernel Notifications",
-		L"MiniFilter"
+		L"MiniFilter",
+		L"WFP Filter",
 	};
 
 	int i = 0;
@@ -33,6 +34,7 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitShadowSSDTHookTable();
 	InitKernelNotifyTable();
 	InitMiniFilterTable();
+	InitWFPFilterTable();
 
 	return 0;
 }
@@ -159,6 +161,39 @@ void CKernelHookView::InitMiniFilterTable() {
 	m_MiniFilterTable->ShowWindow(SW_HIDE);
 }
 
+void CKernelHookView::InitWFPFilterTable() {
+	BarDesc bars[] = {
+		{10,"Filter Id",0},
+		{45,"Flags",0},
+		{30,"Name",0},
+		{210,"Description",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_WFPFilterTable = new CWFPFilterTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_WFPFilterTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::WFPFilter)] = m_WFPFilterTable->m_hWnd;
+	m_WFPFilterTable->ShowWindow(SW_HIDE);
+}
+
 LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 	
@@ -186,6 +221,10 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::MiniFilter:
 			m_MiniFilterTable->ShowWindow(SW_SHOW);
 			m_MiniFilterTable->SetFocus();
+			break;
+		case TabColumn::WFPFilter:
+			m_WFPFilterTable->ShowWindow(SW_SHOW);
+			m_WFPFilterTable->SetFocus();
 			break;
 	}
 	_index = index;

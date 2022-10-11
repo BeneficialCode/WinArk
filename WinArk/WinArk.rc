@@ -875,6 +875,11 @@ BEGIN
         MENUITEM "Callback",                    ID_MINIFILTER_CALLBACK
         MENUITEM "Remove",                      ID_MINIFILTER_REMOVE
     END
+    POPUP "wfpfilter"
+    BEGIN
+        MENUITEM "Refresh",                     ID_WFPFILTER_REFRESH
+        MENUITEM "Delete",                      ID_WFPFILTER_DELETE
+    END
 END
 
 

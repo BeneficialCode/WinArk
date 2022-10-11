@@ -184,6 +184,7 @@
     <ClCompile Include="ThreadInfoEx.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="TraceManager.cpp" />
+    <ClCompile Include="WFPHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveConnectionTracker.h" />
@@ -217,6 +218,7 @@
     <ClInclude Include="ThreadInfoEx.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="TraceManager.h" />
+    <ClInclude Include="WFPHelpers.h" />
     <ClInclude Include="WinSysCore.h" />
   </ItemGroup>
   <ItemGroup>

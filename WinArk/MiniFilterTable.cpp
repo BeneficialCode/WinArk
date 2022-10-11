@@ -284,6 +284,7 @@ LRESULT CMiniFilterTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	}
 	if (ok) {
 		Refresh();
+		Invalidate();
 	}
 	return TRUE;
 }
