@@ -103,3 +103,18 @@ UINT32 WinSys::WFPHelpers::HlprFwpmFilterDeleteById(const HANDLE engineHandle, c
 	status = FwpmFilterDeleteById(engineHandle, id);
 	return status;
 }
+
+_Use_decl_annotations_
+BOOLEAN WinSys::WFPHelpers::HlprFwpmLayerIsUserMode(const GUID* pLayerKey){
+	ASSERT(pLayerKey);
+	BOOLEAN isUserMode = FALSE;
+
+	for (UINT32 layerIndex = 0;
+		layerIndex < TOTAL_USER_MODE_LAYER_COUNT && isUserMode == FALSE;
+		layerIndex++) {
+		if (pLayerKey == ppUserModeLayerKeyArray[layerIndex])
+			isUserMode = TRUE;
+	}
+
+	return isUserMode;
+}

@@ -149,16 +149,18 @@ bool SecurityHelper::SysRun(PCWSTR param) {
 	commandLine += param;
 
 	ok = ::SetTokenInformation(hPrimary, TokenSessionId, &session, sizeof(session));
+
+	GetCurrentDirectory(MAX_PATH, path);
 	if (!::CreateProcessAsUser(hPrimary, nullptr,
 		const_cast<wchar_t*>(commandLine.c_str()), nullptr, nullptr, 
-		FALSE, 0, nullptr, nullptr,
+		FALSE, 0, nullptr,path,
 		&si, &pi)) {
 		DWORD error = ::GetLastError();
 		if (error == ERROR_PRIVILEGE_NOT_HELD) {
 			if (!SetPrivilege(hDupToken, SE_IMPERSONATE_NAME, true))
 				return false;
 			if (!::CreateProcessWithTokenW(hPrimary, 0, nullptr,
-				const_cast<wchar_t*>(commandLine.c_str()), 0, nullptr, nullptr,
+				const_cast<wchar_t*>(commandLine.c_str()), 0, nullptr, path,
 				&si, &pi)) {
 				return false;
 			}

@@ -164,7 +164,10 @@ void CKernelHookView::InitMiniFilterTable() {
 void CKernelHookView::InitWFPFilterTable() {
 	BarDesc bars[] = {
 		{10,"Filter Id",0},
+		{20,"Mode",0},
 		{45,"Flags",0},
+		{20,"Action Type",0},
+		{30,"Layer Name",0},
 		{30,"Name",0},
 		{210,"Description",0},
 	};

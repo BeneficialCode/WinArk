@@ -7,6 +7,9 @@ struct WFPFilterInfo {
 	std::wstring Description;
 	UINT32 Flags;
 	UINT64 FilterId;
+	bool IsUserMode;
+	std::wstring LayerName;
+	UINT32 ActionType;
 };
 
 class CWFPFilterTable :
@@ -66,9 +69,10 @@ public:
 
 
 	CString FlagToString(UINT32 flags);
+	CString ActionTypeToString(UINT32 type);
 private:
 	enum class TableColumn {
-		FilterId,Flags,Name,Description
+		FilterId,Mode,Flags, ActionType, LayerName,Name,Description
 	};
 
 	void Refresh();

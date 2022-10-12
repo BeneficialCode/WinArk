@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "WFPFilterTable.h"
 #include <WFPHelpers.h>
+#include "SortHelper.h"
 
 using namespace WinSys;
 
@@ -115,6 +116,18 @@ int CWFPFilterTable::ParseTableEntry(CString& s, char& mask, int& select, WFPFil
 		case TableColumn::Flags:
 			s = FlagToString(info.Flags);
 			break;
+
+		case TableColumn::Mode:
+			info.IsUserMode ? s = L"User Mode" : s = L"Kernel Mode";
+			break;
+
+		case TableColumn::LayerName:
+			s = info.LayerName.c_str();
+			break;
+
+		case TableColumn::ActionType:
+			s = ActionTypeToString(info.ActionType);
+			break;
 	}
 	return s.GetLength();
 }
@@ -123,7 +136,7 @@ bool CWFPFilterTable::CompareItems(const WFPFilterInfo& s1, const WFPFilterInfo&
 	switch (col)
 	{
 		case 0:
-
+			return SortHelper::SortNumbers(s1.FilterId, s2.FilterId, asc);
 			break;
 		default:
 			break;
@@ -160,12 +173,17 @@ void CWFPFilterTable::Refresh() {
 		if (status == NO_ERROR &&
 			ppFilters && numEntries) {
 			for (UINT32 filterIndex = 0; filterIndex < numEntries; filterIndex++) {
-				
 				info.FilterId = ppFilters[filterIndex]->filterId;
 				info.Flags = ppFilters[filterIndex]->flags;
 				info.Name = ppFilters[filterIndex]->displayData.name == nullptr ? L"" : ppFilters[filterIndex]->displayData.name;
 				info.Description = ppFilters[filterIndex]->displayData.description == nullptr ? L"" :
 					ppFilters[filterIndex]->displayData.description;
+				info.IsUserMode = WFPHelpers::HlprFwpmLayerIsUserMode(&ppFilters[filterIndex]->layerKey);
+				FWPM_LAYER* layer = nullptr;
+				FwpmLayerGetByKey(engineHandle, &ppFilters[filterIndex]->layerKey, &layer);
+				info.LayerName = layer->displayData.name;
+				FwpmFreeMemory((void**)&layer);
+				info.ActionType = ppFilters[filterIndex]->action.type;
 				m_Table.data.info.push_back(std::move(info));
 			}
 
@@ -259,4 +277,15 @@ LRESULT CWFPFilterTable::OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 
 	return TRUE;
+}
+
+CString CWFPFilterTable::ActionTypeToString(UINT32 type) {
+	switch (type) {
+		case FWP_ACTION_BLOCK: return L"Block";
+		case FWP_ACTION_PERMIT: return L"Permit";
+		case FWP_ACTION_CALLOUT_TERMINATING: return L"Callout Terminating";
+		case FWP_ACTION_CALLOUT_INSPECTION: return L"Callout Inspection";
+		case FWP_ACTION_CALLOUT_UNKNOWN: return L"Callout Unknown";
+	}
+	return L"";
 }

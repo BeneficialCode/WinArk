@@ -170,16 +170,16 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 		return 0;
 	}
 
-
 	uintptr_t rva = (uintptr_t)_KiServiceTable - (uintptr_t)_kernelBase;
-
+	ULONGLONG imageBase = (ULONGLONG)_fileMapVA;
 #ifdef _WIN64
 	auto CheckAddressMethod = [&]()->bool {
 		auto pEntry = (char*)_fileMapVA + rva + 8 * number;
 		// 0xFFFFFFFF00000000
 		ULONGLONG value = *(ULONGLONG*)pEntry;
-		if ((value & 0xFFFFFFFF00000000) == (_imageBase & 0xFFFFFFFF00000000)
-			&& value > _imageBase) {
+
+		if ((value & 0xFFFFFFFF00000000) == (imageBase & 0xFFFFFFFF00000000)
+			&& value > imageBase) {
 			return false;
 		}
 		else {
@@ -195,7 +195,7 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 	else {
 		auto pEntry = (ULONGLONG*)((char*)_fileMapVA + rva);
 		ULONGLONG value = pEntry[number];
-		rva = value - _imageBase;
+		rva = value - imageBase;
 	}
 #else
 	auto pEntry = (char*)_fileMapVA + (DWORD)rva + sizeof(ULONG) * number;
