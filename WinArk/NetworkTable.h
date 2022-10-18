@@ -78,6 +78,8 @@ public:
 		return m_UpdateInterval;
 	}
 
+	u_short HostByteOrderToNetworkByteOrder(UINT port);
+
 	static PCWSTR ConnectionTypeToString(WinSys::ConnectionType type);
 	static PCWSTR ConnectionStateToString(MIB_TCP_STATE state);
 	static CString IPAddressToString(DWORD ip);

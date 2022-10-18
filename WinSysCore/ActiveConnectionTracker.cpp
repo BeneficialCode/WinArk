@@ -9,9 +9,8 @@ using namespace WinSys;
 int WinSys::ActiveConnectionTracker::EnumConnections() {
 	DWORD size = 1 << 16;
 	auto orgSize = size;
-	auto buffer = ::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-	if (!buffer)
-		return -1;
+	DWORD error = NO_ERROR;
+	void* buffer = nullptr;
 
 	bool first = _connections.empty();
 	_newConnections.clear();
@@ -26,30 +25,71 @@ int WinSys::ActiveConnectionTracker::EnumConnections() {
 	std::vector<std::shared_ptr<Connection>> local;
 	local.reserve(256);
 	if ((_trackedConnections & ConnectionType::Tcp) == ConnectionType::Tcp) {
-		if (::GetExtendedTcpTable(buffer, &size, FALSE, AF_INET, TCP_TABLE_OWNER_MODULE_ALL, 0) == NOERROR) {
+		do
+		{
+			buffer = ::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (!buffer)
+				return -1;
+			error = ::GetExtendedTcpTable(buffer, &size, FALSE, AF_INET, TCP_TABLE_OWNER_MODULE_ALL, 0);
+			if (error != NO_ERROR)
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+		} while (error == ERROR_INSUFFICIENT_BUFFER);
+
+		if (error == NOERROR) {
 			auto table = (PMIB_TCPTABLE_OWNER_MODULE)buffer;
 			AddTcp4Connections(table, map, local, first);
+			::VirtualFree(buffer,0,MEM_RELEASE);
 		}
 	}
 	if ((_trackedConnections & ConnectionType::TcpV6) == ConnectionType::TcpV6) {
 		size = orgSize;
-		if (::GetExtendedTcpTable(buffer, &size, FALSE, AF_INET6, TCP_TABLE_OWNER_MODULE_ALL, 0) == NOERROR) {
+		do
+		{
+			buffer = ::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (!buffer)
+				return -1;
+			error = ::GetExtendedTcpTable(buffer, &size, FALSE, AF_INET6, TCP_TABLE_OWNER_MODULE_ALL, 0);
+			if (error != NO_ERROR)
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+		} while (error == ERROR_INSUFFICIENT_BUFFER);
+		if (error == NOERROR) {
 			auto table = (PMIB_TCP6TABLE_OWNER_MODULE)buffer;
 			AddTcp6Connections(table, map, local, first);
+			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
 	}
 	if ((_trackedConnections & ConnectionType::Udp) == ConnectionType::Udp) {
 		size = orgSize;
-		if (::GetExtendedUdpTable(buffer, &size, FALSE, AF_INET, UDP_TABLE_OWNER_MODULE, 0) == NOERROR) {
+		do
+		{
+			buffer = ::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (!buffer)
+				return -1;
+			error = ::GetExtendedUdpTable(buffer, &size, FALSE, AF_INET, UDP_TABLE_OWNER_MODULE, 0);
+			if (error != NO_ERROR)
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+		} while (error == ERROR_INSUFFICIENT_BUFFER);
+		if (error == NOERROR) {
 			auto table = (PMIB_UDPTABLE_OWNER_MODULE)buffer;
 			AddUdp4Connections(table, map, local, first);
+			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
 	}
 	if ((_trackedConnections & ConnectionType::UdpV6) == ConnectionType::UdpV6) {
 		size = orgSize;
-		if (::GetExtendedUdpTable(buffer, &size, FALSE, AF_INET6, UDP_TABLE_OWNER_MODULE, 0) == NOERROR) {
+		do
+		{
+			buffer = ::VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (!buffer)
+				return -1;
+			error = ::GetExtendedUdpTable(buffer, &size, FALSE, AF_INET6, UDP_TABLE_OWNER_MODULE, 0);
+			if (error != NO_ERROR)
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+		} while (error == ERROR_INSUFFICIENT_BUFFER);
+		if (error == NOERROR) {
 			auto table = (PMIB_UDP6TABLE_OWNER_MODULE)buffer;
 			AddUdp6Connections(table, map, local, first);
+			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
 	}
 
@@ -61,7 +101,6 @@ int WinSys::ActiveConnectionTracker::EnumConnections() {
 	if (!first) {
 		_connections = std::move(local);
 	}
-	::VirtualFree(buffer, 0, MEM_RELEASE);
 	
 	return static_cast<int>(_connections.size());
 }
