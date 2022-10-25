@@ -68,7 +68,7 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 
 	wil::unique_schandle hService(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS, 
 		SERVICE_KERNEL_DRIVER,
-		SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+		SERVICE_DEMAND_START, // starting services on demand
 		SERVICE_ERROR_NORMAL, // the error is logged to the event log service
 		path, // the full path to the executable to run for the service
 		nullptr, nullptr, nullptr, nullptr, nullptr));
@@ -80,7 +80,7 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 			return false;
 		hService.reset(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS,
 			SERVICE_KERNEL_DRIVER,
-			SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+			SERVICE_DEMAND_START, // starting service on demand
 			SERVICE_ERROR_NORMAL, // the error is logged to the event log service
 			path, // the full path to the executable to run for the service
 			nullptr, nullptr, nullptr, nullptr, nullptr));
