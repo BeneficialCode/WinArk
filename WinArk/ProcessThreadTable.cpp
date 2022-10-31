@@ -3,6 +3,7 @@
 #include "FormatHelper.h"
 #include "Helpers.h"
 #include "ClipboardHelper.h"
+#include "SymbolHelper.h"
 
 
 LRESULT CProcessThreadTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -123,6 +124,14 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 	case ThreadColumn::Win32StartAddress:
 		if (info->Win32StartAddress != info->StartAddress)
 			s.Format(L"0x%p", info->Win32StartAddress);
+		if (info->ProcessId == 4) {
+			DWORD64 offset = 0;
+			auto symbol = SymbolHelper::GetSymbolFromAddress((DWORD64)info->Win32StartAddress);
+			if (symbol) {
+				std::string name = symbol->GetSymbolInfo()->Name;
+				s += Helpers::StringToWstring(name).c_str();
+			}
+		}
 		break;
 	case ThreadColumn::StackBase:
 		s.Format(L"0x%p", info->StackBase);

@@ -21,7 +21,7 @@ LRESULT CThreadDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		{20,"Teb",0},
 		{20,"WaitReason",0},
 		{20,"StartAddress",0},
-		{20,"Win32StartAddress",0},
+		{30,"Win32StartAddress",0},
 		{20,"StackBase",0},
 		{20,"StackLimit",0},
 		{30,"ContextSwitch",0},
