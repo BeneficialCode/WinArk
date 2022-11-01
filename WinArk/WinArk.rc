@@ -763,7 +763,7 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Run as Administrator",       ID_FILE_RUNASADMIN
+        MENUITEM "&Run as System",              ID_RUNAS_SYSTEM
         MENUITEM "E&xit",                       IDM_EXIT
     END
     POPUP "&Edit"

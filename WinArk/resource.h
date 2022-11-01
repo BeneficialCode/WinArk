@@ -362,13 +362,14 @@
 #define ID_WFPFILTER_REFRESH            32956
 #define ID_WFPFILTER_REMOV              32957
 #define ID_WFPFILTER_DELETE             32958
+#define ID_RUNAS_SYSTEM                 32959
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32959
+#define _APS_NEXT_COMMAND_VALUE         32960
 #define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

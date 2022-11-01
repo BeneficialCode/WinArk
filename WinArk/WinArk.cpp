@@ -215,15 +215,6 @@ LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
-#ifndef DEBUG
-	if (SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true)) {
-		if (!SecurityHelper::IsSysRun()) {
-			if (SecurityHelper::SysRun(L"runas"))
-				return 0;
-		}
-	}
-#endif
-
 	g_hSingleInstMutex = ::CreateMutex(nullptr, FALSE, L"WinArkSingleInstanceMutex");
 	if (!::wcsstr(lpstrCmdLine, L"runas")) {
 		if (g_hSingleInstMutex) {

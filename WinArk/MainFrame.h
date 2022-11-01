@@ -116,6 +116,8 @@ public:
 		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
 		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS,OnColors)
 		COMMAND_ID_HANDLER(ID_OPTIONS_FONT, OnOptionsFont)
+		COMMAND_ID_HANDLER(ID_RUNAS_SYSTEM,OnRunAsSystem)
+		COMMAND_ID_HANDLER(ID_FILE_CLOSE,OnFileExit)
 		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFindReplaceMessage)
 		COMMAND_ID_HANDLER(ID_EDIT_FIND, OnEditFind)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
@@ -138,6 +140,9 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRunAsSystem(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	LRESULT OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& handled);
 

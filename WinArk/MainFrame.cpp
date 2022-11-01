@@ -330,12 +330,13 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
-		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMIN, MF_BYCOMMAND);
+		
 		CString text;
 		GetWindowText(text);
 		CString append = L"  (Administrator)";
 		if (SecurityHelper::IsSysRun()) {
 			append = L"  (System)";
+			hMenu.GetSubMenu(0).DeleteMenu(ID_RUNAS_SYSTEM, MF_BYCOMMAND);
 		}
 		SetWindowText(text + append);
 	}
@@ -1037,6 +1038,22 @@ LRESULT CMainFrame::OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam
 	m_FindFlags = fr->Flags;
 
 	m_IView->DoFind(m_FindText, m_FindFlags);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnRunAsSystem(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true)) {
+		if (!SecurityHelper::IsSysRun()) {
+			if (SecurityHelper::SysRun(L"runas"))
+				SendMessage(WM_CLOSE);
+		}
+	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	PostMessage(WM_CLOSE);
 
 	return 0;
 }
