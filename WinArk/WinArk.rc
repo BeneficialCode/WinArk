@@ -764,7 +764,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Run as System",              ID_RUNAS_SYSTEM
-        MENUITEM "E&xit",                       IDM_EXIT
+        MENUITEM "E&xit",                       ID_EXIT
     END
     POPUP "&Edit"
     BEGIN
