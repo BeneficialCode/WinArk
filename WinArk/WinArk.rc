@@ -333,6 +333,13 @@ BEGIN
     PUSHBUTTON      "ÆôÓÃ¹ý¼ì²â",IDC_BYPASS,364,130,103,61
 END
 
+IDD_EAT_HOOK DIALOGEX 0, 0, 807, 280
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Inline Hook Scan"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -485,6 +492,14 @@ BEGIN
         TOPMARGIN, 6
         BOTTOMMARGIN, 354
     END
+
+    IDD_EAT_HOOK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 800
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 273
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -614,6 +629,11 @@ BEGIN
     0
 END
 
+IDD_EAT_HOOK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -636,6 +656,7 @@ BEGIN
             MENUITEM "Memory",                      ID_PROCESS_MEMORY
         END
         MENUITEM "Inline Hook Scan",            ID_PROCESS_INLINEHOOKSCAN
+        MENUITEM "EAT Hook Scan",               ID_PROCESS_EAT_HOOKSCAN
     END
     POPUP "listdir"
     BEGIN

@@ -4,6 +4,7 @@
 #include <atlstr.h>
 #include "PEParser.h"
 #include "CLRMetadataParser.h"
+#include <unordered_map>
 #pragma comment(lib,"imagehlp")
 
 
@@ -23,6 +24,11 @@ PEParser::PEParser(const wchar_t* path) :_path(path) {
 	if (IsValid() && IsManaged()) {
 
 	}
+}
+
+PEParser::PEParser(void* base) {
+	_address = reinterpret_cast<PUCHAR>(base);
+	CheckValidity();
 }
 
 HANDLE PEParser::GetFileHandle() {
@@ -116,7 +122,7 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 		return exports;
 
 	auto data = static_cast<IMAGE_EXPORT_DIRECTORY*>(GetAddress(dir->VirtualAddress));
-	auto count = data->NumberOfNames;
+	auto count = data->NumberOfFunctions;
 	exports.reserve(count);
 
 	auto names = (PBYTE)(data->AddressOfNames != 0 ? GetAddress(data->AddressOfNames) : nullptr);
@@ -125,27 +131,36 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 	char undecorated[1 << 10];
 	auto ordinalBase = data->Base;
 
-	for (DWORD i = 0; i < data->NumberOfNames; i++) {
+	std::unordered_map<uint32_t, std::string> functionNamesMap;
+	for (uint32_t idx = 0; idx < data->NumberOfNames; idx++) {
+		uint16_t ordinal;
+		ordinal = *(USHORT*)(ordinals + idx * 2) + (USHORT)ordinalBase;
+		uint32_t name;
+		auto offset = *(ULONG*)(names + idx * 4);
+		functionNamesMap[ordinal] = (PCSTR)GetAddress(offset);
+	}
+
+	for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
 		ExportedSymbol symbol;
-		symbol.Hint = i;
-		int ordinal = i;
-		if (ordinals) {
-			symbol.Ordinal = ordinal = *(USHORT*)(ordinals + i * 2) + (USHORT)ordinalBase;
+		int ordinal = i + (USHORT)ordinalBase;
+		symbol.Ordinal = ordinal;
+		bool hasName = false;
+		auto pos = functionNamesMap.find(ordinal);
+		if (pos != functionNamesMap.end()) {
+			hasName = true;
 		}
-		else {
-			symbol.Ordinal = 0xffff;
-		}
-		if (names) {
-			auto offset = *(ULONG*)(names + i * 4);
-			symbol.Name = (PCSTR)GetAddress(offset);
+		if (names && hasName) {
+			symbol.Name = pos->second;
 			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
 				symbol.UndecoratedName = undecorated;
 		}
-		auto address = *(functions + ordinal - ordinalBase);
+		DWORD address = *(functions + symbol.Ordinal - ordinalBase);
 		symbol.Address = address;
 		//auto offset = RvaToFileOffset(address);
-		if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
-			symbol.ForwardName = (PCSTR)GetAddress(address);
+		if (hasName) {
+			if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
+				symbol.ForwardName = (PCSTR)GetAddress(address);
+			}
 		}
 		exports.push_back(std::move(symbol));
 	}
@@ -362,4 +377,18 @@ void* PEParser::RVA2FA(unsigned rva) const {
 
 ULONGLONG PEParser::GetImageBase() const {
 	return IsPe64() ? GetOptionalHeader64().ImageBase : GetOptionalHeader32().ImageBase;
+}
+
+ULONG PEParser::GetEAT() const {
+	ULONG offset = 0;
+	if (!HasExports())
+		return 0;
+
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
+	if (dir == nullptr || dir->Size == 0)
+		return 0;
+
+	auto data = static_cast<IMAGE_EXPORT_DIRECTORY*>(GetMemAddress(dir->VirtualAddress));
+	ULONG eat = data->AddressOfFunctions;
+	return eat;
 }

@@ -1,18 +1,17 @@
 #pragma once
-#include "ProcessInlineHookTable.h"
+#include "resource.h"
+#include "ProcessEATHookTable.h"
 
-
-class CProcessInlineHookTable;
-class CInlineHookDlg :public CDialogImpl<CInlineHookDlg> {
+class CEATHookDlg :public CDialogImpl<CEATHookDlg> {
 public:
-	enum { IDD = IDD_INLINE_HOOK };
+	enum { IDD = IDD_EAT_HOOK };
 
-	CInlineHookDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px):m_pm(pm),m_px(px){}
+	CEATHookDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm(pm), m_px(px) {}
 
-	BEGIN_MSG_MAP_EX(CInlineHookDlg)
+	BEGIN_MSG_MAP_EX(CEATHookDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
-		MESSAGE_HANDLER(WM_CLOSE,OnClose)
+		MESSAGE_HANDLER(WM_CLOSE, OnClose)
 		MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
 		END_MSG_MAP()
 
@@ -22,7 +21,7 @@ public:
 	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
 
 private:
-	CProcessInlineHookTable* m_ProcInlineHookTable;
+	CProcessEATHookTable* m_ProcEATHookTable;
 	ProcessInfoEx& m_px;
 	const WinSys::ProcessManager& m_pm;
 };

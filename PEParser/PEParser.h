@@ -8,7 +8,6 @@ struct ExportedSymbol {
 	std::string ForwardName;
 	DWORD Address;
 	unsigned short Ordinal;
-	int Hint;
 };
 
 struct ImportedSymbol {
@@ -148,6 +147,7 @@ class PEParser final {
 public:
 	explicit PEParser(const wchar_t* path);
 	~PEParser();
+	PEParser(void* base);
 
 	bool IsValid() const;
 	bool IsPe64() const;
@@ -163,6 +163,8 @@ public:
 	void* GetBaseAddress() const;
 
 	ULONGLONG GetImageBase() const;
+
+	ULONG GetEAT() const;
 
 	CString GetSectionName(ULONG section) const;
 
