@@ -241,7 +241,7 @@
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
-    <ClCompile Include="ProcessEATHookDlg.cpp" />
+    <ClCompile Include="ProcessATHookDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
     <ClCompile Include="ColorBox.cpp" />
@@ -289,7 +289,7 @@
     <ClCompile Include="KernelRoutineDlg.cpp" />
     <ClCompile Include="KernelView.cpp" />
     <ClCompile Include="PiDDBCacheTable.cpp" />
-    <ClCompile Include="ProcessEATHookTable.cpp" />
+    <ClCompile Include="ProcessATHookTable.cpp" />
     <ClCompile Include="ProcessNameFilter.cpp" />
     <ClCompile Include="ProcessIdFilter.cpp" />
     <ClCompile Include="ProcessInlineHookDlg.cpp" />
@@ -389,7 +389,7 @@
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
-    <ClInclude Include="ProcessEATHookDlg.h" />
+    <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
     <ClInclude Include="ColorBox.h" />
@@ -441,7 +441,7 @@
     <ClInclude Include="KernelRoutineDlg.h" />
     <ClInclude Include="KernelView.h" />
     <ClInclude Include="PiDDBCacheTable.h" />
-    <ClInclude Include="ProcessEATHookTable.h" />
+    <ClInclude Include="ProcessATHookTable.h" />
     <ClInclude Include="ProcessIdFilter.h" />
     <ClInclude Include="ProcessInlineHookDlg.h" />
     <ClInclude Include="ProcessInlineHookTable.h" />

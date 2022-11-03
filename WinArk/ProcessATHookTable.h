@@ -1,26 +1,33 @@
 #pragma once
 #include "Table.h"
 #include <ProcessModuleTracker.h>
+#include <PEParser.h>
 
+enum class ATHookType {
+	IAT, EAT
+};
 
 struct EATHookInfo {
 	std::wstring Name;
 	ULONG_PTR Address;
 	ULONG_PTR TargetAddress;
 	std::wstring TargetModule;
+	ATHookType Type;
 };
 
-class CProcessEATHookTable :
+
+
+class CProcessATHookTable :
 	public CTable<EATHookInfo>,
-	public CWindowImpl<CProcessEATHookTable> {
+	public CWindowImpl<CProcessATHookTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CProcessEATHookTable(BarInfo& bars, TableInfo& table, DWORD pid, bool x64);
+	CProcessATHookTable(BarInfo& bars, TableInfo& table, DWORD pid, bool x64);
 	int ParseTableEntry(CString& s, char& mask, int& select, EATHookInfo& info, int column);
 	bool CompareItems(const EATHookInfo& s1, const EATHookInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(CProcessEATHookTable)
+	BEGIN_MSG_MAP(CProcessATHookTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -61,14 +68,29 @@ public:
 	void Refresh();
 
 	enum class Column {
-		HookObject, Address, TargetAddress, Module
+		HookObject, HookType, Address, TargetAddress, Module
 	};
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
+	CString TypeToString(ATHookType type);
+	void CheckEATHook(const std::shared_ptr<WinSys::ModuleInfo>& m);
+	void CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>& m);
+	std::shared_ptr<WinSys::ModuleInfo> GetModuleByName(std::wstring name);
 
+	ULONG_PTR GetExportedProcAddr(std::wstring libName,std::string name,bool isPe64);
+
+	std::string GetForwardName(std::wstring libName, std::string name, bool isPe64);
+
+	struct Library {
+		std::wstring Name;
+		void* Base;
+		bool isPe64;
+		std::vector<ExportedSymbol> Symbols;
+	};
 
 private:
 	WinSys::ProcessModuleTracker m_ModuleTracker;
 	DWORD m_Pid;
 	HANDLE m_hProcess;
 	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Modules;
+	std::vector<Library> _libraries;
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "resource.h"
-#include "ProcessEATHookTable.h"
+#include "ProcessATHookTable.h"
 
 class CEATHookDlg :public CDialogImpl<CEATHookDlg> {
 public:
@@ -21,7 +21,7 @@ public:
 	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
 
 private:
-	CProcessEATHookTable* m_ProcEATHookTable;
+	CProcessATHookTable* m_ProcEATHookTable;
 	ProcessInfoEx& m_px;
 	const WinSys::ProcessManager& m_pm;
 };

@@ -656,7 +656,7 @@ BEGIN
             MENUITEM "Memory",                      ID_PROCESS_MEMORY
         END
         MENUITEM "Inline Hook Scan",            ID_PROCESS_INLINEHOOKSCAN
-        MENUITEM "EAT Hook Scan",               ID_PROCESS_EAT_HOOKSCAN
+        MENUITEM "AT Hook Scan",                ID_ADDRESS_TABLE_HOOKSCAN
     END
     POPUP "listdir"
     BEGIN

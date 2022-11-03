@@ -9,7 +9,7 @@
 #include "ProcessHandleDlg.h"
 #include "ProcessMemoryDlg.h"
 #include "ProcessInlineHookDlg.h"
-#include "ProcessEATHookDlg.h"
+#include "ProcessATHookDlg.h"
 
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")

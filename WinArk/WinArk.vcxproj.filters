@@ -459,10 +459,10 @@
     <ClCompile Include="WFPFilterTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessEATHookTable.cpp">
+    <ClCompile Include="ProcessATHookTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessEATHookDlg.cpp">
+    <ClCompile Include="ProcessATHookDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -917,10 +917,10 @@
     <ClInclude Include="WFPFilterTable.h">
       <Filter>Table</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessEATHookTable.h">
+    <ClInclude Include="ProcessATHookTable.h">
       <Filter>Table</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessEATHookDlg.h">
+    <ClInclude Include="ProcessATHookDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>

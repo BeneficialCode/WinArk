@@ -18,6 +18,7 @@ struct ImportedSymbol {
 
 struct ImportedLibrary {
 	std::string Name;
+	DWORD IAT;
 	std::vector<ImportedSymbol> Symbols;
 };
 

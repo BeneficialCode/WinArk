@@ -62,7 +62,11 @@ int CProcessInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select
 			CStringA text;
 			if (symbol) {
 				auto sym = symbol->GetSymbolInfo();
-				text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
+				if (offset != 0) {
+					text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
+				}
+				else
+					text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
 				std::string details = text.GetString();
 				std::wstring wdetails = Helpers::StringToWstring(details);
 				s.Format(L"0x%p (%s)", info.Address, wdetails.c_str());
@@ -84,7 +88,11 @@ int CProcessInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select
 			CStringA text;
 			if (symbol) {
 				auto sym = symbol->GetSymbolInfo();
-				text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
+				if (offset != 0) {
+					text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
+				}
+				else
+					text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
 				std::string details = text.GetString();
 				std::wstring wdetails = Helpers::StringToWstring(details);
 				s.Format(L"0x%p (%s)", info.TargetAddress, wdetails.c_str());

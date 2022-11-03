@@ -91,7 +91,6 @@
 #define IDD_BYPASS                      275
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
-#define IDD_INLINE_HOOK1                276
 #define IDD_EAT_HOOK                    276
 #define IDR_POOLTAG                     277
 #define IDR_KERNEL_HOOK_CONTEXT         278
@@ -368,13 +367,15 @@
 #define ID_EXIT                         32960
 #define ID_PROCESS_EATHOOKSCAN          32961
 #define ID_PROCESS_EAT_HOOKSCAN         32962
+#define ID_PROCESS_AT_HOOKSCAN          32963
+#define ID_ADDRESS_TABLE_HOOKSCAN       32964
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32963
+#define _APS_NEXT_COMMAND_VALUE         32965
 #define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

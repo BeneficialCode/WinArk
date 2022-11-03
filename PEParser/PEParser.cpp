@@ -117,6 +117,8 @@ CString PEParser::GetSectionName(ULONG section) const {
 
 std::vector<ExportedSymbol> PEParser::GetExports() const {
 	std::vector<ExportedSymbol> exports;
+	if (!HasExports())
+		return exports;
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
 	if (dir == nullptr || dir->Size == 0)
 		return exports;
@@ -191,6 +193,7 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 
 		ImportedLibrary lib;
 		lib.Name = (PCSTR)libName;
+		lib.IAT = imports->FirstThunk;
 
 		for (;;) {
 			int ordinal = -1;

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ProcessEATHookDlg.h"
+#include "ProcessATHookDlg.h"
 
 LRESULT CEATHookDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	EndDialog(0);
@@ -9,6 +9,7 @@ LRESULT CEATHookDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 LRESULT CEATHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
 		{20,"挂钩对象",0},
+		{10,"钩子类型",0},
 		{52,"挂钩位置",0},
 		{52,"目标地址",0},
 		{260,"目标地址所属模块",0},
@@ -29,10 +30,10 @@ LRESULT CEATHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPara
 
 	DWORD pid = static_cast<DWORD>(lParam);
 	bool x64 = m_px.GetBitness() == 64 ? true : false;
-	m_ProcEATHookTable = new CProcessEATHookTable(info, table, pid, x64);
+	m_ProcEATHookTable = new CProcessATHookTable(info, table, pid, x64);
 	WCHAR proc[25];
 	_itow(pid, proc, 10);
-	std::wstring title = L"EAT Hook Process: pid = ";
+	std::wstring title = L"Address Table Hook Process: pid = ";
 	title += proc;
 	SetWindowText(title.c_str());
 	RECT rect;
