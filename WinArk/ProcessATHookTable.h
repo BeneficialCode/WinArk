@@ -2,6 +2,7 @@
 #include "Table.h"
 #include <ProcessModuleTracker.h>
 #include <PEParser.h>
+#include <ApiSets.h>
 
 enum class ATHookType {
 	IAT, EAT
@@ -76,9 +77,11 @@ public:
 	void CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>& m);
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByName(std::wstring name);
 
-	ULONG_PTR GetExportedProcAddr(std::wstring libName,std::string name,bool isPe64);
+	std::vector<ULONG_PTR> GetExportedProcAddr(std::wstring libName, std::string name, bool isPe64);
 
 	std::string GetForwardName(std::wstring libName, std::string name, bool isPe64);
+	
+	std::vector<std::wstring> GetApiSetHostName(std::wstring apiset);
 
 	struct Library {
 		std::wstring Name;
@@ -93,4 +96,6 @@ private:
 	HANDLE m_hProcess;
 	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Modules;
 	std::vector<Library> _libraries;
+	ApiSets m_ApiSets;
+	std::vector<ApiSetEntry> m_Entries;
 };
