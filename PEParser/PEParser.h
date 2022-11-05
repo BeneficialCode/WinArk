@@ -156,6 +156,7 @@ public:
 	bool IsManaged() const;
 	bool HasExports() const;
 	bool HasImports() const;
+	bool IsSystemFile() const;
 
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;

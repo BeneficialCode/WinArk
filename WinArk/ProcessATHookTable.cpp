@@ -307,8 +307,19 @@ std::vector<std::wstring> CProcessATHookTable::GetApiSetHostName(std::wstring ap
 
 void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>& m) {
 	PEParser parser(m->Path.c_str());
+	if (!parser.IsValid())
+		return;
 	if (!parser.HasImports())
 		return;
+
+	bool isSystemFile = parser.IsSystemFile();
+	if (isSystemFile)
+		return;
+
+	SubsystemType type  = parser.GetSubsystemType();
+	if (type == SubsystemType::Native) {
+		return;
+	}
 	std::vector<ImportedLibrary> libs = parser.GetImports();
 	for (const auto& lib : libs) {
 		void* iat = (byte*)m->Base + lib.IAT;
@@ -348,8 +359,6 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 					ULONG_PTR orgAddress = 0;
 					if (hosts.size() > 0) {
 						for (const auto& host : hosts) {
-							
-							
 							orgAddresses = GetExportedProcAddr(host, item.Name, isPe64);
 							if (orgAddresses.size() > 0 ) {
 								break;
@@ -358,6 +367,12 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 					}
 					else
 						orgAddresses = GetExportedProcAddr(wlibName, item.Name, isPe64);
+
+					auto it = wlibName.find(L"api-ms-win-core");
+					if (it != std::wstring::npos && hosts.size()<=0) {
+						index++;
+						continue;
+					}
 
 					bool isSame = false;
 					
@@ -394,13 +409,23 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 
 						bool hooked = true;
 						// KernelBase.dll SetLastError NTDLL.RtlSetLastWin32Error
-						// host 
+						int idx = 0;
+						int j = 0;
+
+						std::string orgLib;
+						std::string orgFuncName;
 						for (auto orgAddress : orgAddresses) {
 							auto orgSymbol = symbols.GetSymbolFromAddress(m_Pid, orgAddress, &offset);
 							auto orgSym = orgSymbol->GetSymbolInfo();
 							std::string orgSymName(orgSym->Name);
 							std::string host = orgSymbol->ModuleInfo.ModuleName;
 							host += ".dll";
+							if (host == lib.Name) {
+								idx = j;
+								orgLib = orgSymbol->ModuleInfo.ImageName;
+								orgFuncName = orgSymName;
+							}
+							j++;
 							std::wstring whost = Helpers::StringToWstring(host);
 							std::string orgForwardName = GetForwardName(whost, orgSymName, isPe64);
 							pos = orgForwardName.find(symName);
@@ -415,9 +440,30 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 							continue;
 						}
 
+						bool isForward = false;
+						std::wstring orgLibName = Helpers::StringToWstring(orgLib);
+						PEParser libParser(orgLibName.c_str());
+						std::vector<ExportedSymbol> exports = libParser.GetExports();
+						for (const auto& symbol : exports) {
+							if (symbol.ForwardName.length() > 0) {
+								if (symbol.Name == orgFuncName) {
+									pos = symbol.ForwardName.find(symName);
+									if (pos!=std::string::npos) {
+										isForward = true;
+									}
+								}
+							}
+						}
+
+						if (isForward) {
+							index++;
+							continue;
+						}
+
 						EATHookInfo info;
 						info.TargetAddress = address;
-						info.Address = orgAddresses[0];
+						if (orgAddresses.size() > 0)
+							info.Address = orgAddresses[idx];
 						info.Name = m->Name + L"_";
 						CString text;
 						ULONG_PTR iatAddress = (ULONG_PTR)iat + index * inc;
@@ -426,7 +472,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 						text.Format(L"0x%p", iatAddress);
 						std::wstring waddr = text.GetString();
 						wlibName += waddr;
-						info.Name += wlibName;
+						info.Name += wlibName + L"_" + Helpers::StringToWstring(item.Name);
 						info.Type = ATHookType::IAT;
 						auto m = GetModuleByAddress(info.TargetAddress);
 						if (m != nullptr) {

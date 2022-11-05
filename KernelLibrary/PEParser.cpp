@@ -42,6 +42,7 @@ void PEParser::CheckValidity() {
 			_valid = false;
 			return;
 		}
+		_ntHeader = ntHeader;
 		_fileHeader = &ntHeader->FileHeader;
 		_opt64 = &ntHeader->OptionalHeader;
 		_opt32 = (PIMAGE_OPTIONAL_HEADER32)_opt64;

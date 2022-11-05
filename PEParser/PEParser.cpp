@@ -97,6 +97,10 @@ const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
 	return IsPe64() ? &_opt64->DataDirectory[index] : &_opt32->DataDirectory[index];
 }
 
+bool PEParser::IsSystemFile() const {
+	return _ntHeader->FileHeader.Characteristics & IMAGE_FILE_SYSTEM;
+}
+
 const IMAGE_DOS_HEADER& PEParser::GetDosHeader() const {
 	return *_dosHeader;
 }
@@ -264,6 +268,7 @@ void PEParser::CheckValidity() {
 	}
 	else {
 		auto ntHeader = (PIMAGE_NT_HEADERS64)(_address + _dosHeader->e_lfanew);
+		_ntHeader = ntHeader;
 		_fileHeader = &ntHeader->FileHeader;
 		_opt64 = &ntHeader->OptionalHeader;
 		_opt32 = (PIMAGE_OPTIONAL_HEADER32)_opt64;
