@@ -1,35 +1,34 @@
 #pragma once
 #include "Table.h"
-#include "resource.h"
-#include "Interfaces.h"
+#include <ProcessModuleTracker.h>
+#include <PEParser.h>
+#include <ApiSets.h>
 
-
-enum class FilterType {
-	PreOperation,
-	PostOperation
+enum class ATHookType {
+	IAT, EAT
 };
 
-struct OperationCallbackInfo {
-	void* FilterHandle;
-	void* Routine;
-	ULONG Flags;
-	UCHAR MajorCode;
-	FilterType Type;
-	std::wstring Company;
-	std::string Module;
+struct EATHookInfo {
+	std::wstring Name;
+	ULONG_PTR Address;
+	ULONG_PTR TargetAddress;
+	std::wstring TargetModule;
+	ATHookType Type;
 };
 
-class COperationTable :
-	public CTable<OperationCallbackInfo>,
-	public CWindowImpl<COperationTable> {
+
+
+class CProcessATHookTable :
+	public CTable<EATHookInfo>,
+	public CWindowImpl<CProcessATHookTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	COperationTable(BarInfo& bars, TableInfo& table,std::wstring filterName);
-	int ParseTableEntry(CString& s, char& mask, int& select, OperationCallbackInfo& info, int column);
-	bool CompareItems(const OperationCallbackInfo& s1, const OperationCallbackInfo& s2, int col, bool asc);
+	CProcessATHookTable(BarInfo& bars, TableInfo& table, DWORD pid, bool x64);
+	int ParseTableEntry(CString& s, char& mask, int& select, EATHookInfo& info, int column);
+	bool CompareItems(const EATHookInfo& s1, const EATHookInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(COperationTable)
+	BEGIN_MSG_MAP(CProcessATHookTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -41,14 +40,12 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
-		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		//COMMAND_ID_HANDLER(ID_MINIFILTER_REFRESH, OnRefresh)
-		//COMMAND_ID_HANDLER(ID_MINIFILTER_REMOVE,OnRemove)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -69,21 +66,36 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-	//LRESULT OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	//LRESULT OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-
-
-	PCWSTR OperationTypeToString(UCHAR type);
-	CString FlagToString(DWORD flag);
-private:
-	enum class Column {
-		FilterHandle,MajorCode,OperationType,Flag,Address,CallbackType,Company,Module
-	};
-
 	void Refresh();
 
-	std::wstring GetSingleOperationInfo(OperationCallbackInfo& info);
-	std::wstring m_Name;
+	enum class Column {
+		HookObject, HookType, Address, TargetAddress, Module
+	};
+	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
+	CString TypeToString(ATHookType type);
+	void CheckEATHook(const std::shared_ptr<WinSys::ModuleInfo>& m);
+	void CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>& m);
+	std::shared_ptr<WinSys::ModuleInfo> GetModuleByName(std::wstring name);
+
+	std::vector<ULONG_PTR> GetExportedProcAddr(std::wstring libName, std::string name, bool isPe64);
+
+	std::string GetForwardName(std::wstring libName, std::string name, bool isPe64);
+	
+	std::vector<std::wstring> GetApiSetHostName(std::wstring apiset);
+
+	struct Library {
+		std::wstring Name;
+		void* Base;
+		bool isPe64;
+		std::vector<ExportedSymbol> Symbols;
+	};
+
+private:
+	WinSys::ProcessModuleTracker m_ModuleTracker;
+	DWORD m_Pid;
+	HANDLE m_hProcess;
+	std::vector<std::shared_ptr<WinSys::ModuleInfo>> m_Modules;
+	std::vector<Library> _libraries;
+	ApiSets m_ApiSets;
+	std::vector<ApiSetEntry> m_Entries;
 };

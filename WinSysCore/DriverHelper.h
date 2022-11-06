@@ -45,9 +45,13 @@ struct DriverHelper final {
 	static bool DisableDbgSys();
 	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
 	static bool EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo, SIZE_T size);
-	static bool EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size);
+	static bool EnumMiniFilterOperations(MiniFilterData* pData, SIZE_T dataSize,OperationInfo* pInfo, SIZE_T size);
+	static bool RemoveMiniFilter(MiniFilterData* pData, SIZE_T dataSize);
 
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
+
+	static bool Bypass(DWORD flag);
+	static bool Unbypass(DWORD flag);
 private:
 	static bool OpenDevice();
 

@@ -4,6 +4,8 @@
 #include "ClipboardHelper.h"
 #include <fltUser.h>
 #include "MiniFilterDlg.h"
+#include "DriverHelper.h"
+#include "SymbolHelper.h"
 
 #pragma comment(lib,"FltLib")
 
@@ -253,5 +255,36 @@ LRESULT CMiniFilterTable::OnCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	CMiniFilterDlg dlg(info.FilterName);
 	dlg.DoModal(m_hWnd);
 
+	return TRUE;
+}
+
+LRESULT CMiniFilterTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	auto len = info.FilterName.length();
+	DWORD size = len * sizeof(WCHAR) + sizeof(MiniFilterData);
+
+	auto pData = std::make_unique<BYTE[]>(size);
+	if (!pData)
+		return FALSE;
+
+	ULONG offset = SymbolHelper::GetFltmgrStructMemberOffset("_FLT_OBJECT", "RundownRef");
+
+	auto data = reinterpret_cast<MiniFilterData*>(pData.get());
+	data->OperationsOffset = 0;
+	data->RundownRefOffset = offset;
+	data->Length = len;
+	::wcscpy_s(data->Name, len + 1, info.FilterName.c_str());
+
+	bool ok = DriverHelper::RemoveMiniFilter(data, size);
+	if (!ok) {
+		AtlMessageBox(m_hWnd, L"ÒÆ³ýÊ§°Ü!", L"Error", MB_ICONERROR);
+	}
+	if (ok) {
+		Refresh();
+		Invalidate();
+	}
 	return TRUE;
 }

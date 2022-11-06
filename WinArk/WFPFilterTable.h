@@ -1,35 +1,28 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
-#include "Interfaces.h"
 
-
-enum class FilterType {
-	PreOperation,
-	PostOperation
+struct WFPFilterInfo {
+	std::wstring Name;
+	std::wstring Description;
+	UINT32 Flags;
+	UINT64 FilterId;
+	bool IsUserMode;
+	std::wstring LayerName;
+	UINT32 ActionType;
 };
 
-struct OperationCallbackInfo {
-	void* FilterHandle;
-	void* Routine;
-	ULONG Flags;
-	UCHAR MajorCode;
-	FilterType Type;
-	std::wstring Company;
-	std::string Module;
-};
-
-class COperationTable :
-	public CTable<OperationCallbackInfo>,
-	public CWindowImpl<COperationTable> {
+class CWFPFilterTable :
+	public CTable<WFPFilterInfo>,
+	public CWindowImpl<CWFPFilterTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	COperationTable(BarInfo& bars, TableInfo& table,std::wstring filterName);
-	int ParseTableEntry(CString& s, char& mask, int& select, OperationCallbackInfo& info, int column);
-	bool CompareItems(const OperationCallbackInfo& s1, const OperationCallbackInfo& s2, int col, bool asc);
+	CWFPFilterTable(BarInfo& bars, TableInfo& table);
+	int ParseTableEntry(CString& s, char& mask, int& select, WFPFilterInfo& info, int column);
+	bool CompareItems(const WFPFilterInfo& s1, const WFPFilterInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(COperationTable)
+	BEGIN_MSG_MAP(CMiniFilterTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -47,8 +40,8 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		//COMMAND_ID_HANDLER(ID_MINIFILTER_REFRESH, OnRefresh)
-		//COMMAND_ID_HANDLER(ID_MINIFILTER_REMOVE,OnRemove)
+		COMMAND_ID_HANDLER(ID_WFPFILTER_REFRESH, OnRefresh)
+		COMMAND_ID_HANDLER(ID_WFPFILTER_DELETE,OnDelete)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -72,18 +65,17 @@ public:
 	//LRESULT OnPiDDBCacheCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	//LRESULT OnPiDDBCacheExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
-
-	PCWSTR OperationTypeToString(UCHAR type);
-	CString FlagToString(DWORD flag);
+	CString FlagToString(UINT32 flags);
+	CString ActionTypeToString(UINT32 type);
 private:
-	enum class Column {
-		FilterHandle,MajorCode,OperationType,Flag,Address,CallbackType,Company,Module
+	enum class TableColumn {
+		FilterId,Mode,Flags, ActionType, LayerName,Name,Description
 	};
 
 	void Refresh();
 
-	std::wstring GetSingleOperationInfo(OperationCallbackInfo& info);
-	std::wstring m_Name;
+	std::wstring GetSingleWFPInfo(WFPFilterInfo& info);
 };

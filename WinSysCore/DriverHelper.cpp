@@ -68,7 +68,7 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 
 	wil::unique_schandle hService(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS, 
 		SERVICE_KERNEL_DRIVER,
-		SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+		SERVICE_DEMAND_START, // starting services on demand
 		SERVICE_ERROR_NORMAL, // the error is logged to the event log service
 		path, // the full path to the executable to run for the service
 		nullptr, nullptr, nullptr, nullptr, nullptr));
@@ -80,7 +80,7 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 			return false;
 		hService.reset(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS,
 			SERVICE_KERNEL_DRIVER,
-			SERVICE_AUTO_START, // driver is loaded automatically by the SCM when Windows subsystem is available
+			SERVICE_DEMAND_START, // starting service on demand
 			SERVICE_ERROR_NORMAL, // the error is logged to the event log service
 			path, // the full path to the executable to run for the service
 			nullptr, nullptr, nullptr, nullptr, nullptr));
@@ -555,11 +555,38 @@ bool DriverHelper::DisableDbgSys() {
 		nullptr, 0, &bytes, nullptr);
 }
 
-bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo, SIZE_T size) {
+bool DriverHelper::EnumMiniFilterOperations(MiniFilterData* pData,SIZE_T dataSize, OperationInfo* pInfo, SIZE_T size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, sizeof(KernelTimerData),
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS, pData, dataSize,
 		pInfo, size, &bytes, nullptr);
+}
+
+bool DriverHelper::RemoveMiniFilter(MiniFilterData* pData, SIZE_T dataSize) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_REMOVE_MINIFILTER, pData, dataSize,
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::Bypass(DWORD flag) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_BYPASS_DETECT, &flag, sizeof(flag),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::Unbypass(DWORD flag) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_UNBYPASS_DETECT, &flag, sizeof(flag),
+		nullptr, 0, &bytes, nullptr);
 }

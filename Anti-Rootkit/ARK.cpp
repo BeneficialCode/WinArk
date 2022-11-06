@@ -15,6 +15,7 @@
 #include "..\KernelLibrary\kDbgUtil.h"
 #include "..\KernelLibrary\KernelTimer.h"
 #include "..\KernelLibrary\IoTimer.h"
+#include "..\KernelLibrary\BypassAntiKernelDbg.h"
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -641,6 +642,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			
 			EnumSystemNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+
 			status = STATUS_SUCCESS;
 			len = dic.OutputBufferLength;
 			break;
@@ -1273,6 +1275,54 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
 			status = EnumMiniFilterOperations(pData, (OperationInfo*)Irp->AssociatedIrp.SystemBuffer);
 			len = dic.OutputBufferLength;
+			break;
+		}
+
+		case IOCTL_ARK_BYPASS_DETECT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (flag & BYPASS_KERNEL_DEBUGGER) {
+				status = BypassAntiKernelDbg::Bypass();
+			}
+			break;
+		}
+		case IOCTL_ARK_UNBYPASS_DETECT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (flag & BYPASS_KERNEL_DEBUGGER) {
+				status = BypassAntiKernelDbg::Unbypass();
+			}
+			break;
+		}
+
+		case IOCTL_ARK_REMOVE_MINIFILTER:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(MiniFilterData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
+			status = RemoveMiniFilter(pData);
 			break;
 		}
 	}

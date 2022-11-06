@@ -345,10 +345,10 @@ ULONG DetourIsCodeFiller(PUCHAR pCode) {
 struct _DETOUR_TRAMPOLINE {
 	// An X64 instuction can be 15 bytes long.
 	// In practice 11 seems to be the limit.
-	UCHAR rbCode[30];		// target code + jmp to pRemain
+	UCHAR rbCode[0x30];		// target code + jmp to pRemain
 	UCHAR cbCode;			// size of moved target code
 	UCHAR cbCodeBreak;		// padding to make debugging easier
-	UCHAR rbRestore[30];	// original target code.
+	UCHAR rbRestore[0x30];	// original target code.
 	UCHAR cbRestore;		// size of original code.
 	UCHAR cbRestoreBreak;	// padding to make debugging easier
 	_DETOUR_ALIGN rAlign[8];// instruction alignment array.
@@ -357,7 +357,7 @@ struct _DETOUR_TRAMPOLINE {
 	UCHAR rbCodeIn[8];		// jmp [pDetour]
 };
 
-C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 96);
+C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 136);
 
 enum {
 	SIZE_OF_JUMP_CODE = 14,
@@ -620,15 +620,6 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 	return nullptr;
 }
 
-static void DetourFreeTrampoline(PDETOUR_TRAMPOLINE pTrampoline) {
-	PDETOUR_REGION pRegion = (PDETOUR_REGION)
-		((ULONG_PTR)pTrampoline & ~(ULONG_PTR)0xffff);
-
-	memset(pTrampoline, 0, sizeof(*pTrampoline));
-	pTrampoline->pRemain = (PUCHAR)pRegion->pFree;
-	pRegion->pFree = pTrampoline;
-}
-
 static bool DetourIsRegionEmpty(PDETOUR_REGION pRegion) {
 	// Stop if the region isn't a region (this would be bad).
 	if (pRegion->Signature != DETOUR_REGION_SIGNATURE) {
@@ -786,7 +777,6 @@ NTSTATUS NTAPI DetourTransactionCommitEx() {
 	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
 		// We don't care if this fails, because the code is still accessible
 		if (o->fIsRemove && o->pTrampoline) {
-			DetourFreeTrampoline(o->pTrampoline);
 			o->pTrampoline = nullptr;
 			freed = true;
 		}
@@ -883,7 +873,6 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 		DbgBreakPoint();
 	stop:
 		if (pTrampoline != nullptr) {
-			DetourFreeTrampoline(pTrampoline);
 			pTrampoline = nullptr;
 			if (ppRealTrampoline != nullptr) {
 				*ppRealTrampoline = nullptr;

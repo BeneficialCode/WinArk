@@ -239,7 +239,11 @@ void CMainFrame::InitDriverInterface() {
 	if (!DriverHelper::IsDriverLoaded()) {
 		if (!SecurityHelper::IsRunningElevated()) {
 			if (AtlMessageBox(nullptr, L"Kernel Driver not loaded. Some functionality will not be available. Install?", IDS_TITLE, MB_YESNO | MB_ICONQUESTION) == IDYES) {
-				if (!SecurityHelper::RunElevated(L"install", false)) {
+				if (SecurityHelper::IsSysRun()) {
+					if(!SecurityHelper::SysRun(L"install"))
+						AtlMessageBox(*this, L"Error running driver installer", IDS_TITLE, MB_ICONERROR);
+				}
+				else if (!SecurityHelper::RunElevated(L"install", false)) {
 					AtlMessageBox(*this, L"Error running driver installer", IDS_TITLE, MB_ICONERROR);
 				}
 			}
@@ -261,7 +265,12 @@ void CMainFrame::InitDriverInterface() {
 				}
 				else {
 					DriverHelper::CloseDevice();
-					SecurityHelper::RunElevated(L"update", false);
+					if (SecurityHelper::IsSysRun()) {
+						if (!SecurityHelper::SysRun(L"update"))
+							AtlMessageBox(*this, L"Error update driver service", IDS_TITLE, MB_ICONERROR);
+					}
+					else
+						SecurityHelper::RunElevated(L"update", false);
 				}
 			}
 		}
@@ -309,6 +318,11 @@ void CMainFrame::InitConfigView() {
 	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
 }
 
+void CMainFrame::InitBypassDectectView() {
+	HWND hWnd = m_BypassView.Create(m_hWnd, rcDefault);
+	m_hwndArray[static_cast<int>(TabColumn::BypassDectect)] = m_BypassView.m_hWnd;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	LoadSettings();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
@@ -316,10 +330,15 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
-		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMIN, MF_BYCOMMAND);
+		
 		CString text;
 		GetWindowText(text);
-		SetWindowText(text + L"  (Administrator)");
+		CString append = L"  (Administrator)";
+		if (SecurityHelper::IsSysRun()) {
+			append = L"  (System)";
+			hMenu.GetSubMenu(0).DeleteMenu(ID_RUNAS_SYSTEM, MF_BYCOMMAND);
+		}
+		SetWindowText(text + append);
 	}
 
 	UIAddMenu(hMenu);
@@ -376,7 +395,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"服务",
 		L"配置",
 		L"事件追踪",
-		L"Logon Sessions"
+		L"Logon Sessions",
+		L"检测对抗"
 	};
 
 	int i = 0;
@@ -410,6 +430,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddIdleHandler(this);
 
 	InitDriverInterface();
+
 	InitProcessTable();
 	InitNetworkTable();
 	InitKernelModuleTable();
@@ -424,6 +445,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitConfigView();
 	InitEtwView();
 	InitLogonSessionsView();
+	InitBypassDectectView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -520,6 +542,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::LogonSession:
 			m_pLogonSessionView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::BypassDectect:
+			m_BypassView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -1013,6 +1038,22 @@ LRESULT CMainFrame::OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam
 	m_FindFlags = fr->Flags;
 
 	m_IView->DoFind(m_FindText, m_FindFlags);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnRunAsSystem(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true)) {
+		if (!SecurityHelper::IsSysRun()) {
+			if (SecurityHelper::SysRun(L"runas"))
+				SendMessage(WM_CLOSE);
+		}
+	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	PostMessage(WM_CLOSE);
 
 	return 0;
 }

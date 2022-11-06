@@ -8,7 +8,6 @@ struct ExportedSymbol {
 	std::string ForwardName;
 	DWORD Address;
 	unsigned short Ordinal;
-	int Hint;
 };
 
 struct ImportedSymbol {
@@ -19,6 +18,7 @@ struct ImportedSymbol {
 
 struct ImportedLibrary {
 	std::string Name;
+	DWORD IAT;
 	std::vector<ImportedSymbol> Symbols;
 };
 
@@ -148,6 +148,7 @@ class PEParser final {
 public:
 	explicit PEParser(const wchar_t* path);
 	~PEParser();
+	PEParser(void* base);
 
 	bool IsValid() const;
 	bool IsPe64() const;
@@ -155,6 +156,7 @@ public:
 	bool IsManaged() const;
 	bool HasExports() const;
 	bool HasImports() const;
+	bool IsSystemFile() const;
 
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
@@ -163,6 +165,8 @@ public:
 	void* GetBaseAddress() const;
 
 	ULONGLONG GetImageBase() const;
+
+	ULONG GetEAT() const;
 
 	CString GetSectionName(ULONG section) const;
 

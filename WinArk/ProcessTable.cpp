@@ -9,6 +9,7 @@
 #include "ProcessHandleDlg.h"
 #include "ProcessMemoryDlg.h"
 #include "ProcessInlineHookDlg.h"
+#include "ProcessATHookDlg.h"
 
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")
@@ -400,6 +401,23 @@ LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*
 	}
 
 	CInlineHookDlg dlg(m_ProcMgr,px);
+	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
+
+	return 0;
+}
+
+LRESULT CProcessTable::OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& process = m_Table.data.info[selected];
+
+	auto& px = GetProcessInfoEx(process.get());
+	if (process->Id == 0 || process->Id == 4) {
+		AtlMessageBox(*this, L"Only support user mode process now :)", IDS_TITLE, MB_ICONINFORMATION);
+		return 0;
+	}
+
+	CEATHookDlg dlg(m_ProcMgr, px);
 	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
 
 	return 0;

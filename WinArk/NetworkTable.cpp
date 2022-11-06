@@ -5,6 +5,8 @@
 
 using namespace WinSys;
 
+#pragma comment(lib,"Ws2_32")
+
 LRESULT CNetwrokTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	return 0;
 }
@@ -252,6 +254,10 @@ CNetwrokTable::CNetwrokTable(BarInfo& bars, TableInfo& table)
 	DoRefresh();
 }
 
+u_short CNetwrokTable::HostByteOrderToNetworkByteOrder(UINT port) {
+	return htons((WORD)port);
+}
+
 int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::Connection>& info, int column) {
 	switch (column) {
 		case 0:
@@ -275,7 +281,7 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 				IPAddressToString(info->LocalAddressV6) : IPAddressToString(info->LocalAddress);
 			break;
 		case 5:
-			s.Format(L"%d", info->LocalPort);
+			s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->LocalPort));
 			break;
 		case 6:
 			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
@@ -287,7 +293,7 @@ int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
 				break;
 			}
-			s.Format(L"%d", info->RemotePort);
+			s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->RemotePort));
 			break;
 		case 8:
 			if (info->TimeStamp)
@@ -311,9 +317,20 @@ bool CNetwrokTable::CompareItems(const std::shared_ptr<WinSys::Connection>& c1, 
 		case 2: return SortHelper::SortStrings(ConnectionTypeToString(c1->Type), ConnectionTypeToString(c2->Type),asc);
 		case 3: return SortHelper::SortNumbers(c1->State, c2->State,asc);
 		case 4: return SortHelper::SortNumbers(SwapBytes(c1->LocalAddress), SwapBytes(c2->LocalAddress),asc);
-		case 5: return SortHelper::SortNumbers(c1->LocalPort, c2->LocalPort,asc);
+		case 5:
+		{
+			auto port1 = HostByteOrderToNetworkByteOrder(c1->LocalPort);
+			auto port2 = HostByteOrderToNetworkByteOrder(c2->LocalPort);
+			return SortHelper::SortNumbers(port1, port2, asc);
+		}
 		case 6: return SortHelper::SortNumbers(SwapBytes(c1->RemoteAddress), SwapBytes(c2->RemoteAddress),asc);
-		case 7: return SortHelper::SortNumbers(c1->RemotePort, c2->RemotePort, asc);
+
+		case 7: 
+		{
+			auto port1 = HostByteOrderToNetworkByteOrder(c1->RemotePort);
+			auto port2 = HostByteOrderToNetworkByteOrder(c2->RemotePort);
+			return SortHelper::SortNumbers(port1, port2, asc);
+		}
 		case 8: return SortHelper::SortNumbers(c1->TimeStamp, c2->TimeStamp, asc);
 		case 9: return SortHelper::SortStrings(c1->ModuleName, c2->ModuleName, asc);
 		default:

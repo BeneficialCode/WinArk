@@ -39,6 +39,7 @@ public:
 		COMMAND_ID_HANDLER(ID_PROCESS_HANDLES,OnProcessHandles)
 		COMMAND_ID_HANDLER(ID_PROCESS_MEMORY,OnProcessMemory)
 		COMMAND_ID_HANDLER(ID_PROCESS_INLINEHOOKSCAN,OnProcessInlineHookScan)
+		COMMAND_ID_HANDLER(ID_ADDRESS_TABLE_HOOKSCAN,OnProcessEATHookScan)
 	END_MSG_MAP()
 
 	CProcessTable(BarInfo& bars,TableInfo& table);
@@ -78,6 +79,8 @@ public:
 	LRESULT OnProcessMemory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 
 	int GetRowImage(HWND, int row) const;

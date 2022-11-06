@@ -21,6 +21,7 @@
 #include "TraceManager.h"
 #include "QuickFindDlg.h"
 #include "LogonSessionsView.h"
+#include "BypassDlg.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -28,7 +29,8 @@ enum class TabColumn :int {
 	Process, KernelModule, 
 	Kernel, 
 	KernelHook,
-	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession
+	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession,
+	BypassDectect,
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -96,6 +98,7 @@ public:
 	void InitConfigView();
 	void InitEtwView();
 	void InitLogonSessionsView();
+	void InitBypassDectectView();
 
 	void LoadSettings(PCWSTR filename = nullptr);
 	void SaveSettings(PCWSTR filename = nullptr);
@@ -113,6 +116,8 @@ public:
 		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
 		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS,OnColors)
 		COMMAND_ID_HANDLER(ID_OPTIONS_FONT, OnOptionsFont)
+		COMMAND_ID_HANDLER(ID_RUNAS_SYSTEM,OnRunAsSystem)
+		COMMAND_ID_HANDLER(ID_EXIT,OnFileExit)
 		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFindReplaceMessage)
 		COMMAND_ID_HANDLER(ID_EDIT_FIND, OnEditFind)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
@@ -135,6 +140,9 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRunAsSystem(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	LRESULT OnFindReplaceMessage(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& handled);
 
@@ -177,6 +185,7 @@ private:
 	CKernelView* m_KernelView{ nullptr };
 
 	CSystemConfigDlg m_SysConfigView;
+	CBypassDlg m_BypassView;
 
 	CEtwView* m_pEtwView{ nullptr };
 	TraceManager m_tm;

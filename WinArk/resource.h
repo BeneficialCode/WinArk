@@ -88,8 +88,10 @@
 #define IDR_BIN5                        269
 #define IDD_COLORS                      272
 #define IDD_GOTOKEY                     274
+#define IDD_BYPASS                      275
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
+#define IDD_EAT_HOOK                    276
 #define IDR_POOLTAG                     277
 #define IDR_KERNEL_HOOK_CONTEXT         278
 #define IDC_CONFIG_LIST                 1000
@@ -196,6 +198,8 @@
 #define IDC_AUX_COLOR                   1088
 #define IDC_TEXT_COLOR8                 1089
 #define IDC_CONDBK_COLOR                1089
+#define IDC_BYPASS_KDBG                 1094
+#define IDC_BYPASS                      1095
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -355,14 +359,24 @@
 #define ID_SERVICE_UNINSTALL            32952
 #define ID_SERVICE_                     32953
 #define ID_SERVICE_PROPERTIES           32954
+#define ID_MINIFILTER_REMOVE            32955
+#define ID_WFPFILTER_REFRESH            32956
+#define ID_WFPFILTER_REMOV              32957
+#define ID_WFPFILTER_DELETE             32958
+#define ID_RUNAS_SYSTEM                 32959
+#define ID_EXIT                         32960
+#define ID_PROCESS_EATHOOKSCAN          32961
+#define ID_PROCESS_EAT_HOOKSCAN         32962
+#define ID_PROCESS_AT_HOOKSCAN          32963
+#define ID_ADDRESS_TABLE_HOOKSCAN       32964
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32955
-#define _APS_NEXT_CONTROL_VALUE         1093
+#define _APS_NEXT_COMMAND_VALUE         32965
+#define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

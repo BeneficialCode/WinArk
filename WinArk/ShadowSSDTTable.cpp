@@ -151,19 +151,17 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 		return 0;
 
 	uintptr_t rva = (uintptr_t)_serviceTableBase - (uintptr_t)_win32kBase;
-
+	ULONGLONG imageBase = (ULONGLONG)_fileMapVA;
 #ifdef _WIN64
 	auto CheckAddressMethod = [&]()->bool {
 		auto pEntry = (char*)_fileMapVA + rva + 8 * number;
-		// 0xFFFFFFFF00000000
 		ULONGLONG value = *(ULONGLONG*)pEntry;
-		if ((value & 0xFFFFFFFF00000000) == (_imageBase & 0xFFFFFFFF00000000)
-			&& value > _imageBase) {
-			return false;
-		}
-		else {
+		uintptr_t v1 = value - _imageBase;
+		uintptr_t v2 = value - imageBase;
+		if (v1 > DWORD_MAX && v2 > DWORD_MAX) {
 			return true;
 		}
+		return false;
 	};
 	static bool use4bytes = CheckAddressMethod();
 	if (use4bytes) {
@@ -174,7 +172,12 @@ ULONG_PTR CShadowSSDTHookTable::GetOrignalAddress(DWORD number) {
 	else {
 		auto pEntry = (ULONGLONG*)((char*)_fileMapVA + rva);
 		ULONGLONG value = pEntry[number];
-		rva = value - _imageBase;
+		uintptr_t v1 = value - _imageBase;
+		uintptr_t v2 = value - imageBase;
+		if (v1 < DWORD_MAX)
+			rva = v1;
+		else
+			rva = v2;
 	}
 #else
 	auto pEntry = (char*)_fileMapVA + (DWORD)rva + sizeof(ULONG) * number;

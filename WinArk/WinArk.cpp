@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <Helpers.h>
 #include "SymbolHelper.h"
+#include "SecurityHelper.h"
 
 CAppModule _Module;
 HWND _hMainWnd;
@@ -215,10 +216,12 @@ LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	g_hSingleInstMutex = ::CreateMutex(nullptr, FALSE, L"WinArkSingleInstanceMutex");
-	if (g_hSingleInstMutex) {
-		if (::GetLastError() == ERROR_ALREADY_EXISTS) {
-			MessageBox(nullptr, L"ÇëÎðÖØ¸´Æô¶¯!!!", L"Error", MB_ICONERROR);
-			return -1;
+	if (!::wcsstr(lpstrCmdLine, L"runas")) {
+		if (g_hSingleInstMutex) {
+			if (::GetLastError() == ERROR_ALREADY_EXISTS) {
+				MessageBox(nullptr, L"ÇëÎðÖØ¸´Æô¶¯!!!", L"Error", MB_ICONERROR);
+				return -1;
+			}
 		}
 	}
 	HRESULT hRes = ::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);

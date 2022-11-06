@@ -172,6 +172,7 @@ struct IoTimerInfo {
 struct MiniFilterData {
 	ULONG Length;
 	ULONG OperationsOffset;
+	ULONG RundownRefOffset;
 	WCHAR Name[1];
 };
 

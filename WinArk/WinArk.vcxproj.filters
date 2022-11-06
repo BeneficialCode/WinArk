@@ -453,6 +453,18 @@
     <ClCompile Include="LogonSessionsView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="BypassDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="WFPFilterTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessATHookTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessATHookDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -898,6 +910,18 @@
     </ClInclude>
     <ClInclude Include="LogonSessionsView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="BypassDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="WFPFilterTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessATHookTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessATHookDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

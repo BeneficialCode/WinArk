@@ -239,7 +239,9 @@
     <ClCompile Include="BigPoolView.cpp" />
     <ClCompile Include="BinaryEventDataSerializer.cpp" />
     <ClCompile Include="BinaryValueDlg.cpp" />
+    <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
+    <ClCompile Include="ProcessATHookDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
     <ClCompile Include="ColorBox.cpp" />
@@ -287,6 +289,7 @@
     <ClCompile Include="KernelRoutineDlg.cpp" />
     <ClCompile Include="KernelView.cpp" />
     <ClCompile Include="PiDDBCacheTable.cpp" />
+    <ClCompile Include="ProcessATHookTable.cpp" />
     <ClCompile Include="ProcessNameFilter.cpp" />
     <ClCompile Include="ProcessIdFilter.cpp" />
     <ClCompile Include="ProcessInlineHookDlg.cpp" />
@@ -369,6 +372,7 @@
     <ClCompile Include="TreeHelper.cpp" />
     <ClCompile Include="UnloadedDriverTable.cpp" />
     <ClCompile Include="View.cpp" />
+    <ClCompile Include="WFPFilterTable.cpp" />
     <ClCompile Include="WinArk.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
     <ClCompile Include="WindowsView.cpp" />
@@ -383,7 +387,9 @@
     <ClInclude Include="BigPoolView.h" />
     <ClInclude Include="BinaryEventDataSerializer.h" />
     <ClInclude Include="BinaryValueDlg.h" />
+    <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
+    <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />
     <ClInclude Include="ColorBox.h" />
@@ -435,6 +441,7 @@
     <ClInclude Include="KernelRoutineDlg.h" />
     <ClInclude Include="KernelView.h" />
     <ClInclude Include="PiDDBCacheTable.h" />
+    <ClInclude Include="ProcessATHookTable.h" />
     <ClInclude Include="ProcessIdFilter.h" />
     <ClInclude Include="ProcessInlineHookDlg.h" />
     <ClInclude Include="ProcessInlineHookTable.h" />
@@ -520,6 +527,7 @@
     <ClInclude Include="View.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="VirtualListView.h" />
+    <ClInclude Include="WFPFilterTable.h" />
     <ClInclude Include="WindowHelper.h" />
     <ClInclude Include="WindowsView.h" />
     <ClInclude Include="WinStationObjectType.h" />

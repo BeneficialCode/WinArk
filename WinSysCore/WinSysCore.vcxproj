@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActiveConnectionTracker.cpp" />
+    <ClCompile Include="ApiSets.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
     <ClCompile Include="EventData.cpp" />
@@ -184,9 +185,11 @@
     <ClCompile Include="ThreadInfoEx.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="TraceManager.cpp" />
+    <ClCompile Include="WFPHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveConnectionTracker.h" />
+    <ClInclude Include="ApiSets.h" />
     <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="DriverHelper.h" />
     <ClInclude Include="EventData.h" />
@@ -217,6 +220,7 @@
     <ClInclude Include="ThreadInfoEx.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="TraceManager.h" />
+    <ClInclude Include="WFPHelpers.h" />
     <ClInclude Include="WinSysCore.h" />
   </ItemGroup>
   <ItemGroup>
