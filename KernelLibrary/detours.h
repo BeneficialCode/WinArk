@@ -110,4 +110,4 @@ NTSTATUS NTAPI DetourDetach(_Inout_ PVOID* ppPointer,
 
 using PZwProtectVirtualMemory = NTSTATUS(NTAPI*)(HANDLE, PVOID*, PULONG, ULONG, PULONG);
 
-extern PZwProtectVirtualMemory pZwProtectVirtualMemory;
+extern PZwProtectVirtualMemory g_pZwProtectVirtualMemory;

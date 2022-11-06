@@ -96,7 +96,17 @@ NtCreateDebugObject(
 NTSTATUS NtDebugActiveProcess(
 	_In_ HANDLE ProcessHandle, 
 	_In_ HANDLE DebugObjectHandle
-){
+)
+/*++
+Routine Description:
+	Attach a debug object to a process.
+Arguments:
+	ProcessHandle     - Handle to a process to be debugged
+	DebugObjectHandle - Handle to a debug object
+Return Value:
+	NTSTATUS - Status of call.
+--*/
+{
 	NTSTATUS status;
 	KPROCESSOR_MODE PreviousMode;
 	PDEBUG_OBJECT DebugObject;
@@ -117,16 +127,18 @@ NTSTATUS NtDebugActiveProcess(
 
 	CurrentProcess = PsGetCurrentProcess();
 
-	//判断被调试进程是否自己或者被调试进程是否PsInitialSystemProcess进程，是的话退出
+	//
+	// Don't let us debug ourselves or the system process.
+	//
 	if (Process == CurrentProcess || Process == PsInitialSystemProcess) {
 		ObDereferenceObject(Process);
 		return STATUS_ACCESS_DENIED;
 	}
 	
-	if (PreviousMode == UserMode) {
+	/*if (PreviousMode == UserMode) {
 		ObDereferenceObject(Process);
 		return STATUS_PROCESS_IS_PROTECTED;
-	}
+	}*/
 
 	// 得到调试句柄关联的调试对象DebugObject
 	status = ObReferenceObjectByHandle(DebugObjectHandle,
@@ -137,18 +149,24 @@ NTSTATUS NtDebugActiveProcess(
 		nullptr);
 
 	if (NT_SUCCESS(status)) {
-		// 避免进程退出，出错
-		//if (ExAcquireRundownProtection(&Process->RundownProtect)) {
-		//	// 发送虚假的进程创建消息
-		//	status = DbgkpPostFakeProcessCreateMessages((PEPROCESS)Process, DebugObject, &LastThread);
-		//	// 设置调试对象给被调试进程
-		//	status = DbgkpSetProcessDebugObject((PEPROCESS)Process, DebugObject, status, LastThread);
+		//
+		// We will be touching process address space. Block process rundown.
+		//
+		if (ExAcquireRundownProtection(kDbgUtil::GetProcessRundownProtect(Process))) {
+			//
+			// Post the fake process create messages etc.
+			//
+			status = kDbgUtil::g_pDbgkpPostFakeProcessCreateMessages(Process, DebugObject, &LastThread);
+			//
+			// Set the debug port. If this fails it will remove any faked messages.
+			//
+			status = kDbgUtil::g_pDbgkpSetProcessDebugObject(Process, DebugObject, status, LastThread);
 
-		//	//ExReleaseRundownProtection(&Process->RundownProtect);
-		//}
-		//else {
-		//	status = STATUS_PROCESS_IS_TERMINATING;
-		//}
+			ExReleaseRundownProtection(kDbgUtil::GetProcessRundownProtect(Process));
+		}
+		else {
+			status = STATUS_PROCESS_IS_TERMINATING;
+		}
 		
 		ObDereferenceObject(DebugObject);
 	}

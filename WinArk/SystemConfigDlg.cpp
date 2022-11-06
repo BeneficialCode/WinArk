@@ -123,5 +123,22 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	pInfo->ZwProtectVirtualMemory = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ZwProtectVirtualMemory");
 	if (!pInfo->ZwProtectVirtualMemory)
 		return false;
+
+	pInfo->NtDebugActiveProcess = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtDebugActiveProcess");
+	if (!pInfo->NtDebugActiveProcess)
+		return false;
+
+	pInfo->DbgkpPostFakeProcessCreateMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostFakeProcessCreateMessages");
+	if (!pInfo->DbgkpPostFakeProcessCreateMessages)
+		return false;
+
+	pInfo->DbgkpSetProcessDebugObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSetProcessDebugObject");
+	if (!pInfo->DbgkpSetProcessDebugObject)
+		return false;
+
+	pInfo->EprocessOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "RundownProtect");
+	if (pInfo->EprocessOffsets.RundownProtect == -1)
+		return false;
+
 	return true;
 }

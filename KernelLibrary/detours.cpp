@@ -552,7 +552,7 @@ static PDETOUR_REGION s_pRegion = nullptr;  // Default region
 
 
 
-PZwProtectVirtualMemory pZwProtectVirtualMemory = nullptr;
+PZwProtectVirtualMemory g_pZwProtectVirtualMemory = nullptr;
 
 static PVOID DetourAllocTrampolineAllocateNew(PUCHAR pTarget,
 	PDETOUR_TRAMPOLINE pLo,

@@ -200,3 +200,31 @@ struct OperationInfo {
 static const GUID dllGuid =
 { 0x38669815, 0xc633, 0x45e0, { 0xbc, 0xd1, 0xe0, 0x11, 0x8a, 0xae, 0x9f, 0xa2 } };
 
+struct EProcessGlobalOffsets {
+	ULONG RundownProtect;		// PEX_RUNDOWN_REF
+	ULONG CrossThreadFlags;		// ULONG
+	ULONG Peb;					// 
+	ULONG DebugPort;
+	ULONG Wow64Process;
+	ULONG Flags;
+	ULONG SectionBaseAddress;
+	ULONG SectionObject;
+	ULONG UniqueProcessId;
+};
+
+struct EThreadGlobalOffsets {
+	ULONG CrossThreadFlags;
+	ULONG SystemThread;
+	ULONG Cid;
+	ULONG ClonedThread;
+	ULONG RundownProtect;
+	ULONG ThreadInserted;
+	ULONG Tcb;
+	ULONG StartAddress;
+};
+
+struct TcbGlobalOffsets {
+	ULONG Teb;
+	ULONG ApcStateIndex;
+};
+

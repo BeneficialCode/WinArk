@@ -8,8 +8,39 @@ PEX_RUNDOWN_REF kDbgUtil::GetProcessRundownProtect(PEPROCESS Process) {
 	return reinterpret_cast<PEX_RUNDOWN_REF>((char*)Process + _eprocessOffsets.RundownProtect);
 }
 
+ULONG kDbgUtil::GetProcessCrossThreadFlags(PEPROCESS Process) {
+	return *reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.CrossThreadFlags);
+}
+
+PPEB kDbgUtil::GetProcessPeb(PEPROCESS Process) {
+	return *reinterpret_cast<PPEB*>((char*)Process + _eprocessOffsets.Peb);
+}
+
+PDEBUG_OBJECT kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
+	return *reinterpret_cast<PDEBUG_OBJECT*>((char*)Process + _eprocessOffsets.DebugPort);
+}
+
+VOID* kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
+	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.Wow64Process);
+}
+
+ULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
+	return *reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.Flags);
+}
+
+VOID* kDbgUtil::GetProcessSectionBaseAddress(PEPROCESS Process) {
+	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.SectionBaseAddress);
+}
+
+VOID* kDbgUtil::GetProcessSectionObject(PEPROCESS Process) {
+	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.SectionObject);
+}
+
+VOID* kDbgUtil::GetProcessUniqueProcessId(PEPROCESS Process) {
+	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.UniqueProcessId);
+}
+
 bool kDbgUtil::HookDbgSys() {
-	g_pNtCreateDebugObject = (PNtCreateDebugObject)_info.NtCreateDebugObjectAddress;
 	if (g_pNtCreateDebugObject) {
 		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
 		if (!NT_SUCCESS(status))
@@ -18,7 +49,14 @@ bool kDbgUtil::HookDbgSys() {
 		if (!NT_SUCCESS(status))
 			return false;
 	}
-	// success = _hookNtCreateDebugObject.HookKernelApi(g_pNtCreateDebugObject, NtCreateDebugObject, true);
+	if (g_pNtDebugActiveProcess) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugActiveProcess, NtDebugActiveProcess);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
 	return true;
 }
 
@@ -31,18 +69,28 @@ bool kDbgUtil::UnhookDbgSys() {
 	if (!NT_SUCCESS(status))
 		return false;
 
+	status = DetourDetach((PVOID*)&g_pNtDebugActiveProcess, NtDebugActiveProcess);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	status = DetourTransactionCommit();
+	if (!NT_SUCCESS(status))
+		return false;
 	return true;
 }
 
 bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 	if (_first) {
-		_info.NtCreateDebugObjectAddress = info->NtCreateDebugObjectAddress;
-		_info.DbgkDebugObjectTypeAddress = info->DbgkDebugObjectTypeAddress;
-		_info.ZwProtectVirtualMemory = info->ZwProtectVirtualMemory;
-		pZwProtectVirtualMemory = (PZwProtectVirtualMemory)_info.ZwProtectVirtualMemory;
+		g_pNtCreateDebugObject = (PNtCreateDebugObject)info->NtCreateDebugObjectAddress;
+		g_pZwProtectVirtualMemory = (PZwProtectVirtualMemory)info->ZwProtectVirtualMemory;
+		DbgkDebugObjectType = (POBJECT_TYPE*)info->DbgkDebugObjectTypeAddress;
+		g_pNtDebugActiveProcess = (PNtDebugActiveProcess)info->NtDebugActiveProcess;
+		g_pDbgkpPostFakeProcessCreateMessages = (PDbgkpPostFakeProcessCreateMessages)info->DbgkpPostFakeProcessCreateMessages;
+		g_pDbgkpSetProcessDebugObject = (PDbgkpSetProcessDebugObject)info->DbgkpSetProcessDebugObject;
+		_eprocessOffsets.RundownProtect = info->EprocessOffsets.RundownProtect;
 		_first = false;
 	}
-	DbgkDebugObjectType = (POBJECT_TYPE*)_info.DbgkDebugObjectTypeAddress;
+	
 	return HookDbgSys();
 }
 
