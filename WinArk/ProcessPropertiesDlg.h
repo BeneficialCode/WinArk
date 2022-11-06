@@ -9,7 +9,7 @@ class CProcessPropertiesDlg :
 public:
 	enum {IDD = IDD_PROCESS_PROPERTIES};
 
-	CProcessPropertiesDlg(const WinSys::ProcessManager& pm,ProcessInfoEx& px):m_pm(pm),m_px(px){}
+	CProcessPropertiesDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm{ pm }, m_px{ px }{}
 	void SetModal(bool modal) {
 		m_Modal = modal;
 	}

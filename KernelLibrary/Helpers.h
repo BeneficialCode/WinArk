@@ -15,6 +15,8 @@ public:
 
 	static bool IsSpecificProcess(HANDLE pid, const WCHAR* imageName, bool isDebugged);
 
+	static UINT FindStringByGuid(PVOID baseAddress, UINT size, const GUID* guid);
+
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };
 
@@ -27,5 +29,6 @@ extern "C" {
 		_Out_ PVOID ProcessInformation,
 		_In_ ULONG ProcessInformationLength,
 		_Out_opt_ PULONG ReturnLength);
+	
 }
 //////////////////////////////////

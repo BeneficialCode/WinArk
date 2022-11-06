@@ -75,6 +75,7 @@ NTSTATUS LogToFile(const char* pOutput,LPCTSTR pFile) {
             // INFO: The use of the FILE_APPEND_DATA flag will make writing into our file atomic
             HANDLE hFile;
             OBJECT_ATTRIBUTES oa = { sizeof(oa),0,&uStrFile,OBJ_CASE_INSENSITIVE };
+
             IO_STATUS_BLOCK iosb;
             status = NtCreateFile(&hFile, FILE_APPEND_DATA | SYNCHRONIZE, &oa, &iosb, 0,
                 FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT, nullptr, NULL);

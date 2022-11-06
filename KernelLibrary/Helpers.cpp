@@ -129,3 +129,23 @@ bool Helpers::IsSpecificProcess(HANDLE pid,const WCHAR* imageName,bool isDebugge
 
 	return result;
 }
+
+UINT Helpers::FindStringByGuid(PVOID baseAddress, UINT size, const GUID* guid) {
+	union
+	{
+		const BYTE* pS;
+		const GUID* pG;
+	};
+
+	pS = (const BYTE*)baseAddress;
+	for (const BYTE* pE = pS + size - sizeof(GUID); pS <= pE; pS++)
+	{
+		if (memcmp(pG, guid, sizeof(GUID)) == 0)
+		{
+			//Matched!
+			return (UINT)(pS + sizeof(GUID) - (const BYTE*)baseAddress);
+		}
+	}
+
+	return (UINT)-1;
+}

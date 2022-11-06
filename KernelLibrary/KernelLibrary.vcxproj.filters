@@ -277,7 +277,15 @@
       <Filter>Timer</Filter>
     </ClCompile>
     <ClCompile Include="Section.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="code64.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+    <MASM Include="code32.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

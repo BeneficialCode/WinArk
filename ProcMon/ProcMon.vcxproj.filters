@@ -21,6 +21,9 @@
     <ClInclude Include="Types.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -45,5 +48,16 @@
     <MASM Include="loadcfg32.asm">
       <Filter>源文件</Filter>
     </MASM>
+    <MASM Include="code64.asm">
+      <Filter>源文件</Filter>
+    </MASM>
+    <MASM Include="code32.asm">
+      <Filter>源文件</Filter>
+    </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ProcMon.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
