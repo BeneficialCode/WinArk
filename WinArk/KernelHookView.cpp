@@ -132,7 +132,7 @@ void CKernelHookView::InitMiniFilterTable() {
 	BarDesc bars[] = {
 		{15,"过滤服务名",0},
 		{15,"实例个数",0},
-		{20,"海拔",0},
+		{35,"海拔",0},
 		{210,"框架ID",0},
 	};
 

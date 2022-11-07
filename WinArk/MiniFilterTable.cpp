@@ -94,13 +94,92 @@ CMiniFilterTable::CMiniFilterTable(BarInfo& bars, TableInfo& table) :CTable(bars
 	Refresh();
 }
 
+CString CMiniFilterTable::AltitudeToGroupName(int altitude) {
+	if (altitude >= 420000 && altitude <= 429999) {
+		return L"Filter";
+	}
+	else if (altitude >= 400000 && altitude <= 409999) {
+		return L"FSFilter Top";
+	}
+	else if (altitude >= 360000 && altitude <= 389999) {
+		return L"FSFilter Activity Monitor";
+	}
+	else if (altitude >= 340000 && altitude <= 349999) {
+		return L"FSFilter Undelete";
+	}
+	else if (altitude >= 320000 && altitude <= 329998) {
+		return L"FSFilter Anti-Virus";
+	}
+	else if (altitude >= 300000 && altitude <= 309998) {
+		return L"FSFilter Replication";
+	}
+	else if (altitude >= 280000 && altitude <= 289998) {
+		return L"FSFilter Continuous Backup";
+	}
+	else if (altitude >= 260000 && altitude <= 269998) {
+		return L"FSFilter Content Screener";
+	}
+	else if (altitude >= 240000 && altitude <= 249999) {
+		return L"FSFilter Quota Management";
+	}
+	else if (altitude >= 220000 && altitude <= 229999) {
+		return L"FSFilter System Recovery";
+	}
+	else if (altitude >= 200000 && altitude <= 209999) {
+		return L"FSFilter Cluster File System";
+	}
+	else if (altitude >= 180000 && altitude <= 189999) {
+		return L"FSFilter HSM";
+	}
+	else if (altitude >= 170000 && altitude <= 174999) {
+		return L"FSFilter Imaging (ex: .ZIP)";
+	}
+	else if (altitude >= 160000 && altitude <= 169999) {
+		return L"FSFilter Compression";
+	}
+	else if (altitude >= 170000 && altitude <= 174999) {
+		return L"FSFilter Imaging (ex: .ZIP)";
+	}
+	else if (altitude >= 160000 && altitude <= 169999) {
+		return L"FSFilter Compression";
+	}
+	else if (altitude >= 140000 && altitude <= 149999) {
+		return L"FSFilter Encryption";
+	}
+	else if (altitude >= 130000 && altitude <= 139999) {
+		return L"FSFilter Virtualization";
+	}
+	else if (altitude >= 120000 && altitude <= 129999) {
+		return L"FSFilter Physical Quota management";
+	}
+	else if (altitude >= 100000 && altitude <= 109999) {
+		return L"FSFilter Open File";
+	}
+	else if (altitude >= 80000 && altitude <= 89999) {
+		return L"FSFilter Security Enhancer";
+	}
+	else if (altitude >= 60000 && altitude <= 69999) {
+		return L"FSFilter Copy Protection";
+	}
+	else if (altitude >= 40000 && altitude <= 49999) {
+		return L"FSFilter Bottom";
+	}
+	else if (altitude >= 20000 && altitude <= 29999) {
+		return L"FSFilter System";
+	}
+}
+
 int CMiniFilterTable::ParseTableEntry(CString& s, char& mask, int& select, MiniFilterInfo& info, int column) {
 	
 	switch (static_cast<TableColumn>(column))
 	{
 		case TableColumn::Altitude:
+		{
 			s = info.Altitude.c_str();
+			int altitude = _wtoi(info.Altitude.c_str());
+			s += " " + AltitudeToGroupName(altitude);
 			break;
+		}
 
 		case TableColumn::FilterName:
 			s = info.FilterName.c_str();
@@ -149,6 +228,7 @@ void CMiniFilterTable::BuildFilterInfo(PVOID buffer, bool isNewStyle) {
 				filterName[info->Type.MiniFilter.FilterAltitudeLength] = UNICODE_NULL;
 			}
 			filterInfo.FrameID = info->Type.MiniFilter.FrameID;
+			// each instance is attached to a volume
 			filterInfo.NumberOfInstance = info->Type.MiniFilter.NumberOfInstances;
 			filterInfo.Altitude = altitude;
 			filterInfo.FilterName = filterName;
