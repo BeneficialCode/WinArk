@@ -69,6 +69,7 @@ public:
 
 
 	void BuildFilterInfo(PVOID buffer, bool isNewStyle);
+	CString AltitudeToGroupName(int altitude);
 
 private:
 	enum class TableColumn {

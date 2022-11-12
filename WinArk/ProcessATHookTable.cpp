@@ -206,14 +206,17 @@ void CProcessATHookTable::CheckEATHook(const std::shared_ptr<WinSys::ModuleInfo>
 	bool ok = ReadProcessMemory(m_hProcess, eat, buffer, size, &size);
 	if (ok) {
 		PULONG pAddr = (PULONG)buffer;
+		int idx = 0;
 		for (auto& item : exports) {
 			DWORD address = *pAddr;
-			pAddr++;
 			if (address != item.Address) {
 				EATHookInfo info;
 				info.TargetAddress = (ULONG_PTR)m->Base + address;
 				info.Address = item.Address + (ULONG_PTR)m->Base;
+				CString addr;
+				addr.Format(L"0x%p", (ULONG_PTR)eat + idx * 4);
 				info.Name = m->Name;
+				info.Name += L"_" + addr;
 				info.Type = ATHookType::EAT;
 				auto m = GetModuleByAddress(info.TargetAddress);
 				if (m != nullptr) {
@@ -221,6 +224,8 @@ void CProcessATHookTable::CheckEATHook(const std::shared_ptr<WinSys::ModuleInfo>
 				}
 				m_Table.data.info.push_back(info);
 			}
+			idx++;
+			pAddr++;
 		}
 	}
 	free(buffer);
@@ -420,7 +425,18 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 							std::string orgSymName(orgSym->Name);
 							std::string host = orgSymbol->ModuleInfo.ModuleName;
 							host += ".dll";
-							if (host == lib.Name) {
+							if (it != std::wstring::npos && hosts.size() > 0) {
+								for (const auto& lib : hosts) {
+									std::wstring whost = Helpers::StringToWstring(host);
+									if (_wcsicmp(whost.c_str(),lib.c_str()) == 0) {
+										idx = j;
+										orgLib = orgSymbol->ModuleInfo.ImageName;
+										orgFuncName = orgSymName;
+										break;
+									}
+								}
+							}
+							else if(stricmp(host.c_str(), lib.Name.c_str()) == 0) {
 								idx = j;
 								orgLib = orgSymbol->ModuleInfo.ImageName;
 								orgFuncName = orgSymName;
