@@ -88,6 +88,8 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpPostFakeProcessCreateMessages = (PDbgkpPostFakeProcessCreateMessages)info->DbgkpPostFakeProcessCreateMessages;
 		g_pDbgkpSetProcessDebugObject = (PDbgkpSetProcessDebugObject)info->DbgkpSetProcessDebugObject;
 		_eprocessOffsets.RundownProtect = info->EprocessOffsets.RundownProtect;
+		g_pDbgkpPostFakeThreadMessages = (PDbgkpPostFakeThreadMessages)info->DbgkpPostFakeThreadMessages;
+		g_pDbgkpPostModuleMessages = (PDbgkpPostModuleMessages)info->DbgkpPostModuleMessages;
 		_first = false;
 	}
 	

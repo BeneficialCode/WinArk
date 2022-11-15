@@ -43,5 +43,11 @@ public:
 	using PDbgkpSetProcessDebugObject = decltype(&DbgkpSetProcessDebugObject);
 	static inline PDbgkpSetProcessDebugObject g_pDbgkpSetProcessDebugObject{ nullptr };
 
+	using PDbgkpPostFakeThreadMessages = decltype(&DbgkpPostFakeThreadMessages);
+	static inline PDbgkpPostFakeThreadMessages g_pDbgkpPostFakeThreadMessages{ nullptr };
+
+	using PDbgkpPostModuleMessages = decltype(&DbgkpPostModuleMessages);
+	static inline PDbgkpPostModuleMessages g_pDbgkpPostModuleMessages{ nullptr };
+
 	static inline bool _first = true;
 };

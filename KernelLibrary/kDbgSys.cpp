@@ -111,7 +111,7 @@ Return Value:
 	KPROCESSOR_MODE PreviousMode;
 	PDEBUG_OBJECT DebugObject;
 	PEPROCESS Process, CurrentProcess;
-	PETHREAD LastThread;
+	PETHREAD LastThread = nullptr;
 
 	PreviousMode = ExGetPreviousMode();
 	// 得到被调试进程的eprocess
@@ -156,7 +156,7 @@ Return Value:
 			//
 			// Post the fake process create messages etc.
 			//
-			status = kDbgUtil::g_pDbgkpPostFakeProcessCreateMessages(Process, DebugObject, &LastThread);
+			status = DbgkpPostFakeProcessCreateMessages(Process, DebugObject, &LastThread);
 			//
 			// Set the debug port. If this fails it will remove any faked messages.
 			//
@@ -179,27 +179,40 @@ NTSTATUS DbgkpPostFakeProcessCreateMessages(
 	_In_ PEPROCESS Process,
 	_In_ PDEBUG_OBJECT DebugObject,
 	_In_ PETHREAD* pLastThread
-) {
+) 
+/*++
+Routine Description:
+	This routine posts the faked initial process create, thread create and mudule load messages
+Arguments:
+	ProcessHandle     - Handle to a process to be debugged
+	DebugObjectHandle - Handle to a debug object
+Return Value:
+	None.
+--*/
+{
 	NTSTATUS status;
 	KAPC_STATE ApcState;
 	PETHREAD StartThread, Thread;
 	PETHREAD LastThread;
 
+	
 	// 收集所有线程创建的消息
-	StartThread = nullptr;
-	status = DbgkpPostFakeThreadMessages(
+	status = kDbgUtil::g_pDbgkpPostFakeThreadMessages(
 		Process,
-		StartThread,
 		DebugObject,
+		nullptr,
 		&Thread,
 		&LastThread
 	);
 
 	if (NT_SUCCESS(status)) {
+		//
+		// Attach to the process so we can touch its address space
+		// 
 		KeStackAttachProcess(Process, &ApcState);
 
 		// 收集模块创建的消息
-		DbgkpPostModuleMessages(Process, Thread, DebugObject);
+		kDbgUtil::g_pDbgkpPostModuleMessages(Process, Thread, DebugObject);
 
 		KeUnstackDetachProcess(&ApcState);
 
@@ -473,8 +486,8 @@ VOID DbgkSendSystemDllMessages(
 
 NTSTATUS DbgkpPostFakeThreadMessages(
 	PEPROCESS	Process,
-	PETHREAD	StartThread,
 	PDEBUG_OBJECT	DebugObject,
+	PETHREAD	StartThread,
 	PETHREAD* pFirstThread,
 	PETHREAD* pLastThread
 ) {

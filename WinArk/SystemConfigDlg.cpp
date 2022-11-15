@@ -140,5 +140,13 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (pInfo->EprocessOffsets.RundownProtect == -1)
 		return false;
 
+	pInfo->DbgkpPostFakeThreadMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostFakeThreadMessages");
+	if (!pInfo->DbgkpPostFakeThreadMessages)
+		return false;
+
+	pInfo->DbgkpPostModuleMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostModuleMessages");
+	if (!pInfo->DbgkpPostModuleMessages)
+		return false;
+
 	return true;
 }
