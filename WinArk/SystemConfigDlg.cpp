@@ -148,5 +148,32 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->DbgkpPostModuleMessages)
 		return false;
 
+	pInfo->EthreadOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "RundownProtect");
+	if (!pInfo->EthreadOffsets.RundownProtect)
+		return false;
+
+	pInfo->EthreadOffsets.CrossThreadFlags = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "CrossThreadFlags");
+	if (!pInfo->EthreadOffsets.RundownProtect)
+		return false;
+
+	pInfo->PsGetNextProcessThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsGetNextProcessThread");
+	if (!pInfo->PsGetNextProcessThread)
+		return false;
+
+	pInfo->EprocessOffsets.DebugPort = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "DebugPort");
+	if (!pInfo->EprocessOffsets.DebugPort)
+		return false;
+
+	pInfo->DbgkpProcessDebugPortMutex = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpProcessDebugPortMutex");
+	if (!pInfo->DbgkpProcessDebugPortMutex)
+		return false;
+
+	pInfo->DbgkpWakeTarget = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpWakeTarget");
+	if (!pInfo->DbgkpWakeTarget)
+		return false;
+
+	pInfo->DbgkpMarkProcessPeb = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMarkProcessPeb");
+	if (!pInfo->DbgkpMarkProcessPeb)
+		return false;
 	return true;
 }

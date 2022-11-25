@@ -10,15 +10,16 @@
 class kDbgUtil final {
 public:
 	static PEX_RUNDOWN_REF GetProcessRundownProtect(PEPROCESS Process);
-	static ULONG GetProcessCrossThreadFlags(PEPROCESS Process);
+	static PULONG GetProcessCrossThreadFlags(PEPROCESS Process);
 	static PPEB GetProcessPeb(PEPROCESS Process);
-	static PDEBUG_OBJECT GetProcessDebugPort(PEPROCESS Process);
+	static PDEBUG_OBJECT* GetProcessDebugPort(PEPROCESS Process);
 	static VOID* GetProcessWow64Process(PEPROCESS Process);
-	static ULONG GetProcessFlags(PEPROCESS Process);
+	static PULONG GetProcessFlags(PEPROCESS Process);
 	static VOID* GetProcessSectionBaseAddress(PEPROCESS Process);
 	static VOID* GetProcessSectionObject(PEPROCESS Process);
 	static VOID* GetProcessUniqueProcessId(PEPROCESS Process);
-
+	static PULONG GetThreadCrossThreadFlags(PETHREAD Ethread);
+	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -48,6 +49,15 @@ public:
 
 	using PDbgkpPostModuleMessages = decltype(&DbgkpPostModuleMessages);
 	static inline PDbgkpPostModuleMessages g_pDbgkpPostModuleMessages{ nullptr };
+
+
+	using PPsGetNextProcessThread = PETHREAD(*)(PEPROCESS Process, PETHREAD Thread);
+	static inline PPsGetNextProcessThread g_pPsGetNextProcessThread{ nullptr };
+
+	using PDbgkpWakeTarget = decltype(&DbgkpWakeTarget);
+	static inline PDbgkpWakeTarget g_pDbgkpWakeTarget{ nullptr };
+	using PDbgkpMarkProcessPeb = decltype(&DbgkpMarkProcessPeb);
+	static inline PDbgkpMarkProcessPeb g_pDbgkpMarkProcessPeb{ nullptr };
 
 	static inline bool _first = true;
 };

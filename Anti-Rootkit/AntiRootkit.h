@@ -45,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0xB4
+#define DRIVER_CURRENT_VERSION 0xBE
 
 
 // 用MDL锁定用户内存
@@ -223,7 +223,12 @@ struct DbgSysCoreInfo {
 	void* DbgkpSetProcessDebugObject;
 	void* DbgkpPostModuleMessages;
 	void* DbgkpPostFakeThreadMessages;
+	void* PsGetNextProcessThread;
+	void* DbgkpProcessDebugPortMutex;
+	void* DbgkpWakeTarget;
+	void* DbgkpMarkProcessPeb;
 	EProcessGlobalOffsets EprocessOffsets;
+	EThreadGlobalOffsets EthreadOffsets;
 };
 
 struct ObPreOperationData {

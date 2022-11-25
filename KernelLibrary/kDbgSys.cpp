@@ -8,7 +8,7 @@
 POBJECT_TYPE* DbgkDebugObjectType;
 
 // 保护对EPROCESS的DebugPort的访问
-FAST_MUTEX	DbgkpProcessDebugPortMutex;
+PFAST_MUTEX	g_pDbgkpProcessDebugPortMutex;
 
 PSYSTEM_DLL* PspSystemDlls;
 
@@ -160,7 +160,7 @@ Return Value:
 			//
 			// Set the debug port. If this fails it will remove any faked messages.
 			//
-			status = kDbgUtil::g_pDbgkpSetProcessDebugObject(Process, DebugObject, status, LastThread);
+			status = DbgkpSetProcessDebugObject(Process, DebugObject, status, LastThread);
 
 			ExReleaseRundownProtection(kDbgUtil::GetProcessRundownProtect(Process));
 		}
@@ -312,7 +312,19 @@ DbgkpSetProcessDebugObject(
 	_In_ PDEBUG_OBJECT DebugObject,
 	_In_ NTSTATUS MsgStatus,
 	_In_ PETHREAD LastThread
-) {
+) 
+/*++
+Routine Description:
+	Attach a debug object to a process.
+Arguments:
+	Process     - Process to be debugged
+	DebugObject - Debug object to attach
+	MsgStatus   - Status from queing the messages
+	LastThread  - Last thread seen in attach loop.
+Return Value:
+	NTSTATUS - Status of call.
+--*/
+{
 	NTSTATUS status;
 	PETHREAD ThisThread;
 	LIST_ENTRY TempList;
@@ -338,61 +350,99 @@ DbgkpSetProcessDebugObject(
 	else {
 		status = STATUS_SUCCESS;
 	}
-	auto process = (PEPROCESS)Process;
 
+	PDEBUG_OBJECT* pProcessDebugPort = kDbgUtil::GetProcessDebugPort(Process);
+
+	//
+	// Pick up any threads we missed
+	//
 	if (NT_SUCCESS(status)) {
 		while (true) {
+			//
+			// Acquire the debug port mutex so we know that any new threads will
+			// have to wait to behind us.
+			//
 			GlobalHeld = TRUE;
-			ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
 
+			ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
+
+			//
+			// If the port has been set then exit now.
+			//
 			// 如果被调试进程的Debug Port已经设置，那么跳出循环
-		/*	if (process->DebugPort != nullptr) {
+			if (*pProcessDebugPort != nullptr) {
 				status = STATUS_PORT_ALREADY_SET;
 				break;
-			}*/
+			}
+			//
+			// Assign the debug port to the process to pick up any new threads
+			//
+			//没有设置debugport，在这里设置
+			*pProcessDebugPort = DebugObject;
 
-			//process->DebugPort = DebugObject;
+			//
+		   // Reference the last thread so we can deref outside the lock
+		   //
 			ObReferenceObject(LastThread);
 
-			//Thread = (PETHREAD_S)PsGetNextProcessThread(Process, LastThread);
-						
-			//if (Thread != nullptr) {
-			//	process->DebugPort = nullptr;
-			//	ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
-			//	GlobalHeld = FALSE;
+			//
+			// Search forward for new threads
+			//
+			Thread = kDbgUtil::g_pPsGetNextProcessThread(Process, LastThread);
 
-			//	ObDereferenceObject(LastThread);
-			//	// 通知线程创建消息
-			//	status = DbgkpPostFakeThreadMessages(
-			//		Process,
-			//		(PETHREAD)Thread,
-			//		DebugObject,
-			//		&FirstThread,
-			//		&LastThread
-			//	);
-			//	if (!NT_SUCCESS(status)) {
-			//		LastThread = nullptr;
-			//		break;
-			//	}
-			//	ObDereferenceObject(FirstThread);
-			//}
-			//else {
-			//	break;
-			//}
+			if (Thread != nullptr) {
+				//
+				// Remove the debug port from the process as we are
+				// about to drop the lock
+				//
+				pProcessDebugPort = nullptr;
+				ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
+				GlobalHeld = FALSE;
+
+				ObDereferenceObject(LastThread);
+				// 通知线程创建消息
+				//
+				// Queue any new thread messages and repeat.
+				//
+
+				status = kDbgUtil::g_pDbgkpPostFakeThreadMessages(
+					Process,
+					DebugObject,
+					Thread,
+					&FirstThread,
+					&LastThread
+				);
+
+				if (!NT_SUCCESS(status)) {
+					LastThread = nullptr;
+					break;
+				}
+				ObDereferenceObject(FirstThread);
+			}
+			else {
+				break;
+			}
 		}
 	}
 
+	//
+	// Lock the debug object so we can check its deleted status
+	//
 	ExAcquireFastMutex(&DebugObject->Mutex);
 
+	//
+	// We must not propagate a debug port thats got no handles left.
+	//
 	if (NT_SUCCESS(status)) {
-		//if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
-		//	PS_SET_BITS(&Process->Flags, PS_PROCESS_FLAGS_NO_DEBUG_INHERIT | PS_PROCESS_FLAGS_CREATE_REPORTED);
-		//	ObReferenceObject(DebugObject);
-		//}
-		//else {
-		//	//process->DebugPort = nullptr;
-		//	status = STATUS_DEBUGGER_INACTIVE;
-		//}
+		PULONG pFlags = kDbgUtil::GetProcessFlags(Process);
+		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
+			PS_SET_BITS(pFlags, PS_PROCESS_FLAGS_NO_DEBUG_INHERIT | PS_PROCESS_FLAGS_CREATE_REPORTED);
+			ObReferenceObject(DebugObject);
+		}
+		else {
+			pProcessDebugPort = nullptr;
+			status = STATUS_DEBUGGER_INACTIVE;
+		}
 	}
 
 	// 遍历所有调试事件
@@ -403,9 +453,21 @@ DbgkpSetProcessDebugObject(
 
 		if ((DebugEvent->Flags & DEBUG_EVENT_INACTIVE) != 0 && DebugEvent->BackoutThread == ThisThread) {
 			Thread = DebugEvent->Thread;
-			if (NT_SUCCESS(status)) {
-				/*if ((DebugEvent->Flags & DEBUG_EVENT_PROTECT_FAILED) != 0) {
-					PS_SET_BITS(&Thread->CrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
+
+			//
+			// If the thread has not been inserted by CreateThread yet then don't
+			// create a handle. We skip system threads here also
+			//
+			PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(Thread);
+			bool isSystemThread = (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_SYSTEM) != 0;
+			if (NT_SUCCESS(status) && 
+				!isSystemThread) {
+				//
+				// If we could not acquire rundown protection on this
+				// thread then we need to suppress its exit message.
+				//
+				if ((DebugEvent->Flags & DEBUG_EVENT_PROTECT_FAILED) != 0) {
+					PS_SET_BITS(pCrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
 					RemoveEntryList(&DebugEvent->EventList);
 					InsertTailList(&TempList, &DebugEvent->EventList);
 				}
@@ -416,8 +478,8 @@ DbgkpSetProcessDebugObject(
 						First = FALSE;
 					}
 					DebugEvent->BackoutThread = nullptr;
-					PS_SET_BITS(&Thread->CrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
-				}*/
+					PS_SET_BITS(pCrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
+				}
 			}
 			else {
 				RemoveEntryList(&DebugEvent->EventList);
@@ -426,7 +488,8 @@ DbgkpSetProcessDebugObject(
 
 			if (DebugEvent->Flags & DEBUG_EVENT_RELEASE) {
 				DebugEvent->Flags &= ~DEBUG_EVENT_RELEASE;
-				//ExReleaseRundownProtection(&Thread->RundownProtect);
+				PEX_RUNDOWN_REF RundownProtect = kDbgUtil::GetThreadRundownProtect(Thread);
+				ExReleaseRundownProtection(RundownProtect);
 			}
 		}
 	}
@@ -434,7 +497,7 @@ DbgkpSetProcessDebugObject(
 	ExReleaseFastMutex(&DebugObject->Mutex);
 
 	if (GlobalHeld) {
-		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 	}
 
 	if (LastThread != nullptr) {
@@ -444,11 +507,11 @@ DbgkpSetProcessDebugObject(
 	while (!IsListEmpty(&TempList)) {
 		Entry = RemoveHeadList(&TempList);
 		DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
-		DbgkpWakeTarget(DebugEvent);
+		kDbgUtil::g_pDbgkpWakeTarget(DebugEvent);
 	}
 
 	if (NT_SUCCESS(status)) {
-		DbgkpMarkProcessPeb(Process);
+		kDbgUtil::g_pDbgkpMarkProcessPeb(Process);
 	}
 
 	return status;
@@ -1083,7 +1146,7 @@ DbgkpQueueMessage(
 	else {
 		DebugEvent = &StaticDebugEvent;
 		DebugEvent->Flags = Flags;
-		ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
+		ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 		//DebugObject = (PDEBUG_OBJECT)process->DebugPort;
 		
@@ -1138,7 +1201,7 @@ DbgkpQueueMessage(
 	}
 
 	if ((Flags & DEBUG_EVENT_NOWAIT) == 0) {
-		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 		if (NT_SUCCESS(status)) {
 			// 等待调试器的回复
 			KeWaitForSingleObject(
@@ -1688,7 +1751,7 @@ NTSTATUS DbgkClearProcessDebugObject(
 	LIST_ENTRY TempList;
 	PLIST_ENTRY Entry;
 
-	ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
+	ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 	auto process = Process;
 	/*DebugObject = (PDEBUG_OBJECT)process->DebugPort;
@@ -1700,7 +1763,7 @@ NTSTATUS DbgkClearProcessDebugObject(
 		process->DebugPort = nullptr;
 		status = STATUS_SUCCESS;
 	}*/
-	ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+	ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 	if (NT_SUCCESS(status)) {
 		DbgkpMarkProcessPeb(Process);
