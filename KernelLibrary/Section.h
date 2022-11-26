@@ -85,44 +85,7 @@ extern "C" {
 		);
 	typedef KRUNDOWN_ROUTINE* PKRUNDOWN_ROUTINE;
 
-	struct SECTION_IMAGE_INFORMATION
-	{
-		PVOID TransferAddress;
-		ULONG ZeroBits;
-		SIZE_T MaximumStackSize;
-		SIZE_T CommittedStackSize;
-		ULONG SubSystemType;
-		union
-		{
-			struct s
-			{
-				USHORT SubSystemMinorVersion;
-				USHORT SubSystemMajorVersion;
-			};
-			ULONG SubSystemVersion;
-		};
-		ULONG GpValue;
-		USHORT ImageCharacteristics;
-		USHORT DllCharacteristics;
-		USHORT Machine;
-		BOOLEAN ImageContainsCode;
-		union
-		{
-			UCHAR ImageFlags;
-			struct u
-			{
-				UCHAR ComPlusNativeReady : 1;
-				UCHAR ComPlusILOnly : 1;
-				UCHAR ImageDynamicallyRelocated : 1;
-				UCHAR ImageMappedFlat : 1;
-				UCHAR BaseBelow4gb : 1;
-				UCHAR Reserved : 3;
-			};
-		};
-		ULONG LoaderFlags;
-		ULONG ImageFileSize;
-		ULONG CheckSum;
-	};
+	
 
     __declspec(dllimport) void KeInitializeApc(
         _In_ PKAPC Apc,
