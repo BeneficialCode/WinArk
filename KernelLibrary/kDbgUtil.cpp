@@ -4,6 +4,7 @@
 
 extern POBJECT_TYPE* DbgkDebugObjectType;
 extern PFAST_MUTEX g_pDbgkpProcessDebugPortMutex;
+extern PULONG g_pDbgkpMaxModuleMsgs;
 
 PEX_RUNDOWN_REF kDbgUtil::GetProcessRundownProtect(PEPROCESS Process) {
 	return reinterpret_cast<PEX_RUNDOWN_REF>((char*)Process + _eprocessOffsets.RundownProtect);
@@ -22,7 +23,7 @@ PDEBUG_OBJECT* kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
 }
 
 VOID* kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
-	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.Wow64Process);
+	return *reinterpret_cast<PVOID*>((char*)Process + _eprocessOffsets.Wow64Process);
 }
 
 PULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
@@ -47,6 +48,10 @@ PULONG kDbgUtil::GetThreadCrossThreadFlags(PETHREAD Ethread) {
 
 PEX_RUNDOWN_REF kDbgUtil::GetThreadRundownProtect(PETHREAD Thread) {
 	return reinterpret_cast<PEX_RUNDOWN_REF>((char*)Thread + _ethreadOffsets.RundownProtect);
+}
+
+PPEB_LDR_DATA kDbgUtil::GetPEBLdr(PPEB Peb) {
+	return *reinterpret_cast<PPEB_LDR_DATA*>((char*)Peb + _pebOffsets.Ldr);
 }
 
 bool kDbgUtil::HookDbgSys() {
@@ -106,6 +111,16 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpProcessDebugPortMutex = (PFAST_MUTEX)info->DbgkpProcessDebugPortMutex;
 		g_pDbgkpMarkProcessPeb = (PDbgkpMarkProcessPeb)info->DbgkpMarkProcessPeb;
 		g_pDbgkpWakeTarget = (PDbgkpWakeTarget)info->DbgkpWakeTarget;
+		g_pDbgkpMaxModuleMsgs = (PULONG)info->DbgkpMaxModuleMsgs;
+		_pebOffsets.Ldr = info->PebOffsets.Ldr;
+		g_pMmGetFileNameForAddress = (PMmGetFileNameForAddress)info->MmGetFileNameForAddress;
+		g_pDbgkpQueueMessage = (PDbgkpQueueMessage)info->DbgkpQueueMessage;
+		g_pDbgkpSendApiMessage = (PDbgkpSendApiMessage)info->DbgkpSendApiMessage;
+#ifdef _WIN64
+		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
+#endif // _WIN64
+
+
 		_first = false;
 	}
 	

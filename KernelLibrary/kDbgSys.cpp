@@ -10,6 +10,8 @@ POBJECT_TYPE* DbgkDebugObjectType;
 // 保护对EPROCESS的DebugPort的访问
 PFAST_MUTEX	g_pDbgkpProcessDebugPortMutex;
 
+PULONG g_pDbgkpMaxModuleMsgs;
+
 PSYSTEM_DLL* PspSystemDlls;
 
 NTSTATUS NTAPI 
@@ -701,21 +703,18 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	return status;
 }
 
-NTSTATUS MmGetFileNameForAddress(
-	_In_ PVOID ProcessVa,
-	_Out_ PUNICODE_STRING FileName
-) {
-	return STATUS_SUCCESS;
-}
 
 NTSTATUS
 DbgkpPostModuleMessages(
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread,
-	_In_ PDEBUG_OBJECT DebugObject) {
-	
-	auto process = Process;
-	//PPEB Peb = process->Peb;
+	_In_ PDEBUG_OBJECT DebugObject)
+/*++
+	Routine Description:
+		This routine posts the module load messages when we debug an active process.
+--*/
+{
+	PPEB Peb = kDbgUtil::GetProcessPeb(Process);
 	PPEB_LDR_DATA Ldr = nullptr;
 	PLIST_ENTRY LdrHead, LdrNext;
 	PLDR_DATA_TABLE_ENTRY LdrEntry;
@@ -727,17 +726,23 @@ DbgkpPostModuleMessages(
 	IO_STATUS_BLOCK ioStatus;
 	DBGKM_APIMSG ApiMsg;
 
-	/*if (Peb == nullptr) {
+	if (Peb == nullptr) {
 		return STATUS_SUCCESS;
-	}*/
+	}
 
 	__try {
-		//Ldr = Peb->Ldr;
+		Ldr = kDbgUtil::GetPEBLdr(Peb);
 
 		LdrHead = &Ldr->InLoadOrderModuleList;
 		ProbeForRead(LdrHead, sizeof(LIST_ENTRY), TYPE_ALIGNMENT(LIST_ENTRY));
-		for (LdrNext = LdrHead->Flink, i = 0; LdrNext != LdrHead && i < 500; LdrNext = LdrNext->Flink,i++) {
-			if (i > 1) {
+		for (LdrNext = LdrHead->Flink, i = 0; 
+			LdrNext != LdrHead && i < *g_pDbgkpMaxModuleMsgs; 
+			LdrNext = LdrNext->Flink,i++) {
+			if (i > 0) {
+
+				//
+				// First image got send with process create message
+				//
 				RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
 
 				LdrEntry = CONTAINING_RECORD(LdrNext, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
@@ -753,9 +758,10 @@ DbgkpPostModuleMessages(
 					ApiMsg.u.LoadDll.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
 					ApiMsg.u.LoadDll.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
 				}
-				status = MmGetFileNameForAddress(NtHeaders, &Name);
+				status = kDbgUtil::g_pMmGetFileNameForAddress(NtHeaders, &Name);
 				if (NT_SUCCESS(status)) {
-					InitializeObjectAttributes(&attr, &Name, OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+					InitializeObjectAttributes(&attr, &Name, 
+						OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
 						nullptr, nullptr);
 					status = ZwOpenFile(&ApiMsg.u.LoadDll.FileHandle,
 						GENERIC_READ | SYNCHRONIZE,
@@ -770,12 +776,12 @@ DbgkpPostModuleMessages(
 				}
 
 				if (DebugObject) {
-					status = DbgkpQueueMessage(
+					status = kDbgUtil::g_pDbgkpQueueMessage(
 						Process, Thread, &ApiMsg, DEBUG_EVENT_NOWAIT, DebugObject
 					);
 				}
 				else {
-					DbgkpSendApiMessage(&ApiMsg, 0x3);
+					kDbgUtil::g_pDbgkpSendApiMessage(&ApiMsg, 0x3);
 					status = STATUS_UNSUCCESSFUL;
 				}
 
@@ -791,6 +797,11 @@ DbgkpPostModuleMessages(
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 
 	}
+
+#ifdef _WIN64
+	PVOID Wow64Process = kDbgUtil::GetProcessWow64Process(Process);
+
+#endif
 
 	return STATUS_SUCCESS;
 }

@@ -20,6 +20,7 @@ public:
 	static VOID* GetProcessUniqueProcessId(PEPROCESS Process);
 	static PULONG GetThreadCrossThreadFlags(PETHREAD Ethread);
 	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
+	static PPEB_LDR_DATA GetPEBLdr(PPEB Peb);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -30,6 +31,7 @@ public:
 	static inline TcbGlobalOffsets _tcbOffsets;
 	static inline EThreadGlobalOffsets _ethreadOffsets;
 	static inline EProcessGlobalOffsets _eprocessOffsets;
+	static inline PebOffsets _pebOffsets;
 	
 	using PNtCreateDebugObject = decltype(&NtCreateDebugObject);
 	static inline PNtCreateDebugObject g_pNtCreateDebugObject{ nullptr };
@@ -51,13 +53,22 @@ public:
 	static inline PDbgkpPostModuleMessages g_pDbgkpPostModuleMessages{ nullptr };
 
 
-	using PPsGetNextProcessThread = PETHREAD(*)(PEPROCESS Process, PETHREAD Thread);
+	using PPsGetNextProcessThread = PETHREAD(NTAPI*)(PEPROCESS Process, PETHREAD Thread);
 	static inline PPsGetNextProcessThread g_pPsGetNextProcessThread{ nullptr };
 
 	using PDbgkpWakeTarget = decltype(&DbgkpWakeTarget);
 	static inline PDbgkpWakeTarget g_pDbgkpWakeTarget{ nullptr };
 	using PDbgkpMarkProcessPeb = decltype(&DbgkpMarkProcessPeb);
 	static inline PDbgkpMarkProcessPeb g_pDbgkpMarkProcessPeb{ nullptr };
+
+	using PMmGetFileNameForAddress = NTSTATUS(NTAPI*)(PVOID ProcessVa, PUNICODE_STRING FileName);
+	static inline PMmGetFileNameForAddress g_pMmGetFileNameForAddress{ nullptr };
+
+	using PDbgkpQueueMessage = decltype(&DbgkpQueueMessage);
+	static inline PDbgkpQueueMessage g_pDbgkpQueueMessage{ nullptr };
+
+	using PDbgkpSendApiMessage = decltype(&DbgkpSendApiMessage);
+	static inline PDbgkpSendApiMessage g_pDbgkpSendApiMessage{ nullptr };
 
 	static inline bool _first = true;
 };

@@ -175,5 +175,32 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	pInfo->DbgkpMarkProcessPeb = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMarkProcessPeb");
 	if (!pInfo->DbgkpMarkProcessPeb)
 		return false;
+
+	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
+	if (!pInfo->DbgkpMaxModuleMsgs)
+		return false;
+
+	pInfo->PebOffsets.Ldr = SymbolHelper::GetKernelStructMemberOffset("_PEB", "Ldr");
+	if (!pInfo->PebOffsets.Ldr)
+		return false;
+
+	pInfo->MmGetFileNameForAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MmGetFileNameForAddress");
+	if (!pInfo->MmGetFileNameForAddress)
+		return false;
+
+	pInfo->DbgkpSendApiMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSendApiMessage");
+	if (!pInfo->DbgkpSendApiMessage)
+		return false;
+
+	pInfo->DbgkpQueueMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpQueueMessage");
+	if (!pInfo->DbgkpQueueMessage)
+		return false;
+#ifdef  _WIN64
+	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
+	if (!pInfo->EprocessOffsets.Wow64Process)
+		return false;
+#endif //  _WIN64
+
+	
 	return true;
 }

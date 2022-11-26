@@ -228,3 +228,7 @@ struct TcbGlobalOffsets {
 	ULONG ApcStateIndex;
 };
 
+struct PebOffsets {
+	ULONG Ldr;
+};
+

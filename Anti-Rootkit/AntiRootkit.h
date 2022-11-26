@@ -227,8 +227,13 @@ struct DbgSysCoreInfo {
 	void* DbgkpProcessDebugPortMutex;
 	void* DbgkpWakeTarget;
 	void* DbgkpMarkProcessPeb;
+	void* DbgkpMaxModuleMsgs;
+	void* MmGetFileNameForAddress;
+	void* DbgkpSendApiMessage;
+	void* DbgkpQueueMessage;
 	EProcessGlobalOffsets EprocessOffsets;
 	EThreadGlobalOffsets EthreadOffsets;
+	PebOffsets PebOffsets;
 };
 
 struct ObPreOperationData {
