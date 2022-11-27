@@ -3,6 +3,7 @@
 #include "kDbgSys.h"
 #include <ntimage.h>
 #include "kDbgUtil.h"
+#include "NtWow64.h"
 
 // 调试对象类型
 POBJECT_TYPE* DbgkDebugObjectType;
@@ -214,7 +215,7 @@ Return Value:
 		KeStackAttachProcess(Process, &ApcState);
 
 		// 收集模块创建的消息
-		kDbgUtil::g_pDbgkpPostModuleMessages(Process, Thread, DebugObject);
+		DbgkpPostModuleMessages(Process, Thread, DebugObject);
 
 		KeUnstackDetachProcess(&ApcState);
 
@@ -799,8 +800,90 @@ DbgkpPostModuleMessages(
 	}
 
 #ifdef _WIN64
-	PVOID Wow64Process = kDbgUtil::GetProcessWow64Process(Process);
+	PWOW64_PROCESS Wow64Process = (PWOW64_PROCESS)kDbgUtil::GetProcessWow64Process(Process);
+	if (Wow64Process != nullptr && Wow64Process->Wow64 != nullptr) {
+		PPEB32 Peb32;
+		PPEB_LDR_DATA32 Ldr32;
+		PLIST_ENTRY32 LdrHead32, LdrNext32;
+		PLDR_DATA_TABLE_ENTRY32 LdrEntry32;
+		PWCHAR pSys;
 
+		Peb32 = (PPEB32)Wow64Process->Wow64;
+
+		__try {
+			Ldr32 = (PPEB_LDR_DATA32)ULongToPtr(Peb32->Ldr);
+
+			LdrHead32 = &Ldr32->InLoadOrderModuleList;
+
+			ProbeForRead(LdrHead32, sizeof(LdrHead32), TYPE_ALIGNMENT(LdrHead32));
+			for (LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrHead32->Flink), i = 0;
+				LdrNext32 != LdrHead32 && i < *g_pDbgkpMaxModuleMsgs;
+				LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrNext32->Flink), i++) {
+
+				if (i > 0) {
+					RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
+
+					LdrEntry32 = CONTAINING_RECORD(LdrNext32, LDR_DATA_TABLE_ENTRY32, InLoadOrderLinks);
+					ProbeForRead(LdrEntry32, sizeof(LdrEntry32), TYPE_ALIGNMENT(LdrEntry32));
+
+					ApiMsg.ApiNumber = DbgKmLoadDllApi;
+					ApiMsg.u.LoadDll.BaseOfDll = UlongToPtr(LdrEntry32->DllBase);
+					ApiMsg.u.LoadDll.NamePointer = nullptr;
+
+					ProbeForRead(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER),
+						TYPE_ALIGNMENT(IMAGE_DOS_HEADER));
+
+					NtHeaders = RtlImageNtHeader(ApiMsg.u.LoadDll.BaseOfDll);
+					if (NtHeaders) {
+						ApiMsg.u.LoadDll.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
+						ApiMsg.u.LoadDll.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
+					}
+
+					status = kDbgUtil::g_pMmGetFileNameForAddress(NtHeaders, &Name);
+					if (NT_SUCCESS(status)) {
+						ASSERT(sizeof(L"SYSTEM32") == sizeof(WOW64_SYSTEM_DIRECTORY_U));
+						pSys = wcsstr(Name.Buffer, L"\\SYSTEM32\\");
+						if (pSys != NULL) {
+							RtlCopyMemory(pSys + 1,
+								WOW64_SYSTEM_DIRECTORY_U,
+								sizeof(WOW64_SYSTEM_DIRECTORY_U) - sizeof(UNICODE_NULL));
+						}
+
+						InitializeObjectAttributes(&attr,
+							&Name,
+							OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+							nullptr,
+							nullptr);
+
+						status = ZwOpenFile(&ApiMsg.u.LoadDll.FileHandle,
+							GENERIC_READ | SYNCHRONIZE,
+							&attr,
+							&ioStatus,
+							FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							FILE_SYNCHRONOUS_IO_NONALERT);
+						if (!NT_SUCCESS(status)) {
+							ApiMsg.u.LoadDll.FileHandle = nullptr;
+						}
+						ExFreePool(Name.Buffer);
+					}
+
+					status = kDbgUtil::g_pDbgkpQueueMessage(Process,
+						Thread,
+						&ApiMsg,
+						DEBUG_EVENT_NOWAIT,
+						DebugObject);
+					if (!NT_SUCCESS(status) && ApiMsg.u.LoadDll.FileHandle != NULL) {
+						ObCloseHandle(ApiMsg.u.LoadDll.FileHandle, KernelMode);
+					}
+				}
+
+				ProbeForRead(LdrNext32, sizeof(LIST_ENTRY32), sizeof(UCHAR));
+			}
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+
+		}
+	}
 #endif
 
 	return STATUS_SUCCESS;

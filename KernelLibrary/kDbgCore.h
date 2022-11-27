@@ -1,5 +1,7 @@
 #pragma once
 
+#include "NtMmApi.h"
+
 #define DEBUG_OBJECT_DELETE_PENDING			(0x1) // Debug object is delete pending.
 #define DEBUG_OBJECT_KILL_ON_CLOSE			(0x2) // Kill all debugged processes on close
 // (0x4)
@@ -646,4 +648,8 @@ typedef struct _SYSTEM_DLL {
 	EX_PUSH_LOCK Lock;        // 0x8
 	SYSTEM_DLL_INFO DllInfo;  // 0x10
 }SYSTEM_DLL, * PSYSTEM_DLL;
+
+typedef struct _WOW64_PROCESS {
+	PVOID Wow64;
+}WOW64_PROCESS,*PWOW64_PROCESS;
 

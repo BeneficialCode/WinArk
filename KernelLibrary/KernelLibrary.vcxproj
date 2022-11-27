@@ -255,6 +255,8 @@
     <ClInclude Include="LookasideList.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Mutex.h" />
+    <ClInclude Include="NtMmApi.h" />
+    <ClInclude Include="NtWow64.h" />
     <ClInclude Include="ObjectAttributes.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PEParser.h" />

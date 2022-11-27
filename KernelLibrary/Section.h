@@ -85,7 +85,6 @@ extern "C" {
 		);
 	typedef KRUNDOWN_ROUTINE* PKRUNDOWN_ROUTINE;
 
-	
 
     __declspec(dllimport) void KeInitializeApc(
         _In_ PKAPC Apc,

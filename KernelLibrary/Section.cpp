@@ -3,9 +3,10 @@
 #include "Logging.h"
 #include "Memory.h"
 #include "ObjectAttributes.h"
-#include "Common.h"
 #include <ntimage.h>
 #include "Helpers.h"
+#include "NtMmApi.h"
+
 
 extern PDRIVER_OBJECT g_DriverObject;
 
