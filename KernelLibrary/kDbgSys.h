@@ -207,8 +207,8 @@ NTSTATUS NtRemoveProcessDebug(
 
 // 发送调试事件
 NTSTATUS DbgkpSendApiMessage(
-	PDBGKM_APIMSG ApiMsg,
-	ULONG	Flag
+	ULONG	Flag,
+	PDBGKM_APIMSG ApiMsg
 );
 
 //PSYSTEM_DLL_INFO PsQuerySystemDllInfo(

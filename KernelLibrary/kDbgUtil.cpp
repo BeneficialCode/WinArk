@@ -22,8 +22,8 @@ PDEBUG_OBJECT* kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
 	return reinterpret_cast<PDEBUG_OBJECT*>((char*)Process + _eprocessOffsets.DebugPort);
 }
 
-VOID* kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
-	return *reinterpret_cast<PVOID*>((char*)Process + _eprocessOffsets.Wow64Process);
+PVOID kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
+	return reinterpret_cast<PVOID>((char*)Process + _eprocessOffsets.Wow64Process);
 }
 
 PULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
@@ -119,7 +119,7 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64
-
+		_eprocessOffsets.Peb = info->EprocessOffsets.Peb;
 
 		_first = false;
 	}

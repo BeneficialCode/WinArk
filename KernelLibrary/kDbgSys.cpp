@@ -731,15 +731,16 @@ DbgkpPostModuleMessages(
 		return STATUS_SUCCESS;
 	}
 
+	ULONG maxModuleMsgs = *g_pDbgkpMaxModuleMsgs;
 	__try {
 		Ldr = kDbgUtil::GetPEBLdr(Peb);
 
 		LdrHead = &Ldr->InLoadOrderModuleList;
-		ProbeForRead(LdrHead, sizeof(LIST_ENTRY), TYPE_ALIGNMENT(LIST_ENTRY));
+		ProbeForReadSmallStructure(LdrHead, sizeof(LIST_ENTRY), sizeof(UCHAR));
 		for (LdrNext = LdrHead->Flink, i = 0; 
-			LdrNext != LdrHead && i < *g_pDbgkpMaxModuleMsgs; 
+			LdrNext != LdrHead && i < maxModuleMsgs; 
 			LdrNext = LdrNext->Flink,i++) {
-			if (i > 0) {
+			if (i > 1) {
 
 				//
 				// First image got send with process create message
@@ -747,12 +748,12 @@ DbgkpPostModuleMessages(
 				RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
 
 				LdrEntry = CONTAINING_RECORD(LdrNext, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
-				ProbeForRead(LdrEntry, sizeof(LDR_DATA_TABLE_ENTRY), TYPE_ALIGNMENT(LDR_DATA_TABLE_ENTRY));
+				ProbeForReadSmallStructure(LdrEntry, sizeof(LDR_DATA_TABLE_ENTRY), sizeof(UCHAR));
 				
 				ApiMsg.ApiNumber = DbgKmLoadDllApi;
 				ApiMsg.u.LoadDll.BaseOfDll = LdrEntry->DllBase;
 
-				ProbeForRead(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER), TYPE_ALIGNMENT(IMAGE_DOS_HEADER));
+				ProbeForReadSmallStructure(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER), sizeof(UCHAR));
 
 				NtHeaders = RtlImageNtHeader(ApiMsg.u.LoadDll.BaseOfDll);
 				if (NtHeaders) {
@@ -782,7 +783,7 @@ DbgkpPostModuleMessages(
 					);
 				}
 				else {
-					kDbgUtil::g_pDbgkpSendApiMessage(&ApiMsg, 0x3);
+					kDbgUtil::g_pDbgkpSendApiMessage(0x3, &ApiMsg);
 					status = STATUS_UNSUCCESSFUL;
 				}
 
@@ -791,7 +792,7 @@ DbgkpPostModuleMessages(
 				}
 			}
 
-			ProbeForRead(LdrNext, sizeof(LIST_ENTRY), TYPE_ALIGNMENT(LIST_ENTRY));
+			ProbeForReadSmallStructure(LdrNext, sizeof(LIST_ENTRY), sizeof(UCHAR));
 		}
 		
 	}
@@ -815,23 +816,23 @@ DbgkpPostModuleMessages(
 
 			LdrHead32 = &Ldr32->InLoadOrderModuleList;
 
-			ProbeForRead(LdrHead32, sizeof(LdrHead32), TYPE_ALIGNMENT(LdrHead32));
+
+			ProbeForReadSmallStructure(LdrHead32, sizeof(LIST_ENTRY32), sizeof(UCHAR));
 			for (LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrHead32->Flink), i = 0;
-				LdrNext32 != LdrHead32 && i < *g_pDbgkpMaxModuleMsgs;
+				LdrNext32 != LdrHead32 && i < maxModuleMsgs;
 				LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrNext32->Flink), i++) {
 
-				if (i > 0) {
+				if (i > 1) {
 					RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
 
 					LdrEntry32 = CONTAINING_RECORD(LdrNext32, LDR_DATA_TABLE_ENTRY32, InLoadOrderLinks);
-					ProbeForRead(LdrEntry32, sizeof(LdrEntry32), TYPE_ALIGNMENT(LdrEntry32));
+					ProbeForReadSmallStructure(LdrEntry32, sizeof(LDR_DATA_TABLE_ENTRY32), sizeof(UCHAR));
 
 					ApiMsg.ApiNumber = DbgKmLoadDllApi;
 					ApiMsg.u.LoadDll.BaseOfDll = UlongToPtr(LdrEntry32->DllBase);
 					ApiMsg.u.LoadDll.NamePointer = nullptr;
 
-					ProbeForRead(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER),
-						TYPE_ALIGNMENT(IMAGE_DOS_HEADER));
+					ProbeForReadSmallStructure(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER), sizeof(UCHAR));
 
 					NtHeaders = RtlImageNtHeader(ApiMsg.u.LoadDll.BaseOfDll);
 					if (NtHeaders) {
@@ -867,17 +868,23 @@ DbgkpPostModuleMessages(
 						ExFreePool(Name.Buffer);
 					}
 
-					status = kDbgUtil::g_pDbgkpQueueMessage(Process,
-						Thread,
-						&ApiMsg,
-						DEBUG_EVENT_NOWAIT,
-						DebugObject);
+					if (DebugObject) {
+						status = kDbgUtil::g_pDbgkpQueueMessage(Process,
+							Thread,
+							&ApiMsg,
+							DEBUG_EVENT_NOWAIT,
+							DebugObject);
+					}
+					else {
+						status = DbgkpSendApiMessage(3, &ApiMsg);
+						status = STATUS_UNSUCCESSFUL;
+					}
+					
 					if (!NT_SUCCESS(status) && ApiMsg.u.LoadDll.FileHandle != NULL) {
 						ObCloseHandle(ApiMsg.u.LoadDll.FileHandle, KernelMode);
 					}
 				}
-
-				ProbeForRead(LdrNext32, sizeof(LIST_ENTRY32), sizeof(UCHAR));
+				ProbeForReadSmallStructure(LdrNext32, sizeof(LIST_ENTRY32), sizeof(UCHAR));
 			}
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER) {
@@ -951,7 +958,7 @@ VOID DbgkMapViewOfSection(
 
 	DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmLoadDllApi, sizeof(DBGKM_LOAD_DLL));
 
-	DbgkpSendApiMessage(&ApiMsg, 0x1);
+	DbgkpSendApiMessage(0x1, &ApiMsg);
 	if (ApiMsg.u.LoadDll.FileHandle != nullptr) {
 		ObCloseHandle(ApiMsg.u.LoadDll.FileHandle, KernelMode);
 	}
@@ -992,7 +999,7 @@ VOID DbgkUnMapViewOfSection(
 
 	ApiMsg.u.UnloadDll.BaseAddress = BaseAddress;
 	DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmUnloadDllApi, sizeof(DBGKM_UNLOAD_DLL));
-	DbgkpSendApiMessage(&ApiMsg, 0x1);
+	DbgkpSendApiMessage(0x1, &ApiMsg);
 }
 
 PEPROCESS PsGetCurrentProcessByThread(PETHREAD Thread) {
@@ -1181,7 +1188,7 @@ VOID DbgkCreateThread(
 
 			DBGKM_FORMAT_API_MSG(m, DbgKmCreateProcessApi, sizeof(*CreateProcessArgs));
 
-			DbgkpSendApiMessage(&m, FALSE);
+			DbgkpSendApiMessage(0, &m);
 			if (CreateProcessArgs->FileHandle != nullptr) {
 				ObCloseHandle(CreateProcessArgs->FileHandle, KernelMode);
 			}
@@ -1195,7 +1202,7 @@ VOID DbgkCreateThread(
 
 			DBGKM_FORMAT_API_MSG(m, DbgKmCreateThreadApi, sizeof(*CreateThreadArgs));
 
-			DbgkpSendApiMessage(&m, TRUE);
+			DbgkpSendApiMessage(1, &m);
 		}
 
 		/*if (Thread->ClonedThread == TRUE) {
@@ -1526,8 +1533,8 @@ VOID DbgkpResumeProcess(
 }
 
 NTSTATUS DbgkpSendApiMessage(
-	PDBGKM_APIMSG ApiMsg,
-	ULONG	Flag
+	ULONG	Flag,
+	PDBGKM_APIMSG ApiMsg
 ) {
 	NTSTATUS status;
 	BOOLEAN isSuspend;
@@ -1752,7 +1759,7 @@ BOOLEAN DbgkForwardException(
 	args->FirstChance = !SecondChance;
 
 	if (bLpcPort == FALSE) {
-		status = DbgkpSendApiMessage(&m, DebugException);
+		status = DbgkpSendApiMessage(DebugException, &m);
 	}
 	else if (ExceptionPort) {
 		status = DbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);

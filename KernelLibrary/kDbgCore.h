@@ -653,3 +653,72 @@ typedef struct _WOW64_PROCESS {
 	PVOID Wow64;
 }WOW64_PROCESS,*PWOW64_PROCESS;
 
+#if defined(_AMD64_)
+
+FORCEINLINE
+VOID
+ProbeForReadSmallStructure(
+	IN PVOID Address,
+	IN SIZE_T Size,
+	IN ULONG Alignment
+)
+
+/*++
+Routine Description:
+	Probes a structure for read access whose size is known at compile time.
+	N.B. A NULL structure address is not allowed.
+Arguments:
+	Address - Supples a pointer to the structure.
+	Size - Supplies the size of the structure.
+	Alignment - Supplies the alignment of structure.
+Return Value:
+	None
+--*/
+
+{
+
+	ASSERT((Alignment == 1) || (Alignment == 2) ||
+		(Alignment == 4) || (Alignment == 8) ||
+		(Alignment == 16));
+
+	if ((Size == 0) || (Size >= 0x10000)) {
+
+		ASSERT(0);
+
+		ProbeForRead(Address, Size, Alignment);
+
+	}
+	else {
+		if (((ULONG_PTR)Address & (Alignment - 1)) != 0) {
+			ExRaiseDatatypeMisalignment();
+		}
+
+		if ((PUCHAR)Address >= (UCHAR* const)MM_USER_PROBE_ADDRESS) {
+			Address = (UCHAR* const)MM_USER_PROBE_ADDRESS;
+		}
+
+		_ReadWriteBarrier();
+		*(volatile UCHAR*)Address;
+	}
+}
+
+#else
+
+#define ProbeForReadSmallStructure(Address, Size, Alignment) {               \
+    ASSERT(((Alignment) == 1) || ((Alignment) == 2) ||                       \
+           ((Alignment) == 4) || ((Alignment) == 8) ||                       \
+           ((Alignment) == 16));                                             \
+    if ((Size == 0) || (Size > 0x10000)) {                                   \
+        ASSERT(0);                                                           \
+        ProbeForRead(Address, Size, Alignment);                              \
+    } else {                                                                 \
+        if (((ULONG_PTR)(Address) & ((Alignment) - 1)) != 0) {               \
+            ExRaiseDatatypeMisalignment();                                   \
+        }                                                                    \
+        if ((ULONG_PTR)(Address) >= (ULONG_PTR)MM_USER_PROBE_ADDRESS) {      \
+            *(volatile UCHAR * const)MM_USER_PROBE_ADDRESS = 0;              \
+        }                                                                    \
+    }                                                                        \
+}
+
+#endif

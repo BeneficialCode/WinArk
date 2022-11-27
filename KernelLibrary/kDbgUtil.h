@@ -13,7 +13,7 @@ public:
 	static PULONG GetProcessCrossThreadFlags(PEPROCESS Process);
 	static PPEB GetProcessPeb(PEPROCESS Process);
 	static PDEBUG_OBJECT* GetProcessDebugPort(PEPROCESS Process);
-	static VOID* GetProcessWow64Process(PEPROCESS Process);
+	static PVOID GetProcessWow64Process(PEPROCESS Process);
 	static PULONG GetProcessFlags(PEPROCESS Process);
 	static VOID* GetProcessSectionBaseAddress(PEPROCESS Process);
 	static VOID* GetProcessSectionObject(PEPROCESS Process);

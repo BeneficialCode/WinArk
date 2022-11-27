@@ -200,7 +200,12 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->EprocessOffsets.Wow64Process)
 		return false;
 #endif //  _WIN64
+	pInfo->EprocessOffsets.Peb = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Peb");
+	if (!pInfo->EprocessOffsets.Peb)
+		return false;
 
-	
+	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
+	if (!pInfo->DbgkpMaxModuleMsgs)
+		return false;
 	return true;
 }
