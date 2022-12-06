@@ -139,7 +139,6 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 		}
 		else
 			KdPrint(("[Library] Unknown Driver Load AddressEntryPoint: 0x%p\n",entryPoint));
-		// 判断驱动名，修改入口点代码，达到禁止加载驱动。
 		
 		// do something...
 		

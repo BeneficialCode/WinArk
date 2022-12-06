@@ -1,7 +1,7 @@
 #pragma once
 
 struct ExecutiveResource {
-	void Init();
+	NTSTATUS Init();
 	void Delete();
 
 	void Lock();

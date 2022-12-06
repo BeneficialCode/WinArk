@@ -16,6 +16,8 @@
 #include "..\KernelLibrary\KernelTimer.h"
 #include "..\KernelLibrary\IoTimer.h"
 #include "..\KernelLibrary\BypassAntiKernelDbg.h"
+#include "..\KernelLibrary\MiniFilter.h"
+
 
 // SE_IMAGE_SIGNATURE_TYPE
 
@@ -56,10 +58,12 @@ typedef struct _UNLOADED_DRIVERS {
 UNICODE_STRING g_RegisterPath;
 PDEVICE_OBJECT g_DeviceObject;
 PDRIVER_OBJECT g_DriverObject;
+FilterState g_State;
 
 DRIVER_UNLOAD AntiRootkitUnload;
 DRIVER_DISPATCH AntiRootkitDeviceControl, AntiRootkitCreateClose;
 DRIVER_DISPATCH AntiRootkitRead, AntiRootkitWrite, AntiRootkitShutdown;
+
 
 
 extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
@@ -149,71 +153,108 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	DriverObject->MajorFunction[IRP_MJ_WRITE] = AntiRootkitWrite;
 	DriverObject->MajorFunction[IRP_MJ_SHUTDOWN] = AntiRootkitShutdown;
 
-	// Create a device object
+	// After the DriverUnload is been initialized, this is very important!
+	status = g_State.Lock.Init();
+	if (!NT_SUCCESS(status))
+		return status;
+
+	
 	UNICODE_STRING devName = RTL_CONSTANT_STRING(L"\\Device\\AntiRootkit");
 	// 定义变量时初始化这些变量
 	PDEVICE_OBJECT DeviceObject = nullptr;
-
-	status = IoCreateDevice(
-		DriverObject,		// our driver object,
-		0,					// no need for extra bytes
-		&devName,			// the device name
-		FILE_DEVICE_UNKNOWN,// device type
-		0,					// characteristics flags,
-		FALSE,				// not exclusive
-		&DeviceObject		// the resulting pointer
-	);
-
-	if (!NT_SUCCESS(status)) {
-		KdPrint(("Failed to create device object (0x%08X)\n", status));
-		return status;
-	}
-
-	// get I/O Manager's help
-	// Large buffers may be expensive to copy
-	//DeviceObject->Flags |= DO_BUFFERED_IO;
-
-	// Large buffers
-	//DeviceObject->Flags |= DO_DIRECT_IO;
-	
-	status = IoRegisterShutdownNotification(DeviceObject);
-	if (!NT_SUCCESS(status)) {
-		KdPrint(("Failed to register shutdown notify (0x%08X)\n", status));
-		IoDeleteDevice(DeviceObject); // important!
-		return status;
-	}
-	
-	// Create a symbolic link to the device object
 	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\AntiRootkit");
-	status = IoCreateSymbolicLink(&symLink, &devName);
-	if (!NT_SUCCESS(status)) {
-		TraceLoggingWrite(g_Provider,
-			"Error",
-			TraceLoggingLevel(TRACE_LEVEL_ERROR),
-			TraceLoggingValue("Symbolic link creation failed", "Message"),
-			TraceLoggingNTStatus(status, "Status", "Returned status"));
+	bool symLinkCreated = false;
+	bool notificationRegistered = false;
+	do
+	{
+		status = InitMiniFilter(DriverObject, RegistryPath);
+		if (!NT_SUCCESS(status)) {
+			LogError("Failed to init mini-filter (0x%X)\n", status);
+			break;
+		}
 
-		KdPrint(("Failed to create symbolic link (0x%08X)\n", status));
-		IoDeleteDevice(DeviceObject);
+		// Create a device object
+		status = IoCreateDevice(
+			DriverObject,		// our driver object,
+			0,					// no need for extra bytes
+			&devName,			// the device name
+			FILE_DEVICE_UNKNOWN,// device type
+			0,					// characteristics flags,
+			FALSE,				// not exclusive
+			&DeviceObject		// the resulting pointer
+		);
+
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("Failed to create device object (0x%08X)\n", status));
+			break;
+		}
+
+		// get I/O Manager's help
+		// Large buffers may be expensive to copy
+		//DeviceObject->Flags |= DO_BUFFERED_IO;
+
+		// Large buffers
+		//DeviceObject->Flags |= DO_DIRECT_IO;
+
+		status = IoRegisterShutdownNotification(DeviceObject);
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("Failed to register shutdown notify (0x%08X)\n", status));
+			break;
+		}
+		notificationRegistered = true;
+
+		// Create a symbolic link to the device object
+		status = IoCreateSymbolicLink(&symLink, &devName);
+		if (!NT_SUCCESS(status)) {
+			TraceLoggingWrite(g_Provider,
+				"Error",
+				TraceLoggingLevel(TRACE_LEVEL_ERROR),
+				TraceLoggingValue("Symbolic link creation failed", "Message"),
+				TraceLoggingNTStatus(status, "Status", "Returned status"));
+			KdPrint(("Failed to create symbolic link (0x%08X)\n", status));
+			break;
+		}
+
+		symLinkCreated = true;
+
+		g_DeviceObject = DeviceObject;
+
+		status = FltStartFiltering(g_State.Filter);
+		if (!NT_SUCCESS(status)) {
+			break;
+		}
+
+		// 所有的资源申请，请考虑失败的情况下，会引发什么问题
+		g_RegisterPath.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool,
+			RegistryPath->Length, DRIVER_TAG);
+		if (g_RegisterPath.Buffer == nullptr) {
+			KdPrint(("Failed to allocate memory\n"));
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		g_RegisterPath.MaximumLength = RegistryPath->Length;
+		RtlCopyUnicodeString(&g_RegisterPath, (PUNICODE_STRING)RegistryPath);
+	} while (false);
+	
+	if (!NT_SUCCESS(status)) {
+		g_State.Lock.Delete();
+		if (g_State.Filter)
+			FltUnregisterFilter(g_State.Filter);
+		if (symLinkCreated)
+			IoDeleteSymbolicLink(&symLink);
+		if (notificationRegistered)
+			IoUnregisterShutdownNotification(DeviceObject);
+		if (DeviceObject)
+			IoDeleteDevice(DeviceObject);
+
 		return status;
 	}
 
-	g_DeviceObject = DeviceObject;
-
-	// 所有的资源申请，请考虑失败的情况下，会引发什么问题
-	g_RegisterPath.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool,
-		RegistryPath->Length, DRIVER_TAG);
-	if (g_RegisterPath.Buffer == nullptr) {
-		KdPrint(("Failed to allocate memory\n"));
-		return STATUS_INSUFFICIENT_RESOURCES;
-	}
-	g_RegisterPath.MaximumLength = RegistryPath->Length;
-	RtlCopyUnicodeString(&g_RegisterPath, (PUNICODE_STRING)RegistryPath);
-
-	//KdPrint(("Copied registry path: %wZ\n", &g_RegisterPath));
+	g_State.DriverObject = DriverObject;
 
 	// More generally, if DriverEntry returns any failure status,the Unload routine is not called.
-	return STATUS_SUCCESS;
+	return status;
 }
 
 void AntiRootkitUnload(_In_ PDRIVER_OBJECT DriverObject) {
@@ -234,7 +275,7 @@ void AntiRootkitUnload(_In_ PDRIVER_OBJECT DriverObject) {
 NTSTATUS CompleteIrp(PIRP Irp, NTSTATUS status = STATUS_SUCCESS, ULONG_PTR info = 0) {
 	Irp->IoStatus.Status = status;
 	Irp->IoStatus.Information = info;
-	IoCompleteRequest(Irp, 0);
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 	return status;
 }
 /*
@@ -1325,11 +1366,46 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = RemoveMiniFilter(pData);
 			break;
 		}
+
+		case IOCTL_ARK_DELPROTECT_SET_EXTENSIONS:
+		{
+			auto ext = (WCHAR*)Irp->AssociatedIrp.SystemBuffer;
+			auto inputLen = dic.InputBufferLength;
+			if (ext == nullptr || inputLen < sizeof(WCHAR) * 2 
+				|| ext[inputLen / sizeof(WCHAR) - 1] != 0) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (g_State.Extensions.MaximumLength < inputLen - sizeof(WCHAR)) {
+				//
+				// allocate a new buffer to hold the extensions
+				//
+				auto buffer = ExAllocatePoolWithTag(PagedPool, inputLen, DRIVER_TAG);
+				if (buffer == nullptr) {
+					status = STATUS_INSUFFICIENT_RESOURCES;
+					break;
+				}
+				g_State.Extensions.MaximumLength = (USHORT)inputLen;
+				//
+				// free the old buffer
+				//
+				ExFreePool(g_State.Extensions.Buffer);
+				g_State.Extensions.Buffer = (PWSTR)buffer;
+			}
+			UNICODE_STRING ustr;
+			RtlInitUnicodeString(&ustr, ext);
+			//
+			// make sure the extensions are uppercase
+			//
+			RtlUpcaseUnicodeString(&ustr, &ustr, FALSE);
+			memcpy(g_State.Extensions.Buffer, ext, len = inputLen);
+			g_State.Extensions.Length = (USHORT)inputLen;
+			status = STATUS_SUCCESS;
+			break;
+		}
 	}
 
-	Irp->IoStatus.Status = status;
-	Irp->IoStatus.Information = len;
-	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	CompleteIrp(Irp, status, len);
 	return status;
 }
 
@@ -1399,45 +1475,6 @@ NTSTATUS AntiRootkitWrite(PDEVICE_OBJECT, PIRP Irp) {
 	} while (false);
 
 	return CompleteIrp(Irp, status, len);
-}
-
-KEVENT kEvent;
-
-KSTART_ROUTINE MyThreadFunc;
-void MyThreadFunc(IN PVOID context) {
-	PUNICODE_STRING str = (PUNICODE_STRING)context;
-	KdPrint(("Kernel thread running: %wZ\n", str));
-	MyGetCurrentTime();
-	KdPrint(("Wait 3s!\n"));
-	MySleep(3000);
-	MyGetCurrentTime();
-	KdPrint(("Kernel thread exit!\n"));
-	KeSetEvent(&kEvent, 0, true);
-	PsTerminateSystemThread(STATUS_SUCCESS);
-}
-
-void CreateThreadTest() {
-	HANDLE hThread;
-	UNICODE_STRING ustrTest = RTL_CONSTANT_STRING(L"This is a string for test!");
-	NTSTATUS status;
-
-	KeInitializeEvent(&kEvent, 
-		SynchronizationEvent,	// when this event is set, 
-		// it releases at most one thread (auto reset)
-		FALSE);
-	
-	status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, MyThreadFunc, (PVOID)&ustrTest);
-	if (!NT_SUCCESS(status)) {
-		KdPrint(("PsCreateSystemThread failed!"));
-		return;
-	}
-	ZwClose(hThread);
-	KeWaitForSingleObject(&kEvent, Executive, KernelMode, FALSE, NULL);
-	KdPrint(("CreateThreadTest over!\n"));
-}
-
-void test() {
-	EnumSubKeyTest();
 }
 
 
