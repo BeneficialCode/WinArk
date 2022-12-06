@@ -40,6 +40,8 @@ void ApiSets::Build(HANDLE hProcess) {
 
 		std::wstring name;
 		SIZE_T size = static_cast<int>(nsEntry.NameLength / sizeof(WCHAR));
+		if (size == 0)
+			continue;
 		name.resize(size);
 		void* pName = reinterpret_cast<void*>(apiSetMapAsNumber + nsEntry.NameOffset);
 		::ReadProcessMemory(hProcess, pName, name.data(), nsEntry.NameLength, nullptr);

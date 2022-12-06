@@ -28,13 +28,13 @@ typedef struct _ACTIVATION_CONTEXT_STACK
 // private
 typedef struct _API_SET_NAMESPACE
 {
-    ULONG Version;
-    ULONG Size;
-    ULONG Flags;
-    ULONG Count;
-    ULONG EntryOffset;
-    ULONG HashOffset;
-    ULONG HashFactor;
+    ULONG Version;      // v2 on Windows 7, v4 on Windows 8.1  and v6 on Windows 10
+    ULONG Size;         // apiset map size (usually the .apiset section virtual size)
+    ULONG Flags;        // according to Geoff Chappell,  tells if the map is sealed or not.
+    ULONG Count;        // hash table entry count
+    ULONG EntryOffset;  // Offset to the api set entries values
+    ULONG HashOffset;   // Offset to the api set entries hash indexes
+    ULONG HashFactor;   // multiplier to use when computing hash 
 } API_SET_NAMESPACE, *PAPI_SET_NAMESPACE;
 
 // private
@@ -47,22 +47,22 @@ typedef struct _API_SET_HASH_ENTRY
 // private
 typedef struct _API_SET_NAMESPACE_ENTRY
 {
-    ULONG Flags;
-    ULONG NameOffset;
-    ULONG NameLength;
-    ULONG HashedLength;
-    ULONG ValueOffset;
-    ULONG ValueCount;
+    ULONG Flags;        // sealed flag in bit 0
+    ULONG NameOffset;   // Offset to the ApiSet library name PWCHAR (e.g. "api-ms-win-core-job-l2-1-1")
+    ULONG NameLength;   // Ignored
+    ULONG HashedLength; // Apiset library name length
+    ULONG ValueOffset;  // Offset the list of hosts library implement the apiset contract (points to API_SET_VALUE_ENTRY array)
+    ULONG ValueCount;   // Number of hosts libraries 
 } API_SET_NAMESPACE_ENTRY, *PAPI_SET_NAMESPACE_ENTRY;
 
 // private
 typedef struct _API_SET_VALUE_ENTRY 
 {
-    ULONG Flags;
-    ULONG NameOffset;
-    ULONG NameLength;
-    ULONG ValueOffset;
-    ULONG ValueLength;
+    ULONG Flags;        // sealed flag in bit 0
+    ULONG NameOffset;   // Offset to the ApiSet library name PWCHAR (e.g. "api-ms-win-core-job-l2-1-1")
+    ULONG NameLength;   // Apiset library name length
+    ULONG ValueOffset;  // Offset to the Host library name PWCHAR (e.g. "ucrtbase.dll")
+    ULONG ValueLength;  // Host library name length
 } API_SET_VALUE_ENTRY, *PAPI_SET_VALUE_ENTRY;
 
 // symbols

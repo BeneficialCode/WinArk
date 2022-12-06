@@ -6,11 +6,9 @@
 #include <Processes.h>
 #include "ClipboardHelper.h"
 
-#ifdef _WIN64
-#pragma comment(lib,"x64/capstone.lib")
-#else
-#pragma comment(lib,"x86/capstone.lib")
-#endif // _WIN64
+
+#pragma comment(lib,"capstone.lib")
+
 
 
 
