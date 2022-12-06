@@ -238,3 +238,16 @@ std::wstring CKernelModuleTable::GetSingleKernelModuleInfo(std::shared_ptr<WinSy
 
 	return text.GetString();
 }
+
+LRESULT CKernelModuleTable::OnGoToFileLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& kernelModule = m_Table.data.info[selected];
+	std::wstring path = Helpers::StringToWstring(kernelModule->FullPath);
+	if ((INT_PTR)::ShellExecute(nullptr, L"open", L"explorer",
+		(L"/select,\"" + path + L"\"").c_str(),
+		nullptr, SW_SHOWDEFAULT) < 32)
+		AtlMessageBox(*this, L"Failed to locate executable", IDS_TITLE, MB_ICONERROR);
+
+	return 0;
+}

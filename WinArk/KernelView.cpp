@@ -90,9 +90,11 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::KernelPoolTable:
 			m_KernelPoolView->ShowWindow(SW_SHOW);
+			m_KernelPoolView->UpdatePaneText();
 			break;
 		case TabColumn::BigPoolTable:
 			m_BigPoolView->ShowWindow(SW_SHOW);
+			m_BigPoolView->UpdatePaneText();
 			break;
 		case TabColumn::DpcTimer:
 			m_DpcTimerTable->ShowWindow(SW_SHOW);

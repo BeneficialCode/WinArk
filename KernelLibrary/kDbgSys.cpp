@@ -3,12 +3,15 @@
 #include "kDbgSys.h"
 #include <ntimage.h>
 #include "kDbgUtil.h"
+#include "NtWow64.h"
 
 // 调试对象类型
 POBJECT_TYPE* DbgkDebugObjectType;
 
 // 保护对EPROCESS的DebugPort的访问
-FAST_MUTEX	DbgkpProcessDebugPortMutex;
+PFAST_MUTEX	g_pDbgkpProcessDebugPortMutex;
+
+PULONG g_pDbgkpMaxModuleMsgs;
 
 PSYSTEM_DLL* PspSystemDlls;
 
@@ -111,7 +114,7 @@ Return Value:
 	KPROCESSOR_MODE PreviousMode;
 	PDEBUG_OBJECT DebugObject;
 	PEPROCESS Process, CurrentProcess;
-	PETHREAD LastThread;
+	PETHREAD LastThread = nullptr;
 
 	PreviousMode = ExGetPreviousMode();
 	// 得到被调试进程的eprocess
@@ -156,11 +159,11 @@ Return Value:
 			//
 			// Post the fake process create messages etc.
 			//
-			status = kDbgUtil::g_pDbgkpPostFakeProcessCreateMessages(Process, DebugObject, &LastThread);
+			status = DbgkpPostFakeProcessCreateMessages(Process, DebugObject, &LastThread);
 			//
 			// Set the debug port. If this fails it will remove any faked messages.
 			//
-			status = kDbgUtil::g_pDbgkpSetProcessDebugObject(Process, DebugObject, status, LastThread);
+			status = DbgkpSetProcessDebugObject(Process, DebugObject, status, LastThread);
 
 			ExReleaseRundownProtection(kDbgUtil::GetProcessRundownProtect(Process));
 		}
@@ -179,23 +182,36 @@ NTSTATUS DbgkpPostFakeProcessCreateMessages(
 	_In_ PEPROCESS Process,
 	_In_ PDEBUG_OBJECT DebugObject,
 	_In_ PETHREAD* pLastThread
-) {
+) 
+/*++
+Routine Description:
+	This routine posts the faked initial process create, thread create and mudule load messages
+Arguments:
+	ProcessHandle     - Handle to a process to be debugged
+	DebugObjectHandle - Handle to a debug object
+Return Value:
+	None.
+--*/
+{
 	NTSTATUS status;
 	KAPC_STATE ApcState;
 	PETHREAD StartThread, Thread;
 	PETHREAD LastThread;
 
+	
 	// 收集所有线程创建的消息
-	StartThread = nullptr;
-	status = DbgkpPostFakeThreadMessages(
+	status = kDbgUtil::g_pDbgkpPostFakeThreadMessages(
 		Process,
-		StartThread,
 		DebugObject,
+		nullptr,
 		&Thread,
 		&LastThread
 	);
 
 	if (NT_SUCCESS(status)) {
+		//
+		// Attach to the process so we can touch its address space
+		// 
 		KeStackAttachProcess(Process, &ApcState);
 
 		// 收集模块创建的消息
@@ -299,7 +315,19 @@ DbgkpSetProcessDebugObject(
 	_In_ PDEBUG_OBJECT DebugObject,
 	_In_ NTSTATUS MsgStatus,
 	_In_ PETHREAD LastThread
-) {
+) 
+/*++
+Routine Description:
+	Attach a debug object to a process.
+Arguments:
+	Process     - Process to be debugged
+	DebugObject - Debug object to attach
+	MsgStatus   - Status from queing the messages
+	LastThread  - Last thread seen in attach loop.
+Return Value:
+	NTSTATUS - Status of call.
+--*/
+{
 	NTSTATUS status;
 	PETHREAD ThisThread;
 	LIST_ENTRY TempList;
@@ -325,61 +353,99 @@ DbgkpSetProcessDebugObject(
 	else {
 		status = STATUS_SUCCESS;
 	}
-	auto process = (PEPROCESS)Process;
 
+	PDEBUG_OBJECT* pProcessDebugPort = kDbgUtil::GetProcessDebugPort(Process);
+
+	//
+	// Pick up any threads we missed
+	//
 	if (NT_SUCCESS(status)) {
 		while (true) {
+			//
+			// Acquire the debug port mutex so we know that any new threads will
+			// have to wait to behind us.
+			//
 			GlobalHeld = TRUE;
-			ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
 
+			ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
+
+			//
+			// If the port has been set then exit now.
+			//
 			// 如果被调试进程的Debug Port已经设置，那么跳出循环
-		/*	if (process->DebugPort != nullptr) {
+			if (*pProcessDebugPort != nullptr) {
 				status = STATUS_PORT_ALREADY_SET;
 				break;
-			}*/
+			}
+			//
+			// Assign the debug port to the process to pick up any new threads
+			//
+			//没有设置debugport，在这里设置
+			*pProcessDebugPort = DebugObject;
 
-			//process->DebugPort = DebugObject;
+			//
+		   // Reference the last thread so we can deref outside the lock
+		   //
 			ObReferenceObject(LastThread);
 
-			//Thread = (PETHREAD_S)PsGetNextProcessThread(Process, LastThread);
-						
-			//if (Thread != nullptr) {
-			//	process->DebugPort = nullptr;
-			//	ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
-			//	GlobalHeld = FALSE;
+			//
+			// Search forward for new threads
+			//
+			Thread = kDbgUtil::g_pPsGetNextProcessThread(Process, LastThread);
 
-			//	ObDereferenceObject(LastThread);
-			//	// 通知线程创建消息
-			//	status = DbgkpPostFakeThreadMessages(
-			//		Process,
-			//		(PETHREAD)Thread,
-			//		DebugObject,
-			//		&FirstThread,
-			//		&LastThread
-			//	);
-			//	if (!NT_SUCCESS(status)) {
-			//		LastThread = nullptr;
-			//		break;
-			//	}
-			//	ObDereferenceObject(FirstThread);
-			//}
-			//else {
-			//	break;
-			//}
+			if (Thread != nullptr) {
+				//
+				// Remove the debug port from the process as we are
+				// about to drop the lock
+				//
+				pProcessDebugPort = nullptr;
+				ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
+				GlobalHeld = FALSE;
+
+				ObDereferenceObject(LastThread);
+				// 通知线程创建消息
+				//
+				// Queue any new thread messages and repeat.
+				//
+
+				status = kDbgUtil::g_pDbgkpPostFakeThreadMessages(
+					Process,
+					DebugObject,
+					Thread,
+					&FirstThread,
+					&LastThread
+				);
+
+				if (!NT_SUCCESS(status)) {
+					LastThread = nullptr;
+					break;
+				}
+				ObDereferenceObject(FirstThread);
+			}
+			else {
+				break;
+			}
 		}
 	}
 
+	//
+	// Lock the debug object so we can check its deleted status
+	//
 	ExAcquireFastMutex(&DebugObject->Mutex);
 
+	//
+	// We must not propagate a debug port thats got no handles left.
+	//
 	if (NT_SUCCESS(status)) {
-		//if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
-		//	PS_SET_BITS(&Process->Flags, PS_PROCESS_FLAGS_NO_DEBUG_INHERIT | PS_PROCESS_FLAGS_CREATE_REPORTED);
-		//	ObReferenceObject(DebugObject);
-		//}
-		//else {
-		//	//process->DebugPort = nullptr;
-		//	status = STATUS_DEBUGGER_INACTIVE;
-		//}
+		PULONG pFlags = kDbgUtil::GetProcessFlags(Process);
+		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
+			PS_SET_BITS(pFlags, PS_PROCESS_FLAGS_NO_DEBUG_INHERIT | PS_PROCESS_FLAGS_CREATE_REPORTED);
+			ObReferenceObject(DebugObject);
+		}
+		else {
+			pProcessDebugPort = nullptr;
+			status = STATUS_DEBUGGER_INACTIVE;
+		}
 	}
 
 	// 遍历所有调试事件
@@ -390,9 +456,21 @@ DbgkpSetProcessDebugObject(
 
 		if ((DebugEvent->Flags & DEBUG_EVENT_INACTIVE) != 0 && DebugEvent->BackoutThread == ThisThread) {
 			Thread = DebugEvent->Thread;
-			if (NT_SUCCESS(status)) {
-				/*if ((DebugEvent->Flags & DEBUG_EVENT_PROTECT_FAILED) != 0) {
-					PS_SET_BITS(&Thread->CrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
+
+			//
+			// If the thread has not been inserted by CreateThread yet then don't
+			// create a handle. We skip system threads here also
+			//
+			PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(Thread);
+			bool isSystemThread = (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_SYSTEM) != 0;
+			if (NT_SUCCESS(status) && 
+				!isSystemThread) {
+				//
+				// If we could not acquire rundown protection on this
+				// thread then we need to suppress its exit message.
+				//
+				if ((DebugEvent->Flags & DEBUG_EVENT_PROTECT_FAILED) != 0) {
+					PS_SET_BITS(pCrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
 					RemoveEntryList(&DebugEvent->EventList);
 					InsertTailList(&TempList, &DebugEvent->EventList);
 				}
@@ -403,8 +481,8 @@ DbgkpSetProcessDebugObject(
 						First = FALSE;
 					}
 					DebugEvent->BackoutThread = nullptr;
-					PS_SET_BITS(&Thread->CrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
-				}*/
+					PS_SET_BITS(pCrossThreadFlags, PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG);
+				}
 			}
 			else {
 				RemoveEntryList(&DebugEvent->EventList);
@@ -413,7 +491,8 @@ DbgkpSetProcessDebugObject(
 
 			if (DebugEvent->Flags & DEBUG_EVENT_RELEASE) {
 				DebugEvent->Flags &= ~DEBUG_EVENT_RELEASE;
-				//ExReleaseRundownProtection(&Thread->RundownProtect);
+				PEX_RUNDOWN_REF RundownProtect = kDbgUtil::GetThreadRundownProtect(Thread);
+				ExReleaseRundownProtection(RundownProtect);
 			}
 		}
 	}
@@ -421,7 +500,7 @@ DbgkpSetProcessDebugObject(
 	ExReleaseFastMutex(&DebugObject->Mutex);
 
 	if (GlobalHeld) {
-		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 	}
 
 	if (LastThread != nullptr) {
@@ -431,11 +510,11 @@ DbgkpSetProcessDebugObject(
 	while (!IsListEmpty(&TempList)) {
 		Entry = RemoveHeadList(&TempList);
 		DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
-		DbgkpWakeTarget(DebugEvent);
+		kDbgUtil::g_pDbgkpWakeTarget(DebugEvent);
 	}
 
 	if (NT_SUCCESS(status)) {
-		DbgkpMarkProcessPeb(Process);
+		kDbgUtil::g_pDbgkpMarkProcessPeb(Process);
 	}
 
 	return status;
@@ -473,8 +552,8 @@ VOID DbgkSendSystemDllMessages(
 
 NTSTATUS DbgkpPostFakeThreadMessages(
 	PEPROCESS	Process,
-	PETHREAD	StartThread,
 	PDEBUG_OBJECT	DebugObject,
+	PETHREAD	StartThread,
 	PETHREAD* pFirstThread,
 	PETHREAD* pLastThread
 ) {
@@ -625,21 +704,18 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	return status;
 }
 
-NTSTATUS MmGetFileNameForAddress(
-	_In_ PVOID ProcessVa,
-	_Out_ PUNICODE_STRING FileName
-) {
-	return STATUS_SUCCESS;
-}
 
 NTSTATUS
 DbgkpPostModuleMessages(
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread,
-	_In_ PDEBUG_OBJECT DebugObject) {
-	
-	auto process = Process;
-	//PPEB Peb = process->Peb;
+	_In_ PDEBUG_OBJECT DebugObject)
+/*++
+	Routine Description:
+		This routine posts the module load messages when we debug an active process.
+--*/
+{
+	PPEB Peb = kDbgUtil::GetProcessPeb(Process);
 	PPEB_LDR_DATA Ldr = nullptr;
 	PLIST_ENTRY LdrHead, LdrNext;
 	PLDR_DATA_TABLE_ENTRY LdrEntry;
@@ -651,17 +727,23 @@ DbgkpPostModuleMessages(
 	IO_STATUS_BLOCK ioStatus;
 	DBGKM_APIMSG ApiMsg;
 
-	/*if (Peb == nullptr) {
+	if (Peb == nullptr) {
 		return STATUS_SUCCESS;
-	}*/
+	}
 
 	__try {
-		//Ldr = Peb->Ldr;
+		Ldr = kDbgUtil::GetPEBLdr(Peb);
 
 		LdrHead = &Ldr->InLoadOrderModuleList;
 		ProbeForRead(LdrHead, sizeof(LIST_ENTRY), TYPE_ALIGNMENT(LIST_ENTRY));
-		for (LdrNext = LdrHead->Flink, i = 0; LdrNext != LdrHead && i < 500; LdrNext = LdrNext->Flink,i++) {
-			if (i > 1) {
+		for (LdrNext = LdrHead->Flink, i = 0; 
+			LdrNext != LdrHead && i < *g_pDbgkpMaxModuleMsgs; 
+			LdrNext = LdrNext->Flink,i++) {
+			if (i > 0) {
+
+				//
+				// First image got send with process create message
+				//
 				RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
 
 				LdrEntry = CONTAINING_RECORD(LdrNext, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
@@ -677,9 +759,10 @@ DbgkpPostModuleMessages(
 					ApiMsg.u.LoadDll.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
 					ApiMsg.u.LoadDll.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
 				}
-				status = MmGetFileNameForAddress(NtHeaders, &Name);
+				status = kDbgUtil::g_pMmGetFileNameForAddress(NtHeaders, &Name);
 				if (NT_SUCCESS(status)) {
-					InitializeObjectAttributes(&attr, &Name, OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+					InitializeObjectAttributes(&attr, &Name, 
+						OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
 						nullptr, nullptr);
 					status = ZwOpenFile(&ApiMsg.u.LoadDll.FileHandle,
 						GENERIC_READ | SYNCHRONIZE,
@@ -694,12 +777,12 @@ DbgkpPostModuleMessages(
 				}
 
 				if (DebugObject) {
-					status = DbgkpQueueMessage(
+					status = kDbgUtil::g_pDbgkpQueueMessage(
 						Process, Thread, &ApiMsg, DEBUG_EVENT_NOWAIT, DebugObject
 					);
 				}
 				else {
-					DbgkpSendApiMessage(&ApiMsg, 0x3);
+					kDbgUtil::g_pDbgkpSendApiMessage(&ApiMsg, 0x3);
 					status = STATUS_UNSUCCESSFUL;
 				}
 
@@ -715,6 +798,93 @@ DbgkpPostModuleMessages(
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 
 	}
+
+#ifdef _WIN64
+	PWOW64_PROCESS Wow64Process = (PWOW64_PROCESS)kDbgUtil::GetProcessWow64Process(Process);
+	if (Wow64Process != nullptr && Wow64Process->Wow64 != nullptr) {
+		PPEB32 Peb32;
+		PPEB_LDR_DATA32 Ldr32;
+		PLIST_ENTRY32 LdrHead32, LdrNext32;
+		PLDR_DATA_TABLE_ENTRY32 LdrEntry32;
+		PWCHAR pSys;
+
+		Peb32 = (PPEB32)Wow64Process->Wow64;
+
+		__try {
+			Ldr32 = (PPEB_LDR_DATA32)ULongToPtr(Peb32->Ldr);
+
+			LdrHead32 = &Ldr32->InLoadOrderModuleList;
+
+			ProbeForRead(LdrHead32, sizeof(LdrHead32), TYPE_ALIGNMENT(LdrHead32));
+			for (LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrHead32->Flink), i = 0;
+				LdrNext32 != LdrHead32 && i < *g_pDbgkpMaxModuleMsgs;
+				LdrNext32 = (PLIST_ENTRY32)UlongToPtr(LdrNext32->Flink), i++) {
+
+				if (i > 0) {
+					RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
+
+					LdrEntry32 = CONTAINING_RECORD(LdrNext32, LDR_DATA_TABLE_ENTRY32, InLoadOrderLinks);
+					ProbeForRead(LdrEntry32, sizeof(LdrEntry32), TYPE_ALIGNMENT(LdrEntry32));
+
+					ApiMsg.ApiNumber = DbgKmLoadDllApi;
+					ApiMsg.u.LoadDll.BaseOfDll = UlongToPtr(LdrEntry32->DllBase);
+					ApiMsg.u.LoadDll.NamePointer = nullptr;
+
+					ProbeForRead(ApiMsg.u.LoadDll.BaseOfDll, sizeof(IMAGE_DOS_HEADER),
+						TYPE_ALIGNMENT(IMAGE_DOS_HEADER));
+
+					NtHeaders = RtlImageNtHeader(ApiMsg.u.LoadDll.BaseOfDll);
+					if (NtHeaders) {
+						ApiMsg.u.LoadDll.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
+						ApiMsg.u.LoadDll.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
+					}
+
+					status = kDbgUtil::g_pMmGetFileNameForAddress(NtHeaders, &Name);
+					if (NT_SUCCESS(status)) {
+						ASSERT(sizeof(L"SYSTEM32") == sizeof(WOW64_SYSTEM_DIRECTORY_U));
+						pSys = wcsstr(Name.Buffer, L"\\SYSTEM32\\");
+						if (pSys != NULL) {
+							RtlCopyMemory(pSys + 1,
+								WOW64_SYSTEM_DIRECTORY_U,
+								sizeof(WOW64_SYSTEM_DIRECTORY_U) - sizeof(UNICODE_NULL));
+						}
+
+						InitializeObjectAttributes(&attr,
+							&Name,
+							OBJ_FORCE_ACCESS_CHECK | OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+							nullptr,
+							nullptr);
+
+						status = ZwOpenFile(&ApiMsg.u.LoadDll.FileHandle,
+							GENERIC_READ | SYNCHRONIZE,
+							&attr,
+							&ioStatus,
+							FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							FILE_SYNCHRONOUS_IO_NONALERT);
+						if (!NT_SUCCESS(status)) {
+							ApiMsg.u.LoadDll.FileHandle = nullptr;
+						}
+						ExFreePool(Name.Buffer);
+					}
+
+					status = kDbgUtil::g_pDbgkpQueueMessage(Process,
+						Thread,
+						&ApiMsg,
+						DEBUG_EVENT_NOWAIT,
+						DebugObject);
+					if (!NT_SUCCESS(status) && ApiMsg.u.LoadDll.FileHandle != NULL) {
+						ObCloseHandle(ApiMsg.u.LoadDll.FileHandle, KernelMode);
+					}
+				}
+
+				ProbeForRead(LdrNext32, sizeof(LIST_ENTRY32), sizeof(UCHAR));
+			}
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+
+		}
+	}
+#endif
 
 	return STATUS_SUCCESS;
 }
@@ -1070,7 +1240,7 @@ DbgkpQueueMessage(
 	else {
 		DebugEvent = &StaticDebugEvent;
 		DebugEvent->Flags = Flags;
-		ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
+		ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 		//DebugObject = (PDEBUG_OBJECT)process->DebugPort;
 		
@@ -1125,7 +1295,7 @@ DbgkpQueueMessage(
 	}
 
 	if ((Flags & DEBUG_EVENT_NOWAIT) == 0) {
-		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 		if (NT_SUCCESS(status)) {
 			// 等待调试器的回复
 			KeWaitForSingleObject(
@@ -1675,7 +1845,7 @@ NTSTATUS DbgkClearProcessDebugObject(
 	LIST_ENTRY TempList;
 	PLIST_ENTRY Entry;
 
-	ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
+	ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 	auto process = Process;
 	/*DebugObject = (PDEBUG_OBJECT)process->DebugPort;
@@ -1687,7 +1857,7 @@ NTSTATUS DbgkClearProcessDebugObject(
 		process->DebugPort = nullptr;
 		status = STATUS_SUCCESS;
 	}*/
-	ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+	ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 	if (NT_SUCCESS(status)) {
 		DbgkpMarkProcessPeb(Process);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "NtMmApi.h"
+
 #define DEBUG_OBJECT_DELETE_PENDING			(0x1) // Debug object is delete pending.
 #define DEBUG_OBJECT_KILL_ON_CLOSE			(0x2) // Kill all debugged processes on close
 // (0x4)
@@ -243,6 +245,21 @@ typedef struct _DBGKM_UNLOAD_DLL
 	PVOID BaseAddress;
 } DBGKM_UNLOAD_DLL, * PDBGKM_UNLOAD_DLL;
 
+typedef struct _DBGKM_ERROR_MSG {
+	EXCEPTION_RECORD ExceptionRecord;
+	SECTION_IMAGE_INFORMATION ImageInfo;
+	union 
+	{
+		ULONG Flags;
+		struct {
+			ULONG IsProtectedProcess : 1;
+			ULONG IsWow64Process : 1;
+			ULONG IsFilterMessage : 1;
+			ULONG SpareBits : 29;
+		};
+	};
+}DBGKM_ERROR_MSG,*PDBGKM_ERROR_MSG;
+
 //
 // LPC Port Message
 //
@@ -268,7 +285,7 @@ typedef struct _PORT_MESSAGE
 	} u2;
 	union
 	{
-		LPC_CLIENT_ID ClientId;
+		CLIENT_ID ClientId;
 		double DoNotUseThisField;
 	};
 	ULONG MessageId;
@@ -280,11 +297,11 @@ typedef struct _PORT_MESSAGE
 } PORT_MESSAGE, * PPORT_MESSAGE;
 
 // 消息结构
-typedef struct _DBGKM_MSG
+typedef struct _DBGKM_APIMSG
 {
 	PORT_MESSAGE h;
 	DBGKM_APINUMBER ApiNumber;
-	ULONG ReturnedStatus;
+	NTSTATUS ReturnedStatus;
 	union
 	{
 		DBGKM_EXCEPTION Exception;
@@ -294,6 +311,7 @@ typedef struct _DBGKM_MSG
 		DBGKM_EXIT_PROCESS ExitProcess;
 		DBGKM_LOAD_DLL LoadDll;
 		DBGKM_UNLOAD_DLL UnloadDll;
+		DBGKM_ERROR_MSG ErrorMsg;
 	}u;
 } DBGKM_APIMSG, * PDBGKM_APIMSG;
 
@@ -630,4 +648,8 @@ typedef struct _SYSTEM_DLL {
 	EX_PUSH_LOCK Lock;        // 0x8
 	SYSTEM_DLL_INFO DllInfo;  // 0x10
 }SYSTEM_DLL, * PSYSTEM_DLL;
+
+typedef struct _WOW64_PROCESS {
+	PVOID Wow64;
+}WOW64_PROCESS,*PWOW64_PROCESS;
 

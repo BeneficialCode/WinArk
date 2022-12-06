@@ -140,5 +140,67 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (pInfo->EprocessOffsets.RundownProtect == -1)
 		return false;
 
+	pInfo->DbgkpPostFakeThreadMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostFakeThreadMessages");
+	if (!pInfo->DbgkpPostFakeThreadMessages)
+		return false;
+
+	pInfo->DbgkpPostModuleMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostModuleMessages");
+	if (!pInfo->DbgkpPostModuleMessages)
+		return false;
+
+	pInfo->EthreadOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "RundownProtect");
+	if (!pInfo->EthreadOffsets.RundownProtect)
+		return false;
+
+	pInfo->EthreadOffsets.CrossThreadFlags = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "CrossThreadFlags");
+	if (!pInfo->EthreadOffsets.RundownProtect)
+		return false;
+
+	pInfo->PsGetNextProcessThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsGetNextProcessThread");
+	if (!pInfo->PsGetNextProcessThread)
+		return false;
+
+	pInfo->EprocessOffsets.DebugPort = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "DebugPort");
+	if (!pInfo->EprocessOffsets.DebugPort)
+		return false;
+
+	pInfo->DbgkpProcessDebugPortMutex = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpProcessDebugPortMutex");
+	if (!pInfo->DbgkpProcessDebugPortMutex)
+		return false;
+
+	pInfo->DbgkpWakeTarget = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpWakeTarget");
+	if (!pInfo->DbgkpWakeTarget)
+		return false;
+
+	pInfo->DbgkpMarkProcessPeb = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMarkProcessPeb");
+	if (!pInfo->DbgkpMarkProcessPeb)
+		return false;
+
+	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
+	if (!pInfo->DbgkpMaxModuleMsgs)
+		return false;
+
+	pInfo->PebOffsets.Ldr = SymbolHelper::GetKernelStructMemberOffset("_PEB", "Ldr");
+	if (!pInfo->PebOffsets.Ldr)
+		return false;
+
+	pInfo->MmGetFileNameForAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MmGetFileNameForAddress");
+	if (!pInfo->MmGetFileNameForAddress)
+		return false;
+
+	pInfo->DbgkpSendApiMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSendApiMessage");
+	if (!pInfo->DbgkpSendApiMessage)
+		return false;
+
+	pInfo->DbgkpQueueMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpQueueMessage");
+	if (!pInfo->DbgkpQueueMessage)
+		return false;
+#ifdef  _WIN64
+	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
+	if (!pInfo->EprocessOffsets.Wow64Process)
+		return false;
+#endif //  _WIN64
+
+	
 	return true;
 }

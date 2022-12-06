@@ -3,29 +3,31 @@
 #include "detours.h"
 
 extern POBJECT_TYPE* DbgkDebugObjectType;
+extern PFAST_MUTEX g_pDbgkpProcessDebugPortMutex;
+extern PULONG g_pDbgkpMaxModuleMsgs;
 
 PEX_RUNDOWN_REF kDbgUtil::GetProcessRundownProtect(PEPROCESS Process) {
 	return reinterpret_cast<PEX_RUNDOWN_REF>((char*)Process + _eprocessOffsets.RundownProtect);
 }
 
-ULONG kDbgUtil::GetProcessCrossThreadFlags(PEPROCESS Process) {
-	return *reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.CrossThreadFlags);
+PULONG kDbgUtil::GetProcessCrossThreadFlags(PEPROCESS Process) {
+	return reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.CrossThreadFlags);
 }
 
 PPEB kDbgUtil::GetProcessPeb(PEPROCESS Process) {
 	return *reinterpret_cast<PPEB*>((char*)Process + _eprocessOffsets.Peb);
 }
 
-PDEBUG_OBJECT kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
-	return *reinterpret_cast<PDEBUG_OBJECT*>((char*)Process + _eprocessOffsets.DebugPort);
+PDEBUG_OBJECT* kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
+	return reinterpret_cast<PDEBUG_OBJECT*>((char*)Process + _eprocessOffsets.DebugPort);
 }
 
 VOID* kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
-	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.Wow64Process);
+	return *reinterpret_cast<PVOID*>((char*)Process + _eprocessOffsets.Wow64Process);
 }
 
-ULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
-	return *reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.Flags);
+PULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
+	return reinterpret_cast<PULONG>((char*)Process + _eprocessOffsets.Flags);
 }
 
 VOID* kDbgUtil::GetProcessSectionBaseAddress(PEPROCESS Process) {
@@ -38,6 +40,18 @@ VOID* kDbgUtil::GetProcessSectionObject(PEPROCESS Process) {
 
 VOID* kDbgUtil::GetProcessUniqueProcessId(PEPROCESS Process) {
 	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.UniqueProcessId);
+}
+
+PULONG kDbgUtil::GetThreadCrossThreadFlags(PETHREAD Ethread) {
+	return reinterpret_cast<PULONG>((char*)Ethread + _ethreadOffsets.CrossThreadFlags);
+}
+
+PEX_RUNDOWN_REF kDbgUtil::GetThreadRundownProtect(PETHREAD Thread) {
+	return reinterpret_cast<PEX_RUNDOWN_REF>((char*)Thread + _ethreadOffsets.RundownProtect);
+}
+
+PPEB_LDR_DATA kDbgUtil::GetPEBLdr(PPEB Peb) {
+	return *reinterpret_cast<PPEB_LDR_DATA*>((char*)Peb + _pebOffsets.Ldr);
 }
 
 bool kDbgUtil::HookDbgSys() {
@@ -88,6 +102,25 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpPostFakeProcessCreateMessages = (PDbgkpPostFakeProcessCreateMessages)info->DbgkpPostFakeProcessCreateMessages;
 		g_pDbgkpSetProcessDebugObject = (PDbgkpSetProcessDebugObject)info->DbgkpSetProcessDebugObject;
 		_eprocessOffsets.RundownProtect = info->EprocessOffsets.RundownProtect;
+		g_pDbgkpPostFakeThreadMessages = (PDbgkpPostFakeThreadMessages)info->DbgkpPostFakeThreadMessages;
+		g_pDbgkpPostModuleMessages = (PDbgkpPostModuleMessages)info->DbgkpPostModuleMessages;
+		_ethreadOffsets.CrossThreadFlags = info->EthreadOffsets.CrossThreadFlags;
+		_ethreadOffsets.RundownProtect = info->EthreadOffsets.RundownProtect;
+		g_pPsGetNextProcessThread = (PPsGetNextProcessThread)info->PsGetNextProcessThread;
+		_eprocessOffsets.DebugPort = info->EprocessOffsets.DebugPort;
+		g_pDbgkpProcessDebugPortMutex = (PFAST_MUTEX)info->DbgkpProcessDebugPortMutex;
+		g_pDbgkpMarkProcessPeb = (PDbgkpMarkProcessPeb)info->DbgkpMarkProcessPeb;
+		g_pDbgkpWakeTarget = (PDbgkpWakeTarget)info->DbgkpWakeTarget;
+		g_pDbgkpMaxModuleMsgs = (PULONG)info->DbgkpMaxModuleMsgs;
+		_pebOffsets.Ldr = info->PebOffsets.Ldr;
+		g_pMmGetFileNameForAddress = (PMmGetFileNameForAddress)info->MmGetFileNameForAddress;
+		g_pDbgkpQueueMessage = (PDbgkpQueueMessage)info->DbgkpQueueMessage;
+		g_pDbgkpSendApiMessage = (PDbgkpSendApiMessage)info->DbgkpSendApiMessage;
+#ifdef _WIN64
+		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
+#endif // _WIN64
+
+
 		_first = false;
 	}
 	

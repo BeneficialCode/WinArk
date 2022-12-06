@@ -119,8 +119,8 @@ NTSTATUS DbgkpPostFakeProcessCreateMessages(
 // 向调试子系统发送虚假的线程创建消息
 NTSTATUS DbgkpPostFakeThreadMessages(
 	PEPROCESS	Process,
-	PETHREAD	StartThread,
 	PDEBUG_OBJECT	DebugObject,
+	PETHREAD	StartThread,
 	PETHREAD* pFirstThread,
 	PETHREAD* pLastThread
 );

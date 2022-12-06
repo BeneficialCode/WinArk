@@ -166,6 +166,12 @@
     <ClInclude Include="Section.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NtWow64.h">
+      <Filter>DbgCore</Filter>
+    </ClInclude>
+    <ClInclude Include="NtMmApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="FilterFileNameInformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
