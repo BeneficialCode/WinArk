@@ -46,7 +46,7 @@
     <ClInclude Include="ObjectAttributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistryManager.h">
+    <ClInclude Include="RegistryKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileManager.h">
@@ -172,6 +172,12 @@
     <ClInclude Include="NtMmApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FilterFileNameInformation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MiniFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="VadHelpers.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -183,7 +189,7 @@
     <ClCompile Include="ObjectAttributes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RegistryManager.cpp">
+    <ClCompile Include="RegistryKey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileManager.cpp">
@@ -286,6 +292,12 @@
       <Filter>Timer</Filter>
     </ClCompile>
     <ClCompile Include="Section.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterFileNameInformation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VadHelpers.cpp">

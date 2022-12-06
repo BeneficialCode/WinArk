@@ -238,6 +238,7 @@
     <ClInclude Include="detours.h" />
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
+    <ClInclude Include="FilterFileNameInformation.h" />
     <ClInclude Include="IoTimer.h" />
     <ClInclude Include="KernelTimer.h" />
     <ClInclude Include="ExecutiveResource.h" />
@@ -254,6 +255,7 @@
     <ClInclude Include="Logging.h" />
     <ClInclude Include="LookasideList.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="MiniFilter.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="NtMmApi.h" />
     <ClInclude Include="NtWow64.h" />
@@ -262,7 +264,7 @@
     <ClInclude Include="PEParser.h" />
     <ClInclude Include="ProcessProtect.h" />
     <ClInclude Include="QueuedSpinLock.h" />
-    <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="SpinLock.h" />
     <ClInclude Include="SysMon.h" />
@@ -284,6 +286,7 @@
     <ClCompile Include="detours.cpp" />
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="disasm.cpp" />
+    <ClCompile Include="FilterFileNameInformation.cpp" />
     <ClCompile Include="IoTimer.cpp" />
     <ClCompile Include="KernelTimer.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />
@@ -299,6 +302,7 @@
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="LookasideList.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MiniFilter.cpp" />
     <ClCompile Include="Mutex.cpp" />
     <ClCompile Include="ObjectAttributes.cpp" />
     <ClCompile Include="pch.cpp">
@@ -314,7 +318,7 @@
     <ClCompile Include="PEParser.cpp" />
     <ClCompile Include="ProcessProtect.cpp" />
     <ClCompile Include="QueuedSpinLock.cpp" />
-    <ClCompile Include="RegistryManager.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="Section.cpp" />
     <ClCompile Include="SpinLock.cpp" />
     <ClCompile Include="SysMon.cpp" />

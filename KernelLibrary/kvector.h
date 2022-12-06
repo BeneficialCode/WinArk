@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef  DRIVER_TAG
+#define DRIVER_TAG 'dltk'
+#endif // ! DRIVER_TAG
+
 template<typename T,ULONG Tag,POOL_TYPE PoolType = PagedPool>
 struct kvector {
 	static_assert(Tag != 0);

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ExecutiveResource.h"
 
-void ExecutiveResource::Init() {
-	ExInitializeResourceLite(&m_res);
+NTSTATUS ExecutiveResource::Init() {
+	return ExInitializeResourceLite(&m_res);
 }
 
 void ExecutiveResource::Delete() {
