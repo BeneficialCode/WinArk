@@ -233,8 +233,8 @@ struct DbgSysCoreInfo {
 	void* MmGetFileNameForAddress;
 	void* DbgkpSendApiMessage;
 	void* DbgkpQueueMessage;
-	EProcessGlobalOffsets EprocessOffsets;
-	EThreadGlobalOffsets EthreadOffsets;
+	EProcessOffsets EprocessOffsets;
+	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;
 };
 

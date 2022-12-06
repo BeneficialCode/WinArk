@@ -10,21 +10,30 @@ NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 	if (NT_SUCCESS(status)) {
 		switch (pData->VadCountPos)
 		{
-			case VadCountPos::NumberGenericTableElements:
+			case VadCountPos::NumberGenericTableElements: 
+			{
 				PUCHAR pTable = (PUCHAR)Process + pData->EprocessOffsets.VadRoot;
 				PULONG pNumberGenericElements = (PULONG)((PUCHAR)pTable + pData->TableOffsets.NumberGenericTableElements);
 				*pCount = *pNumberGenericElements;
 				break;
+			}
+				
 
 			case VadCountPos::NumberOfVads:
+			{
 				PULONG pNumberOfVads = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.NumberOfVads);
 				*pCount = *pNumberOfVads;
 				break;
+			}
+				
 
 			case VadCountPos::VadCount:
+			{
 				PULONG pVadCount = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.VadCount);
-				*pCount = *pNumberGenericElements;
+				*pCount = *pVadCount;
 				break;
+			}
+				
 			default:
 				status = STATUS_UNKNOWN_REVISION;
 				break;

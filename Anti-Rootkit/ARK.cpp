@@ -1403,7 +1403,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = STATUS_SUCCESS;
 			break;
 		}
-	}
 
 		case IOCTL_ARK_GET_PROCESS_VAD_COUNT:
 		{
@@ -1420,10 +1419,11 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			VadData* pData = (VadData*)Irp->AssociatedIrp.SystemBuffer;
-			
+
 			break;
 		}
 	}
+
 
 	CompleteIrp(Irp, status, len);
 	return status;
