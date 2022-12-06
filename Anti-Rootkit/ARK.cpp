@@ -1325,6 +1325,25 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = RemoveMiniFilter(pData);
 			break;
 		}
+
+		case IOCTL_ARK_GET_PROCESS_VAD_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(VadData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			VadData* pData = (VadData*)Irp->AssociatedIrp.SystemBuffer;
+			
+			break;
+		}
 	}
 
 	Irp->IoStatus.Status = status;

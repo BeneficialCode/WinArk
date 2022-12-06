@@ -200,7 +200,7 @@ struct OperationInfo {
 static const GUID dllGuid =
 { 0x38669815, 0xc633, 0x45e0, { 0xbc, 0xd1, 0xe0, 0x11, 0x8a, 0xae, 0x9f, 0xa2 } };
 
-struct EProcessGlobalOffsets {
+struct EProcessOffsets {
 	ULONG RundownProtect;		// PEX_RUNDOWN_REF
 	ULONG CrossThreadFlags;		// ULONG
 	ULONG Peb;					// 
@@ -210,9 +210,16 @@ struct EProcessGlobalOffsets {
 	ULONG SectionBaseAddress;
 	ULONG SectionObject;
 	ULONG UniqueProcessId;
+	ULONG VadRoot;
+	ULONG CloneRoot;
+	ULONG NumberOfPrivatePages;
+	ULONG ModifiedPageCount;
+	ULONG NumberOfLockedPages;
+	ULONG VadCount;
+	ULONG NumberOfVads;
 };
 
-struct EThreadGlobalOffsets {
+struct EThreadOffsets {
 	ULONG CrossThreadFlags;
 	ULONG SystemThread;
 	ULONG Cid;
@@ -223,7 +230,7 @@ struct EThreadGlobalOffsets {
 	ULONG StartAddress;
 };
 
-struct TcbGlobalOffsets {
+struct TcbOffsets {
 	ULONG Teb;
 	ULONG ApcStateIndex;
 };
@@ -232,5 +239,20 @@ struct PebOffsets {
 	ULONG Ldr;
 };
 
+enum class VadCountPos {
+	VadCount = 0,
+	NumberOfVads,
+	NumberGenericTableElements
+};
 
+struct MmAvlTableOffsets {
+	ULONG NumberGenericTableElements;
+};
+
+struct VadData {
+	VadCountPos VadCountPos;
+	EProcessOffsets EprocessOffsets;
+	MmAvlTableOffsets TableOffsets;
+	ULONG Pid;
+};
 

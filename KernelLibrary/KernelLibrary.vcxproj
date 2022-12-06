@@ -271,6 +271,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="typesdefs.h" />
+    <ClInclude Include="VadHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoEnter.cpp" />
@@ -319,6 +320,7 @@
     <ClCompile Include="SysMon.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="VadHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="code32.asm">

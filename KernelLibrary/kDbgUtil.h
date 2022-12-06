@@ -28,9 +28,9 @@ public:
 	static bool HookDbgSys();
 	static bool UnhookDbgSys();
 
-	static inline TcbGlobalOffsets _tcbOffsets;
-	static inline EThreadGlobalOffsets _ethreadOffsets;
-	static inline EProcessGlobalOffsets _eprocessOffsets;
+	static inline TcbOffsets _tcbOffsets;
+	static inline EThreadOffsets _ethreadOffsets;
+	static inline EProcessOffsets _eprocessOffsets;
 	static inline PebOffsets _pebOffsets;
 	
 	using PNtCreateDebugObject = decltype(&NtCreateDebugObject);

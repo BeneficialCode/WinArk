@@ -556,7 +556,20 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	PETHREAD	StartThread,
 	PETHREAD* pFirstThread,
 	PETHREAD* pLastThread
-) {
+) 
+/*++
+Routine Description:
+	This routine posts the faked initial process create, thread create messages
+Arguments:
+	Process      - Process to be debugged
+	DebugObject  - Debug object to queue messages to
+	StartThread  - Thread to start search from
+	pFirstThread - First thread found in the list
+	pLastThread  - Last thread found in the list
+Return Value:
+	None.
+--*/
+{
 	NTSTATUS status;
 	PETHREAD Thread, FirstThread, LastThread, CurrentThread;
 	DBGKM_APIMSG ApiMsg;
@@ -573,112 +586,142 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 
 	CurrentThread = PsGetCurrentThread();
 
-	if (StartThread == nullptr) {
-		//StartThread = PsGetNextProcessThread(Process,nullptr);
-		First = TRUE;
-	}
-	else {
+	if (StartThread != nullptr) {
 		First = FALSE;
 		FirstThread = StartThread;
 		ObfReferenceObject(StartThread);
+		
+	}
+	else {
+		StartThread = kDbgUtil::g_pPsGetNextProcessThread(Process,nullptr);
+		First = TRUE;
 	}
 
 	// 遍历调试进程的所有线程
-	//for (Thread = (PETHREAD_S)StartThread;
-	//	Thread != nullptr;
-	//	Thread = (PETHREAD_S)PsGetNextProcessThread(Process, (PETHREAD)Thread))
-	//	Flags = DEBUG_EVENT_NOWAIT;
+	for (Thread = StartThread;
+		Thread != nullptr;
+		Thread = kDbgUtil::g_pPsGetNextProcessThread(Process, Thread)) {
 
-	//	if (LastThread != nullptr) {
-	//		ObfDereferenceObject(LastThread);
-	//	}
+		Flags = DEBUG_EVENT_NOWAIT;
 
-	//	LastThread = Thread;
-	//	ObfDereferenceObject(LastThread);
+		//
+		// Keep a track on the last thread we have seen.
+		// We use this as a starting point for new threads after we
+		// really attach so we can pick up any new threads.
+		//
+		if (LastThread != nullptr) {
+			ObDereferenceObject(LastThread);
+		}
 
-	//	if (Thread->ThreadInserted == 0) {
-	//		// 涉及的内容太多
-	//		continue;
-	//	}
+		LastThread = Thread;
+		ObDereferenceObject(LastThread);
 
-	//	if (ExAcquireRundownProtection(&Thread->RundownProtect)) {
-	//		Flags |= DEBUG_EVENT_RELEASE;
-	//		status = PsSuspendThread((PETHREAD)Thread, nullptr);
-	//		if (NT_SUCCESS(status)) {
-	//			Flags |= DEBUG_EVENT_SUSPEND;
-	//		}
-	//	}
-	//	else {
-	//		Flags |= DEBUG_EVENT_PROTECT_FAILED;
-	//	}
+		//if (Thread->ThreadInserted == 0) {
+		//	// 涉及的内容太多
+		//	continue;
+		//}
 
-	//	// 每次构造一个DBGKM_APIMSG结构
-	//	memset(&ApiMsg, 0, sizeof(ApiMsg));
+		//
+		// Acquire rundown protection of the thread.
+		// This stops the thread exiting so we know it can't send
+		// it's termination message
+		//
+		PEX_RUNDOWN_REF RundownProtect = kDbgUtil::GetThreadRundownProtect(Thread);
+		PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(Thread);
+		bool isSystemThread = (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_SYSTEM) != 0;
+		if (ExAcquireRundownProtection(RundownProtect)) {
+			Flags |= DEBUG_EVENT_RELEASE;
 
-	//	if (First && (Flags & DEBUG_EVENT_PROTECT_FAILED) == 0) {
-	//		// 进程的第一个线程
-	//		IsFirstThread = TRUE;
-	//		ApiMsg.ApiNumber = DbgKmCreateProcessApi;
+			//
+			// Suspend the thread if we can for the debugger
+			// We don't suspend terminating threads as we will not be giving details
+			// of these to the debugger.
+			//
+			if (!isSystemThread) {
+				status = PsSuspendThread((PETHREAD)Thread, nullptr);
+				if (NT_SUCCESS(status)) {
+					Flags |= DEBUG_EVENT_SUSPEND;
+				}
+			}
+		}
+		else {
+			//
+			// Rundown protection failed for this thread.
+			// This means the thread is exiting. We will mark this thread
+			// later so it doesn't sent a thread termination message.
+			// We can't do this now because this attach might fail.
+			//
+			Flags |= DEBUG_EVENT_PROTECT_FAILED;
+		}
 
-	//		if (process->SectionObject) {
-	//			ApiMsg.u.CreateProcess.FileHandle = DbgkpSectionToFileHandle(process->SectionObject);
-	//		}
-	//		else {
-	//			ApiMsg.u.CreateProcess.FileHandle = nullptr;
-	//		}
-	//		ApiMsg.u.CreateProcess.BaseOfImage = process->SectionBaseAddress;
+		// 每次构造一个DBGKM_APIMSG结构
+		RtlZeroMemory(&ApiMsg, sizeof(ApiMsg));
 
-	//		KeStackAttachProcess(Process, &ApcState);
+		if (First && (Flags & DEBUG_EVENT_PROTECT_FAILED) == 0&&
+			!isSystemThread) {
+			// 进程的第一个线程
+			IsFirstThread = TRUE;
+			ApiMsg.ApiNumber = DbgKmCreateProcessApi;
 
-	//		__try {
-	//			NtHeaders = RtlImageNtHeader(process->SectionBaseAddress);
-	//			if (NtHeaders) {
-	//				ApiMsg.u.CreateProcess.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
-	//				ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
-	//				ApiMsg.u.CreateProcess.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
-	//			}
-	//		}
-	//		__except (EXCEPTION_EXECUTE_HANDLER) {
-	//			ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
-	//			ApiMsg.u.CreateProcess.DebugInfoFileOffset = 0;
-	//			ApiMsg.u.CreateProcess.DebugInfoSize = 0;
-	//		}
+			/*if (process->SectionObject) {
+				ApiMsg.u.CreateProcess.FileHandle = DbgkpSectionToFileHandle(process->SectionObject);
+			}
+			else {
+				ApiMsg.u.CreateProcess.FileHandle = nullptr;
+			}
+			ApiMsg.u.CreateProcess.BaseOfImage = process->SectionBaseAddress;
 
-	//		KeUnstackDetachProcess(&ApcState);
-	//	}
-	//	else {
-	//		IsFirstThread = FALSE;
-	//		ApiMsg.ApiNumber = DbgKmCreateThreadApi;
-	//		ApiMsg.u.CreateThread.StartAddress = Thread->StartAddress;
-	//	}
+			KeStackAttachProcess(Process, &ApcState);
 
-	//	status = DbgkpQueueMessage(Process, (PETHREAD)Thread,
-	//		&ApiMsg, Flags, DebugObject);
+			__try {
+				NtHeaders = RtlImageNtHeader(process->SectionBaseAddress);
+				if (NtHeaders) {
+					ApiMsg.u.CreateProcess.DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
+					ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
+					ApiMsg.u.CreateProcess.DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
+				}
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER) {
+				ApiMsg.u.CreateProcess.InitialThread.StartAddress = nullptr;
+				ApiMsg.u.CreateProcess.DebugInfoFileOffset = 0;
+				ApiMsg.u.CreateProcess.DebugInfoSize = 0;
+			}
 
-	//	if (!NT_SUCCESS(status)) {
-	//		if (Flags & DEBUG_EVENT_SUSPEND) {
-	//			KeResumeThread((PETHREAD)Thread);
-	//		}
+			KeUnstackDetachProcess(&ApcState);*/
+		}
+		else {
+			IsFirstThread = FALSE;
+			ApiMsg.ApiNumber = DbgKmCreateThreadApi;
+			// ApiMsg.u.CreateThread.StartAddress = Thread->StartAddress;
+		}
 
-	//		if (Flags & DEBUG_EVENT_RELEASE) {
-	//			ExReleaseRundownProtection(&Thread->RundownProtect);
-	//		}
+		status = DbgkpQueueMessage(Process, (PETHREAD)Thread,
+			&ApiMsg, Flags, DebugObject);
 
-	//		if (ApiMsg.ApiNumber == DbgKmCreateProcessApi && ApiMsg.u.CreateProcess.FileHandle != nullptr) {
-	//			ObCloseHandle(ApiMsg.u.CreateProcess.FileHandle, KernelMode);
-	//		}
+		if (!NT_SUCCESS(status)) {
+			if (Flags & DEBUG_EVENT_SUSPEND) {
+				PsResumeThread(Thread, nullptr);
+			}
 
-	//		ObfDereferenceObject(Thread);
-	//		break;
-	//	}
-	//	else if (IsFirstThread) {
-	//		First = FALSE;
-	//		ObReferenceObject(Thread);
-	//		FirstThread = Thread;
+			if (Flags & DEBUG_EVENT_RELEASE) {
+				ExReleaseRundownProtection(RundownProtect);
+			}
 
-	//		DbgkSendSystemDllMessages((PETHREAD)Thread, DebugObject, &ApiMsg);
-	//	}
-	//}
+			if (ApiMsg.ApiNumber == DbgKmCreateProcessApi && ApiMsg.u.CreateProcess.FileHandle != nullptr) {
+				ObCloseHandle(ApiMsg.u.CreateProcess.FileHandle, KernelMode);
+			}
+
+			ObfDereferenceObject(Thread);
+			break;
+		}
+		else if (IsFirstThread) {
+			First = FALSE;
+			ObReferenceObject(Thread);
+			FirstThread = Thread;
+
+			DbgkSendSystemDllMessages((PETHREAD)Thread, DebugObject, &ApiMsg);
+		}
+	}
 
 	if (!NT_SUCCESS(status)) {
 		if (FirstThread) {
