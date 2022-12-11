@@ -49,6 +49,7 @@ struct DriverHelper final {
 	static bool RemoveMiniFilter(MiniFilterData* pData, SIZE_T dataSize);
 
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
+	static ULONG GetVadCount(VadData* pData);
 
 	static bool Bypass(DWORD flag);
 	static bool Unbypass(DWORD flag);

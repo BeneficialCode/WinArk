@@ -590,3 +590,14 @@ bool DriverHelper::Unbypass(DWORD flag) {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_UNBYPASS_DETECT, &flag, sizeof(flag),
 		nullptr, 0, &bytes, nullptr);
 }
+
+ULONG DriverHelper::GetVadCount(VadData* pData) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	ULONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_PROCESS_VAD_COUNT, pData, sizeof(VadData),
+		&count, sizeof(ULONG), &bytes, nullptr);
+	return count;
+}

@@ -370,13 +370,15 @@
 #define ID_PROCESS_AT_HOOKSCAN          32963
 #define ID_ADDRESS_TABLE_HOOKSCAN       32964
 #define ID_KERNEL_GOTOFILELOCATION      32965
+#define ID_PROCESS_VADINFORMATION       32966
+#define ID_PROCESS_VAD_INFO             32967
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32966
+#define _APS_NEXT_COMMAND_VALUE         32968
 #define _APS_NEXT_CONTROL_VALUE         1096
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

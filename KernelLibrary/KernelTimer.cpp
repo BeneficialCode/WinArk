@@ -45,7 +45,7 @@ void KernelTimer::EnumKernelTimer(KernelTimerData* pData, DpcTimerInfo* pInfo) {
 
 			for (PLIST_ENTRY pListEntry = pListHead->Flink; pListEntry != pListHead; pListEntry = pListEntry->Flink) {
 				if (!MmIsAddressValid(pListEntry))
-					continue;
+					break;
 				PKTIMER pTimer = CONTAINING_RECORD(pListEntry, KTIMER, TimerListEntry);
 #ifdef _WIN64
 				ULONG_PTR salt = (ULONG_PTR)pTimer;
@@ -103,7 +103,7 @@ ULONG KernelTimer::GetKernelTimerCount(KernelTimerData* pData) {
 
 			for (PLIST_ENTRY pListEntry = pListHead->Flink; pListEntry != pListHead; pListEntry = pListEntry->Flink) {
 				if (!MmIsAddressValid(pListEntry))
-					continue;
+					break;
 				PKTIMER pTimer = CONTAINING_RECORD(pListEntry, KTIMER, TimerListEntry);
 #ifdef _WIN64
 				ULONG_PTR salt = (ULONG_PTR)pTimer;

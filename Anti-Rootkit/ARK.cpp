@@ -17,6 +17,7 @@
 #include "..\KernelLibrary\IoTimer.h"
 #include "..\KernelLibrary\BypassAntiKernelDbg.h"
 #include "..\KernelLibrary\MiniFilter.h"
+#include "..\KernelLibrary\VadHelpers.h"
 
 
 // SE_IMAGE_SIGNATURE_TYPE
@@ -1419,7 +1420,10 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			VadData* pData = (VadData*)Irp->AssociatedIrp.SystemBuffer;
-
+			ULONG count = 0;
+			status = VadHelpers::GetVadCount(pData, &count);
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(count);
 			break;
 		}
 	}

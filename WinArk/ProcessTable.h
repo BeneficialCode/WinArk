@@ -2,6 +2,7 @@
 // 因为是模板类，所以直接在这里包含
 #include "Table.h"
 #include "resource.h"
+#include "DriverHelper.h"
 
 class CProcessTable 
 	:public CTable<std::shared_ptr<WinSys::ProcessInfo>>,
@@ -40,6 +41,7 @@ public:
 		COMMAND_ID_HANDLER(ID_PROCESS_MEMORY,OnProcessMemory)
 		COMMAND_ID_HANDLER(ID_PROCESS_INLINEHOOKSCAN,OnProcessInlineHookScan)
 		COMMAND_ID_HANDLER(ID_ADDRESS_TABLE_HOOKSCAN,OnProcessEATHookScan)
+		COMMAND_ID_HANDLER(ID_PROCESS_VAD_INFO,OnProcessVadInfo)
 	END_MSG_MAP()
 
 	CProcessTable(BarInfo& bars,TableInfo& table);
@@ -80,7 +82,9 @@ public:
 	LRESULT OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnProcessVadInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	bool InitVadSymbols(VadData* pData);
 
 
 	int GetRowImage(HWND, int row) const;

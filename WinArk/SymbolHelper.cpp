@@ -107,10 +107,14 @@ DWORD SymbolHelper::GetFltmgrStructMemberOffset(std::string name, std::string me
 	return _fltmgr.GetStructMemberOffset(name, memberName);
 }
 
-DWORD SymbolHelper::GetKernelSturctMemberSize(std::string name, std::string memberName) {
+DWORD SymbolHelper::GetKernelStructMemberSize(std::string name, std::string memberName) {
 	return _kernel.GetStructMemberSize(name, memberName);
 }
 
 DWORD SymbolHelper::GetKernelStructSize(std::string name) {
 	return _kernel.GetStructSize(name);
+}
+
+DWORD SymbolHelper::GetKernelBitFieldPos(std::string name, std::string fieldName) {
+	return _kernel.GetBitFieldPos(name, fieldName);
 }

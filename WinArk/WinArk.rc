@@ -657,6 +657,7 @@ BEGIN
         END
         MENUITEM "Inline Hook Scan",            ID_PROCESS_INLINEHOOKSCAN
         MENUITEM "AT Hook Scan",                ID_ADDRESS_TABLE_HOOKSCAN
+        MENUITEM "VAD Information",             ID_PROCESS_VAD_INFO
     END
     POPUP "listdir"
     BEGIN

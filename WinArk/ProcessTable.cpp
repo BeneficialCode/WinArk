@@ -2,7 +2,6 @@
 #include "ProcessTable.h"
 #include "FormatHelper.h"
 #include "resource.h"
-#include "DriverHelper.h"
 #include "ProcessModuleDlg.h"
 #include "ProcessPropertiesDlg.h"
 #include "ProcessThreadDlg.h"
@@ -10,6 +9,7 @@
 #include "ProcessMemoryDlg.h"
 #include "ProcessInlineHookDlg.h"
 #include "ProcessATHookDlg.h"
+#include "SymbolHelper.h"
 
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")
@@ -419,6 +419,60 @@ LRESULT CProcessTable::OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 	CEATHookDlg dlg(m_ProcMgr, px);
 	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
+
+	return 0;
+}
+
+bool CProcessTable::InitVadSymbols(VadData* pData) {
+	pData->EprocessOffsets.VadRoot = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "VadRoot");
+	if (!pData->EprocessOffsets.VadRoot) {
+		return false;
+	}
+
+	pData->VadCountPos = VadCountPos::None;
+
+	pData->TableOffsets.NumberGenericTableElements = SymbolHelper::GetKernelStructMemberOffset("_MM_AVL_TABLE", "NumberGenericTableElements");
+	if (pData->TableOffsets.NumberGenericTableElements != -1) {
+		pData->TableOffsets.BitField.Position = SymbolHelper::GetKernelBitFieldPos("_MM_AVL_TABLE", "NumberGenericTableElements");
+		pData->TableOffsets.BitField.Size = SymbolHelper::GetKernelStructMemberSize("_MM_AVL_TABLE", "NumberGenericTableElements");
+	}
+
+	pData->EprocessOffsets.VadCount = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "VadCount");
+	pData->EprocessOffsets.NumberOfVads = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "NumberOfVads");
+
+	if (pData->TableOffsets.NumberGenericTableElements!=-1) {
+		pData->VadCountPos = VadCountPos::NumberGenericTableElements;
+	}
+	else if (pData->EprocessOffsets.NumberOfVads!=-1) {
+		pData->VadCountPos = VadCountPos::NumberOfVads;
+	}
+	else if(pData->EprocessOffsets.VadCount!=-1){
+		pData->VadCountPos = VadCountPos::VadCount;
+	}
+
+	if (pData->VadCountPos == VadCountPos::None)
+		return false;
+
+	return true;
+}
+
+LRESULT CProcessTable::OnProcessVadInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& process = m_Table.data.info[selected];
+
+	VadData data;
+	data.Pid = process->Id;
+	bool ok = InitVadSymbols(&data);
+	if (!ok) {
+		AtlMessageBox(*this, L"offsets get failed :(", IDS_TITLE, MB_ICONINFORMATION);
+		return 0;
+	}
+
+	ULONG vadCount = DriverHelper::GetVadCount(&data);
+	if (!vadCount) {
+		AtlMessageBox(*this, L"Vad Count equals 0 :(", IDS_TITLE, MB_ICONINFORMATION);
+	}
 
 	return 0;
 }

@@ -240,13 +240,24 @@ struct PebOffsets {
 };
 
 enum class VadCountPos {
-	VadCount = 0,
+	None = 0,
+	VadCount,
 	NumberOfVads,
 	NumberGenericTableElements
 };
 
+struct BitField {
+	USHORT Position;
+	USHORT Size;
+};
+
 struct MmAvlTableOffsets {
 	ULONG NumberGenericTableElements;
+	BitField BitField;
+};
+
+struct MmVadFlagsOffsets {
+	ULONG Protection;
 };
 
 struct VadData {
@@ -256,3 +267,10 @@ struct VadData {
 	ULONG Pid;
 };
 
+struct VadInfo {
+	void* Vad;
+	ULONG Level;
+	ULONG64 StartingVpn;
+	ULONG64 EndingVpn;
+	ULONG Protection;
+};

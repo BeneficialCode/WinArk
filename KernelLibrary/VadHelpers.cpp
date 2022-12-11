@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "VadHelpers.h"
 
-NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
+NTSTATUS VadHelpers::GetVadCount (VadData* pData, PULONG pCount) {
 	NTSTATUS status = STATUS_SUCCESS;
 	ULONG nVads = 0;
 	PEPROCESS Process = nullptr;
@@ -13,8 +13,22 @@ NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 			case VadCountPos::NumberGenericTableElements: 
 			{
 				PUCHAR pTable = (PUCHAR)Process + pData->EprocessOffsets.VadRoot;
-				PULONG pNumberGenericElements = (PULONG)((PUCHAR)pTable + pData->TableOffsets.NumberGenericTableElements);
-				*pCount = *pNumberGenericElements;
+				PUCHAR pNumberGenericElements = (PUCHAR)pTable + pData->TableOffsets.NumberGenericTableElements;
+				PUCHAR readAddr = pNumberGenericElements;
+				readAddr += (pData->TableOffsets.BitField.Position / 8);
+				ULONG readSz = (pData->TableOffsets.BitField.Position % 8 + pData->TableOffsets.BitField.Size
+					+ 7) / 8;
+				ULONG64 readBits;
+				ULONG64 bitCopy;
+
+				RtlCopyMemory(&readBits, readAddr, readSz);
+
+				readBits = readBits >> (pData->TableOffsets.BitField.Position % 8);
+				bitCopy = ((ULONG64)1 << pData->TableOffsets.BitField.Size);
+				bitCopy -= (ULONG64)1;
+				readBits &= bitCopy;
+
+				*pCount = readBits;
 				break;
 			}
 				

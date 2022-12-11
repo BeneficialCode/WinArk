@@ -5,7 +5,6 @@
 #include <list>
 #include <DbgHelp.h>
 
-
 enum class ProcessAccessMask : unsigned {
 	Query = 0x400
 };
@@ -207,6 +206,7 @@ public:
 
 	ULONG GetStructSize(std::string name);
 
+	DWORD GetBitFieldPos(std::string name, std::string fieldName);
 
 private:
 	BOOL Callback(ULONG code, ULONG64 data);

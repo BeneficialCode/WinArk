@@ -206,6 +206,7 @@ DWORD SymbolHandler::GetStructMemberSize(std::string name, std::string memberNam
 		SymFromIndex(m_hProcess, _address, child, pMemberInfo);
 		if (!::strcmp(pMemberInfo->Name, memberName.c_str())) {
 			size = pMemberInfo->Size;
+			
 			break;
 		}
 	}
@@ -261,4 +262,46 @@ ULONG_PTR SymbolHandler::GetSymbolAddressFromName(PCSTR name) {
 	auto info = symbol->GetSymbolInfo();
 	::SymGetSymFromName(m_hProcess, name, info);
 	return info->Address;
+}
+
+DWORD SymbolHandler::GetBitFieldPos(std::string name, std::string fieldName) {
+	DWORD pos = 0;
+
+	auto symbol = std::make_unique<SymbolInfo>();
+	auto info = symbol->GetSymbolInfo();
+	SymGetTypeFromName(m_hProcess, _address, name.c_str(), symbol->GetSymbolInfo());
+
+	ULONG childrenCount;
+	SymGetTypeInfo(m_hProcess, _address, info->TypeIndex, TI_GET_CHILDRENCOUNT, &childrenCount);
+	TI_FINDCHILDREN_PARAMS* childrenParams = (TI_FINDCHILDREN_PARAMS*)malloc(sizeof(TI_FINDCHILDREN_PARAMS) + sizeof(ULONG) * childrenCount);
+	if (childrenParams == nullptr) {
+		return pos;
+	}
+	childrenParams->Count = childrenCount;
+	childrenParams->Start = 0;
+	PSYMBOL_INFO pMemberInfo = (PSYMBOL_INFO)malloc((sizeof(SYMBOL_INFO) +
+		MAX_SYM_NAME * sizeof(TCHAR) +
+		sizeof(ULONG64) - 1) /
+		sizeof(ULONG64));
+	if (pMemberInfo == nullptr) {
+		free(childrenParams);
+		return pos;
+	}
+	pMemberInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+	pMemberInfo->MaxNameLen = MAX_SYM_NAME;
+	SymGetTypeInfo(m_hProcess, _address, info->TypeIndex, TI_FINDCHILDREN, childrenParams);
+
+	for (ULONG i = 0; i < childrenParams->Count; i++) {
+		ULONG child = childrenParams->ChildId[i];
+		SymFromIndex(m_hProcess, _address, child, pMemberInfo);
+		if (!::strcmp(pMemberInfo->Name, fieldName.c_str())) {
+			SymGetTypeInfo(m_hProcess, _address, child, TI_GET_BITPOSITION, &pos);
+			break;
+		}
+	}
+
+	free(pMemberInfo);
+	free(childrenParams);
+
+	return pos;
 }

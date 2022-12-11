@@ -138,7 +138,7 @@ int CDpcTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::sh
 
 void CDpcTimerTable::Refresh() {
 	m_Table.data.info.clear();
-	ULONG memberSize = SymbolHelper::GetKernelSturctMemberSize("_KTIMER_TABLE", "TimerEntries");
+	ULONG memberSize = SymbolHelper::GetKernelStructMemberSize("_KTIMER_TABLE", "TimerEntries");
 	ULONG size = SymbolHelper::GetKernelStructSize("_KTIMER_TABLE_ENTRY");
 	KernelTimerData data;
 	if (size != 0) {
