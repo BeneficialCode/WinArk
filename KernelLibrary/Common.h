@@ -246,6 +246,7 @@ enum class VadCountPos {
 	NumberGenericTableElements
 };
 
+
 struct BitField {
 	USHORT Position;
 	USHORT Size;
@@ -257,7 +258,25 @@ struct MmAvlTableOffsets {
 };
 
 struct MmVadFlagsOffsets {
-	ULONG Protection;
+	ULONG64 Protection;
+	BitField ProtectionBitField;
+	ULONG64 PrivateMemory;
+	BitField PrivateMemoryBitField;
+	ULONG64 NoChange;
+	BitField NoChangeBitField;
+	ULONG64 CommitCharge;
+	BitField CommitChargeBitField;
+};
+
+struct MmVadShortOffsets {
+	ULONG64 StartingVpn;
+	ULONG64 EndingVpn;
+	ULONG VpnSize;
+	ULONG64 Parent;
+	ULONG ParentSize;
+	ULONG64 LeftChild;
+	ULONG64 RightChild;
+	ULONG ChildSize;
 };
 
 struct VadData {
@@ -265,6 +284,8 @@ struct VadData {
 	EProcessOffsets EprocessOffsets;
 	MmAvlTableOffsets TableOffsets;
 	ULONG Pid;
+	MmVadFlagsOffsets VadFlagsOffsets;
+	MmVadShortOffsets VadShortOffsets;
 };
 
 struct VadInfo {

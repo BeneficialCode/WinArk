@@ -57,3 +57,111 @@ NTSTATUS VadHelpers::GetVadCount (VadData* pData, PULONG pCount) {
 
 	return status;
 }
+
+ULONG64 VadHelpers::ReadBitField(PUCHAR readAddr, BitField * pBitField) {
+	readAddr += (pBitField->Position / 8);
+	ULONG readSz = (pBitField->Position % 8 + pBitField->Size
+		+ 7) / 8;
+	ULONG64 readBits;
+	ULONG64 bitCopy;
+
+	RtlCopyMemory(&readBits, readAddr, readSz);
+
+	readBits = readBits >> (pBitField->Position % 8);
+	bitCopy = ((ULONG64)1 << pBitField->Size);
+	bitCopy -= (ULONG64)1;
+	readBits &= bitCopy;
+	return readBits;
+}
+
+ULONG64 VadHelpers::ReadFieldValue(PUCHAR readAddr, ULONG readSize) {
+	ULONG64 value;
+	RtlCopyMemory(&value, readAddr, readSize);
+	return value;
+}
+
+NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
+	ULONG64 Next;
+	ULONG64 VadToDump;
+	ULONG64 ParentStored;
+	ULONG64 First;
+	ULONG64 Left;
+	ULONG64 Prev;
+	ULONG Flags;
+	ULONG Done;
+	ULONG Level = 0;
+	ULONG Count = 0;
+	ULONG AverageLevel = 0;
+	ULONG MaxLevel = 0;
+	ULONG VadFlagsPrivateMemory = 0, VadFlagsNoChange = 0;
+	ULONG PhysicalMapping = 0, ImageMap = 0, NoChange = 0, LargePages = 0, MemCommit = 0,
+		PrivateMemory = 0, Protection = 0;
+	ULONG64 StartingVpn = 0, EndingVpn = 0, Parent = 0, LeftChild = 0, RightChild = 0;
+	ULONG64 ControlArea = 0, FirstPrototypePte = 0, LastContiguousPte = 0, CommitCharge = 0;
+
+	VadToDump = 0;
+	Flags = 0;
+
+	PEPROCESS Process = nullptr;
+	NTSTATUS status = PsLookupProcessByProcessId(UlongToHandle(pData->Pid), &Process);
+	if (NT_SUCCESS(status)) {
+		do
+		{
+			VadToDump = (ULONG64)Process + pData->EprocessOffsets.VadRoot;
+			if (VadToDump == 0) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			First = VadToDump;
+			if (First == 0) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			PUCHAR readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.PrivateMemory;
+			VadFlagsPrivateMemory = ReadBitField(readAddr, &pData->VadFlagsOffsets.PrivateMemoryBitField);
+			
+			readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.NoChange;
+			VadFlagsNoChange = ReadBitField(readAddr, &pData->VadFlagsOffsets.NoChangeBitField);
+				
+			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.StartingVpn;
+			ULONG readSz = pData->VadShortOffsets.VpnSize;
+			StartingVpn = ReadFieldValue(readAddr, readSz);
+			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.EndingVpn;
+			EndingVpn = ReadFieldValue(readAddr, readSz);
+
+			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.LeftChild;
+			readSz = pData->VadShortOffsets.ChildSize;
+			LeftChild = ReadFieldValue(readAddr, readSz);
+			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.RightChild;
+			RightChild = ReadFieldValue(readAddr, readSz);
+			readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.CommitCharge;
+			CommitCharge = ReadBitField(readAddr, &pData->VadFlagsOffsets.CommitChargeBitField);
+
+			Prev = First;
+
+			while (LeftChild != 0) {
+				Prev = First;
+				First = LeftChild;
+				Level += 1;
+				if (Level > MaxLevel) {
+					MaxLevel = Level;
+				}
+
+				readAddr = (PUCHAR)First + pData->VadShortOffsets.LeftChild;
+				readSz = pData->VadShortOffsets.ChildSize;
+				LeftChild = ReadFieldValue(readAddr, readSz);
+			}
+
+			readAddr = (PUCHAR)First + pData->VadShortOffsets.StartingVpn;
+			readSz = pData->VadShortOffsets.VpnSize;
+			StartingVpn = ReadFieldValue(readAddr, readSz);
+
+		} while (false);
+		
+		ObDereferenceObject(Process);
+	}
+
+	return status;
+}

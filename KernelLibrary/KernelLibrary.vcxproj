@@ -232,6 +232,7 @@
     <ClInclude Include="BypassAntiKernelDbg.h" />
     <ClInclude Include="BypassObCallback.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="CpuInfo.h" />
     <ClInclude Include="CriticalRegion.h" />
     <ClInclude Include="CyclicBuffer.h" />
     <ClInclude Include="DbgDefender.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="AutoLock.cpp" />
     <ClCompile Include="BypassAntiKernelDbg.cpp" />
     <ClCompile Include="BypassObCallback.cpp" />
+    <ClCompile Include="CpuInfo.cpp" />
     <ClCompile Include="CriticalRegion.cpp" />
     <ClCompile Include="CyclicBuffer.cpp" />
     <ClCompile Include="DbgDefender.cpp" />
