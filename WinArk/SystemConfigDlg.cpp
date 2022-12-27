@@ -7,6 +7,7 @@
 using namespace WinSys;
 
 LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	//DlgResize_Init(true);
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
 
 	m_BasicSysInfo = SystemInformation::GetBasicSystemInfo();

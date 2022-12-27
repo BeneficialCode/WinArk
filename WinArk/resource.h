@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -94,6 +94,8 @@
 #define IDD_EAT_HOOK                    276
 #define IDR_POOLTAG                     277
 #define IDR_KERNEL_HOOK_CONTEXT         278
+#define IDD_SCYLLA                      279
+#define IDR_SCYLLA_CONTEXT              281
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -200,6 +202,27 @@
 #define IDC_CONDBK_COLOR                1089
 #define IDC_BYPASS_KDBG                 1094
 #define IDC_BYPASS                      1095
+#define IDC_BTN_PICKDLL                 1096
+#define IDC_GROUP_IMPORTS               1097
+#define IDC_TREE_IMPORTS                1098
+#define IDC_BTN_SHOW_INVALID            1099
+#define IDC_BTN_SHOW_SUSPECT            1100
+#define IDC_BTN_CLEAR                   1101
+#define IDC_GROUP_IAT_INFO              1102
+#define IDC_OEP_ADDRESS                 1103
+#define IDC_IAT_ADDRESS                 1104
+#define IDC_IAT_SIZE                    1105
+#define IDC_BTN_AUTO_SEARCH             1106
+#define IDC_BTN_GET_IMPORTS             1107
+#define IDC_BTN_AUTO_TRACE              1108
+#define IDC_BTN_DUMP                    1109
+#define IDC_BTN_PE_REBUILD              1110
+#define IDC_BTN_FIX_DUMP                1111
+#define IDC_GROUP_LOG                   1112
+#define IDC_LIST_LOG                    1113
+#define IDC_GROUP_CALLBACK              1114
+#define IDC_GROUP_SYSINFO               1115
+#define IDC_GROUP_DBGSYS                1116
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -372,14 +395,17 @@
 #define ID_KERNEL_GOTOFILELOCATION      32965
 #define ID_PROCESS_VADINFORMATION       32966
 #define ID_PROCESS_VAD_INFO             32967
+#define ID_FILE_DUMP                    32968
+#define ID_PROCESS_DUMPPROCESS          32969
+#define ID_PROCESS_DUMP                 32970
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        279
-#define _APS_NEXT_COMMAND_VALUE         32968
-#define _APS_NEXT_CONTROL_VALUE         1096
+#define _APS_NEXT_RESOURCE_VALUE        282
+#define _APS_NEXT_COMMAND_VALUE         32971
+#define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

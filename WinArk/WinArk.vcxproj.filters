@@ -465,6 +465,9 @@
     <ClCompile Include="ProcessATHookDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="ScyllaDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -921,6 +924,9 @@
       <Filter>Table</Filter>
     </ClInclude>
     <ClInclude Include="ProcessATHookDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ScyllaDlg.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>

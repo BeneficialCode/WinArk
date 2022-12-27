@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -238,11 +238,11 @@ IDD_CONFIG DIALOGEX 0, 0, 702, 297
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "回调配置",IDC_STATIC,7,7,375,120,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    GROUPBOX        "回调配置",IDC_GROUP_CALLBACK,7,7,375,120,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     CONTROL         "驱动加载备份（拦截式）",IDC_INTERCEPT_DRIVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,33,104,10
     PUSHBUTTON      "设置回调",IDC_SET_CALLBACK,258,105,50,14
     PUSHBUTTON      "移除回调",IDC_REMOVE_CALLBACK,326,105,50,14
-    GROUPBOX        "系统信息",IDC_STATIC,399,6,291,121,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    GROUPBOX        "系统信息",IDC_GROUP_SYSINFO,399,6,291,121,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     LTEXT           "Windows Version:",IDC_STATIC,411,31,58,8
     LTEXT           "",IDC_WIN_VERSION,473,31,141,8
     LTEXT           "Boot Time:",IDC_STATIC,411,47,35,8
@@ -253,7 +253,7 @@ BEGIN
     LTEXT           "",IDC_PROCESSOR_COUNT,474,79,149,8
     LTEXT           "Processor:",IDC_STATIC,412,95,35,8
     LTEXT           "",IDC_PROCESSOR,474,94,149,8
-    GROUPBOX        "调试子系统",IDC_STATIC,7,141,688,143,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
+    GROUPBOX        "调试子系统",IDC_GROUP_DBGSYS,7,141,688,143,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
     PUSHBUTTON      "启用调试子系统",IDC_ENABLE_DBGSYS,276,181,127,64
 END
 
@@ -338,6 +338,37 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS
 CAPTION "Inline Hook Scan"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+END
+
+IDD_SCYLLA DIALOGEX 0, 0, 423, 356
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_HSCROLL | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Scylla"
+MENU IDR_SCYLLA_CONTEXT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Pick DLL",IDC_BTN_PICKDLL,152,159,50,14
+    GROUPBOX        "Imports",IDC_GROUP_IMPORTS,7,7,409,172,BS_CENTER,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_TREE_IMPORTS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,20,409,129
+    PUSHBUTTON      "Show Invalid",IDC_BTN_SHOW_INVALID,15,159,50,14
+    PUSHBUTTON      "Show Suspect",IDC_BTN_SHOW_SUSPECT,83,159,50,14
+    PUSHBUTTON      "Clear",IDC_BTN_CLEAR,276,158,50,14
+    GROUPBOX        "IAT Info",IDC_GROUP_IAT_INFO,7,182,206,69,BS_CENTER
+    LTEXT           "OEP",IDC_STATIC,15,200,14,8
+    LTEXT           "VA",IDC_STATIC,17,217,10,8
+    LTEXT           "Size",IDC_STATIC,14,234,14,8
+    EDITTEXT        IDC_OEP_ADDRESS,37,197,100,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_IAT_ADDRESS,37,214,100,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_IAT_SIZE,37,232,99,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "IAT Auto Search",IDC_BTN_AUTO_SEARCH,141,197,63,14
+    PUSHBUTTON      "Get Imports",IDC_BTN_GET_IMPORTS,147,222,50,14
+    GROUPBOX        "Actions",IDC_STATIC,218,183,80,69,BS_CENTER
+    PUSHBUTTON      "Auto Trace",IDC_BTN_AUTO_TRACE,232,198,50,14
+    GROUPBOX        "Dump",IDC_STATIC,306,183,102,69,BS_CENTER
+    PUSHBUTTON      "Dump",IDC_BTN_DUMP,336,199,50,14
+    PUSHBUTTON      "PE Rebuild",IDC_BTN_PE_REBUILD,336,218,50,14
+    PUSHBUTTON      "Fix Dump",IDC_BTN_FIX_DUMP,335,235,50,14
+    GROUPBOX        "Log",IDC_GROUP_LOG,7,256,409,83,BS_CENTER
+    LISTBOX         IDC_LIST_LOG,7,267,409,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
 END
 
 
@@ -500,6 +531,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 273
     END
+
+    IDD_SCYLLA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 416
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 339
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -634,6 +673,11 @@ BEGIN
     0
 END
 
+IDD_SCYLLA AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -658,6 +702,7 @@ BEGIN
         MENUITEM "Inline Hook Scan",            ID_PROCESS_INLINEHOOKSCAN
         MENUITEM "AT Hook Scan",                ID_ADDRESS_TABLE_HOOKSCAN
         MENUITEM "VAD Information",             ID_PROCESS_VAD_INFO
+        MENUITEM "Dump",                        ID_PROCESS_DUMP
     END
     POPUP "listdir"
     BEGIN
@@ -905,6 +950,18 @@ BEGIN
     END
 END
 
+IDR_SCYLLA_CONTEXT MENU
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "&Dump",                       ID_FILE_DUMP
+    END
+    MENUITEM "Imports",                     0
+    MENUITEM "Trace",                       0
+    MENUITEM "Misc",                        0
+    MENUITEM "Help",                        0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -952,12 +1009,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1476,7 +1533,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

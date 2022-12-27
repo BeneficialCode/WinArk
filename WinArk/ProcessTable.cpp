@@ -10,6 +10,7 @@
 #include "ProcessInlineHookDlg.h"
 #include "ProcessATHookDlg.h"
 #include "SymbolHelper.h"
+#include "ScyllaDlg.h"
 
 #pragma comment(lib,"WinSysCore")
 #pragma comment(lib,"ntdll")
@@ -477,3 +478,10 @@ LRESULT CProcessTable::OnProcessVadInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	return 0;
 }
 
+LRESULT CProcessTable::OnProcessDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CScyllaDlg dlg;
+
+	dlg.DoModal(m_hWnd);
+
+	return TRUE;
+}

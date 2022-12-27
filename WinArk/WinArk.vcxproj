@@ -92,6 +92,9 @@
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -343,6 +346,7 @@
     <ClCompile Include="RegistrySearcher.cpp" />
     <ClCompile Include="RenameKeyCommand.cpp" />
     <ClCompile Include="RenameValueCommand.cpp" />
+    <ClCompile Include="ScyllaDlg.cpp" />
     <ClCompile Include="SectionObjectType.cpp" />
     <ClCompile Include="SecurityInfo.cpp" />
     <ClCompile Include="SecurityInformation.cpp" />
@@ -498,6 +502,7 @@
     <ClInclude Include="RenameKeyCommand.h" />
     <ClInclude Include="RenameValueCommand.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ScyllaDlg.h" />
     <ClInclude Include="SectionObjectType.h" />
     <ClInclude Include="SecurityInfo.h" />
     <ClInclude Include="SecurityInformation.h" />

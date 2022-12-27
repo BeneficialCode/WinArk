@@ -42,6 +42,7 @@ public:
 		COMMAND_ID_HANDLER(ID_PROCESS_INLINEHOOKSCAN,OnProcessInlineHookScan)
 		COMMAND_ID_HANDLER(ID_ADDRESS_TABLE_HOOKSCAN,OnProcessEATHookScan)
 		COMMAND_ID_HANDLER(ID_PROCESS_VAD_INFO,OnProcessVadInfo)
+		COMMAND_ID_HANDLER(ID_PROCESS_DUMP,OnProcessDump)
 	END_MSG_MAP()
 
 	CProcessTable(BarInfo& bars,TableInfo& table);
@@ -83,6 +84,7 @@ public:
 	LRESULT OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessVadInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnProcessDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	bool InitVadSymbols(VadData* pData);
 
