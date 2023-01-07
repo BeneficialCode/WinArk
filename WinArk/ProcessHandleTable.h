@@ -35,6 +35,7 @@ public:
 	CProcessHandleTable(BarInfo& bars, TableInfo& table, PCWSTR type, DWORD pid = 0);
 
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::HandleInfo>& info, int column);
+	bool CompareItems(const std::shared_ptr<WinSys::HandleInfo>& p1, const std::shared_ptr<WinSys::HandleInfo>& p2, int col, bool asc = true);
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);

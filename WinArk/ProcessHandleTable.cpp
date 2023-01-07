@@ -203,3 +203,12 @@ CString CProcessHandleTable::HandleAttributesToString(ULONG attributes) {
 		result = result.Mid(2);
 	return result;
 }
+
+bool CProcessHandleTable::CompareItems(const std::shared_ptr<WinSys::HandleInfo>& p1, const std::shared_ptr<WinSys::HandleInfo>& p2, int col, bool asc) {
+	switch (col) {
+		case 0:
+		{
+			return SortHelper::SortStrings(m_ObjMgr.GetType(p1->ObjectTypeIndex)->TypeName, m_ObjMgr.GetType(p2->ObjectTypeIndex)->TypeName, asc);
+		}
+	}
+}
