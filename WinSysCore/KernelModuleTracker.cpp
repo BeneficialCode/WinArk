@@ -29,6 +29,7 @@ uint32_t WinSys::KernelModuleTracker::EnumModules() {
 		auto m = std::make_shared<KernelModuleInfo>();
 		m->Flags = p->BaseInfo.Flags;
 		m->FullPath = (const char*)p->BaseInfo.FullPathName;
+		m->NtPath = m->FullPath;
 		if (m->FullPath.find(global) == 0)
 			m->FullPath = m->FullPath.substr(global.size());
 		if (m->FullPath.find(root) == 0)

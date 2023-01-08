@@ -196,7 +196,12 @@ FLT_PREOP_CALLBACK_STATUS DelProtectPreSetInformation(PFLT_CALLBACK_DATA Data, P
 
 bool IsDeleteAllowed(PCUNICODE_STRING filename) {
 	UNICODE_STRING ext;
-	if (NT_SUCCESS(FltParseFileName(filename, &ext, nullptr, nullptr))) {
+	NTSTATUS status;
+	status = FltParseFileName(filename, &ext, nullptr, nullptr);
+	if(NT_SUCCESS(status)) {
+		if (ext.Buffer == nullptr || ext.Length == 0) {
+			return true;
+		}
 		WCHAR uext[16] = { 0 };
 		UNICODE_STRING suext;
 		suext.Buffer = uext;

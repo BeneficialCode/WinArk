@@ -45,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0xC4
+#define DRIVER_CURRENT_VERSION 0xC5
 
 
 // 用MDL锁定用户内存
@@ -132,6 +132,13 @@ struct DupHandleData {
 struct KeyData {
 	ULONG Length;
 	ULONG Access;
+	WCHAR Name[1];
+};
+
+struct DumpSysData {
+	void* ImageBase;
+	ULONG ImageSize;
+	ULONG Length;
 	WCHAR Name[1];
 };
 
