@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 
 // Helper functions
 
@@ -16,6 +17,8 @@ public:
 	static bool IsSpecificProcess(HANDLE pid, const WCHAR* imageName, bool isDebugged);
 
 	static UINT FindStringByGuid(PVOID baseAddress, UINT size, const GUID* guid);
+
+	static NTSTATUS DumpSysModule(DumpSysData* pData);
 
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };

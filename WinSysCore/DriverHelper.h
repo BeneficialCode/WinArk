@@ -55,6 +55,7 @@ struct DriverHelper final {
 	static bool Unbypass(DWORD flag);
 
 	static PVOID GetEprocess(HANDLE pid);
+	static bool DumpSysModule(PCWSTR sysPath, void* imageBase, ULONG imageSize);
 private:
 	static bool OpenDevice();
 

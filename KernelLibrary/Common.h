@@ -295,3 +295,10 @@ struct VadInfo {
 	ULONG64 EndingVpn;
 	ULONG Protection;
 };
+
+struct DumpSysData {
+	void* ImageBase;
+	ULONG ImageSize;
+	ULONG Length;
+	WCHAR Name[1];
+};

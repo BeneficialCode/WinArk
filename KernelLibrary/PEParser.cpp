@@ -168,3 +168,10 @@ const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
 
 	return _sections + section;
 }
+
+IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) {
+	if (!IsValid() || section >= _fileHeader->NumberOfSections)
+		return nullptr;
+
+	return _sections + section;
+}

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Helpers.h"
 #include "Logging.h"
+#include <ntimage.h>
+#include "PEParser.h"
+#include "khook.h"
 
 // AntiRootkit!khook::GetSystemServiceTable
 ULONG_PTR Helpers::SearchSignature(ULONG_PTR address, PUCHAR signature, ULONG size,ULONG memSize) {
@@ -148,4 +151,156 @@ UINT Helpers::FindStringByGuid(PVOID baseAddress, UINT size, const GUID* guid) {
 	}
 
 	return (UINT)-1;
+}
+
+NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
+	// Get the process id of the "winlogon.exe" process
+	bool success = khook::SearchSessionProcess();
+	if (!success)
+		return STATUS_UNSUCCESSFUL;
+
+	PEPROCESS Process;
+	NTSTATUS status = PsLookupProcessByProcessId(khook::_pid, &Process);
+	if (!NT_SUCCESS(status))
+		return status;
+
+	PVOID pBuf = ExAllocatePool(NonPagedPool, pData->ImageSize);
+	if (!pBuf) {
+		ObDereferenceObject(Process);
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+	// attach a session process to prevent bugcheck when access session memory
+	KAPC_STATE apcState;
+	KeStackAttachProcess(Process, &apcState);
+
+	// Dump pe
+	RtlCopyMemory(pBuf, pData->ImageBase, pData->ImageSize);
+
+	// Detach
+	KeUnstackDetachProcess(&apcState);
+	ObDereferenceObject(Process);
+
+	// Parse pe format
+	PEParser parser(pBuf);
+
+	// fixup sections
+	int count = parser.GetSectionCount();
+	for (int i = 0; i < count; i++) {
+		PIMAGE_SECTION_HEADER pSectionHeader = parser.GetSectionHeader(i);
+		if (pSectionHeader) {
+			pSectionHeader->PointerToRawData = pSectionHeader->VirtualAddress;
+			pSectionHeader->SizeOfRawData = pSectionHeader->Misc.VirtualSize;
+		}
+	}
+
+	void* buffer = nullptr;
+
+	do
+	{
+		// Get caller's path
+		UNICODE_STRING dumpDir{ 0 };
+		HANDLE hProcess;
+		status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
+		if (NT_SUCCESS(status)) {
+			UCHAR buffer[280] = { 0 };
+			status = ZwQueryInformationProcess(hProcess, ProcessImageFileName, buffer, sizeof(buffer) - sizeof(WCHAR), nullptr);
+			ZwClose(hProcess);
+			if (NT_SUCCESS(status)) {
+				auto path = (UNICODE_STRING*)buffer;
+				auto bs = wcsrchr(path->Buffer, L'\\');
+				NT_ASSERT(bs);
+				if (bs == nullptr) {
+					status = STATUS_INVALID_PARAMETER;
+					break;
+				}
+				*(bs + 1) = L'\0';
+				dumpDir.MaximumLength = path->Length;
+				dumpDir.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, dumpDir.MaximumLength, 'pmud');
+				if (dumpDir.Buffer == nullptr) {
+					status = STATUS_INSUFFICIENT_RESOURCES;
+					break;
+				}
+				RtlAppendUnicodeToString(&dumpDir, path->Buffer);
+			}
+		}
+
+		FileManager mgr;
+		
+		IO_STATUS_BLOCK ioStatus;
+
+
+		// set file size
+		LARGE_INTEGER fileSize;
+		fileSize.QuadPart = pData->ImageSize;
+
+		// open target file
+		UNICODE_STRING targetFileName;
+		auto sysName = wcsrchr(pData->Name, L'\\') + 1;
+		if (sysName == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		USHORT len = wcslen(sysName);
+		const WCHAR backupStream[] = L"_dump.sys";
+
+		targetFileName.MaximumLength = dumpDir.Length + len * sizeof(WCHAR) + sizeof(backupStream);
+		targetFileName.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, targetFileName.MaximumLength, 'pmud');
+		if (targetFileName.Buffer == nullptr) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		RtlCopyUnicodeString(&targetFileName, &dumpDir);
+		RtlAppendUnicodeToString(&targetFileName, sysName);
+		RtlAppendUnicodeToString(&targetFileName, backupStream);
+
+		status = mgr.Open(&targetFileName, FileAccessMask::Write | FileAccessMask::Synchronize);
+		ExFreePool(targetFileName.Buffer);
+
+		if (!NT_SUCCESS(status))
+			break;
+
+		// allocate buffer for copying purpose
+		ULONG size = 1 << 21; // 2 MB
+		buffer = ExAllocatePoolWithTag(PagedPool, size, 'kcab');
+		if (!buffer) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		// loop - read from source,write to target
+		LARGE_INTEGER offset = { 0 }; // read
+		LARGE_INTEGER writeOffset = { 0 }; // write
+
+		ULONG bytes;
+		auto saveSize = fileSize;
+		while (fileSize.QuadPart > 0) {
+			bytes = min(size, fileSize.QuadPart);
+
+			RtlCopyMemory(buffer, pBuf, bytes);
+
+			// write to target file
+			status = mgr.WriteFile(buffer, bytes, &ioStatus, &writeOffset);
+
+			if (!NT_SUCCESS(status))
+				break;
+
+			// update byte count and offsets
+			offset.QuadPart += bytes;
+			writeOffset.QuadPart += bytes;
+			fileSize.QuadPart -= bytes;
+		}
+
+		FILE_END_OF_FILE_INFORMATION info;
+		info.EndOfFile = saveSize;
+		NT_VERIFY(NT_SUCCESS(mgr.SetInformationFile(&ioStatus, &info, sizeof(info), FileEndOfFileInformation)));
+
+		
+	} while (false);
+
+	if (buffer)
+		ExFreePool(buffer);
+	ExFreePool(pBuf);
+
+	return status;
 }

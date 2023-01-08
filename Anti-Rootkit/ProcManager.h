@@ -13,8 +13,6 @@ extern "C" {
 	);
 }
 
-//根据进程ID返回进程EPROCESS，失败返回NULL
-PEPROCESS LookupProcess(HANDLE Pid);
 
 //根据线程ID返回线程ETHREAD，失败返回NULL
 PETHREAD LookupThread(HANDLE Tid);
@@ -25,8 +23,6 @@ void EnumThread(PEPROCESS Process);
 //枚举指定进程的模块
 void EnumModule(PEPROCESS Process);
 
-//枚举进程
-void EnumProcess();
 
 //常规方法结束进程
 void ZwKillProcess(HANDLE Pid);

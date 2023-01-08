@@ -18,6 +18,7 @@
 #include "..\KernelLibrary\BypassAntiKernelDbg.h"
 #include "..\KernelLibrary\MiniFilter.h"
 #include "..\KernelLibrary\VadHelpers.h"
+#include "..\KernelLibrary\Helpers.h"
 
 
 // SE_IMAGE_SIGNATURE_TYPE
@@ -1445,9 +1446,29 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			PEPROCESS Process;
 			status = PsLookupProcessByProcessId(pid, &Process);
 			if (NT_SUCCESS(status)) {
+				ObDereferenceObject(Process);
 				len = sizeof(PEPROCESS);
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = Process;
 			}
+			break;
+		}
+		case IOCTL_ARK_DUMP_SYS_MODULE:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			auto data = static_cast<DumpSysData*>(Irp->AssociatedIrp.SystemBuffer);
+			if (dic.InputBufferLength < sizeof(DumpSysData) + ULONG((data->Length - 1) * 2)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (data->Length > 2048) {
+				status = STATUS_BUFFER_OVERFLOW;
+				break;
+			}
+			status = Helpers::DumpSysModule(data);
 			break;
 		}
 	}

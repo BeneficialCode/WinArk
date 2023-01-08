@@ -45,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0xC5
+#define DRIVER_CURRENT_VERSION 0xC6
 
 
 // 用MDL锁定用户内存
@@ -96,7 +96,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_DELPROTECT_SET_EXTENSIONS			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x82E,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_PROCESS_VAD_COUNT				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x82F,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_EPROCESS						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x830,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
+#define IOCTL_ARK_DUMP_SYS_MODULE					CTL_CODE(ANTI_ROOTKIT_DEVICE,0x831,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 
 
@@ -132,13 +132,6 @@ struct DupHandleData {
 struct KeyData {
 	ULONG Length;
 	ULONG Access;
-	WCHAR Name[1];
-};
-
-struct DumpSysData {
-	void* ImageBase;
-	ULONG ImageSize;
-	ULONG Length;
 	WCHAR Name[1];
 };
 

@@ -239,6 +239,27 @@ HANDLE DriverHelper::OpenKey(PCWSTR name,ACCESS_MASK access) {
 	return hObject;
 }
 
+bool DriverHelper::DumpSysModule(PCWSTR sysPath,void* imageBase,ULONG imageSize) {
+	if (!OpenDevice())
+		return false;
+
+	auto len = ::wcslen(sysPath);
+	DWORD size = len * sizeof(WCHAR) + sizeof(DumpSysData);
+	auto buffer = std::make_unique<BYTE[]>(size);
+	if (!buffer)
+		return false;
+
+	auto data = reinterpret_cast<DumpSysData*>(buffer.get());
+	data->ImageBase = imageBase;
+	data->Length = len;
+	data->ImageSize = imageSize;
+	::wcscpy_s(data->Name, len + 1, sysPath);
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DUMP_SYS_MODULE, data, size, 
+		nullptr, 0, &bytes, nullptr);
+}
+
 PULONG DriverHelper::GetShadowServiceTable(PULONG* pServiceDescriptor) {
 	PULONG address = 0;
 	if (!OpenDevice())

@@ -36,9 +36,11 @@ public:
 		COMMAND_ID_HANDLER(ID_KERNEL_MODULE_EXPORT, OnKernelModuleExport)
 		COMMAND_ID_HANDLER(ID_KERNEL_MODULE_REFRESH,OnRefresh)
 		COMMAND_ID_HANDLER(ID_KERNEL_GOTOFILELOCATION,OnGoToFileLocation)
+		COMMAND_ID_HANDLER(ID_KERNEL_DUMP,OnKernelDump)
 	END_MSG_MAP()
 
 	LRESULT OnGoToFileLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnKernelDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);
 	LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);

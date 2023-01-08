@@ -1,13 +1,5 @@
 #include"ProcManager.h"
 
-PEPROCESS LookupProcess(HANDLE Pid) {
-	PEPROCESS eprocess = nullptr;
-	if (NT_SUCCESS(PsLookupProcessByProcessId(Pid, &eprocess)))
-		return eprocess;
-	else
-		return NULL;
-}
-
 PETHREAD LookupThread(HANDLE Tid) {
 	PETHREAD ethread;
 	if (NT_SUCCESS(PsLookupThreadByThreadId(Tid, &ethread)))
@@ -38,23 +30,11 @@ void EnumModule(PEPROCESS Process) {
 	UNREFERENCED_PARAMETER(Process);
 }
 
-//枚举进程
-void EnumProcess() {
-	ULONG i = 0;
-	PEPROCESS eproc = NULL;
-	for (i = 4; i < 262144; i+=4) {
-		eproc = LookupProcess((HANDLE)i);
-		if (eproc != NULL) {
-			ObDereferenceObject(eproc);
-			KdPrint(("EPROCESS=%p PID=%ld PPID=%ld Name=%s\n",
-				eproc, PsGetProcessId(eproc),
-				PsGetProcessInheritedFromUniqueProcessId(eproc),
-				PsGetProcessImageFileName(eproc)));
-			//EnumThread(eproc);
-			KdPrint(("\n"));
-		}
-	}
-}
+/*
+PsGetProcessId(eproc),
+PsGetProcessInheritedFromUniqueProcessId(eproc),
+PsGetProcessImageFileName(eproc)
+*/
 
 //常规方法结束进程
 void ZwKillProcess(HANDLE Pid) {

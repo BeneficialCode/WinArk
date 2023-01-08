@@ -3,6 +3,7 @@
 #include "KernelModuleTable.h"
 #include <Helpers.h>
 #include "ClipboardHelper.h"
+#include "DriverHelper.h"
 
 
 LRESULT CKernelModuleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -249,5 +250,15 @@ LRESULT CKernelModuleTable::OnGoToFileLocation(WORD /*wNotifyCode*/, WORD /*wID*
 		nullptr, SW_SHOWDEFAULT) < 32)
 		AtlMessageBox(*this, L"Failed to locate executable", IDS_TITLE, MB_ICONERROR);
 
+	return 0;
+}
+
+LRESULT CKernelModuleTable::OnKernelDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& kernelModule = m_Table.data.info[selected];
+	std::wstring path = Helpers::StringToWstring(kernelModule->NtPath);
+	bool ok = DriverHelper::DumpSysModule(path.c_str(), kernelModule->ImageBase, kernelModule->ImageSize);
+	AtlMessageBox(*this, ok ? L"Dump success :)!" : L"Dump failed :(!", IDS_TITLE, MB_ICONINFORMATION);
 	return 0;
 }

@@ -231,7 +231,6 @@ public:
 
 private:
 	HookInfo* _info = nullptr;
-    static HANDLE _pid;
     InlineHookInfo* _inlineInfo = nullptr;
 
 public:
@@ -246,6 +245,7 @@ public:
     static PVOID _shadowSectionStart;
     static ULONG _shadowSectionSize;
     static LinkedList<ShadowServiceNameEntry> _shadowServiceNameList;
+    static HANDLE _pid;
     bool _success = false;
 };
 
