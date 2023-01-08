@@ -79,6 +79,9 @@ int CProcessTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 				select = DRAW_HILITE;
 			}
 			break;
+		case ProcessColumn::Eprocess:
+			s.Format(L"0x%p", info->EProcess);
+			break;
 		default:
 			break;
 	}

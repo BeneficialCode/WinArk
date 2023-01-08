@@ -1426,6 +1426,30 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			len = sizeof(count);
 			break;
 		}
+		case IOCTL_ARK_GET_EPROCESS:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(HANDLE)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			// 获得输出缓冲区的长度
+			if (dic.OutputBufferLength < sizeof(PEPROCESS)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
+			PEPROCESS Process;
+			status = PsLookupProcessByProcessId(pid, &Process);
+			if (NT_SUCCESS(status)) {
+				len = sizeof(PEPROCESS);
+				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = Process;
+			}
+			break;
+		}
 	}
 
 

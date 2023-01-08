@@ -272,6 +272,17 @@ PVOID DriverHelper::GetShadowSSDTApiAddress(ULONG number) {
 	return address;
 }
 
+PVOID DriverHelper::GetEprocess(HANDLE pid) {
+	if (!OpenDevice())
+		return nullptr;
+
+	PVOID address = nullptr;
+	DWORD bytes;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_EPROCESS, &pid, sizeof(pid),
+		&address, sizeof(address), &bytes, nullptr);
+	return address;
+}
+
 bool DriverHelper::InitNtServiceTable(PULONG * pTable) {
 	if (!OpenDevice())
 		return false;

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "VadHelpers.h"
 
-NTSTATUS VadHelpers::GetVadCount (VadData* pData, PULONG pCount) {
+NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 	NTSTATUS status = STATUS_SUCCESS;
 	ULONG nVads = 0;
 	PEPROCESS Process = nullptr;

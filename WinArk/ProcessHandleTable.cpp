@@ -210,5 +210,8 @@ bool CProcessHandleTable::CompareItems(const std::shared_ptr<WinSys::HandleInfo>
 		{
 			return SortHelper::SortStrings(m_ObjMgr.GetType(p1->ObjectTypeIndex)->TypeName, m_ObjMgr.GetType(p2->ObjectTypeIndex)->TypeName, asc);
 		}
+		case 9: {
+			return SortHelper::SortStrings(m_DetailsCache[p1.get()], m_DetailsCache[p2.get()], asc);
+		}
 	}
 }

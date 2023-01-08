@@ -58,6 +58,7 @@ namespace WinSys {
 		int32_t CPU;
 		uint32_t JobObjectId;
 		BYTE UserSid[SECURITY_MAX_SID_SIZE];
+		void* EProcess;
 
 		bool IsSuspended;
 

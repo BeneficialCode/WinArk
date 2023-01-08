@@ -53,6 +53,8 @@ struct DriverHelper final {
 
 	static bool Bypass(DWORD flag);
 	static bool Unbypass(DWORD flag);
+
+	static PVOID GetEprocess(HANDLE pid);
 private:
 	static bool OpenDevice();
 
