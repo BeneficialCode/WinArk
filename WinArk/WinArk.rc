@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -340,35 +340,33 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
 END
 
-IDD_SCYLLA DIALOGEX 0, 0, 423, 356
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_HSCROLL | WS_SYSMENU | WS_THICKFRAME
+IDD_SCYLLA DIALOGEX 0, 0, 417, 352
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Scylla"
 MENU IDR_SCYLLA_CONTEXT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Pick DLL",IDC_BTN_PICKDLL,152,159,50,14
-    GROUPBOX        "Imports",IDC_GROUP_IMPORTS,7,7,409,172,BS_CENTER,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_TREE_IMPORTS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,20,409,129
-    PUSHBUTTON      "Show Invalid",IDC_BTN_SHOW_INVALID,15,159,50,14
-    PUSHBUTTON      "Show Suspect",IDC_BTN_SHOW_SUSPECT,83,159,50,14
-    PUSHBUTTON      "Clear",IDC_BTN_CLEAR,276,158,50,14
-    GROUPBOX        "IAT Info",IDC_GROUP_IAT_INFO,7,182,206,69,BS_CENTER
-    LTEXT           "OEP",IDC_STATIC,15,200,14,8
-    LTEXT           "VA",IDC_STATIC,17,217,10,8
-    LTEXT           "Size",IDC_STATIC,14,234,14,8
+    PUSHBUTTON      "Pick DLL",IDC_BTN_PICKDLL,152,154,50,14
+    GROUPBOX        "Imports",IDC_GROUP_IMPORTS,0,2,409,172,BS_CENTER,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_TREE_IMPORTS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,14,389,125
+    PUSHBUTTON      "Show Invalid",IDC_BTN_SHOW_INVALID,15,153,50,14
+    PUSHBUTTON      "Show Suspect",IDC_BTN_SHOW_SUSPECT,83,154,50,14
+    PUSHBUTTON      "Clear",IDC_BTN_CLEAR,276,153,50,14
+    GROUPBOX        "IAT Info",IDC_GROUP_IAT_INFO,0,182,222,69,BS_CENTER
+    LTEXT           "OEP",IDC_STATIC_OEPADDRESS,15,200,14,8
+    LTEXT           "VA",IDC_STATIC_IATADDRESS,17,217,10,8
+    LTEXT           "Size",IDC_STATIC_IATSIZE,14,234,14,8
     EDITTEXT        IDC_OEP_ADDRESS,37,197,100,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_IAT_ADDRESS,37,214,100,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_IAT_SIZE,37,232,99,14,ES_AUTOHSCROLL
     PUSHBUTTON      "IAT Auto Search",IDC_BTN_AUTO_SEARCH,141,197,63,14
     PUSHBUTTON      "Get Imports",IDC_BTN_GET_IMPORTS,147,222,50,14
-    GROUPBOX        "Actions",IDC_STATIC,218,183,80,69,BS_CENTER
-    PUSHBUTTON      "Auto Trace",IDC_BTN_AUTO_TRACE,232,198,50,14
-    GROUPBOX        "Dump",IDC_STATIC,306,183,102,69,BS_CENTER
-    PUSHBUTTON      "Dump",IDC_BTN_DUMP,336,199,50,14
-    PUSHBUTTON      "PE Rebuild",IDC_BTN_PE_REBUILD,336,218,50,14
-    PUSHBUTTON      "Fix Dump",IDC_BTN_FIX_DUMP,335,235,50,14
-    GROUPBOX        "Log",IDC_GROUP_LOG,7,256,409,83,BS_CENTER
-    LISTBOX         IDC_LIST_LOG,7,267,409,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    GROUPBOX        "Dump",IDC_GROUP_DUMP,256,184,122,69,BS_CENTER
+    PUSHBUTTON      "Dump",IDC_BTN_DUMP,288,199,50,14
+    PUSHBUTTON      "PE Rebuild",IDC_BTN_PE_REBUILD,288,218,50,14
+    PUSHBUTTON      "Fix Dump",IDC_BTN_FIX_DUMP,287,235,50,14
+    GROUPBOX        "Log",IDC_GROUP_LOG,0,256,409,83,BS_CENTER
+    LISTBOX         IDC_LIST_LOG,0,267,409,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
 END
 
 
@@ -534,10 +532,8 @@ BEGIN
 
     IDD_SCYLLA, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 416
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 339
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 349
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1010,12 +1006,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1534,7 +1530,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
