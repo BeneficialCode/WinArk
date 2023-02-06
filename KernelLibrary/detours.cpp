@@ -554,9 +554,7 @@ static PDETOUR_REGION s_pRegion = nullptr;  // Default region
 
 PZwProtectVirtualMemory g_pZwProtectVirtualMemory = nullptr;
 
-static PVOID DetourAllocTrampolineAllocateNew(PUCHAR pTarget,
-	PDETOUR_TRAMPOLINE pLo,
-	PDETOUR_TRAMPOLINE pHi) {
+static PVOID DetourAllocTrampolineAllocateNew() {
 	PVOID pTry = nullptr;
 
 	pTry = ExAllocatePoolWithTag(NonPagedPool, DETOUR_REGION_SIZE, 'oted');
@@ -595,7 +593,7 @@ static PDETOUR_TRAMPOLINE DetourAllocTrampoline(PUCHAR pTarget) {
 	// /RTCc RuntimeChecks breaks PtrToUlong.
 	pTarget = pTarget - (ULONG)((ULONG_PTR)pTarget & 0xffff);
 
-	PVOID pNewlyAllocated = DetourAllocTrampolineAllocateNew(pTarget, nullptr, nullptr);
+	PVOID pNewlyAllocated = DetourAllocTrampolineAllocateNew();
 	if (pNewlyAllocated != nullptr) {
 		s_pRegion = (DETOUR_REGION*)pNewlyAllocated;
 		s_pRegion->Signature = DETOUR_REGION_SIGNATURE;
@@ -650,7 +648,6 @@ static void DetourFreeUnusedTrampolineRegions() {
 	while (pRegion != NULL) {
 		if (DetourIsRegionEmpty(pRegion)) {
 			*ppRegionBase = pRegion->pNext;
-			SIZE_T size = 0;
 			ExFreePoolWithTag(pRegion, 'oted');
 			s_pRegion = NULL;
 		}
@@ -672,7 +669,7 @@ NTSTATUS NTAPI DetourTransactionCommit() {
 
 NTSTATUS NTAPI DetourTransactionCommitEx() {
 	// Common variables
-	DetourOperation* o;
+	DetourOperation* o = nullptr;
 	bool freed = false;
 
 	// Insert or remove each of the detours
@@ -774,16 +771,16 @@ NTSTATUS NTAPI DetourTransactionCommitEx() {
 	}
 
 	// Restore all of the page permissions and flush the icache.
-	for (DetourOperation* o = s_pPendingOperations; o != nullptr;) {
+	for (DetourOperation* pOper = s_pPendingOperations; pOper != nullptr;) {
 		// We don't care if this fails, because the code is still accessible
-		if (o->fIsRemove && o->pTrampoline) {
-			o->pTrampoline = nullptr;
+		if (pOper->fIsRemove && pOper->pTrampoline) {
+			pOper->pTrampoline = nullptr;
 			freed = true;
 		}
 
-		DetourOperation* n = o->pNext;
-		delete o;
-		o = n;
+		DetourOperation* n = pOper->pNext;
+		delete pOper;
+		pOper = n;
 	}
 	s_pPendingOperations = nullptr;
 
