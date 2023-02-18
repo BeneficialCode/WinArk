@@ -173,8 +173,16 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 	KAPC_STATE apcState;
 	KeStackAttachProcess(Process, &apcState);
 
-	// Dump pe
-	RtlCopyMemory(pBuf, pData->ImageBase, pData->ImageSize);
+	uintptr_t imageBase = (uintptr_t)pData->ImageBase;
+	ULONG size = pData->ImageSize;
+	for (uintptr_t p = imageBase,index = 0; p < imageBase + size; p += PAGE_SIZE,index += PAGE_SIZE) {
+		PVOID pSrc = (PVOID)p;
+		PVOID pDst = (PVOID)((uintptr_t)pBuf + index);
+		if (!MmIsAddressValid(pSrc)) {
+			continue;
+		}
+		RtlCopyMemory(pDst, (PVOID)p, PAGE_SIZE);
+	}
 
 	// Detach
 	KeUnstackDetachProcess(&apcState);
@@ -194,11 +202,11 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 	}
 
 	void* buffer = nullptr;
-
+	// Get caller's path
+	UNICODE_STRING dumpDir{ 0 };
 	do
 	{
-		// Get caller's path
-		UNICODE_STRING dumpDir{ 0 };
+		
 		HANDLE hProcess;
 		status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
 		if (NT_SUCCESS(status)) {
@@ -298,6 +306,8 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 		
 	} while (false);
 
+	if (dumpDir.Buffer)
+		ExFreePool(dumpDir.Buffer);
 	if (buffer)
 		ExFreePool(buffer);
 	ExFreePool(pBuf);

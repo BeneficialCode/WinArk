@@ -32,6 +32,10 @@ public:
 	void* GetAddress(ULONG rva) const;
 	void* GetBaseAddress() const;
 
+	IMAGE_NT_HEADERS64* GetNtHeader() {
+		return _ntHeader;
+	}
+
 	void* GetAddressEntryPoint() const;
 
 	static PIMAGE_SECTION_HEADER RvaToSection(PIMAGE_NT_HEADERS ntHeader, PVOID base, ULONG rva);
