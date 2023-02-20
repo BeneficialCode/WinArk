@@ -156,16 +156,25 @@ void CWFPFilterTable::Refresh() {
 	UINT32 numEntries = 0;
 	do
 	{
+		//
+		// open a handle to the WFP engine
+		//
 		status = WFPHelpers::HlprFwpmEngineOpen(&engineHandle);
 		if (status != NO_ERROR)
 			break;
 
+		//
+		// create an enumeration handle
+		//
 		status = WFPHelpers::HlprFwpmFilterCreateEnumHandle(engineHandle,
 			pFilterEnumTemplate, &enumHandle);
 
 		if (status != NO_ERROR)
 			break;
 
+		//
+		// enumerate filters
+		//
 		status = WFPHelpers::HlprFwpmFilterEnum(engineHandle,
 			enumHandle, INFINITE, &ppFilters, &numEntries);
 
@@ -189,12 +198,23 @@ void CWFPFilterTable::Refresh() {
 
 			numEntries = 0;
 		}
+		//
+		// free memory allocated by FwpmFilterEnum
+		//
+		FwpmFreeMemory((void**)&ppFilters);
 
+		//
+		// close enumeration handle
+		//
 		WFPHelpers::HlprFwpmFilterDestroyEnumHandle(engineHandle, &enumHandle);
 	} while (false);
 	
-	if (engineHandle)
+	if (engineHandle) {
+		//
+		// close engine handle
+		//
 		WFPHelpers::HlprFwpmEngineClose(&engineHandle);
+	}
 
 	m_Table.data.n = m_Table.data.info.size();
 }
