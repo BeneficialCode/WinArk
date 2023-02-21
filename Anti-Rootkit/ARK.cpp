@@ -6,8 +6,6 @@
 #include <evntrace.h>
 #include"util.h"
 #include"AntiRootkit.h"
-#include"RegManager.h"
-#include"ProcManager.h"
 #include "..\KernelLibrary\khook.h"
 #include "..\KernelLibrary\SysMon.h"
 #include "..\KernelLibrary\Logging.h"
@@ -75,6 +73,12 @@ extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
 	_In_ ULONG ProcessInformationLength,
 	_Out_opt_ PULONG ReturnLength
 );
+
+extern "C" NTSTATUS ZwOpenThread(
+	_Out_ PHANDLE ThreadHandle,
+	_In_ ACCESS_MASK DesiredAccess,
+	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
+	_In_opt_ PCLIENT_ID ClientId);
 
 extern "C" POBJECT_TYPE * IoDriverObjectType;
 
