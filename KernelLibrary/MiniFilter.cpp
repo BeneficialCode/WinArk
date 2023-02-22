@@ -6,16 +6,7 @@
 #define DRIVER_TAG 'trpD'
 
 NTSTATUS InitMiniFilter(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
-	//
-	// initialize initial extensions string
-	//
-	WCHAR ext[] = L"PDF;";
-	g_State.Extensions.Buffer = (PWSTR)ExAllocatePoolWithTag(NonPagedPool, sizeof(ext), DRIVER_TAG);
-	if (g_State.Extensions.Buffer == nullptr)
-		return STATUS_NO_MEMORY;
-
-	memcpy(g_State.Extensions.Buffer, ext, sizeof(ext));
-	g_State.Extensions.Length = g_State.Extensions.MaximumLength = sizeof(ext);
+	g_State.Extentions.Buffer = nullptr;
 
 	NTSTATUS status;
 	RegistryKey key;
@@ -107,6 +98,8 @@ NTSTATUS DelProtectUnload(FLT_FILTER_UNLOAD_FLAGS Flags) {
 
 	FltUnregisterFilter(g_State.Filter);
 	g_State.Lock.Delete();
+	if (g_State.Extentions.Buffer != nullptr)
+		ExFreePool(g_State.Extentions.Buffer);
 
 	return STATUS_SUCCESS;
 }
@@ -199,23 +192,33 @@ bool IsDeleteAllowed(PCUNICODE_STRING filename) {
 	NTSTATUS status;
 	status = FltParseFileName(filename, &ext, nullptr, nullptr);
 	if(NT_SUCCESS(status)) {
-		if (ext.Buffer == nullptr || ext.Length == 0) {
+		if (ext.Buffer == nullptr || ext.Length == 0 
+			||g_State.Extentions.Buffer == nullptr) {
 			return true;
 		}
-		WCHAR uext[16] = { 0 };
 		UNICODE_STRING suext;
-		suext.Buffer = uext;
 		//
-		// save space for NULL terminator and a semicolon
+		// allocate space for NULL terminator and a semicolon
 		//
-		suext.MaximumLength = sizeof(uext) - 2 * sizeof(WCHAR);
+		ULONG maxLength = ext.MaximumLength + sizeof(WCHAR) * 2;
+		suext.Buffer = (PWSTR)ExAllocatePoolWithTag(PagedPool, maxLength, DRIVER_TAG);
+		RtlZeroMemory(suext.Buffer, maxLength);
+		suext.MaximumLength = maxLength;
+		suext.Length = ext.Length;
+
 		RtlUpcaseUnicodeString(&suext, &ext, FALSE);
 		RtlAppendUnicodeToString(&suext, L";");
 
 		//
 		// search for the prefix
 		//
-		return wcsstr(g_State.Extensions.Buffer, uext) == nullptr;
+		bool del =  wcsstr(g_State.Extentions.Buffer, suext.Buffer) == nullptr;
+		
+		if (suext.Buffer != nullptr) {
+			ExFreePool(suext.Buffer);
+		}
+
+		return del;
 	}
 
 	return true;
