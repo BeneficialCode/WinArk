@@ -207,7 +207,7 @@ NTSTATUS NtRemoveProcessDebug(
 
 // 发送调试事件
 NTSTATUS DbgkpSendApiMessage(
-	ULONG	Flag,
+	UCHAR	Flags,
 	PDBGKM_APIMSG ApiMsg
 );
 
@@ -284,10 +284,6 @@ NTSTATUS DbgkpSendApiMessageLpc(
 //	_In_ PDBGKM_APIMSG DbgApiMsg
 //);
 
-// 挂起被调试进程
-//BOOLEAN
-//DbgkpSuspendProcess(
-//);
 
 // 恢复被调试进程的执行
 //VOID DbgkpResumeProcess(

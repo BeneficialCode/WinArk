@@ -54,6 +54,13 @@ PPEB_LDR_DATA kDbgUtil::GetPEBLdr(PPEB Peb) {
 	return *reinterpret_cast<PPEB_LDR_DATA*>((char*)Peb + _pebOffsets.Ldr);
 }
 
+CLIENT_ID kDbgUtil::GetThreadCid(PETHREAD Thread) {
+	CLIENT_ID cid{};
+	cid.UniqueProcess = PsGetThreadProcessId(Thread);
+	cid.UniqueThread = PsGetThreadId(Thread);
+	return cid;
+}
+
 bool kDbgUtil::HookDbgSys() {
 	if (g_pNtCreateDebugObject) {
 		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);

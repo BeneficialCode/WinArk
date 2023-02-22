@@ -21,6 +21,7 @@ public:
 	static PULONG GetThreadCrossThreadFlags(PETHREAD Ethread);
 	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
 	static PPEB_LDR_DATA GetPEBLdr(PPEB Peb);
+	static CLIENT_ID GetThreadCid(PETHREAD Thread);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -69,6 +70,9 @@ public:
 
 	using PDbgkpSendApiMessage = decltype(&DbgkpSendApiMessage);
 	static inline PDbgkpSendApiMessage g_pDbgkpSendApiMessage{ nullptr };
+
+	static inline PDbgkpSuspendProcess g_pDbgkpSuspendProcess{ nullptr };
+	
 
 	static inline bool _first = true;
 };

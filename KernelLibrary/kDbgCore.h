@@ -134,6 +134,7 @@
 	(m).h.u2.ZeroInit = LPC_DEBUG_EVENT;                    \
 	(m).ApiNumber = (Number)
 
+#define DBGKP_API_SEND_ALL_FLAGS	(0x3)
 
 //
 // Portable LPC Types for 32/64-bit compatibility

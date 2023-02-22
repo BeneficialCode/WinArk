@@ -1272,11 +1272,10 @@ DbgkpQueueMessage(
 	PDEBUG_OBJECT DebugObject = nullptr;
 	NTSTATUS status;
 
-	auto process = Process;
-	auto thread = Thread;
+
 	if (Flags & DEBUG_EVENT_NOWAIT) {
-		// POOL_QUOTA_FAIL_INSTEAD_OF_RAISE
-		DebugEvent = (PDEBUG_EVENT)ExAllocatePoolWithQuotaTag(NonPagedPool, sizeof(*DebugEvent), 'EgbD');
+		// NoWait: Don't wait for a response. Buffer message and return.
+		DebugEvent = (PDEBUG_EVENT)ExAllocatePoolWithQuotaTag(NonPagedPool, sizeof(*DebugEvent), 'ssap');
 		if (DebugEvent == nullptr) {
 			return STATUS_INSUFFICIENT_RESOURCES;
 		}
@@ -1292,45 +1291,62 @@ DbgkpQueueMessage(
 		DebugEvent->Flags = Flags;
 		ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
-		//DebugObject = (PDEBUG_OBJECT)process->DebugPort;
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		DebugObject = *pDebugObject;
 		
+		PULONG pCrossThreadFlags = kDbgUtil::GetProcessFlags(Process);
+		ULONG CrossThreadFlags = *pCrossThreadFlags;
+		//
+		// See if this create message has already been sent.
+		//
 		if (ApiMsg->ApiNumber == DbgKmCreateProcessApi ||
 			ApiMsg->ApiNumber == DbgKmCreateProcessApi) {
-			/*if (thread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG) {
+			if (CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG) {
 				DebugObject = nullptr;
-			}*/
+			}
 		}
 
-		/*if (ApiMsg->ApiNumber == DbgKmLoadDllApi &&
-			thread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG &&
+		if (ApiMsg->ApiNumber == DbgKmLoadDllApi &&
+			CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_CREATION_MSG &&
 			Flags & 0x40) {
 			DebugObject = nullptr;
-		}*/
+		}
 
+		//
+		// See if this exit message is for thread that never had a create
+		//
 		if (ApiMsg->ApiNumber == DbgKmExitThreadApi ||
 			ApiMsg->ApiNumber == DbgKmExitProcessApi) {
-		/*	if (thread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_TERMINATION_MSG) {
+			if (CrossThreadFlags & PS_CROSS_THREAD_FLAGS_SKIP_TERMINATION_MSG) {
 				DebugObject = nullptr;
-			}*/
+			}
 		}
 
 		KeInitializeEvent(&DebugEvent->ContinueEvent, SynchronizationEvent, FALSE);
 	}
 
+
 	DebugEvent->Process = Process;
 	DebugEvent->Thread = Thread;
 	DebugEvent->ApiMsg = *ApiMsg;
-	//DebugEvent->ClientId = thread->Cid;
+	DebugEvent->ClientId = kDbgUtil::GetThreadCid(Thread);
 
 	if (DebugObject == nullptr) {
 		status = STATUS_PORT_NOT_SET;
 	}
 	else {
+		//
+		// We must not use a debug port thats got no handles left
+		//
 		ExAcquireFastMutex(&DebugObject->Mutex);
-
-		if ((DebugObject->Flags & DEBUG_KILL_ON_CLOSE) == 0) {
+		//
+		// If the object is delete pending then don't use this object.
+		//
+		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
 			InsertTailList(&DebugObject->EventList, &DebugEvent->EventList);
-
+			//
+			// Set the event to say there is an unread event in the object.
+			//
 			if ((Flags & DEBUG_EVENT_NOWAIT) == 0) {
 				// 通知调试器有消息要读取
 				KeSetEvent(&DebugObject->EventsPresent, 0, FALSE);
@@ -1343,6 +1359,8 @@ DbgkpQueueMessage(
 
 		ExReleaseFastMutex(&DebugObject->Mutex);
 	}
+
+	
 
 	if ((Flags & DEBUG_EVENT_NOWAIT) == 0) {
 		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
@@ -1561,13 +1579,6 @@ NTSTATUS NtRemoveProcessDebug(
 	return status;
 }
 
-BOOLEAN
-DbgkpSuspendProcess(
-) {
-
-	return FALSE;
-}
-
 VOID DbgkpResumeProcess(
 	_In_ PEPROCESS Process
 ) {
@@ -1576,34 +1587,32 @@ VOID DbgkpResumeProcess(
 }
 
 NTSTATUS DbgkpSendApiMessage(
-	ULONG	Flag,
+	UCHAR	Flags,
 	PDBGKM_APIMSG ApiMsg
 ) {
 	NTSTATUS status;
-	BOOLEAN isSuspend;
+	BOOLEAN SuspendProcess;
 	PEPROCESS Process;
 	PETHREAD Thread;
 
-	isSuspend = FALSE;
+	SuspendProcess = FALSE;
 
-	if (Flag & 0x1) {
-		isSuspend = DbgkpSuspendProcess();
+	if (Flags & 0x1) {
+		SuspendProcess = kDbgUtil::g_pDbgkpSuspendProcess();
 	}
 
-	Thread = PsGetCurrentThread();
-	Process = PsGetCurrentProcess();
-
 	ApiMsg->ReturnedStatus = STATUS_PENDING;
+	
 	status = DbgkpQueueMessage(
-		(PEPROCESS)Process,
-		(PETHREAD)Thread,
+		PsGetCurrentProcess(),
+		KeGetCurrentThread(),
 		ApiMsg,
-		((Flag & 0x2) << 0x5),
+		((Flags & 0x2) << 0x5),
 		nullptr
 	);
-	ZwFlushInstructionCache(ZwCurrentProcess(), 0, 0);
-	if (isSuspend) {
-		// PsThawProcess()
+	ZwFlushInstructionCache(ZwCurrentProcess(), nullptr, 0);
+	if (SuspendProcess) {
+		
 	}
 
 	return status;
