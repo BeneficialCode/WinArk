@@ -1266,7 +1266,26 @@ DbgkpQueueMessage(
 	_Inout_ PDBGKM_APIMSG ApiMsg,
 	_In_ ULONG Flags,
 	_In_ PDEBUG_OBJECT TargetDebugObject
-) {
+)
+/*++
+
+Routine Description:
+
+	Queues a debug message to the port for a user mode debugger to get.
+
+Arguments:
+
+	Process				- Process being debugged
+	Thread				- Thread making call
+	ApiMsg				- Message being sent and received
+	NoWait				- Don't wait for a response. Buffer message and return.
+	TargetDebugObject	- Port to queue nowait messages to
+
+Return Value:
+	
+	NTSTATUS - Status of call.
+--*/
+{
 	PDEBUG_EVENT DebugEvent;
 	DEBUG_EVENT StaticDebugEvent;
 	PDEBUG_OBJECT DebugObject = nullptr;
@@ -1589,7 +1608,22 @@ VOID DbgkpResumeProcess(
 NTSTATUS DbgkpSendApiMessage(
 	UCHAR	Flags,
 	PDBGKM_APIMSG ApiMsg
-) {
+) 
+/*++
+
+Routine Description:
+
+	This function sends the specified API message over the specified
+	port. It is the caller's responsibility to format the API message
+	prior to calling this function.
+
+	If the SuspendProcess flag is supplied, then all threads in the calling
+	process are first suspended. 
+	Upon receipt of the reply message, the threads,the threads are resumed.
+
+
+--*/
+{
 	NTSTATUS status;
 	BOOLEAN SuspendProcess;
 	PEPROCESS Process;
