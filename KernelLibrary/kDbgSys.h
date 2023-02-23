@@ -75,6 +75,8 @@ using PMmGetFileNameForAddress = NTSTATUS(NTAPI*) (
 
 using PDbgkpSuspendProcess = BOOLEAN(NTAPI*)();
 
+using PKeThawAllThreads = VOID(NTAPI*)();
+
 using PDbgkpResumeProcess = VOID(NTAPI*) (
 	_In_ PEPROCESS Process
 );
@@ -286,9 +288,9 @@ NTSTATUS DbgkpSendApiMessageLpc(
 
 
 // 恢复被调试进程的执行
-//VOID DbgkpResumeProcess(
-//	_In_ PEPROCESS Process
-//);
+VOID DbgkpResumeProcess(
+	_In_ PEPROCESS Process
+);
 
 // 向调试子系统发送异常消息
 BOOLEAN DbgkForwardException(

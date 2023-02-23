@@ -234,6 +234,11 @@ struct DbgSysCoreInfo {
 	void* MmGetFileNameForAddress;
 	void* DbgkpSendApiMessage;
 	void* DbgkpQueueMessage;
+	void* KeThawAllThreads;
+	void* DbgkpSectionToFileHandle;
+	void* PsResumeThread;
+	void* DbgkSendSystemDllMessages;
+	void* PsSuspendThread;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

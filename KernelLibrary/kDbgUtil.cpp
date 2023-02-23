@@ -42,6 +42,10 @@ VOID* kDbgUtil::GetProcessUniqueProcessId(PEPROCESS Process) {
 	return *reinterpret_cast<VOID**>((char*)Process + _eprocessOffsets.UniqueProcessId);
 }
 
+VOID* kDbgUtil::GetThreadStartAddress(PETHREAD Thread) {
+	return *reinterpret_cast<VOID**>((char*)Thread + _ethreadOffsets.StartAddress);
+}
+
 PULONG kDbgUtil::GetThreadCrossThreadFlags(PETHREAD Ethread) {
 	return reinterpret_cast<PULONG>((char*)Ethread + _ethreadOffsets.CrossThreadFlags);
 }
@@ -123,6 +127,12 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pMmGetFileNameForAddress = (PMmGetFileNameForAddress)info->MmGetFileNameForAddress;
 		g_pDbgkpQueueMessage = (PDbgkpQueueMessage)info->DbgkpQueueMessage;
 		g_pDbgkpSendApiMessage = (PDbgkpSendApiMessage)info->DbgkpSendApiMessage;
+		g_pKeThawAllThreads = (PKeThawAllThreads)info->KeThawAllThreads;
+		g_pDbgkpSectionToFileHandle = (PDbgkpSectionToFileHandle)info->DbgkpSectionToFileHandle;
+		g_pPsResumeThread = (PPsResumeThread)info->PsResumeThread;
+		g_pDbgkSendSystemDllMessages = (PDbgkSendSystemDllMessages)info->DbgkSendSystemDllMessages;
+		g_pPsSuspendThread = (PPsSuspendThread)info->PsSuspendThread;
+
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

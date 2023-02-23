@@ -18,6 +18,7 @@ public:
 	static VOID* GetProcessSectionBaseAddress(PEPROCESS Process);
 	static VOID* GetProcessSectionObject(PEPROCESS Process);
 	static VOID* GetProcessUniqueProcessId(PEPROCESS Process);
+	static VOID* GetThreadStartAddress(PETHREAD Thread);
 	static PULONG GetThreadCrossThreadFlags(PETHREAD Ethread);
 	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
 	static PPEB_LDR_DATA GetPEBLdr(PPEB Peb);
@@ -72,7 +73,17 @@ public:
 	static inline PDbgkpSendApiMessage g_pDbgkpSendApiMessage{ nullptr };
 
 	static inline PDbgkpSuspendProcess g_pDbgkpSuspendProcess{ nullptr };
-	
 
+	static inline PKeThawAllThreads g_pKeThawAllThreads{ nullptr };
+	
+	static inline PDbgkpSectionToFileHandle g_pDbgkpSectionToFileHandle{ nullptr };
+
+	static inline PPsResumeThread g_pPsResumeThread{ nullptr };
+
+	using PDbgkSendSystemDllMessages = decltype(&DbgkSendSystemDllMessages);
+	static inline PDbgkSendSystemDllMessages g_pDbgkSendSystemDllMessages{ nullptr };
+
+
+	static inline PPsSuspendThread g_pPsSuspendThread{ nullptr };
 	static inline bool _first = true;
 };
