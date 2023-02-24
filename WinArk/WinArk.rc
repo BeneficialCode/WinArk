@@ -799,6 +799,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Copy",                        ID_NOTIFY_COPY
         MENUITEM "Export",                      ID_NOTIFY_EXPORT
+        MENUITEM "Remove By Name",              ID_KERNEL_REMOVE_BY_NAME
     END
     POPUP "network"
     BEGIN

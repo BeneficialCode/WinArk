@@ -404,13 +404,15 @@
 #define ID_PROCESS_DUMPPROCESS          32969
 #define ID_PROCESS_DUMP                 32970
 #define ID_KERNEL_DUMP                  32971
+#define ID_KERNEL_REMOVEBYNAME          32972
+#define ID_KERNEL_REMOVE_BY_NAME        32973
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        284
-#define _APS_NEXT_COMMAND_VALUE         32972
+#define _APS_NEXT_COMMAND_VALUE         32974
 #define _APS_NEXT_CONTROL_VALUE         1121
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

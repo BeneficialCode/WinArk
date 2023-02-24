@@ -441,6 +441,70 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return TRUE;
 }
 
+LRESULT CKernelNotifyTable::OnRemoveByCompanyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& pNotify = m_Table.data.info[selected];
+
+	std::wstring companyName = pNotify.Company;
+
+	for (auto& p : m_Table.data.info) {
+		if (p.Company != companyName) {
+			continue;
+		}
+
+		NotifyData data;
+		data.Address = p.Routine;
+
+		switch (p.Type)
+		{
+			case CallbackType::CreateProcessNotify:
+				data.Type = NotifyType::CreateProcessNotify;
+				break;
+
+			case CallbackType::CreateThreadNotify:
+				data.Type = NotifyType::CreateThreadNotify;
+				break;
+
+			case CallbackType::LoadImageNotify:
+				data.Type = NotifyType::LoadImageNotify;
+				break;
+
+			case CallbackType::ProcessObPostOperationNotify:
+			case CallbackType::ProcessObPreOperationNotify:
+				data.Type = NotifyType::ProcessObjectNotify;
+				data.Address = p.Address;
+				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+				break;
+			case CallbackType::ThreadObPostOperationNotify:
+			case CallbackType::ThreadObPreOperationNotify:
+				data.Type = NotifyType::ThreadObjectNotify;
+				data.Address = p.Address;
+				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+				break;
+
+			case CallbackType::RegistryNotify:
+				data.Type = NotifyType::RegistryNotify;
+				data.Cookie = p.Cookie;
+				break;
+			default:
+				break;
+		}
+
+
+		BOOL ok = false;
+
+		ok = DriverHelper::RemoveNotify(&data);
+		if (!ok)
+			AtlMessageBox(*this, L"Failed to remove notify", IDS_TITLE, MB_ICONERROR);
+		else
+			Refresh();
+		Invalidate(True);
+	}
+
+	return TRUE;
+}
+
 
 std::wstring CKernelNotifyTable::GetSingleNotifyInfo(CallbackInfo& info) {
 	CString text;
