@@ -31,9 +31,7 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	
 	// attach controls
 	// DoDataExchange();
-
-	// Init CDialogResize
-	DlgResize_Init(true, true);
+	
 
 	ProcessHandler();
 
