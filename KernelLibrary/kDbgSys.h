@@ -89,6 +89,22 @@ using PPsCallImageNotifyRoutines = VOID(NTAPI*)(
 	_In_ PVOID FileObject,
 	_Out_ PIMAGE_INFO_EX ImageInfoEx);
 
+using PObFastReferenceObject = PVOID(NTAPI*) (
+	_In_ PEX_FAST_REF FastRef
+);
+
+using PExfAcquirePushLockShared = PVOID(NTAPI*)(
+	_Inout_ PEX_PUSH_LOCK PushLock
+);
+
+using PExfReleasePushLockShared = PVOID(NTAPI*)(
+	_Inout_ PEX_PUSH_LOCK PushLock
+	);
+
+using PObFastReferenceObjectLocked = PVOID(NTAPI*)(
+	_In_ PEX_FAST_REF FastRef
+	);
+
 // 创建调试对象
 NTSTATUS 
 NTAPI
@@ -225,9 +241,9 @@ NTSTATUS DbgkpSendApiMessage(
 //	ULONG index
 //);
 
-PVOID ObFastReferenceObject(
-	_In_ PEX_FAST_REF FastRef
-);
+VOID ExAcquirePushLockShared(_In_ PEX_PUSH_LOCK_S PushLock);
+
+VOID ExReleasePushLockShared(_In_ PEX_PUSH_LOCK_S PushLock);
 
 LOGICAL ExFastRefDereference(
 	_Inout_ PEX_FAST_REF FastRef,

@@ -143,6 +143,10 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pPsSuspendThread = (PPsSuspendThread)info->PsSuspendThread;
 		g_pPsQuerySystemDllInfo = (PPsQuerySystemDllInfo)info->PsQuerySystemDllInfo;
 		g_pPsCallImageNotifyRoutines = (PPsCallImageNotifyRoutines)info->PsCallImageNotifyRoutines;
+		g_pObFastReferenceObject = (PObFastReferenceObject)info->ObFastReferenceObject;
+		g_pExfAcquirePushLockShared = (PExfAcquirePushLockShared)info->ExfAcquirePushLockShared;
+		g_pExfReleasePushLockShared = (PExfReleasePushLockShared)info->ExfReleasePushLockShared;
+		g_pObFastReferenceObjectLocked = (PObFastReferenceObjectLocked)info->ObFastReferenceObjectLocked;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

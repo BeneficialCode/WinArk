@@ -91,5 +91,13 @@ public:
 	static inline PPsQuerySystemDllInfo g_pPsQuerySystemDllInfo{ nullptr };
 
 	static inline PPsCallImageNotifyRoutines g_pPsCallImageNotifyRoutines{ nullptr };
+
+	static inline PObFastReferenceObject g_pObFastReferenceObject{ nullptr };
+
+	static inline PExfAcquirePushLockShared g_pExfAcquirePushLockShared{ nullptr };
+
+	static inline PExfReleasePushLockShared g_pExfReleasePushLockShared{ nullptr };
+
+	static inline PObFastReferenceObjectLocked g_pObFastReferenceObjectLocked{ nullptr };
 	static inline bool _first = true;
 };

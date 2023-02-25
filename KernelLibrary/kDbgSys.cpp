@@ -13,7 +13,6 @@ PFAST_MUTEX	g_pDbgkpProcessDebugPortMutex;
 
 PULONG g_pDbgkpMaxModuleMsgs;
 
-PSYSTEM_DLL* PspSystemDlls;
 
 NTSTATUS NTAPI
 NtCreateDebugObject(
@@ -1236,6 +1235,9 @@ Arguments:
 
 		ObDereferenceObject(FileObject);
 
+		//
+		// system dll
+		// 
 		for (int i = 0; i < 2; i++) {
 			PPS_SYSTEM_DLL_INFO info = kDbgUtil::g_pPsQuerySystemDllInfo(i);
 			if (info != nullptr) {
@@ -1247,7 +1249,12 @@ Arguments:
 				__try {
 					NtHeaders = RtlImageNtHeader(info->ImageBase);
 					if (NtHeaders) {
-						ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, SizeOfImage);
+						if (Wow64Process != nullptr) {
+							ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER((PIMAGE_NT_HEADERS32)NtHeaders, SizeOfImage);
+						}
+						else {
+							ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, SizeOfImage);
+						}
 					}
 				}
 				__except (EXCEPTION_EXECUTE_HANDLER) {
@@ -1257,12 +1264,15 @@ Arguments:
 				ImageInfoEx.ImageInfo.ImageSelector = 0;
 				ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
-				PSYSTEM_DLL sysDll = (PSYSTEM_DLL)((char*)info - 0x10);
-				Object = ObFastReferenceObject(&sysDll->FastRef);
+				
+				PPS_SYSTEM_DLL sysDll = CONTAINING_RECORD(info, PS_SYSTEM_DLL, SystemDllInfo);
+				
+				Object = kDbgUtil::g_pObFastReferenceObject(&sysDll->SectionObjectFastRef);
 				if (Object == nullptr) {
 					KeEnterCriticalRegion();
-					//Object = ObFastReferenceObjectLocked(&sysDll->FastRef);
-					//ExAcquirePushLockShared(&sysDll->Lock);
+					ExAcquirePushLockShared((PEX_PUSH_LOCK_S)&sysDll->PushLock);
+					Object = kDbgUtil::g_pObFastReferenceObjectLocked(&sysDll->SectionObjectFastRef);
+					ExReleasePushLockShared((PEX_PUSH_LOCK_S)&sysDll->PushLock);
 					KeLeaveCriticalRegion();
 				}
 
@@ -1808,35 +1818,6 @@ ExFastRefAddAdditionalReferenceCounts(
 	return TRUE;
 }
 
-PVOID ObFastReferenceObject(
-	_In_ PEX_FAST_REF FastRef
-) {
-	EX_FAST_REF OldRef;
-	PVOID Object;
-	ULONG RefsToAdd, Unused;
-
-	OldRef = ExFastReference(FastRef);
-
-	Object = (PVOID)(OldRef.Value & (~MAX_FAST_REFS));
-
-	Unused = OldRef.RefCnt;
-
-	if (Unused <= 1) {
-		if (Unused == 0) {
-			return nullptr;
-		}
-
-		RefsToAdd = MAX_FAST_REFS;
-		ObfReferenceObject(Object);
-
-		if (!ExFastRefAddAdditionalReferenceCounts(FastRef, Object, RefsToAdd)) {
-			ObfDereferenceObject(Object);
-		}
-	}
-
-	return Object;
-}
-
 VOID DbgkExitThread(
 	NTSTATUS ExitStatus
 ) {
@@ -2321,5 +2302,48 @@ VOID DbgkpCloseObject(
 		Entry = Entry->Flink;
 		DebugEvent->Status = STATUS_DEBUGGER_INACTIVE;
 		DbgkpWakeTarget(DebugEvent);
+	}
+}
+
+VOID ExAcquirePushLockShared(_In_ PEX_PUSH_LOCK_S PushLock)
+/*++
+
+Routine Description:
+	Acquire a push lock shared
+
+Arguments:
+
+	PushLock - Push lock to be acquired
+--*/ {
+	EX_PUSH_LOCK_S OldValue, NewValue;
+
+	OldValue.Value = 0;
+	NewValue.Value = EX_PUSH_LOCK_SHARE_INC | EX_PUSH_LOCK_LOCK;
+
+	if (InterlockedCompareExchangePointer(&PushLock->Ptr,
+		NewValue.Ptr, OldValue.Ptr) != OldValue.Ptr) {
+		kDbgUtil::g_pExfAcquirePushLockShared((PEX_PUSH_LOCK)PushLock);
+	}
+}
+
+VOID ExReleasePushLockShared(_In_ PEX_PUSH_LOCK_S PushLock)
+/*++
+Routine Description:
+	Release a push lock was acquired shared
+
+Arguments:
+	PushLock - Push lock to be released
+--*/
+{
+	EX_PUSH_LOCK_S OldValue, NewValue;
+
+	OldValue = *PushLock;
+
+	OldValue.Value = EX_PUSH_LOCK_SHARE_INC | EX_PUSH_LOCK_LOCK;
+	NewValue.Value = 0;
+
+	if (InterlockedCompareExchangePointer(&PushLock->Ptr,
+		NewValue.Ptr, OldValue.Ptr) != OldValue.Ptr) {
+		kDbgUtil::g_pExfReleasePushLockShared((PEX_PUSH_LOCK)PushLock);
 	}
 }

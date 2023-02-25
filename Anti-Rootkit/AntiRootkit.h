@@ -241,6 +241,10 @@ struct DbgSysCoreInfo {
 	void* PsSuspendThread;
 	void* PsQuerySystemDllInfo;
 	void* PsCallImageNotifyRoutines;
+	void* ObFastReferenceObject;
+	void* ExfAcquirePushLockShared;
+	void* ExfReleasePushLockShared;
+	void* ObFastReferenceObjectLocked;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

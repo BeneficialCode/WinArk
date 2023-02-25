@@ -618,6 +618,54 @@ typedef struct _LDR_DATA_TABLE_ENTRY
 } LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
 
 
+//
+// Push lock definitions
+//
+typedef struct _EX_PUSH_LOCK_S {
+
+	//
+	// LOCK bit is set for both exclusive and shared acquires
+	//
+#define EX_PUSH_LOCK_LOCK_V          ((ULONG_PTR)0x0)
+#define EX_PUSH_LOCK_LOCK            ((ULONG_PTR)0x1)
+
+//
+// Waiting bit designates that the pointer has chained waiters
+//
+
+#define EX_PUSH_LOCK_WAITING         ((ULONG_PTR)0x2)
+
+//
+// Waking bit designates that we are either traversing the list
+// to wake threads or optimizing the list
+//
+
+#define EX_PUSH_LOCK_WAKING          ((ULONG_PTR)0x4)
+
+//
+// Set if the lock is held shared by multiple owners and there are waiters
+//
+
+#define EX_PUSH_LOCK_MULTIPLE_SHARED ((ULONG_PTR)0x8)
+
+//
+// Total shared Acquires are incremented using this
+//
+#define EX_PUSH_LOCK_SHARE_INC       ((ULONG_PTR)0x10)
+#define EX_PUSH_LOCK_PTR_BITS        ((ULONG_PTR)0xf)
+
+	union {
+		struct {
+			ULONG_PTR Locked : 1;
+			ULONG_PTR Waiting : 1;
+			ULONG_PTR Waking : 1;
+			ULONG_PTR MultipleShared : 1;
+			ULONG_PTR Shared : sizeof(ULONG_PTR) * 8 - 4;
+		};
+		ULONG_PTR Value;
+		PVOID Ptr;
+	};
+} EX_PUSH_LOCK_S, * PEX_PUSH_LOCK_S;
 /*
 // like GetProcAddress
 PVOID
@@ -627,21 +675,41 @@ RtlFindExportedRoutineByName (
 */
 
 
-typedef struct _EX_FAST_REF      // 3 elements, 0x8 bytes (sizeof) 
-{
-	union                        // 3 elements, 0x8 bytes (sizeof) 
-	{
-		/*0x000*/         VOID* Object;
-		/*0x000*/         UINT64       RefCnt : 4; // 0 BitPosition                  
-		/*0x000*/         UINT64       Value;
+typedef struct _EX_FAST_REF {
+	union {
+		PVOID Object;
+#if defined (_WIN64)
+		ULONG_PTR RefCnt : 4;
+#else
+		ULONG_PTR RefCnt : 3;
+#endif
+		ULONG_PTR Value;
 	};
-}EX_FAST_REF, * PEX_FAST_REF;
+} EX_FAST_REF, * PEX_FAST_REF;
 
-typedef struct _SYSTEM_DLL {
-	EX_FAST_REF FastRef;      // 0x0
-	EX_PUSH_LOCK Lock;        // 0x8
-	PPS_SYSTEM_DLL_INFO DllInfo;  // 0x10
-}SYSTEM_DLL, * PSYSTEM_DLL;
+typedef struct _PS_SYSTEM_DLL {
+	//
+	// _SECTION* object of the DLL.
+	// Initialized at runtime by PspLocateSystemDll.
+	//
+	union {
+		EX_FAST_REF SectionObjectFastRef;
+		PVOID       SectionObject;
+	};
+
+	//
+	// Push lock.
+	//
+
+	EX_PUSH_LOCK  PushLock;
+
+	//
+	// System DLL information.
+	// This part is returned by PsQuerySystemDllInfo.
+	//
+
+	PS_SYSTEM_DLL_INFO SystemDllInfo;
+}PS_SYSTEM_DLL, * PPS_SYSTEM_DLL;
 
 typedef struct _WOW64_PROCESS {
 	PVOID Wow64;
