@@ -228,6 +228,8 @@ struct EThreadOffsets {
 	ULONG ThreadInserted;
 	ULONG Tcb;
 	ULONG StartAddress;
+	ULONG ApcState;
+	ULONG ApcStateIndex;
 };
 
 struct TcbOffsets {

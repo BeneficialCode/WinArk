@@ -14,7 +14,7 @@
 
 #define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
-ULONG	PspNotifyEnableMask;
+PULONG	g_pPspNotifyEnableMask;
 EX_CALLBACK* PspLoadImageNotifyRoutine;
 SysMonGlobals g_SysMonGlobals;
 UNICODE_STRING g_BackupDir;
@@ -470,37 +470,6 @@ VOID ExDereferenceCallBackBlock(
 ) {
 	if (!ExFastRefDereference(&Callback->RoutineBlock, CallbackBlock)) {
 		ExReleaseRundownProtection(&CallbackBlock->RundownProtect);
-	}
-}
-
-
-
-VOID PsCallImageNotifyRoutines(
-	_In_ PUNICODE_STRING ImageName,
-	_In_ HANDLE ProcessId,
-	_In_ PVOID FileObject,
-	_In_ PIMAGE_INFO_EX ImageInfoEx
-) {
-	PLOAD_IMAGE_NOTIFY_ROUTINE Routine;
-	PEX_CALLBACK_ROUTINE_BLOCK Callback;
-
-	CriticalRegion critical;
-	AutoEnter<CriticalRegion> enter(critical);
-
-	if (PspNotifyEnableMask & 1) {
-		ImageInfoEx->Size = sizeof(IMAGE_INFO_EX);
-		ImageInfoEx->ImageInfo.ExtendedInfoPresent = TRUE;
-		ImageInfoEx->FileObject = (FILE_OBJECT*)FileObject;
-
-		for (ULONG i = 0; i < PSP_MAX_LOAD_IMAGE_NOTIFY; i++) {
-			Callback = ExReferenceCallBackBlock(&PspLoadImageNotifyRoutine[i]);
-			if (Callback != nullptr) {
-				Routine = (PLOAD_IMAGE_NOTIFY_ROUTINE)Callback->Function;
-				Routine(ImageName,
-					ProcessId, &ImageInfoEx->ImageInfo);
-				ExDereferenceCallBackBlock(&PspLoadImageNotifyRoutine[i], Callback);
-			}
-		}
 	}
 }
 

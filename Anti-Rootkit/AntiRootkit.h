@@ -239,6 +239,8 @@ struct DbgSysCoreInfo {
 	void* PsResumeThread;
 	void* DbgkSendSystemDllMessages;
 	void* PsSuspendThread;
+	void* PsQuerySystemDllInfo;
+	void* PsCallImageNotifyRoutines;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

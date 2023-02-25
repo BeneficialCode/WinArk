@@ -81,6 +81,14 @@ using PDbgkpResumeProcess = VOID(NTAPI*) (
 	_In_ PEPROCESS Process
 );
 
+using PPsQuerySystemDllInfo = PPS_SYSTEM_DLL_INFO(NTAPI*)(_In_ ULONG Type);
+
+using PPsCallImageNotifyRoutines = VOID(NTAPI*)(
+	_In_ PUNICODE_STRING ImageName,
+	_In_ HANDLE ProcessId,
+	_In_ PVOID FileObject,
+	_Out_ PIMAGE_INFO_EX ImageInfoEx);
+
 // 创建调试对象
 NTSTATUS 
 NTAPI

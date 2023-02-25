@@ -13,7 +13,7 @@ public:
 	static PULONG GetProcessCrossThreadFlags(PEPROCESS Process);
 	static PPEB GetProcessPeb(PEPROCESS Process);
 	static PDEBUG_OBJECT* GetProcessDebugPort(PEPROCESS Process);
-	static PVOID GetProcessWow64Process(PEPROCESS Process);
+	static PWOW64_PROCESS GetProcessWow64Process(PEPROCESS Process);
 	static PULONG GetProcessFlags(PEPROCESS Process);
 	static VOID* GetProcessSectionBaseAddress(PEPROCESS Process);
 	static VOID* GetProcessSectionObject(PEPROCESS Process);
@@ -23,6 +23,8 @@ public:
 	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
 	static PPEB_LDR_DATA GetPEBLdr(PPEB Peb);
 	static CLIENT_ID GetThreadCid(PETHREAD Thread);
+	static PKAPC_STATE GetThreadApcState(PETHREAD Thread);
+	static UINT8 GetCurrentThreadApcStateIndex();
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -85,5 +87,9 @@ public:
 
 
 	static inline PPsSuspendThread g_pPsSuspendThread{ nullptr };
+
+	static inline PPsQuerySystemDllInfo g_pPsQuerySystemDllInfo{ nullptr };
+
+	static inline PPsCallImageNotifyRoutines g_pPsCallImageNotifyRoutines{ nullptr };
 	static inline bool _first = true;
 };

@@ -399,7 +399,7 @@ Return Value:
 				// Queue any new thread messages and repeat.
 				//
 
-				status = kDbgUtil::g_pDbgkpPostFakeThreadMessages(
+				status = DbgkpPostFakeThreadMessages(
 					Process,
 					DebugObject,
 					Thread,
@@ -522,7 +522,95 @@ VOID DbgkSendSystemDllMessages(
 	PDEBUG_OBJECT DebugObject,
 	PDBGKM_APIMSG ApiMsg
 ) {
+	NTSTATUS status;
+	PDBGKM_LOAD_DLL LoadDll;
+	PIMAGE_NT_HEADERS NtHeaders;
+	PTEB Teb;
+	PPS_SYSTEM_DLL_INFO SystemDllInfo;
+	IO_STATUS_BLOCK IoStatusBlock;
+	PEPROCESS Process;
+	BOOLEAN Attached;
+	KAPC_STATE ApcState;
 
+	if (Thread) {
+		Process = PsGetThreadProcess(Thread);
+	}
+	else {
+		Process = kDbgUtil::GetThreadApcState(Thread)->Process;
+	}
+	
+	LoadDll = &ApiMsg->u.LoadDll;
+
+	for (int i = 0; i < 2; i++) {
+		SystemDllInfo = kDbgUtil::g_pPsQuerySystemDllInfo(i);
+		if (SystemDllInfo && (i != 1
+#ifdef _WIN64
+			|| kDbgUtil::GetProcessWow64Process(Process)
+#endif // _WIN64
+			)) {
+			memset(LoadDll, 0, sizeof(DBGKM_LOAD_DLL));
+			LoadDll->BaseOfDll = SystemDllInfo->ImageBase;
+			if (Thread && i) {
+				Attached = TRUE;
+				KeStackAttachProcess(Process, &ApcState);
+			}
+			else {
+				Attached = FALSE;
+			}
+
+			NtHeaders = RtlImageNtHeader(SystemDllInfo->ImageBase);
+			if (NtHeaders) {
+				LoadDll->DebugInfoFileOffset = NtHeaders->FileHeader.PointerToSymbolTable;
+				LoadDll->DebugInfoSize = NtHeaders->FileHeader.NumberOfSymbols;
+			}
+			if (Thread) {
+				Teb = nullptr;
+			}
+			else {
+				Teb = (PTEB)PsGetCurrentThreadTeb();
+				if (Teb) {
+					RtlStringCbCopyW(Teb->StaticUnicodeBuffer, 
+						sizeof(Teb->StaticUnicodeBuffer), 
+						SystemDllInfo->DllName);
+					PWCHAR* pArbitraryUserPointer = (PWCHAR*)Teb->NtTib.ArbitraryUserPointer;
+					*pArbitraryUserPointer = Teb->StaticUnicodeBuffer;
+					LoadDll->NamePointer = pArbitraryUserPointer;
+				}
+			}
+
+			if (Attached) {
+				KeUnstackDetachProcess(&ApcState);
+			}
+			OBJECT_ATTRIBUTES ObjectAttr;
+			InitializeObjectAttributes(&ObjectAttr, &SystemDllInfo->Ntdll32Path,
+				OBJ_CASE_INSENSITIVE | OBJ_FORCE_ACCESS_CHECK | OBJ_KERNEL_HANDLE,
+				nullptr, nullptr);
+			status = ZwOpenFile(&LoadDll->FileHandle, GENERIC_READ | SYNCHRONIZE,
+				&ObjectAttr,
+				&IoStatusBlock,
+				FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+				FILE_SYNCHRONOUS_IO_NONALERT);
+			if (!NT_SUCCESS(status)) {
+				LoadDll->FileHandle = nullptr;
+			}
+			DBGKM_FORMAT_API_MSG(*ApiMsg, DbgKmLoadDllApi, sizeof(DBGKM_LOAD_DLL));
+			if (Thread) {
+				status = DbgkpQueueMessage(Process, Thread, ApiMsg, 2, DebugObject);
+				if (!NT_SUCCESS(status)) {
+					ObCloseHandle(LoadDll->FileHandle, KernelMode);
+				}
+			}
+			else {
+				DbgkpSendApiMessage(3, ApiMsg);
+				if (LoadDll->FileHandle) {
+					ObCloseHandle(LoadDll->FileHandle, KernelMode);
+				}
+				if (Teb) {
+					Teb->NtTib.ArbitraryUserPointer = nullptr;
+				}
+			}
+		}
+	}
 }
 
 NTSTATUS DbgkpPostFakeThreadMessages(
@@ -588,11 +676,6 @@ Return Value:
 
 		LastThread = Thread;
 		ObDereferenceObject(LastThread);
-
-		//if (Thread->ThreadInserted == 0) {
-		//	// 涉及的内容太多
-		//	continue;
-		//}
 
 		//
 		// Acquire rundown protection of the thread.
@@ -699,8 +782,7 @@ Return Value:
 			First = FALSE;
 			ObReferenceObject(Thread);
 			FirstThread = Thread;
-
-			kDbgUtil::g_pDbgkSendSystemDllMessages(Thread, DebugObject, &ApiMsg);
+			DbgkSendSystemDllMessages(Thread, DebugObject, &ApiMsg);
 		}
 	}
 
@@ -1054,7 +1136,25 @@ PEPROCESS PsGetCurrentProcessByThread(PETHREAD Thread) {
 
 VOID DbgkCreateThread(
 	PETHREAD Thread
-) {
+)/*++
+ Routine Description:
+
+	This function is called when a new thread begins to execute. If the
+	thread has an associated DebugPort, then a message is sent thru the
+	port.
+
+	If this thread is the first thread in the process, then this event
+	is translated into a CreateProcessInfo message.
+
+	If a message is sent, then while the thread is waiting a reply,
+	all other threads in the process are suspended.
+
+Arguments:
+	
+	Thread - New thread just being started.
+
+
+ --*/ {
 	PVOID Port;
 	DBGKM_APIMSG m;
 	PDBGKM_CREATE_THREAD CreateThreadArgs;
@@ -1079,10 +1179,12 @@ VOID DbgkCreateThread(
 	Process = PsGetCurrentProcessByThread(Thread);
 
 #if defined(_WIN64)
-	//Wow64Process = Process->WoW64Process;
+	Wow64Process = kDbgUtil::GetProcessWow64Process(Process);
 #endif
 
-	/*OldFlags = PS_TEST_SET_BITS(&Process->Flags, PS_PROCESS_FLAGS_CREATE_REPORTED | PS_PROCESS_FLAGS_IMAGE_NOTIFY_DONE);*/
+	PULONG pFlags = kDbgUtil::GetProcessFlags(Process);
+	OldFlags = PS_TEST_SET_BITS(pFlags, PS_PROCESS_FLAGS_CREATE_REPORTED | PS_PROCESS_FLAGS_IMAGE_NOTIFY_DONE);
+	ULONG PspNotifyEnableMask = *g_pPspNotifyEnableMask;
 	if ((OldFlags & PS_PROCESS_FLAGS_IMAGE_NOTIFY_DONE) == 0 && (PspNotifyEnableMask & 1)) {
 		IMAGE_INFO_EX ImageInfoEx;
 		PUNICODE_STRING ImageName;
@@ -1093,11 +1195,12 @@ VOID DbgkCreateThread(
 		//
 		ImageInfoEx.ImageInfo.Properties = 0;
 		ImageInfoEx.ImageInfo.ImageAddressingMode = IMAGE_ADDRESSING_MODE_32BIT;
-		//ImageInfoEx.ImageInfo.ImageBase = Process->SectionBaseAddress;
+		PVOID SectionBaseAddress = kDbgUtil::GetProcessSectionBaseAddress(Process);
+		ImageInfoEx.ImageInfo.ImageBase = SectionBaseAddress;
 		ImageInfoEx.ImageInfo.ImageSize = 0;
 
 		__try {
-			//NtHeaders = RtlImageNtHeader(Process->SectionBaseAddress);
+			NtHeaders = RtlImageNtHeader(SectionBaseAddress);
 			if (NtHeaders) {
 #ifdef _WIN64
 				if (Wow64Process != nullptr) {
@@ -1118,13 +1221,14 @@ VOID DbgkCreateThread(
 		ImageInfoEx.ImageInfo.ImageSelector = 0;
 		ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
+		
 		PsReferenceProcessFilePointer((PEPROCESS)Process, &FileObject);
 		status = SeLocateProcessImageName((PEPROCESS)Process, &ImageName);
 		if (!NT_SUCCESS(status)) {
 			ImageName = nullptr;
 		}
-
-		//PsCallImageNotifyRoutines(ImageName, Process->UniqueProcessId, FileObject, &ImageInfoEx);
+		
+		kDbgUtil::g_pPsCallImageNotifyRoutines(ImageName, PsGetProcessId(Process), FileObject, &ImageInfoEx);
 		if (ImageName) {
 			//因为在SeLocateProcessImageName中为ImageName申请了内存，所以要在此处释放掉
 			ExFreePool(ImageName);
@@ -1132,16 +1236,16 @@ VOID DbgkCreateThread(
 
 		ObDereferenceObject(FileObject);
 
-		for (int i = 0; i < 6; i++) {
-			PSYSTEM_DLL_INFO info = nullptr;//PsQuerySystemDllInfo(i);
+		for (int i = 0; i < 2; i++) {
+			PPS_SYSTEM_DLL_INFO info = kDbgUtil::g_pPsQuerySystemDllInfo(i);
 			if (info != nullptr) {
 				ImageInfoEx.ImageInfo.Properties = 0;
 				ImageInfoEx.ImageInfo.ImageAddressingMode = IMAGE_ADDRESSING_MODE_32BIT;
-				ImageInfoEx.ImageInfo.ImageBase = info->DllBase;
+				ImageInfoEx.ImageInfo.ImageBase = info->ImageBase;
 				ImageInfoEx.ImageInfo.ImageSize = 0;
 
 				__try {
-					NtHeaders = RtlImageNtHeader(info->DllBase);
+					NtHeaders = RtlImageNtHeader(info->ImageBase);
 					if (NtHeaders) {
 						ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, SizeOfImage);
 					}

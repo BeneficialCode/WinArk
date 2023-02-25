@@ -53,6 +53,7 @@
 //
 #define PS_CROSS_THREAD_FLAGS_SKIP_TERMINATION_MSG 0x00000100UL
 
+#define IS_SYSTEM_THREAD(CrossThreadFlags)  ((CrossThreadFlags&PS_CROSS_THREAD_FLAGS_SYSTEM)!=0)
 //
 // Debug Object Access Masks
 //
@@ -625,14 +626,6 @@ RtlFindExportedRoutineByName (
 	PCHAR RoutineName);
 */
 
-typedef struct _SYSTEM_DLL_INFO {
-	USHORT Mask;
-	USHORT Machine;
-	UNICODE_STRING FileName; // 0x8
-	PVOID Section;  // 0x18
-	PVOID DllBase;  // 0x20
-	PWCHAR FullDllName;  // 0x28
-}SYSTEM_DLL_INFO, * PSYSTEM_DLL_INFO;
 
 typedef struct _EX_FAST_REF      // 3 elements, 0x8 bytes (sizeof) 
 {
@@ -647,7 +640,7 @@ typedef struct _EX_FAST_REF      // 3 elements, 0x8 bytes (sizeof)
 typedef struct _SYSTEM_DLL {
 	EX_FAST_REF FastRef;      // 0x0
 	EX_PUSH_LOCK Lock;        // 0x8
-	SYSTEM_DLL_INFO DllInfo;  // 0x10
+	PPS_SYSTEM_DLL_INFO DllInfo;  // 0x10
 }SYSTEM_DLL, * PSYSTEM_DLL;
 
 typedef struct _WOW64_PROCESS {

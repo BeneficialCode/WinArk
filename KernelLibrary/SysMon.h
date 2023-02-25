@@ -106,7 +106,7 @@ typedef struct _OB_POST_CALLBACK_ENTRY {
 }OB_POST_CALLBACK_ENTRY,*POB_POST_CALLBACK_ENTRY;
 
 extern SysMonGlobals g_SysMonGlobals;
-extern ULONG	PspNotifyEnableMask;
+extern PULONG	g_pPspNotifyEnableMask;
 extern UNICODE_STRING g_BackupDir;
 
 extern Section g_sec;		// native section object
@@ -121,13 +121,6 @@ void OnProcessNotify(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _Inout_op
 void OnThreadNotify(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Create);
 void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo);
 NTSTATUS OnRegistryNotify(PVOID context, PVOID arg1, PVOID arg2);
-
-VOID PsCallImageNotifyRoutines(
-	_In_ PUNICODE_STRING ImageName,
-	_In_ HANDLE ProcessId,
-	_In_ PVOID FileObject,
-	_Out_ PIMAGE_INFO_EX ImageInfoEx
-);
 
 bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
 bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);

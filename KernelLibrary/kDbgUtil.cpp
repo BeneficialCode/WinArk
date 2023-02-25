@@ -22,8 +22,8 @@ PDEBUG_OBJECT* kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
 	return reinterpret_cast<PDEBUG_OBJECT*>((char*)Process + _eprocessOffsets.DebugPort);
 }
 
-PVOID kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
-	return reinterpret_cast<PVOID>((char*)Process + _eprocessOffsets.Wow64Process);
+PWOW64_PROCESS kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
+	return *reinterpret_cast<PWOW64_PROCESS*>((char*)Process + _eprocessOffsets.Wow64Process);
 }
 
 PULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
@@ -56,6 +56,15 @@ PEX_RUNDOWN_REF kDbgUtil::GetThreadRundownProtect(PETHREAD Thread) {
 
 PPEB_LDR_DATA kDbgUtil::GetPEBLdr(PPEB Peb) {
 	return *reinterpret_cast<PPEB_LDR_DATA*>((char*)Peb + _pebOffsets.Ldr);
+}
+
+PKAPC_STATE kDbgUtil::GetThreadApcState(PETHREAD Thread) {
+	return *reinterpret_cast<PKAPC_STATE*>((char*)Thread + _ethreadOffsets.ApcState);
+}
+
+UINT8 kDbgUtil::GetCurrentThreadApcStateIndex() {
+	PETHREAD Thread = KeGetCurrentThread();
+	return *reinterpret_cast<UINT8*>((char*)Thread + _ethreadOffsets.ApcStateIndex);
 }
 
 CLIENT_ID kDbgUtil::GetThreadCid(PETHREAD Thread) {
@@ -132,7 +141,8 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pPsResumeThread = (PPsResumeThread)info->PsResumeThread;
 		g_pDbgkSendSystemDllMessages = (PDbgkSendSystemDllMessages)info->DbgkSendSystemDllMessages;
 		g_pPsSuspendThread = (PPsSuspendThread)info->PsSuspendThread;
-
+		g_pPsQuerySystemDllInfo = (PPsQuerySystemDllInfo)info->PsQuerySystemDllInfo;
+		g_pPsCallImageNotifyRoutines = (PPsCallImageNotifyRoutines)info->PsCallImageNotifyRoutines;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64
