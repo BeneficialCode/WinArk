@@ -26,6 +26,8 @@ public:
 
 	BEGIN_MSG_MAP_EX(CScyllaDlg)
 		MSG_WM_SIZE(OnSize)
+		MSG_WM_DESTROY(OnDestroy)
+		MSG_WM_CONTEXTMENU(OnContextMenu)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
@@ -40,6 +42,11 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void OnSize(UINT nType, CSize size);
+	void OnDestroy();
+	void OnContextMenu(CWindow wnd, CPoint point);
+
+	void DisplayContextMenuLog(CWindow, CPoint);
+
 
 	void ProcessHandler();
 
@@ -50,7 +57,7 @@ protected:
 	enum StatusParts {
 		Count = 0,
 		Invalid,
-		ImageBase,
+		ImageBase
 	};
 
 private:

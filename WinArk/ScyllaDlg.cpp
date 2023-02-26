@@ -68,10 +68,30 @@ void CScyllaDlg::OnSize(UINT nType, CSize size) {
 	SetMsgHandled(FALSE);
 }
 
+void CScyllaDlg::OnDestroy() {
+	SetMsgHandled(FALSE);
+}
+
 void CScyllaDlg::ProcessHandler() {
 	UpdateStatusBar();
 }
 
 void CScyllaDlg::UpdateStatusBar() {
 	
+}
+
+void CScyllaDlg::OnContextMenu(CWindow wnd, CPoint point)
+{
+	switch (wnd.GetDlgCtrlID())
+	{
+		case IDC_LIST_LOG:
+			DisplayContextMenuLog(wnd, point);
+			return;
+		default:
+			break;
+	}
+}
+
+void CScyllaDlg::DisplayContextMenuLog(CWindow, CPoint) {
+
 }
