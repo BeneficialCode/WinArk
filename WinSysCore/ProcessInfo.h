@@ -59,6 +59,9 @@ namespace WinSys {
 		uint32_t JobObjectId;
 		BYTE UserSid[SECURITY_MAX_SID_SIZE];
 		void* EProcess;
+		DWORD_PTR ImageBase;
+		DWORD ImageSize;
+		DWORD EntryPoint;	// RVA without image base
 
 		bool IsSuspended;
 

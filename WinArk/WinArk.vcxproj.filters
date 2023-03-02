@@ -43,6 +43,9 @@
     <Filter Include="Serializers">
       <UniqueIdentifier>{7c95d02f-698c-456c-be5d-eaf370bacc32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scylla">
+      <UniqueIdentifier>{61f27167-faf5-4858-b437-8075280cd668}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -466,10 +469,10 @@
       <Filter>Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="ScyllaDlg.cpp">
-      <Filter>Dialogs</Filter>
+      <Filter>Scylla</Filter>
     </ClCompile>
     <ClCompile Include="HexEdit.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Scylla</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -930,10 +933,10 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ScyllaDlg.h">
-      <Filter>Dialogs</Filter>
+      <Filter>Scylla</Filter>
     </ClInclude>
     <ClInclude Include="HexEdit.h">
-      <Filter>Header Files</Filter>
+      <Filter>Scylla</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
