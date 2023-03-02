@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "KernelEATHookTable.h"
 #include <PEParser.h>
+#include <DriverHelper.h>
 
 CKernelEATHookTable::CKernelEATHookTable(BarInfo& bars, TableInfo& table, std::shared_ptr<WinSys::KernelModuleInfo>& info)
 	:CTable(bars, table),_info(info){
@@ -17,7 +18,7 @@ int CKernelEATHookTable::ParseTableEntry(CString& s, char& mask, int& select, Ke
 
 		case Column::Address:
 		{
-			
+			s.Format(L"0x%p", info.Address);
 			break;
 		}
 
@@ -27,7 +28,7 @@ int CKernelEATHookTable::ParseTableEntry(CString& s, char& mask, int& select, Ke
 
 		case Column::TargetAddress:
 		{
-			
+			s.Format(L"0x%p", info.TargetAddress);
 			break;
 		}
 
@@ -131,13 +132,19 @@ void CKernelEATHookTable::CheckEATHook() {
 	void* eat = (byte*)_info->ImageBase + parser.GetEAT();
 	SIZE_T size = 0;
 	size = exports.size() * sizeof(DWORD);
+	if (size == 0)
+		return;
 	void* buffer = malloc(size);
 	if (!buffer)
 		return;
 
 	bool ok = false;
 
-	// ok = ReadProcessMemory(m_hProcess, eat, buffer, size, &size);
+	DumpMemData data;
+	data.Address = eat;
+	data.Size = size;
+
+	ok = DriverHelper::DumpKernelMem(&data, buffer);
 
 	if (ok) {
 		PULONG pAddr = (PULONG)buffer;

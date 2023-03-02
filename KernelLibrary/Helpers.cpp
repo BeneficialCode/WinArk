@@ -314,3 +314,30 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 
 	return status;
 }
+
+NTSTATUS Helpers::DumpKernelMem(DumpMemData* pData, PVOID pInfo) {
+	PVOID pAddress = pData->Address;
+	ULONG size = pData->Size;
+
+	// Get the process id of the "winlogon.exe" process
+	bool success = khook::SearchSessionProcess();
+	if (!success)
+		return STATUS_UNSUCCESSFUL;
+
+	PEPROCESS Process;
+	NTSTATUS status = PsLookupProcessByProcessId(khook::_pid, &Process);
+	if (!NT_SUCCESS(status))
+		return status;
+
+	// attach a session process to prevent bugcheck when access session memory
+	KAPC_STATE apcState;
+	KeStackAttachProcess(Process, &apcState);
+
+	RtlCopyMemory(pInfo, (PVOID)pAddress, size);
+
+	// Detach
+	KeUnstackDetachProcess(&apcState);
+	ObDereferenceObject(Process);
+
+	return status;
+}

@@ -633,3 +633,12 @@ ULONG DriverHelper::GetVadCount(VadData* pData) {
 		&count, sizeof(ULONG), &bytes, nullptr);
 	return count;
 }
+
+bool DriverHelper::DumpKernelMem(DumpMemData* pData, void* pInfo) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DUMP_KERNEL_MEM, pData, sizeof(DumpMemData),
+		pInfo, pData->Size, &bytes, nullptr);
+}

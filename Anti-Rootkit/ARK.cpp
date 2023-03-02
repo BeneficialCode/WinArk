@@ -1493,7 +1493,11 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			
-			// status = Helpers::DumpSysModule(data);
+			status = Helpers::DumpKernelMem(data, Irp->AssociatedIrp.SystemBuffer);
+
+			if (NT_SUCCESS(status)) {
+				len = dic.OutputBufferLength;
+			}
 			break;
 		}
 	}

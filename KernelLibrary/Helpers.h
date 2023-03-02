@@ -20,6 +20,8 @@ public:
 
 	static NTSTATUS DumpSysModule(DumpSysData* pData);
 
+	static NTSTATUS DumpKernelMem(DumpMemData* pData, PVOID pInfo);
+
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };
 

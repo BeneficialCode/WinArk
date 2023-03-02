@@ -56,6 +56,8 @@ struct DriverHelper final {
 
 	static PVOID GetEprocess(HANDLE pid);
 	static bool DumpSysModule(PCWSTR sysPath, void* imageBase, ULONG imageSize);
+
+	static bool DumpKernelMem(DumpMemData* pData, void* pInfo);
 private:
 	static bool OpenDevice();
 
