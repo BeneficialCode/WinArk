@@ -1475,6 +1475,27 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = Helpers::DumpSysModule(data);
 			break;
 		}
+
+		case IOCTL_ARK_DUMP_KERNEL_MEM:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			auto data = static_cast<DumpMemData*>(Irp->AssociatedIrp.SystemBuffer);
+			if (dic.InputBufferLength < sizeof(DumpMemData)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			if (dic.OutputBufferLength < data->Size) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			
+			// status = Helpers::DumpSysModule(data);
+			break;
+		}
 	}
 
 

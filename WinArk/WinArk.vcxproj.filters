@@ -474,6 +474,12 @@
     <ClCompile Include="HexEdit.cpp">
       <Filter>Scylla</Filter>
     </ClCompile>
+    <ClCompile Include="KernelEATHookDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelEATHookTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -937,6 +943,12 @@
     </ClInclude>
     <ClInclude Include="HexEdit.h">
       <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelEATHookDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelEATHookTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

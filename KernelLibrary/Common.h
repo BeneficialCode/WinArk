@@ -304,3 +304,8 @@ struct DumpSysData {
 	ULONG Length;
 	WCHAR Name[1];
 };
+
+struct DumpMemData {
+	void* Address;
+	ULONG Size;
+};

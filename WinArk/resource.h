@@ -97,6 +97,7 @@
 #define IDR_SCYLLA_CONTEXT              281
 #define IDD_DIALOG1                     282
 #define IDD_SCYLLA                      282
+#define IDD_KERNEL_EAT_HOOK             283
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -406,13 +407,14 @@
 #define ID_KERNEL_DUMP                  32971
 #define ID_KERNEL_REMOVEBYNAME          32972
 #define ID_KERNEL_REMOVE_BY_NAME        32973
+#define ID_KERNEL_EATHOOKSCAN           32974
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        284
-#define _APS_NEXT_COMMAND_VALUE         32974
+#define _APS_NEXT_COMMAND_VALUE         32975
 #define _APS_NEXT_CONTROL_VALUE         1121
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

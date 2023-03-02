@@ -369,6 +369,13 @@ BEGIN
     LISTBOX         IDC_LIST_LOG,0,267,413,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
 END
 
+IDD_KERNEL_EAT_HOOK DIALOGEX 0, 0, 807, 280
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Kernel EAT Hook Scan"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -535,6 +542,14 @@ BEGIN
         TOPMARGIN, 1
         BOTTOMMARGIN, 349
     END
+
+    IDD_KERNEL_EAT_HOOK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 800
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 273
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -670,6 +685,11 @@ BEGIN
 END
 
 IDD_SCYLLA AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_KERNEL_EAT_HOOK AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -812,6 +832,7 @@ BEGIN
         MENUITEM "Export",                      ID_KERNEL_MODULE_EXPORT
         MENUITEM "Go to file location",         ID_KERNEL_GOTOFILELOCATION
         MENUITEM "Dump",                        ID_KERNEL_DUMP
+        MENUITEM "EAT Hook Scan",               ID_KERNEL_EATHOOKSCAN
     END
     POPUP "service"
     BEGIN
