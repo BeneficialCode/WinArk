@@ -59,7 +59,8 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Winmgmt",LR"(HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Services\Winmgmt)"},
 		{ L"DisallowRun",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun)"},
 		{ L"Session Manager",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager)"},
-		{ L"Zip New Shell",LR"(HKEY_CLASSES_ROOT\.zip\CompressedFolder\ShellNew)"}
+		{ L"Zip New Shell",LR"(HKEY_CLASSES_ROOT\.zip\CompressedFolder\ShellNew)"},
+		{ L"tab completion",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor)"},
 	};
 
 	for (const auto& [name, path] : locations) {
