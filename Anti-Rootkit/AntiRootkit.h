@@ -45,7 +45,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0xCF
+#define DRIVER_CURRENT_VERSION 0xD0
 
 
 // 用MDL锁定用户内存
@@ -100,6 +100,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_DUMP_KERNEL_MEM					CTL_CODE(ANTI_ROOTKIT_DEVICE,0x832,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_GET_WIN_EXT_HOSTS_COUNT			CTL_CODE(ANTI_ROOTKIT_DEVICE,0x833,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENUM_WIN_EXT_HOSTS				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x834,METHOD_BUFFERED,FILE_ANY_ACCESS)
+#define IOCTL_ARK_ENUM_EXT_TABLE					CTL_CODE(ANTI_ROOTKIT_DEVICE,0x835,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer

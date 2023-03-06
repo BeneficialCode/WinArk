@@ -1547,6 +1547,29 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			break;
 		}
+
+		case IOCTL_ARK_ENUM_EXT_TABLE:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ExtHostData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			ExtHostData* pData = (ExtHostData*)Irp->AssociatedIrp.SystemBuffer;
+			if (dic.OutputBufferLength < sizeof(void*)*pData->Count) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			bool success = WinExtHosts::EnumExtTable(pData, (PVOID*)Irp->AssociatedIrp.SystemBuffer);
+			if (success) {
+				len = dic.OutputBufferLength;
+				status = STATUS_SUCCESS;
+			}
+			break;
+		}
 	}
 
 

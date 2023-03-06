@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -408,13 +408,15 @@
 #define ID_KERNEL_REMOVEBYNAME          32972
 #define ID_KERNEL_REMOVE_BY_NAME        32973
 #define ID_KERNEL_EATHOOKSCAN           32974
+#define ID_EXTHOST_EXTENSIONTABLE       32975
+#define ID_EXTHOST_EXTENSION_TABLE      32976
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        284
-#define _APS_NEXT_COMMAND_VALUE         32975
+#define _APS_NEXT_RESOURCE_VALUE        286
+#define _APS_NEXT_COMMAND_VALUE         32977
 #define _APS_NEXT_CONTROL_VALUE         1121
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

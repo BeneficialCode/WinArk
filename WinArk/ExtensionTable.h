@@ -3,17 +3,24 @@
 #include "resource.h"
 #include "DriverHelper.h"
 
-class CWinExtHostsTable :
-	public CTable<WinExtHostInfo>,
-	public CWindowImpl<CWinExtHostsTable> {
+struct ExtTableInfo {
+	void* Routine;
+	std::wstring Company;
+	std::wstring Module;
+};
+
+class CExtensionTable :
+	public CTable<ExtTableInfo>,
+	public CWindowImpl<CExtensionTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CWinExtHostsTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, WinExtHostInfo& info, int column);
-	bool CompareItems(const WinExtHostInfo& s1, const WinExtHostInfo& s2, int col, bool asc);
+	CExtensionTable(BarInfo& bars, TableInfo& table, WinExtHostInfo& info);
+	int ParseTableEntry(CString& s, char& mask, int& select, ExtTableInfo& info, int column);
+	bool CompareItems(const ExtTableInfo& s1, const ExtTableInfo& s2, int col, bool asc);
 
-	BEGIN_MSG_MAP(CWinExtHostsTable)
+
+	BEGIN_MSG_MAP(CExtensionTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
@@ -31,7 +38,6 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_EXTHOST_EXTENSION_TABLE,OnExtTable)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -52,17 +58,13 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnExtTable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
 private:
-	enum class TableColumn {
-		ExHost,Id,Version,ExtensionTable,FunctionCount,
-		Flags,
-		HostTable,
-		BindNotification,
-		BindNotificationContext,
+
+	enum class Column {
+		Address, Company, Module
 	};
 
 	void Refresh();
+
+	WinExtHostInfo& _info;
 };

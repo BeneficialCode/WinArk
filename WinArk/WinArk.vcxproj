@@ -250,6 +250,8 @@
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
+    <ClCompile Include="ExtensionTable.cpp" />
+    <ClCompile Include="ExtensionTableDlg.cpp" />
     <ClCompile Include="HexEdit.cpp" />
     <ClCompile Include="KernelEATHookDlg.cpp" />
     <ClCompile Include="KernelEATHookTable.cpp" />
@@ -403,6 +405,8 @@
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
+    <ClInclude Include="ExtensionTable.h" />
+    <ClInclude Include="ExtensionTableDlg.h" />
     <ClInclude Include="HexEdit.h" />
     <ClInclude Include="KernelEATHookDlg.h" />
     <ClInclude Include="KernelEATHookTable.h" />

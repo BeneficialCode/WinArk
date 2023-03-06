@@ -662,3 +662,12 @@ bool DriverHelper::EnumWinExtHosts(PVOID pList, WinExtHostInfo* pInfo, ULONG siz
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_WIN_EXT_HOSTS, &pList, sizeof(pList),
 		pInfo, size, &bytes, nullptr);
 }
+
+bool DriverHelper::EnumExtTable(ExtHostData* pData, void* pInfo, ULONG size) {
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_EXT_TABLE, pData, sizeof(ExtHostData),
+		pInfo, size, &bytes, nullptr);
+}

@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -919,6 +919,10 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_IOTIMER_REFRESH
     END
+    POPUP "ExtHost"
+    BEGIN
+        MENUITEM "Extension Table",             ID_EXTHOST_EXTENSION_TABLE
+    END
 END
 
 IDR_ETW_CONTEXT MENU
@@ -1028,12 +1032,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1447,10 +1451,10 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "YuanOS Technology Corporation"
-            VALUE "FileDescription", "WinArk Antirootkit"
+            VALUE "FileDescription", "WinArk"
             VALUE "FileVersion", "1.0.0.2"
             VALUE "InternalName", "WinArk"
-            VALUE "LegalCopyright", "YuanOS Copyright 2022"
+            VALUE "LegalCopyright", "YuanOS Copyright 2023"
             VALUE "OriginalFilename", "WinArk.exe"
             VALUE "ProductName", "Windows Ark Tool"
             VALUE "ProductVersion", "1.0.0.2"
@@ -1552,7 +1556,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

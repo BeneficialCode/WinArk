@@ -1,15 +1,14 @@
 #pragma once
-#include "MiniFilterOperationTable.h"
+#include "ExtensionTable.h"
+#include "DriverHelper.h"
 
-
-class COperationTable;
-class CMiniFilterDlg :public CDialogImpl<CMiniFilterDlg> {
+class CExtensionTableDlg :public CDialogImpl<CExtensionTableDlg> {
 public:
-	enum { IDD = IDD_THREADS };
+	enum {IDD = IDD_THREADS};
 
-	CMiniFilterDlg(std::wstring filterName) :m_Name(filterName) {}
+	CExtensionTableDlg(WinExtHostInfo& info):_info(info) {}
 
-	BEGIN_MSG_MAP_EX(CMiniFilterDlg)
+	BEGIN_MSG_MAP_EX(CExtensionTableDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_CLOSE, OnClose)
@@ -22,6 +21,6 @@ public:
 	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
 
 private:
-	COperationTable* m_OperationTable;
-	std::wstring m_Name;
+	WinExtHostInfo& _info;
+	CExtensionTable* m_ExtTable{ nullptr };
 };

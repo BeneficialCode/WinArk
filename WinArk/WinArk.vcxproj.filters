@@ -483,6 +483,12 @@
     <ClCompile Include="WinExtHostsTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="ExtensionTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtensionTableDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -955,6 +961,12 @@
     </ClInclude>
     <ClInclude Include="WinExtHostsTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtensionTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtensionTableDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

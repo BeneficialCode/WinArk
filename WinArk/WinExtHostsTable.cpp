@@ -2,6 +2,7 @@
 #include "WinExtHostsTable.h"
 #include "SymbolHelper.h"
 #include "Helpers.h"
+#include "ExtensionTableDlg.h"
 
 
 LRESULT CWinExtHostsTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -59,10 +60,10 @@ LRESULT CWinExtHostsTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 }
 
 LRESULT CWinExtHostsTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	/*CMenu menu;
+	CMenu menu;
 	CMenuHandle hSubMenu;
-	menu.LoadMenu(IDR_KERNEL_HOOK_CONTEXT);
-	hSubMenu = menu.GetSubMenu(0);
+	menu.LoadMenu(IDR_KERNEL_CONTEXT);
+	hSubMenu = menu.GetSubMenu(6);
 	POINT pt;
 	::GetCursorPos(&pt);
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
@@ -71,7 +72,7 @@ LRESULT CWinExtHostsTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 		if (id) {
 			PostMessage(WM_COMMAND, id);
 		}
-	}*/
+	}
 
 	return 0;
 }
@@ -191,4 +192,15 @@ void CWinExtHostsTable::Refresh() {
 		}
 	}
 	m_Table.data.n = m_Table.data.info.size();
+}
+
+LRESULT CWinExtHostsTable::OnExtTable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	CExtensionTableDlg dlg(info);
+	dlg.DoModal(m_hWnd);
+
+	return TRUE;
 }

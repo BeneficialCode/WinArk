@@ -39,3 +39,25 @@ bool WinExtHosts::Enum(PLIST_ENTRY pExpHostList, WinExtHostInfo* pInfo) {
 
 	return true;
 }
+
+bool WinExtHosts::EnumExtTable(ExtHostData* pData, PVOID* pInfo) {
+    using PExpFindHost = PEX_HOST(NTAPI*)(USHORT Id, USHORT Version);
+    PExpFindHost pExpFindHost = (PExpFindHost)pData->ExpFindHost;
+    USHORT id = pData->Id;
+    USHORT version = pData->Version;
+    ULONG count = pData->Count;
+
+    PEX_HOST host = pExpFindHost(id, version);
+    if (host == nullptr) {
+        return false;
+    }
+    PVOID* pExtensionTable = (PVOID*)host->ExtensionTable;
+    if (pExtensionTable == nullptr) {
+        return false;
+    }
+    for (int i = 0; i < count; i++) {
+        pInfo[i] = pExtensionTable[i];
+    }
+
+    return true;
+}

@@ -321,3 +321,11 @@ struct WinExtHostInfo {
 	void* BindNotification;
 	void* BindNotificationContext;
 };
+
+struct ExtHostData {
+	void* ExpFindHost;
+	USHORT Id;
+	USHORT Version;
+	USHORT Count;
+};
+

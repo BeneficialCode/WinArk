@@ -29,4 +29,5 @@ typedef struct _EX_HOST {
 struct WinExtHosts final {
 	static ULONG GetCount(PLIST_ENTRY pExpHostList);
     static bool Enum(PLIST_ENTRY pExpHostList, WinExtHostInfo* pInfo);
+    static bool EnumExtTable(ExtHostData* pData, PVOID* pInfo);
 };
