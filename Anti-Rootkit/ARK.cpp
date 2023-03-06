@@ -17,6 +17,7 @@
 #include "..\KernelLibrary\MiniFilter.h"
 #include "..\KernelLibrary\VadHelpers.h"
 #include "..\KernelLibrary\Helpers.h"
+#include "..\KernelLibrary\WinExtHosts.h"
 
 
 // SE_IMAGE_SIGNATURE_TYPE
@@ -1497,6 +1498,52 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 			if (NT_SUCCESS(status)) {
 				len = dic.OutputBufferLength;
+			}
+			break;
+		}
+
+		case IOCTL_ARK_GET_WIN_EXT_HOSTS_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = 0;
+			count = WinExtHosts::GetCount(pList);
+			status = STATUS_SUCCESS;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(count);
+			break;
+		}
+
+		case IOCTL_ARK_ENUM_WIN_EXT_HOSTS:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(WinExtHostInfo)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = WinExtHosts::Enum(pList, (WinExtHostInfo*)Irp->AssociatedIrp.SystemBuffer);
+			if (success) {
+				len = dic.OutputBufferLength;
+				status = STATUS_SUCCESS;
 			}
 			break;
 		}

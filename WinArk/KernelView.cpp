@@ -11,8 +11,6 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY, TabId);
 	m_TabCtrl.SubclassWindow(hTabCtrl);
 
-	//m_TabCtrl.SetFont()
-
 	HFONT hFont = g_hAppFont;
 	m_TabCtrl.SetFont(hFont, true);
 
@@ -34,7 +32,8 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		L"Kernel Pool Tag",
 		L"Big Pool",
 		L"DPC Timer",
-		L"IO Timer"
+		L"IO Timer",
+		L"WinExt Hosts",
 	};
 
 	int i = 0;
@@ -46,6 +45,7 @@ LRESULT CKernelView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitUnloadedDriverTable();
 	InitDpcTimerTable();
 	InitIoTimerTable();
+	InitWinExtHostsTable();
 
 	return 0;
 }
@@ -101,6 +101,10 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::IoTimer:
 			m_IoTimerTable->ShowWindow(SW_SHOW);
+			break;
+
+		case TabColumn::WinExtHosts:
+			m_WinExtHostsTable->ShowWindow(SW_SHOW);
 			break;
 	}
 	_index = index;
@@ -260,4 +264,42 @@ IView* CKernelView::GetCurView() {
 	}
 
 	return nullptr;
+}
+
+void CKernelView::InitWinExtHostsTable() {
+	BarDesc bars[] = {
+		{20,"ExHost",0},
+		{10,"Id",0},
+		{10,"Version",0},
+		{20,"ExtensionTable",0},
+		{12,"FunctionCount",0},
+		{16,"Flags",0},
+		{20,"HostTable",0},
+		{20,"BindNotification",0},
+		{22,"BindNotificationContext",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+	m_WinExtHostsTable = new CWinExtHostsTable(info, table);
+	RECT rect;
+	::GetClientRect(m_TabCtrl.m_hWnd, &rect);
+	int height = rect.bottom - rect.top;
+	GetClientRect(&rect);
+	rect.top += height;
+	rect.bottom -= height;
+	m_WinExtHostsTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	m_hwndArray[static_cast<int>(TabColumn::WinExtHosts)] = m_WinExtHostsTable->m_hWnd;
+	m_WinExtHostsTable->ShowWindow(SW_SHOW);
 }

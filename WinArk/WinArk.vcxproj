@@ -389,6 +389,7 @@
     <ClCompile Include="WinArk.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
     <ClCompile Include="WindowsView.cpp" />
+    <ClCompile Include="WinExtHostsTable.cpp" />
     <ClCompile Include="WinStationObjectType.cpp" />
     <ClCompile Include="WorkerFactoryObjectType.cpp" />
   </ItemGroup>
@@ -547,6 +548,7 @@
     <ClInclude Include="WFPFilterTable.h" />
     <ClInclude Include="WindowHelper.h" />
     <ClInclude Include="WindowsView.h" />
+    <ClInclude Include="WinExtHostsTable.h" />
     <ClInclude Include="WinStationObjectType.h" />
     <ClInclude Include="WorkerFactoryObjectType.h" />
   </ItemGroup>

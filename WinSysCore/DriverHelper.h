@@ -58,6 +58,9 @@ struct DriverHelper final {
 	static bool DumpSysModule(PCWSTR sysPath, void* imageBase, ULONG imageSize);
 
 	static bool DumpKernelMem(DumpMemData* pData, void* pInfo);
+
+	static ULONG GetWinExtHostsCount(PVOID pList);
+	static bool EnumWinExtHosts(PVOID pList, WinExtHostInfo* pInfo, ULONG size);
 private:
 	static bool OpenDevice();
 

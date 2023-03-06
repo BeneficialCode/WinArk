@@ -275,6 +275,7 @@
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="typesdefs.h" />
     <ClInclude Include="VadHelpers.h" />
+    <ClInclude Include="WinExtHosts.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoEnter.cpp" />
@@ -327,6 +328,7 @@
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="VadHelpers.cpp" />
+    <ClCompile Include="WinExtHosts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="code32.asm">

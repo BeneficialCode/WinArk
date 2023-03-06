@@ -309,3 +309,15 @@ struct DumpMemData {
 	void* Address;
 	ULONG Size;
 };
+
+struct WinExtHostInfo {
+	void* ExHost;
+	USHORT Id;
+	USHORT Version;
+	void* ExtensionTable;
+	USHORT FunctionCount;
+	ULONG Flags;
+	void* HostTable;
+	void* BindNotification;
+	void* BindNotificationContext;
+};

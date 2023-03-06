@@ -642,3 +642,23 @@ bool DriverHelper::DumpKernelMem(DumpMemData* pData, void* pInfo) {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DUMP_KERNEL_MEM, pData, sizeof(DumpMemData),
 		pInfo, pData->Size, &bytes, nullptr);
 }
+
+ULONG DriverHelper::GetWinExtHostsCount(PVOID pList) {
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	ULONG count = 0;
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_WIN_EXT_HOSTS_COUNT, &pList, sizeof(pList),
+		&count, sizeof(ULONG), &bytes, nullptr);
+	return count;
+}
+
+bool DriverHelper::EnumWinExtHosts(PVOID pList, WinExtHostInfo* pInfo, ULONG size) {
+	if (!OpenDevice())
+		return 0;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_WIN_EXT_HOSTS, &pList, sizeof(pList),
+		pInfo, size, &bytes, nullptr);
+}

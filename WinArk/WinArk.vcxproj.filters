@@ -480,6 +480,9 @@
     <ClCompile Include="KernelEATHookTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="WinExtHostsTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -948,6 +951,9 @@
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="KernelEATHookTable.h">
+      <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="WinExtHostsTable.h">
       <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,7 @@
 #include "BigPoolView.h"
 #include "DpcTimerTable.h"
 #include "IoTimerTable.h"
+#include "WinExtHostsTable.h"
 
 class CKernelView :
 	public CWindowImpl<CKernelView> {
@@ -34,7 +35,7 @@ public:
 	IView* GetCurView();
 
 	enum class TabColumn : int {
-		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable,DpcTimer,IoTimer,
+		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable,DpcTimer,IoTimer,WinExtHosts
 	};
 
 	void InitPiDDBCacheTable();
@@ -42,6 +43,7 @@ public:
 	void InitDpcTimerTable();
 	void InitIoTimerTable();
 	void InitMiniFilterTable();
+	void InitWinExtHostsTable();
 
 private:
 	// 动态创建出来的控件
@@ -53,6 +55,7 @@ private:
 	CBigPoolView* m_BigPoolView{ nullptr };
 	CDpcTimerTable* m_DpcTimerTable{ nullptr };
 	CIoTimerTable* m_IoTimerTable{ nullptr };
+	CWinExtHostsTable* m_WinExtHostsTable{ nullptr };
 
 	IMainFrame* m_pFrame;
 	HWND m_hwndArray[16];
