@@ -268,7 +268,7 @@ IView* CKernelView::GetCurView() {
 
 void CKernelView::InitWinExtHostsTable() {
 	BarDesc bars[] = {
-		{20,"ExHost",0},
+		{20,"ExtHost",0},
 		{10,"Id",0},
 		{10,"Version",0},
 		{20,"ExtensionTable",0},
