@@ -272,7 +272,7 @@ void CKernelView::InitWinExtHostsTable() {
 		{10,"Id",0},
 		{10,"Version",0},
 		{20,"ExtensionTable",0},
-		{12,"FunctionCount",0},
+		{15,"FunctionCount",0},
 		{16,"Flags",0},
 		{20,"HostTable",0},
 		{20,"BindNotification",0},
