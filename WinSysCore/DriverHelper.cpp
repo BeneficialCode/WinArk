@@ -76,14 +76,9 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 		hService.reset(::OpenService(hScm.get(), L"AntiRootkit", SERVICE_ALL_ACCESS));
 		if (!hService)
 			return false;
-		if (!DeleteService(hService.get()))
-			return false;
-		hService.reset(::CreateService(hScm.get(), L"AntiRootkit", nullptr, SERVICE_ALL_ACCESS,
-			SERVICE_KERNEL_DRIVER,
-			SERVICE_DEMAND_START, // starting service on demand
-			SERVICE_ERROR_NORMAL, // the error is logged to the event log service
-			path, // the full path to the executable to run for the service
-			nullptr, nullptr, nullptr, nullptr, nullptr));
+		ChangeServiceConfig(hService.get(),
+			SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL,
+			path, nullptr, nullptr, nullptr, nullptr, nullptr, L"AntiRootkit");
 	}
 	auto success = hService != nullptr;
 	return success;
