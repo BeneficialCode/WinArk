@@ -422,7 +422,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-	SetLayeredWindowAttributes(m_hWnd, 0xffffff, 255, LWA_ALPHA);
+	SetLayeredWindowAttributes(m_hWnd, 0xffffff, 255 * 0.8, LWA_ALPHA);
 	
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
