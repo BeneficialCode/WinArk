@@ -3,7 +3,7 @@
 
 class CHandleDlg :public CDialogImpl<CHandleDlg> {
 public:
-	enum { IDD = IDD_HANDLES };
+	enum { IDD = IDD_BACKGROUND };
 
 	BEGIN_MSG_MAP_EX(CHandleDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

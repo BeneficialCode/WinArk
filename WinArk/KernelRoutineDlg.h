@@ -3,7 +3,7 @@
 
 class CKernelRoutineDlg :public CDialogImpl<CKernelRoutineDlg> {
 public:
-	enum { IDD = IDD_ROUTINES };
+	enum { IDD = IDD_BACKGROUND};
 
 	BEGIN_MSG_MAP_EX(CKernelRoutineDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

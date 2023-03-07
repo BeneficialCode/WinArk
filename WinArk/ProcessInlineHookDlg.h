@@ -5,7 +5,7 @@
 class CProcessInlineHookTable;
 class CInlineHookDlg :public CDialogImpl<CInlineHookDlg> {
 public:
-	enum { IDD = IDD_INLINE_HOOK };
+	enum { IDD = IDD_BACKGROUND };
 
 	CInlineHookDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px):m_pm(pm),m_px(px){}
 

@@ -4,9 +4,7 @@
 class CProcessModuleTable;
 class CModuleDlg :public CDialogImpl<CModuleDlg> {
 public:
-	enum {
-		IDD = IDD_MODULES
-	};
+	enum { IDD = IDD_BACKGROUND };
 
 	BEGIN_MSG_MAP_EX(CModuleDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)

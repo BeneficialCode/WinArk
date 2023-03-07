@@ -4,7 +4,7 @@
 
 class CExtensionTableDlg :public CDialogImpl<CExtensionTableDlg> {
 public:
-	enum {IDD = IDD_THREADS};
+	enum {IDD = IDD_BACKGROUND};
 
 	CExtensionTableDlg(WinExtHostInfo& info):_info(info) {}
 

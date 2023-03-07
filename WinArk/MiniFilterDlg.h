@@ -5,7 +5,7 @@
 class COperationTable;
 class CMiniFilterDlg :public CDialogImpl<CMiniFilterDlg> {
 public:
-	enum { IDD = IDD_THREADS };
+	enum { IDD = IDD_BACKGROUND };
 
 	CMiniFilterDlg(std::wstring filterName) :m_Name(filterName) {}
 

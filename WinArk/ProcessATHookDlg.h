@@ -4,7 +4,7 @@
 
 class CEATHookDlg :public CDialogImpl<CEATHookDlg> {
 public:
-	enum { IDD = IDD_EAT_HOOK };
+	enum { IDD = IDD_BACKGROUND };
 
 	CEATHookDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm(pm), m_px(px) {}
 

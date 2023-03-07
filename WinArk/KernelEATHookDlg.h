@@ -5,7 +5,7 @@
 
 class CKernelEATHookDlg :public CDialogImpl<CKernelEATHookDlg> {
 public:
-	enum { IDD = IDD_KERNEL_EAT_HOOK };
+	enum { IDD = IDD_BACKGROUND};
 
 	CKernelEATHookDlg(std::shared_ptr<WinSys::KernelModuleInfo>& info):_info(info){}
 

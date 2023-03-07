@@ -4,7 +4,7 @@
 class CProcessThreadTable;
 class CThreadDlg :public CDialogImpl<CThreadDlg> {
 public:
-	enum { IDD = IDD_THREADS};
+	enum { IDD = IDD_BACKGROUND };
 
 	BEGIN_MSG_MAP_EX(CThreadDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

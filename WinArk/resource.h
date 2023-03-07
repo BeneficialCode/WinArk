@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -13,7 +13,6 @@
 #define IDI_FILTER_DELETE               206
 #define IDR_DRIVER                      207
 #define IDR_X64_DRIVER                  207
-#define IDD_MODULES                     208
 #define IDI_MEMORY                      208
 #define IDI_DLL                         209
 #define IDD_PROCESS_PROPERTIES          210
@@ -29,8 +28,7 @@
 #define IDI_THREAD                      216
 #define IDD_THREADS                     217
 #define IDI_TOOLS                       217
-#define IDD_HANDLES                     218
-#define IDD_MEMORY                      219
+#define IDD_BACKGROUND                  217
 #define IDD_STRINGVALUE                 220
 #define IDD_NEWKEY                      221
 #define IDD_NUMBERVALUE                 222
@@ -47,11 +45,9 @@
 #define IDD_PROGRESS                    234
 #define IDI_HANDLE                      234
 #define IDD_MODULES1                    235
-#define IDD_ROUTINES                    235
 #define IDI_OBJECT                      235
 #define IDD_CONFIG                      236
 #define IDD_INLINEHOOKSCAN              237
-#define IDD_INLINE_HOOK                 237
 #define IDI_DISK                        238
 #define IDR_PROC_CONTEXT                239
 #define IDR_KERNEL_CONTEXT              240
@@ -91,13 +87,11 @@
 #define IDD_BYPASS                      275
 #define IDI_ICON1                       276
 #define IDI_GOTO                        276
-#define IDD_EAT_HOOK                    276
 #define IDR_POOLTAG                     277
 #define IDR_KERNEL_HOOK_CONTEXT         278
 #define IDR_SCYLLA_CONTEXT              281
 #define IDD_DIALOG1                     282
 #define IDD_SCYLLA                      282
-#define IDD_KERNEL_EAT_HOOK             283
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
