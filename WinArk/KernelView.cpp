@@ -274,7 +274,7 @@ void CKernelView::InitWinExtHostsTable() {
 		{20,"ExtensionTable",0},
 		{15,"FunctionCount",0},
 		{16,"Flags",0},
-		{20,"HostTable",0},
+		{42,"HostTable",0},
 		{20,"BindNotification",0},
 		{22,"BindNotificationContext",0},
 	};

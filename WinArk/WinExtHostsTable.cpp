@@ -146,7 +146,17 @@ int CWinExtHostsTable::ParseTableEntry(CString& s, char& mask, int& select, WinE
 
 		case TableColumn::HostTable:
 		{
-			s.Format(L"0x%p", info.HostTable);
+			if (info.HostTable == nullptr) {
+				s = L"None";
+				break;
+			}
+			s.Format(L"0x%p ", info.HostTable);
+			DWORD64 offset = 0;
+			auto symbol = SymbolHelper::GetSymbolFromAddress((DWORD64)info.HostTable);
+			if (symbol) {
+				std::string name = symbol->GetSymbolInfo()->Name;
+				s += Helpers::StringToWstring(name).c_str();
+			}
 			break;
 		}
 	}
