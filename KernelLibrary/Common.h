@@ -239,6 +239,7 @@ struct TcbOffsets {
 
 struct PebOffsets {
 	ULONG Ldr;
+	ULONG BeingDebugged;
 };
 
 enum class VadCountPos {

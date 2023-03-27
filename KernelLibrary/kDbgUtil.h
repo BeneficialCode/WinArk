@@ -25,6 +25,7 @@ public:
 	static CLIENT_ID GetThreadCid(PETHREAD Thread);
 	static PKAPC_STATE GetThreadApcState(PETHREAD Thread);
 	static UINT8 GetCurrentThreadApcStateIndex();
+	static PBOOLEAN GetPEBBeingDebugged(PPEB Peb);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
