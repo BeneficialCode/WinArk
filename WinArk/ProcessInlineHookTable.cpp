@@ -110,6 +110,7 @@ bool CProcessInlineHookTable::CompareItems(const InlineHookInfo& s1, const Inlin
 	return false;
 }
 
+// we have to specify the architectures explicitly when install capstone by vcpkg
 LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
