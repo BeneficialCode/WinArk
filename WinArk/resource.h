@@ -26,7 +26,6 @@
 #define IDI_STOP                        215
 #define IDD_JOB                         216
 #define IDI_THREAD                      216
-#define IDD_THREADS                     217
 #define IDI_TOOLS                       217
 #define IDD_BACKGROUND                  217
 #define IDD_STRINGVALUE                 220
