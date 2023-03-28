@@ -58,6 +58,10 @@ PPEB_LDR_DATA kDbgUtil::GetPEBLdr(PPEB Peb) {
 	return *reinterpret_cast<PPEB_LDR_DATA*>((char*)Peb + _pebOffsets.Ldr);
 }
 
+PBOOLEAN kDbgUtil::GetPEBBeingDebugged(PPEB Peb) {
+	return reinterpret_cast<PBOOLEAN>((char*)Peb + _pebOffsets.BeingDebugged);
+}
+
 PKAPC_STATE kDbgUtil::GetThreadApcState(PETHREAD Thread) {
 	return *reinterpret_cast<PKAPC_STATE*>((char*)Thread + _ethreadOffsets.ApcState);
 }

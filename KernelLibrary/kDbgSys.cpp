@@ -250,53 +250,56 @@ VOID DbgkpFreeDebugEvent(
 	ExFreePool(DebugEvent);
 }
 
-VOID DbgkpWakeTarget(
-	_In_ PDEBUG_EVENT DebugEvent
-) {
-	PETHREAD Thread;
-
-	Thread = (PETHREAD)DebugEvent->Thread;
-
-	if ((DebugEvent->Flags & DEBUG_EVENT_SUSPEND) != 0) {
-		kDbgUtil::g_pPsResumeThread(Thread, nullptr);
-	}
-
-	if (DebugEvent->Flags & DEBUG_EVENT_RELEASE) {
-		//ExReleaseRundownProtection(&Thread->RundownProtect);
-	}
-
-	if ((DebugEvent->Flags & DEBUG_EVENT_NOWAIT) == 0) {
-		// 唤醒等待的被调试线程
-		KeSetEvent(&DebugEvent->ContinueEvent, 0, FALSE);
-	}
-	else {
-		DbgkpFreeDebugEvent(DebugEvent);
-	}
-}
-
 VOID DbgkpMarkProcessPeb(
 	_In_ PEPROCESS Process
-) {
+) 
+/*++
+
+Routine Description:
+	
+	This routine writes the debug variable in the PEB
+
+Arguments:
+	Process - Process that needs its PEB modified
+
+Return Value:
+
+	None.
+
+--*/ {
 	KAPC_STATE ApcState;
-	PEPROCESS process = Process;
-	//if (ExAcquireRundownProtection(&process->RundownProtect)) {
-	//	/*if (process->Peb != nullptr) {
-	//		KeStackAttachProcess(Process, &ApcState);
-	//		ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
-	//		__try {
-	//			auto peb = (PPEB_S)process->Peb;
-	//			peb->BeingDebugged = (BOOLEAN)(process->DebugPort != nullptr ? TRUE : FALSE);
-	//		}
-	//		__except (EXCEPTION_EXECUTE_HANDLER) {
 
-	//		}
-	//		ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
-
-	//		KeUnstackDetachProcess(&ApcState);
-	//	}*/
-	//	
-	//	//ExReleaseRundownProtection(&process->RundownProtect);
-	//}
+	//
+	// Acquire process rundown protection as we are about to look at the processes address space
+	// 
+	
+	if (ExAcquireRundownProtection(kDbgUtil::GetProcessRundownProtect(Process))) {
+		PPEB Peb = kDbgUtil::GetProcessPeb(Process);
+		if (Peb != nullptr) {
+			KeStackAttachProcess(Process, &ApcState);
+			ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
+			__try {
+				PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+				PBOOLEAN pBeingDebugged = kDbgUtil::GetPEBBeingDebugged(Peb);
+				*pBeingDebugged = (*pDebugObject != nullptr) ? TRUE : FALSE;
+#ifdef _WIN64
+				PWOW64_PROCESS Wow64Process = (PWOW64_PROCESS)kDbgUtil::GetProcessWow64Process(Process);
+				if (Wow64Process != nullptr) {
+					PPEB32 Peb32 = (PPEB32)Wow64Process->Wow64;
+					if (Peb32 != nullptr) {
+						Peb32->BeingDebugged = *pBeingDebugged;
+					}
+				}
+#endif // 
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER) {
+			}
+			ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
+			KeUnstackDetachProcess(&ApcState);
+		}
+		
+		ExReleaseRundownProtection(kDbgUtil::GetProcessRundownProtect(Process));
+	}
 }
 
 NTSTATUS
@@ -508,12 +511,6 @@ Return Value:
 	}
 
 	return status;
-}
-
-NTSTATUS KeResumeThread(
-	_Inout_ PETHREAD Thread
-) {
-	return STATUS_SUCCESS;
 }
 
 VOID DbgkSendSystemDllMessages(
@@ -1005,48 +1002,62 @@ VOID DbgkMapViewOfSection(
 	_In_ PVOID SectionObject,
 	_In_ PVOID BaseAddress,
 	_In_ PEPROCESS Process
-) {
-	//PTEB	Teb;
+) 
+/*++
+
+Routine Description:
+	This function is called when the current process successfully
+	maps a view of an image section. If the process has an associated
+	debug port, then a load dll message is sent.
+
+Arguments:
+	SectionObject - Supplies a pointer to the section mapped by the process.
+
+	BaseAddress - Supplies the base address of where the section is 
+	mapped in the current process address space.
+--*/
+{
+	PVOID Port;
 	HANDLE	hFile = nullptr;
 	DBGKM_APIMSG ApiMsg;
 	PEPROCESS	CurrentProcess;
 	PETHREAD	CurrentThread;
 	PIMAGE_NT_HEADERS	pImageHeader;
-	PEPROCESS process = Process;
+	PDBGKM_LOAD_DLL LoadDllArgs;
 
 	CurrentProcess = PsGetCurrentProcess();
 	CurrentThread = PsGetCurrentThread();
 
-	//if (ExGetPreviousMode() == KernelMode ||
-	//	(CurrentThread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) ||
-	//	process->DebugPort == nullptr) {
-	//	return;
-	//}
+	if (ExGetPreviousMode() == KernelMode){
+		return;
+	}
 
-	/*if (CurrentThread->Tcb.ApcStateIndex != 0x1) {
-		Teb = (PTEB)CurrentThread->Tcb.Teb;
+	PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
+		Port = nullptr;
 	}
 	else {
-		Teb = nullptr;
-	}*/
-
-	/*if (Teb != nullptr && Process == (PEPROCESS)CurrentProcess) {
-		if (!DbgkpSuppressDbgMsg(Teb)) {
-			ApiMsg.u.LoadDll.NamePointer = Teb->NtTib.ArbitraryUserPointer;
-		}
-		else {
-			return;
-		}
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		Port = *pDebugObject;
 	}
-	else {
-		ApiMsg.u.LoadDll.NamePointer = nullptr;
-	}*/
 
-	hFile = kDbgUtil::g_pDbgkpSectionToFileHandle(SectionObject);
-	ApiMsg.u.LoadDll.FileHandle = hFile;
-	ApiMsg.u.LoadDll.BaseOfDll = BaseAddress;
-	ApiMsg.u.LoadDll.DebugInfoFileOffset = 0;
-	ApiMsg.u.LoadDll.DebugInfoSize = 0;
+	if (!Port) {
+		return;
+	}
+	
+	LoadDllArgs = &ApiMsg.u.LoadDll;
+	LoadDllArgs->FileHandle = kDbgUtil::g_pDbgkpSectionToFileHandle(SectionObject);
+	LoadDllArgs->BaseOfDll = BaseAddress;
+	LoadDllArgs->DebugInfoFileOffset = 0;
+	LoadDllArgs->DebugInfoSize = 0;
+
+	//
+	// The loader fills in the module name in this pointer before mapping
+	// the section. It's a very poor linkage.
+	//
+
+	PTEB Teb = (PTEB)PsGetCurrentThreadTeb();
+	LoadDllArgs->NamePointer = Teb->NtTib.ArbitraryUserPointer;
 
 	__try {
 		pImageHeader = RtlImageNtHeader(BaseAddress);
@@ -1072,8 +1083,17 @@ VOID DbgkMapViewOfSection(
 VOID DbgkUnMapViewOfSection(
 	_In_ PEPROCESS Process,
 	_In_ PVOID BaseAddress
-) {
-	//PTEB	Teb;
+)/*++
+
+ Routine Description:
+
+	This function is called when the current process successfully
+	unmpas a view of an image section. If the process has an associated
+	debug port, then an "unmap view of section" message is sent.
+
+ --*/ 
+{
+	PVOID Port;
 	DBGKM_APIMSG ApiMsg;
 	PEPROCESS	CurrentProcess;
 	PETHREAD	CurrentThread;
@@ -1081,28 +1101,27 @@ VOID DbgkUnMapViewOfSection(
 	CurrentProcess = PsGetCurrentProcess();
 	CurrentThread = PsGetCurrentThread();
 
-	/*if (ExGetPreviousMode() == KernelMode ||
-		(CurrentThread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG)) {
+	if (ExGetPreviousMode() == KernelMode) {
 		return;
-	}*/
+	}
 
-	/*if (CurrentThread->Tcb.ApcStateIndex != 0x1) {
-		Teb = (PTEB)CurrentThread->Tcb.Teb;
+	PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
+		Port = nullptr;
 	}
 	else {
-		Teb = nullptr;
-	}*/
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		Port = *pDebugObject;
+	}
 
-	//if (Teb != nullptr && Process == (PEPROCESS)CurrentProcess) {
-	//	if (!DbgkpSuppressDbgMsg(Teb)) {
+	if (!Port) {
+		return;
+	}
 
-	//	}
-	//	else {
-	//		return;
-	//	}
-	//}
+	PDBGKM_UNLOAD_DLL UnloadDllArgs;
+	UnloadDllArgs = &ApiMsg.u.UnloadDll;
+	UnloadDllArgs->BaseAddress = BaseAddress;
 
-	ApiMsg.u.UnloadDll.BaseAddress = BaseAddress;
 	DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmUnloadDllApi, sizeof(DBGKM_UNLOAD_DLL));
 	DbgkpSendApiMessage(0x1, &ApiMsg);
 }
@@ -1507,10 +1526,29 @@ NTSTATUS NtWaitForDebugEvent(
 	_In_ BOOLEAN Alertable,
 	_In_opt_ PLARGE_INTEGER Timeout,
 	_Out_ PDBGUI_WAIT_STATE_CHANGE WaitStateChange
-) {
+)
+/*++
+
+Routine Description:
+
+	Waits for a debug event and returns it to the user if one arrives
+
+Arguments:
+
+	DebugObjectHandle - Handle to a debug object
+	Alertable - TRUE is the wait to be alertable
+	Timeout - Operation timeout value
+	WaitStateChange - Returned debug event
+
+Return Value:
+
+	Status of operation
+
+--*/ {
 	NTSTATUS status;
 	KPROCESSOR_MODE PreviousMode;
 	PDEBUG_OBJECT DebugObject;
+	LARGE_INTEGER Tmo = { 0 };
 	LARGE_INTEGER StartTime = { 0 };
 	DBGUI_WAIT_STATE_CHANGE waitState;
 	PEPROCESS Process;
@@ -1521,8 +1559,9 @@ NTSTATUS NtWaitForDebugEvent(
 	__try {
 		if (ARGUMENT_PRESENT(Timeout)) {
 			if (PreviousMode != KernelMode) {
-				ProbeForRead(Timeout, sizeof(*Timeout), TYPE_ALIGNMENT(LARGE_INTEGER));
+				ProbeForReadSmallStructure(Timeout, sizeof(*Timeout), sizeof(UCHAR));
 			}
+			
 			KeQuerySystemTime(&StartTime);
 		}
 		if (PreviousMode != KernelMode) {

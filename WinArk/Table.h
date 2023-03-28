@@ -1115,8 +1115,8 @@ void CTable<T>::SetTableWindowInfo(int maxColumns,int nlines) {
 	AdjustWindowRect(&m_Rect, WS_CHILD | WS_GROUP | WS_TABSTOP | WS_SYSMENU | WS_THICKFRAME | WS_CAPTION, false);
 	m_Rect.right -= m_Rect.left;
 	m_Rect.bottom -= m_Rect.top;
-	RECT client;
-	GetClientRect(g_hWndMDIClient, &client);
+	/*RECT client;
+	GetClientRect(g_hWndMDIClient, &client);*/
 
 	_style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_CLIPSIBLINGS
 		| WS_VISIBLE | WS_VSCROLL | WS_SYSMENU | WS_THICKFRAME | WS_CAPTION;
@@ -1127,12 +1127,12 @@ void CTable<T>::SetTableWindowInfo(int maxColumns,int nlines) {
 		_style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_CLIPSIBLINGS
 			| WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | WS_SYSMENU | WS_THICKFRAME | WS_CAPTION;
 	}
-	if (client.right < m_Rect.right) {
-		m_Rect.right = client.right;
-	}
-	if (client.bottom < m_Rect.bottom) {
-		m_Rect.bottom = client.bottom;
-	}
+	//if (client.right < m_Rect.right) {
+	//	m_Rect.right = client.right;
+	//}
+	//if (client.bottom < m_Rect.bottom) {
+	//	m_Rect.bottom = client.bottom;
+	//}
 }
 
 template<class T>

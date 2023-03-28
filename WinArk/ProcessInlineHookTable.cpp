@@ -110,6 +110,7 @@ bool CProcessInlineHookTable::CompareItems(const InlineHookInfo& s1, const Inlin
 	return false;
 }
 
+// we have to specify the architectures explicitly when install capstone by vcpkg
 LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
@@ -758,7 +759,7 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 	if (0 == count) {
 		return;
 	}
-	ULONG_PTR codeAddress;
+	ULONG_PTR codeAddress = 0;
 	cs_detail* d = jmpCode[0].detail;
 	if (d != nullptr) {
 		ULONG_PTR memAddress = targetAddress + jmpCode[0].size + d->x86.operands[0].mem.disp;
@@ -766,7 +767,8 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		if (!success)
 			return;
 	}
-
+	if (codeAddress == 0)
+		return;
 	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
 	InlineHookInfo info;
 	if (success) {
