@@ -247,6 +247,10 @@ struct DbgSysCoreInfo {
 	void* ExfAcquirePushLockShared;
 	void* ExfReleasePushLockShared;
 	void* ObFastReferenceObjectLocked;
+	void* PsGetNextProcess;
+	void* DbgkpConvertKernelToUserStateChange;
+	void* PsCaptureExceptionPort;
+	void* DbgkpSendErrorMessage;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

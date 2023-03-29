@@ -1603,23 +1603,40 @@ NTSTATUS NtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
-) {
+) 
+/*++
+
+Routine Description:
+	Continues a stalled debugged thread
+
+Arguments:
+
+	DebugObjectHandle - Handle to a debug object
+	ClientId - ClientId of thread tro continue
+	ContinueStatus - Status of continue
+
+Return Value:
+	Status of operation
+
+--*/
+{
 	NTSTATUS status;
 	PDEBUG_OBJECT DebugObject;
 	PDEBUG_EVENT DebugEvent, FoundDebugEvent;
 	KPROCESSOR_MODE PreviousMode;
 	PLIST_ENTRY Entry;
 	CLIENT_ID ClientId;
-	BOOLEAN GetEvent;
+	BOOLEAN GotEvent;
 
 	PreviousMode = ExGetPreviousMode();
 
 	__try {
 		if (PreviousMode != KernelMode) {
-			ClientId = *AppClientId;
+			ProbeForReadSmallStructure(AppClientId, sizeof(*AppClientId), sizeof(UCHAR));
 		}
+		ClientId = *AppClientId;
 	}
-	__except (EXCEPTION_EXECUTE_HANDLER) {
+	__except (EXCEPTION_EXECUTE_HANDLER) {// If previous mode is kernel then don't handle the exception
 		return GetExceptionCode();
 	}
 
@@ -1646,25 +1663,34 @@ NTSTATUS NtDebugContinue(
 		return status;
 	}
 
-	GetEvent = FALSE;
+	GotEvent = FALSE;
 	FoundDebugEvent = nullptr;
 
 	ExAcquireFastMutex(&DebugObject->Mutex);
 	for (Entry = DebugObject->EventList.Flink;
 		Entry != &DebugObject->EventList;
 		Entry = Entry->Flink) {
+
 		DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
 
+		//
+		// Make sure the client ID matches that the debugger saw all the events.
+		// We don't allow the caller to start a thread that it never saw a message for.
+		//
 		if (DebugEvent->ClientId.UniqueProcess == AppClientId->UniqueProcess) {
-			if (!GetEvent) {
+			if (!GotEvent) {
 				if (DebugEvent->ClientId.UniqueThread == ClientId.UniqueThread &&
 					(DebugEvent->Flags & DEBUG_EVENT_READ) != 0) {
 					RemoveEntryList(Entry);
 					FoundDebugEvent = DebugEvent;
-					GetEvent = TRUE;
+					GotEvent = TRUE;
 				}
 			}
 			else {
+				//
+				// VC breaks if it sees more than one event at a time
+				// for the same process.
+				//
 				DebugEvent->Flags &= ~DEBUG_EVENT_INACTIVE;
 				KeSetEvent(&DebugObject->EventsPresent, 0, FALSE);
 				break;
@@ -1675,10 +1701,10 @@ NTSTATUS NtDebugContinue(
 	ExReleaseFastMutex(&DebugObject->Mutex);
 	ObReferenceObject(DebugObject);
 
-	if (GetEvent) {
+	if (GotEvent) {
 		FoundDebugEvent->ApiMsg.ReturnedStatus = ContinueStatus;
 		FoundDebugEvent->Status = STATUS_SUCCESS;
-		DbgkpWakeTarget(FoundDebugEvent);
+		kDbgUtil::g_pDbgkpWakeTarget(FoundDebugEvent);
 	}
 	else {
 		status = STATUS_INVALID_PARAMETER;
@@ -1895,12 +1921,7 @@ VOID DbgkExitProcess(
 	}*/
 }
 
-PVOID PsCaptureExceptionPort(
-	_In_ PEPROCESS Process
-) {
 
-	return nullptr;
-}
 
 NTSTATUS DbgkpSendApiMessageLpc(
 	_Inout_ PDBGKM_APIMSG ApiMsg,
@@ -1914,130 +1935,141 @@ BOOLEAN DbgkForwardException(
 	_In_ PEXCEPTION_RECORD ExceptionRecord,
 	_In_ BOOLEAN DebugException,
 	_In_ BOOLEAN SecondChance
-) {
+)
+/*++
+Routine Description:
+
+	This function is called forward an exception to the calling process's
+	debug or subsystem exception port.
+
+Arguments:
+
+	ExceptionRecord - Supplies a pointer to an exception record.
+	DebugException - Supplies a boolean variable that specifies whether
+		this exception is to be forwarded to the process's
+		DebugPort(TRUE), or to its ExceptionPort(FALSE).
+
+Return Value:
+
+	TRUE - The process has a DebugPort or an ExceptionPort, and the reply
+		received from the port indicated that the exception was handled.
+
+	FALSE - The process either does not have a DebugPort or
+		ExceptionPort, or the process has a port, but the reply received
+		from the port indicated that the exception was not handled.
+
+--*/
+{
 	NTSTATUS status;
 
 	PEPROCESS		Process;
 	PVOID			ExceptionPort = nullptr;
 	PDEBUG_OBJECT	DebugObject = nullptr;
-	BOOLEAN			bLpcPort = FALSE;
+	BOOLEAN			LpcPort = FALSE;
 
 	DBGKM_APIMSG m;
 	PDBGKM_EXCEPTION args;
 
 	args = &m.u.Exception;
+
+	//
+	// Initialize the debug LPC message with default information
+	//
+
 	DBGKM_FORMAT_API_MSG(m, DbgKmExceptionApi, sizeof(*args));
 
-	if (DebugException == TRUE) {
+	//
+	// Get the address of the destination LPC port.
+	//
+
+	Process = PsGetCurrentProcess();
+	if (DebugException) {
 		PETHREAD CurrentThread = PsGetCurrentThread();
-		//if (CurrentThread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
-		//	DebugObject = nullptr;
-		//}
-		//else {
-		//	// DebugObject = (PDEBUG_OBJECT)Process->DebugPort;
-		//}
+
+		PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
+		if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
+			DebugObject = nullptr;
+		}
+		else {
+			PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+			DebugObject = *pDebugObject;
+		}
+		LpcPort = FALSE;
 	}
 	else {
-		//ExceptionPort = PsCaptureExceptionPort((PEPROCESS)Process);
+		ExceptionPort = kDbgUtil::g_pPsCaptureExceptionPort((PEPROCESS)Process);
 		m.h.u2.ZeroInit = LPC_EXCEPTION;
-		bLpcPort = TRUE;
+		LpcPort = TRUE;
 	}
 
-	if ((ExceptionPort == nullptr && DebugObject == nullptr) && DebugException == TRUE) {
+	//
+	// If the destination LPC port address is NULL, then return FALSE.
+	//
+
+	if (DebugObject == nullptr) {
 		return FALSE;
 	}
+
+	//
+	// Fill in the reminder of the debug LPC message
+	//
 
 	args->ExceptionRecord = *ExceptionRecord;
 	args->FirstChance = !SecondChance;
 
-	if (bLpcPort == FALSE) {
+	//
+	// Send the debug message to the destination LPC port.
+	//
+
+	if (LpcPort) {
+		status = DbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);
+	}
+	else{
 		status = DbgkpSendApiMessage(DebugException, &m);
 	}
-	else if (ExceptionPort) {
-		status = DbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);
-		ObDereferenceObject(ExceptionPort);
+
+	//
+	// If the send was not successful, then return a FALSE indicating that 
+	// the port did not handle the exception. Otherwise, if the debug port
+	// is specified, then look at the return status in the message.
+	//
+
+	if (!NT_SUCCESS(status) ||
+		(DebugException) && 
+		(m.ReturnedStatus == DBG_EXCEPTION_NOT_HANDLED || !NT_SUCCESS(m.ReturnedStatus))
+		) {
+		if (SecondChance) {
+			status = kDbgUtil::g_pDbgkpSendErrorMessage(ExceptionRecord, FALSE, &m);
+			return NT_SUCCESS(status);
+		}
+		return FALSE;
 	}
 	else {
-		m.ReturnedStatus = DBG_EXCEPTION_NOT_HANDLED;
-		status = STATUS_SUCCESS;
-	}
-
-	if (NT_SUCCESS(status)) {
-		status = m.ReturnedStatus;
-		if (m.ReturnedStatus == DBG_EXCEPTION_NOT_HANDLED) {
-			if (DebugException == TRUE) {
-				return FALSE;
-			}
-
-			//status = DbgkpSendErrorMessage(ExceptionRecord, &m);
-		}
-	}
-
-	return NT_SUCCESS(status);
-}
-
-VOID DbgkpConvertKernelToUserStateChange(
-	PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
-	PDEBUG_EVENT DebugEvent
-) {
-	WaitStateChange->AppClientId = DebugEvent->ClientId;
-	switch (DebugEvent->ApiMsg.ApiNumber) {
-		case DbgKmExceptionApi:
-			switch (DebugEvent->ApiMsg.u.Exception.ExceptionRecord.ExceptionCode) {
-				case STATUS_BREAKPOINT:
-					WaitStateChange->NewState = DbgBreakpointStateChange;
-					break;;
-				case STATUS_SINGLE_STEP:
-					WaitStateChange->NewState = DbgSingleStepStateChange;
-					break;
-				default:
-					WaitStateChange->NewState = DbgExceptionStateChange;
-					break;
-			}
-			WaitStateChange->StateInfo.Exception = DebugEvent->ApiMsg.u.Exception;
-			break;
-
-		case DbgKmCreateThreadApi:
-			WaitStateChange->NewState = DbgCreateThreadStateChange;
-			WaitStateChange->StateInfo.CreateThread.NewThread = DebugEvent->ApiMsg.u.CreateThread;
-			break;
-
-		case DbgKmCreateProcessApi:
-			WaitStateChange->NewState = DbgCreateProcessStateChange;
-			WaitStateChange->StateInfo.CreateProcessInfo.NewProcess = DebugEvent->ApiMsg.u.CreateProcess;
-			DebugEvent->ApiMsg.u.CreateProcess.FileHandle = nullptr;
-			break;
-
-		case DbgKmExitThreadApi:
-			WaitStateChange->NewState = DbgExitThreadStateChange;
-			WaitStateChange->StateInfo.ExitThread = DebugEvent->ApiMsg.u.ExitThread;
-			break;
-
-		case DbgKmExitProcessApi:
-			WaitStateChange->NewState = DbgExitProcessStateChange;
-			WaitStateChange->StateInfo.ExitProcess = DebugEvent->ApiMsg.u.ExitProcess;
-			break;
-
-		case DbgKmLoadDllApi:
-			WaitStateChange->NewState = DbgLoadDllStateChange;
-			WaitStateChange->StateInfo.LoadDll = DebugEvent->ApiMsg.u.LoadDll;
-			DebugEvent->ApiMsg.u.LoadDll.FileHandle = NULL;
-			break;
-
-		case DbgKmUnloadDllApi:
-			WaitStateChange->NewState = DbgUnloadDllStateChange;
-			WaitStateChange->StateInfo.UnloadDll = DebugEvent->ApiMsg.u.UnloadDll;
-			break;
-
-		default:
-			ASSERT(FALSE);
+		return TRUE;
 	}
 }
 
 NTSTATUS DbgkClearProcessDebugObject(
 	_In_ PEPROCESS Process,
 	_In_ PDEBUG_OBJECT SourceDebugObject
-) {
+)
+/*++
+
+Routine Description:
+	
+	Remove a debug port from a process
+
+Arguments:
+	
+	Process - Process to be debugged
+	SourceDebugObject - Debug object to detach
+
+Return Value:
+	
+	NTSTATUS - Status of call.
+
+--*/
+{
 	NTSTATUS status = STATUS_SUCCESS;
 	PDEBUG_OBJECT DebugObject = nullptr;
 	PDEBUG_EVENT DebugEvent;
@@ -2046,27 +2078,36 @@ NTSTATUS DbgkClearProcessDebugObject(
 
 	ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 
-	auto process = Process;
-	/*DebugObject = (PDEBUG_OBJECT)process->DebugPort;
+	PDEBUG_OBJECT* pDebugPort = kDbgUtil::GetProcessDebugPort(Process);
+	DebugObject = *pDebugPort;
 	if (DebugObject == nullptr || (DebugObject != SourceDebugObject && SourceDebugObject != nullptr)) {
 		DebugObject = nullptr;
 		status = STATUS_PORT_NOT_SET;
 	}
 	else {
-		process->DebugPort = nullptr;
+		*pDebugPort = nullptr;
 		status = STATUS_SUCCESS;
-	}*/
+	}
 	ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 	if (NT_SUCCESS(status)) {
 		DbgkpMarkProcessPeb(Process);
 	}
 
+	//
+	// Remove any events for this process and wake up the threads
+	//
 	if (DebugObject) {
+		//
+		// Remove any events and queue them to a tempory queue
+		//
 		InitializeListHead(&TempList);
 
 		ExAcquireFastMutex(&DebugObject->Mutex);
-		for (Entry = DebugObject->EventList.Flink; Entry != &DebugObject->EventList;) {
+		for (Entry = DebugObject->EventList.Flink; 
+			Entry != &DebugObject->EventList;
+			) {
+
 			DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
 			Entry = Entry->Flink;
 			// 一个调试器可以同时调试多个被调试进程
@@ -2079,13 +2120,17 @@ NTSTATUS DbgkClearProcessDebugObject(
 
 		ObDereferenceObject(DebugObject);
 
+		//
+		// Wake up all the removed threads.
+		//
 		while (!IsListEmpty(&TempList)) {
 			Entry = RemoveHeadList(&TempList);
 			DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
 			DebugEvent->Status = STATUS_DEBUGGER_INACTIVE;
-			DbgkpWakeTarget(DebugEvent);
+			kDbgUtil::g_pDbgkpWakeTarget(DebugEvent);
 		}
 	}
+
 	return status;
 }
 
@@ -2095,7 +2140,32 @@ NTSTATUS NtSetInformationDebugObject(
 	_In_ PVOID DebugInformation,
 	_In_ ULONG DebugInformationLength,
 	_Out_opt_ PULONG ReturnLength
-) {
+) 
+/*++
+
+Routine Description:
+
+	This function sets the state of a debug object.
+
+Arguments:
+
+	DebugObjectHandle -  Supplies a handle to a process debug object
+
+	DebugObjectInformationClass - Supplies the class of information being
+		set.
+
+	DebugInformation - Supplies a pointer to a record that contains the information
+		to set.
+
+	ReturnLength - Supplies the length of the record that contains the information
+		to set.
+
+Return Value:
+
+	NTSTATUS - Status of call
+
+--*/ 
+{
 	KPROCESSOR_MODE PreviousMode;
 	ULONG Flags;
 	NTSTATUS status;
@@ -2276,12 +2346,6 @@ VOID DbgkpOpenHandles(
 	}
 }
 
-PEPROCESS PsGetNextProcess(
-	_In_ PEPROCESS Process
-) {
-	return nullptr;
-}
-
 NTSTATUS PsTerminateProcess(
 	PEPROCESS Process,
 	NTSTATUS Status
@@ -2295,52 +2359,97 @@ VOID DbgkpCloseObject(
 	_In_ ACCESS_MASK GrantedAccess,
 	_In_ ULONG_PTR ProcessHandleCount,
 	_In_ ULONG_PTR SystemHandleCount
-) {
+)
+/*++
+
+Routine Description:
+	
+	Called by the object manager when handle is closed to the object.
+
+Arguments:
+	
+	Process - Process doing the close
+	Object - Debug object being deleted
+	GrantedAccess - Access granted for this handle
+	ProcessHandleCount - Unused and unmaintained by OB
+	SystemHandleCount - Current handle count for this object
+
+Return Value:
+	
+	None.
+
+--*/
+{
 	PDEBUG_OBJECT DebugObject = (PDEBUG_OBJECT)Object;
 	PDEBUG_EVENT DebugEvent;
 	PLIST_ENTRY	Entry;
 	BOOLEAN Deref;
 
+	//
+	// If this isn't the last then do nothing
+	//
 	if (SystemHandleCount > 1) {
 		return;
 	}
 
 	ExAcquireFastMutex(&DebugObject->Mutex);
 
+	//
+	// Mark this object as going away and wake up any processes that are waiting.
+	//
 	DebugObject->Flags |= DEBUG_OBJECT_DELETE_PENDING;
 
+	//
+	// Remove any events and queue them to a temporary queue
+	//
 	Entry = DebugObject->EventList.Flink;
 	InitializeListHead(&DebugObject->EventList);
+
 	ExReleaseFastMutex(&DebugObject->Mutex);
 
+	//
+	// Wake anyone waiting. They need to leave this object alone now as its deleting
+	//
 	KeSetEvent(&DebugObject->EventsPresent, 0, FALSE);
 
+	//
+	// Loop over all processes and remove the debug port from any that still have it.
+	// Debug port propagation was disabled by setting the delete pending flag above so we only have to do this
+	// once. No more refs can appear now.
+	// 
 	// 枚举系统内的所有进程，如果发现某个进程的DebugObject字段的值与要关闭的对象相同，则将其置为0
-	for (Process = PsGetNextProcess(nullptr); Process != nullptr; Process = PsGetNextProcess(Process)) {
-		auto process = Process;
-		/*if (process->DebugPort == DebugObject) {
+	for (Process = kDbgUtil::g_pPsGetNextProcess(nullptr); Process != nullptr; Process = kDbgUtil::g_pPsGetNextProcess(Process)) {
+		
+		PDEBUG_OBJECT* pDebugPort = kDbgUtil::GetProcessDebugPort(Process);
+		if (*pDebugPort == DebugObject) {
 			Deref = FALSE;
-			ExAcquireFastMutex(&DbgkpProcessDebugPortMutex);
-			if (process->DebugPort == DebugObject) {
-				process->DebugPort = nullptr;
+			ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
+			if (*pDebugPort == DebugObject) {
+				*pDebugPort = nullptr;
 				Deref = TRUE;
 			}
-			ExReleaseFastMutex(&DbgkpProcessDebugPortMutex);
+			ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 
 			if (Deref) {
+				DbgkpMarkProcessPeb(Process);
+				//
+				// If the caller wanted process deletion on debugger dying (old interface) then kill off the process.
+				//
 				if (DebugObject->Flags & DEBUG_OBJECT_KILL_ON_CLOSE) {
 					PsTerminateProcess(Process, STATUS_DEBUGGER_INACTIVE);
 				}
 				ObDereferenceObject(DebugObject);
 			}
-		}*/
+		}
 	}
-
+	//
+	// Wake up all removed threads
+	//
 	while (Entry != &DebugObject->EventList) {
 		DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
 		Entry = Entry->Flink;
 		DebugEvent->Status = STATUS_DEBUGGER_INACTIVE;
-		DbgkpWakeTarget(DebugEvent);
+		kDbgUtil::g_pDbgkpWakeTarget(DebugEvent);
 	}
 }
 
@@ -2385,4 +2494,8 @@ Arguments:
 		NewValue.Ptr, OldValue.Ptr) != OldValue.Ptr) {
 		kDbgUtil::g_pExfReleasePushLockShared((PEX_PUSH_LOCK)PushLock);
 	}
+}
+
+VOID DbgkpDeleteObject(_In_ PDEBUG_OBJECT DebugObject) {
+	IsListEmpty(&DebugObject->EventList);
 }

@@ -61,7 +61,25 @@ public:
 	using PPsGetNextProcessThread = PETHREAD(NTAPI*)(PEPROCESS Process, PETHREAD Thread);
 	static inline PPsGetNextProcessThread g_pPsGetNextProcessThread{ nullptr };
 
-	using PDbgkpWakeTarget = decltype(&DbgkpWakeTarget);
+	using PDbgkpWakeTarget = VOID (NTAPI*)(
+		_In_ PDEBUG_EVENT DebugEvent
+	);
+
+	using PDbgkpConvertKernelToUserStateChange = VOID (NTAPI*)(
+		PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
+		PDEBUG_EVENT DebugEvent
+	);
+
+	using PPsCaptureExceptionPort = PVOID (NTAPI*)(
+		_In_ PEPROCESS Process
+		);
+
+	using PDbgkpSendErrorMessage = NTSTATUS (NTAPI*)(
+		_In_ PEXCEPTION_RECORD ExceptionRecord,
+		_In_ BOOLEAN IsFilterMessage,
+		_In_ PDBGKM_APIMSG DbgApiMsg
+	);
+
 	static inline PDbgkpWakeTarget g_pDbgkpWakeTarget{ nullptr };
 	using PDbgkpMarkProcessPeb = decltype(&DbgkpMarkProcessPeb);
 	static inline PDbgkpMarkProcessPeb g_pDbgkpMarkProcessPeb{ nullptr };
@@ -100,5 +118,13 @@ public:
 	static inline PExfReleasePushLockShared g_pExfReleasePushLockShared{ nullptr };
 
 	static inline PObFastReferenceObjectLocked g_pObFastReferenceObjectLocked{ nullptr };
+
+	static inline PDbgkpConvertKernelToUserStateChange g_pDbgkpConvertKernelToUserStateChange{ nullptr };
+
+	static inline PPsGetNextProcess g_pPsGetNextProcess{ nullptr };
+
+	static inline PPsCaptureExceptionPort g_pPsCaptureExceptionPort{ nullptr };
+
+	static inline PDbgkpSendErrorMessage g_pDbgkpSendErrorMessage{ nullptr };
 	static inline bool _first = true;
 };

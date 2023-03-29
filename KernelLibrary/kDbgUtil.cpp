@@ -151,6 +151,10 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pExfAcquirePushLockShared = (PExfAcquirePushLockShared)info->ExfAcquirePushLockShared;
 		g_pExfReleasePushLockShared = (PExfReleasePushLockShared)info->ExfReleasePushLockShared;
 		g_pObFastReferenceObjectLocked = (PObFastReferenceObjectLocked)info->ObFastReferenceObjectLocked;
+		g_pPsGetNextProcess = (PPsGetNextProcess)info->PsGetNextProcess;
+		g_pDbgkpConvertKernelToUserStateChange = (PDbgkpConvertKernelToUserStateChange)info->DbgkpConvertKernelToUserStateChange;
+		g_pDbgkpSendErrorMessage = (PDbgkpSendErrorMessage)info->DbgkpSendErrorMessage;
+		g_pPsCaptureExceptionPort = (PPsCaptureExceptionPort)info->PsCaptureExceptionPort;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

@@ -105,6 +105,10 @@ using PObFastReferenceObjectLocked = PVOID(NTAPI*)(
 	_In_ PEX_FAST_REF FastRef
 	);
 
+using PPsGetNextProcess = PEPROCESS (NTAPI*)(
+	_In_ PEPROCESS Process
+);
+
 // 创建调试对象
 NTSTATUS 
 NTAPI
@@ -294,9 +298,6 @@ VOID DbgkSendSystemDllMessages(
 //	_In_ PTEB Teb
 //);
 
-PVOID PsCaptureExceptionPort(
-	_In_ PEPROCESS Process
-);
 
 // 向当前进程的异常端口发送异常的第二轮处理机会
 NTSTATUS DbgkpSendApiMessageLpc(
@@ -305,10 +306,7 @@ NTSTATUS DbgkpSendApiMessageLpc(
 	_In_ BOOLEAN SuspendProcess
 );
 
-//NTSTATUS DbgkpSendErrorMessage(
-//	_In_ PEXCEPTION_RECORD ExceptionRecord,
-//	_In_ PDBGKM_APIMSG DbgApiMsg
-//);
+
 
 
 // 恢复被调试进程的执行
@@ -324,9 +322,7 @@ BOOLEAN DbgkForwardException(
 );
 
 // 唤醒等待调试器回复的线程
-VOID DbgkpWakeTarget(
-	_In_ PDEBUG_EVENT DebugEvent
-);
+
 
 // 释放调试事件
 VOID DbgkpFreeDebugEvent(
@@ -339,10 +335,7 @@ VOID DbgkpMarkProcessPeb(
 );
 
 // 将内核模式的结构体转换为用户模式的结构体
-VOID DbgkpConvertKernelToUserStateChange(
-	PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
-	PDEBUG_EVENT DebugEvent
-);
+
 
 //NTSTATUS MmGetFileNameForAddress(
 //	_In_ PVOID ProcessVa,
@@ -413,8 +406,5 @@ NTSTATUS PsTerminateProcess(
 	NTSTATUS Status
 );
 
-PEPROCESS PsGetNextProcess(
-	_In_ PEPROCESS Process
-);
 
-
+VOID DbgkpDeleteObject(_In_ PDEBUG_OBJECT DebugObject);
