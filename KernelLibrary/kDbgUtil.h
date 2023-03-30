@@ -26,6 +26,7 @@ public:
 	static PKAPC_STATE GetThreadApcState(PETHREAD Thread);
 	static UINT8 GetCurrentThreadApcStateIndex();
 	static PBOOLEAN GetPEBBeingDebugged(PPEB Peb);
+	static PLARGE_INTEGER GetProcessExitTime(PEPROCESS Process);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -80,6 +81,12 @@ public:
 		_In_ PDBGKM_APIMSG DbgApiMsg
 	);
 
+	using PDbgkpSendApiMessageLpc = NTSTATUS (NTAPI*)(
+		_Inout_ PDBGKM_APIMSG ApiMsg,
+		_In_ PVOID Port,
+		_In_ BOOLEAN SuspendProcess
+	);
+
 	static inline PDbgkpWakeTarget g_pDbgkpWakeTarget{ nullptr };
 	using PDbgkpMarkProcessPeb = decltype(&DbgkpMarkProcessPeb);
 	static inline PDbgkpMarkProcessPeb g_pDbgkpMarkProcessPeb{ nullptr };
@@ -126,5 +133,8 @@ public:
 	static inline PPsCaptureExceptionPort g_pPsCaptureExceptionPort{ nullptr };
 
 	static inline PDbgkpSendErrorMessage g_pDbgkpSendErrorMessage{ nullptr };
+
+	static inline PDbgkpSendApiMessageLpc g_pDbgkpSendApiMessageLpc{ nullptr };
+
 	static inline bool _first = true;
 };

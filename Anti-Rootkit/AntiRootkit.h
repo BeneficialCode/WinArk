@@ -251,6 +251,7 @@ struct DbgSysCoreInfo {
 	void* DbgkpConvertKernelToUserStateChange;
 	void* PsCaptureExceptionPort;
 	void* DbgkpSendErrorMessage;
+	void* DbgkpSendApiMessageLpc;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

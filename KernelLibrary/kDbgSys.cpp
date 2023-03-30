@@ -1716,7 +1716,22 @@ Return Value:
 NTSTATUS NtRemoveProcessDebug(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
-) {
+) 
+/*++
+Routine Description:
+
+	Remove a debug object from a process.
+
+Arguments:
+
+	ProcessHandle - Handle to a process currently being debugged
+
+Return Value:
+
+	NTSTATUS - Status of call.
+
+--*/
+{
 	NTSTATUS status;
 	PEPROCESS Process, CurrentProcess;
 	KPROCESSOR_MODE PreviousMode;
@@ -1730,8 +1745,7 @@ NTSTATUS NtRemoveProcessDebug(
 		*PsProcessType,
 		PreviousMode,
 		(PVOID*)&Process,
-		nullptr
-	);
+		nullptr);
 	if (!NT_SUCCESS(status)) {
 		return status;
 	}
@@ -1759,7 +1773,7 @@ NTSTATUS NtRemoveProcessDebug(
 }
 
 VOID DbgkpResumeProcess(
-	_In_ PEPROCESS Process
+	_In_opt_ PEPROCESS Process
 ) {
 	if (Process == nullptr) {
 		kDbgUtil::g_pKeThawAllThreads();
@@ -1885,50 +1899,129 @@ ExFastRefAddAdditionalReferenceCounts(
 
 VOID DbgkExitThread(
 	NTSTATUS ExitStatus
-) {
+) 
+/*++
+Routine Description:
+	
+	This function is called when a new thread terminates. At this 
+	point, the thread will no longer execute in user-mode. No other
+	exit processing has occured.
+
+	If a message is sent, then while the thread is awaiting a reply,
+	all other threads in the process are suspended.
+
+Arguments:
+
+	ExitStatus - Supplies the ExitStatus of the exiting thread.
+
+Return Value:
+
+	None.
+
+--*/
+{
 	DBGKM_APIMSG ApiMsg;
 	PEPROCESS Process;
 	PETHREAD CurrentThread;
+	PVOID Port;
+	PDBGKM_EXIT_THREAD args;
 
 	CurrentThread = PsGetCurrentThread();
 	Process = PsGetCurrentProcess();
 
-	/*if (!(CurrentThread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) &&
-		Process->DebugPort != nullptr && CurrentThread->ThreadInserted == TRUE) {
-		ApiMsg.u.ExitThread.ExitStatus = ExitStatus;
-		DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmExitThreadApi, sizeof(DBGKM_EXIT_THREAD));
-		DbgkpSendApiMessage(&ApiMsg, 0x1);
-	}*/
+	PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
+	
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
+		Port = nullptr;
+	}
+	else {
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		Port = *pDebugObject;
+	}
+
+	if (!Port) {
+		return;
+	}
+
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_DEADTHREAD) {
+		return;
+	}
+
+	args = &ApiMsg.u.ExitThread;
+	args->ExitStatus = ExitStatus;
+
+	DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmExitThreadApi, sizeof(*args));
+
+	DbgkpSendApiMessage(FALSE, &ApiMsg);
+
+	BOOLEAN Frozen = kDbgUtil::g_pDbgkpSuspendProcess();
+
+	if (Frozen) {
+		DbgkpResumeProcess(nullptr);
+	}
 }
 
 VOID DbgkExitProcess(
 	NTSTATUS ExitStatus
-) {
+)
+/*++
+
+Routine Description:
+
+	This function is called when a process terminates. The address
+    space of the process is still intact, but no threads exist in
+    the process.
+
+Arguments:
+
+    ExitStatus - Supplies the ExitStatus of the exiting process.
+
+Return Value:
+
+    None.
+--*/
+{
 	DBGKM_APIMSG ApiMsg;
 	PEPROCESS Process;
 	PETHREAD CurrentThread;
+	PVOID Port;
+	PDBGKM_EXIT_PROCESS args;
 
 	CurrentThread = PsGetCurrentThread();
 	Process = PsGetCurrentProcess();
 
-	/*if (!(CurrentThread->CrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) &&
-		Process->DebugPort != nullptr && CurrentThread->ThreadInserted == TRUE) {
-		KeQuerySystemTime(&Process->ExitTime);
+	PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
 
-		ApiMsg.u.ExitProcess.ExitStatus = ExitStatus;
-		DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmExitProcessApi, sizeof(DBGKM_EXIT_PROCESS));
-		DbgkpSendApiMessage(&ApiMsg, FALSE);
-	}*/
-}
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
+		Port = nullptr;
+	}
+	else {
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		Port = *pDebugObject;
+	}
 
+	if (!Port) {
+		return;
+	}
 
+	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_DEADTHREAD) {
+		return;
+	}
 
-NTSTATUS DbgkpSendApiMessageLpc(
-	_Inout_ PDBGKM_APIMSG ApiMsg,
-	_In_ PVOID Port,
-	_In_ BOOLEAN SuspendProcess
-) {
-	return STATUS_SUCCESS;
+	//
+	// this ensures that other timed lockers of the process will bail
+	// since this call is done while holding the process lock, and lock duration
+	// is controlled by debugger
+	//
+	PLARGE_INTEGER pExitTime = kDbgUtil::GetProcessExitTime(Process);
+	KeQuerySystemTime(pExitTime);
+
+	args = &ApiMsg.u.ExitProcess;
+	args->ExitStatus = ExitStatus;
+
+	DBGKM_FORMAT_API_MSG(ApiMsg, DbgKmExitProcessApi, sizeof(*args));
+
+	DbgkpSendApiMessage(FALSE, &ApiMsg);
 }
 
 BOOLEAN DbgkForwardException(
@@ -2022,7 +2115,7 @@ Return Value:
 	//
 
 	if (LpcPort) {
-		status = DbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);
+		status = kDbgUtil::g_pDbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);
 	}
 	else{
 		status = DbgkpSendApiMessage(DebugException, &m);

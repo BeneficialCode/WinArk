@@ -78,6 +78,10 @@ CLIENT_ID kDbgUtil::GetThreadCid(PETHREAD Thread) {
 	return cid;
 }
 
+PLARGE_INTEGER kDbgUtil::GetProcessExitTime(PEPROCESS Process) {
+	return reinterpret_cast<PLARGE_INTEGER>((char*)Process + _eprocessOffsets.ExitTime);
+}
+
 bool kDbgUtil::HookDbgSys() {
 	if (g_pNtCreateDebugObject) {
 		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
@@ -155,6 +159,7 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpConvertKernelToUserStateChange = (PDbgkpConvertKernelToUserStateChange)info->DbgkpConvertKernelToUserStateChange;
 		g_pDbgkpSendErrorMessage = (PDbgkpSendErrorMessage)info->DbgkpSendErrorMessage;
 		g_pPsCaptureExceptionPort = (PPsCaptureExceptionPort)info->PsCaptureExceptionPort;
+		g_pDbgkpSendApiMessageLpc = (PDbgkpSendApiMessageLpc)info->DbgkpSendApiMessageLpc;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

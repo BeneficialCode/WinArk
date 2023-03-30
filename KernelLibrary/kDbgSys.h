@@ -300,18 +300,13 @@ VOID DbgkSendSystemDllMessages(
 
 
 // 向当前进程的异常端口发送异常的第二轮处理机会
-NTSTATUS DbgkpSendApiMessageLpc(
-	_Inout_ PDBGKM_APIMSG ApiMsg,
-	_In_ PVOID Port,
-	_In_ BOOLEAN SuspendProcess
-);
 
 
 
 
 // 恢复被调试进程的执行
 VOID DbgkpResumeProcess(
-	_In_ PEPROCESS Process
+	_In_opt_ PEPROCESS Process
 );
 
 // 向调试子系统发送异常消息

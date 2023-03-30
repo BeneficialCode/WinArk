@@ -217,6 +217,7 @@ struct EProcessOffsets {
 	ULONG NumberOfLockedPages;
 	ULONG VadCount;
 	ULONG NumberOfVads;
+	ULONG ExitTime;
 };
 
 struct EThreadOffsets {
