@@ -200,6 +200,11 @@ struct OperationInfo {
 static const GUID dllGuid =
 { 0x38669815, 0xc633, 0x45e0, { 0xbc, 0xd1, 0xe0, 0x11, 0x8a, 0xae, 0x9f, 0xa2 } };
 
+struct BitField {
+	USHORT Position;
+	USHORT Size;
+};
+
 struct EProcessOffsets {
 	ULONG RundownProtect;		// PEX_RUNDOWN_REF
 	ULONG CrossThreadFlags;		// ULONG
@@ -225,12 +230,14 @@ struct EThreadOffsets {
 	ULONG SystemThread;
 	ULONG Cid;
 	ULONG ClonedThread;
+	BitField ClonedThreadBitField;
 	ULONG RundownProtect;
 	ULONG ThreadInserted;
 	ULONG Tcb;
 	ULONG StartAddress;
 	ULONG ApcState;
 	ULONG ApcStateIndex;
+	ULONG Win32StartAddress;
 };
 
 struct TcbOffsets {
@@ -251,10 +258,7 @@ enum class VadCountPos {
 };
 
 
-struct BitField {
-	USHORT Position;
-	USHORT Size;
-};
+
 
 struct MmAvlTableOffsets {
 	ULONG NumberGenericTableElements;
@@ -330,4 +334,3 @@ struct ExtHostData {
 	USHORT Version;
 	USHORT Count;
 };
-

@@ -252,6 +252,9 @@ struct DbgSysCoreInfo {
 	void* PsCaptureExceptionPort;
 	void* DbgkpSendErrorMessage;
 	void* DbgkpSendApiMessageLpc;
+	void* DbgkpOpenHandles;
+	void* DbgkpSuppressDbgMsg;
+	void* ObFastDereferenceObject;
 	EProcessOffsets EprocessOffsets;
 	EThreadOffsets EthreadOffsets;
 	PebOffsets PebOffsets;

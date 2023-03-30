@@ -341,3 +341,25 @@ NTSTATUS Helpers::DumpKernelMem(DumpMemData* pData, PVOID pInfo) {
 
 	return status;
 }
+
+ULONG64 Helpers::ReadBitField(PUCHAR readAddr, BitField* pBitField) {
+	readAddr += (pBitField->Position / 8);
+	ULONG readSz = (pBitField->Position % 8 + pBitField->Size
+		+ 7) / 8;
+	ULONG64 readBits;
+	ULONG64 bitCopy;
+
+	RtlCopyMemory(&readBits, readAddr, readSz);
+
+	readBits = readBits >> (pBitField->Position % 8);
+	bitCopy = ((ULONG64)1 << pBitField->Size);
+	bitCopy -= (ULONG64)1;
+	readBits &= bitCopy;
+	return readBits;
+}
+
+ULONG64 Helpers::ReadFieldValue(PUCHAR readAddr, ULONG readSize) {
+	ULONG64 value;
+	RtlCopyMemory(&value, readAddr, readSize);
+	return value;
+}

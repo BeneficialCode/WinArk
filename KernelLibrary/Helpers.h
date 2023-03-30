@@ -22,6 +22,9 @@ public:
 
 	static NTSTATUS DumpKernelMem(DumpMemData* pData, PVOID pInfo);
 
+	static ULONG64 ReadBitField(PUCHAR readAddr, BitField* pBitField);
+	static ULONG64 ReadFieldValue(PUCHAR readAddr, ULONG readSize);
+
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };
 

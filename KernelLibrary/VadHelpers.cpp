@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "VadHelpers.h"
+#include "Helpers.h"
 
 NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 	NTSTATUS status = STATUS_SUCCESS;
@@ -58,28 +59,6 @@ NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 	return status;
 }
 
-ULONG64 VadHelpers::ReadBitField(PUCHAR readAddr, BitField * pBitField) {
-	readAddr += (pBitField->Position / 8);
-	ULONG readSz = (pBitField->Position % 8 + pBitField->Size
-		+ 7) / 8;
-	ULONG64 readBits;
-	ULONG64 bitCopy;
-
-	RtlCopyMemory(&readBits, readAddr, readSz);
-
-	readBits = readBits >> (pBitField->Position % 8);
-	bitCopy = ((ULONG64)1 << pBitField->Size);
-	bitCopy -= (ULONG64)1;
-	readBits &= bitCopy;
-	return readBits;
-}
-
-ULONG64 VadHelpers::ReadFieldValue(PUCHAR readAddr, ULONG readSize) {
-	ULONG64 value;
-	RtlCopyMemory(&value, readAddr, readSize);
-	return value;
-}
-
 NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
 	ULONG64 Next;
 	ULONG64 VadToDump;
@@ -120,24 +99,24 @@ NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
 			}
 
 			PUCHAR readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.PrivateMemory;
-			VadFlagsPrivateMemory = ReadBitField(readAddr, &pData->VadFlagsOffsets.PrivateMemoryBitField);
+			VadFlagsPrivateMemory = Helpers::ReadBitField(readAddr, &pData->VadFlagsOffsets.PrivateMemoryBitField);
 			
 			readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.NoChange;
-			VadFlagsNoChange = ReadBitField(readAddr, &pData->VadFlagsOffsets.NoChangeBitField);
+			VadFlagsNoChange = Helpers::ReadBitField(readAddr, &pData->VadFlagsOffsets.NoChangeBitField);
 				
 			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.StartingVpn;
 			ULONG readSz = pData->VadShortOffsets.VpnSize;
-			StartingVpn = ReadFieldValue(readAddr, readSz);
+			StartingVpn = Helpers::ReadFieldValue(readAddr, readSz);
 			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.EndingVpn;
-			EndingVpn = ReadFieldValue(readAddr, readSz);
+			EndingVpn = Helpers::ReadFieldValue(readAddr, readSz);
 
 			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.LeftChild;
 			readSz = pData->VadShortOffsets.ChildSize;
-			LeftChild = ReadFieldValue(readAddr, readSz);
+			LeftChild = Helpers::ReadFieldValue(readAddr, readSz);
 			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.RightChild;
-			RightChild = ReadFieldValue(readAddr, readSz);
+			RightChild = Helpers::ReadFieldValue(readAddr, readSz);
 			readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.CommitCharge;
-			CommitCharge = ReadBitField(readAddr, &pData->VadFlagsOffsets.CommitChargeBitField);
+			CommitCharge = Helpers::ReadBitField(readAddr, &pData->VadFlagsOffsets.CommitChargeBitField);
 
 			Prev = First;
 
@@ -151,12 +130,12 @@ NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
 
 				readAddr = (PUCHAR)First + pData->VadShortOffsets.LeftChild;
 				readSz = pData->VadShortOffsets.ChildSize;
-				LeftChild = ReadFieldValue(readAddr, readSz);
+				LeftChild = Helpers::ReadFieldValue(readAddr, readSz);
 			}
 
 			readAddr = (PUCHAR)First + pData->VadShortOffsets.StartingVpn;
 			readSz = pData->VadShortOffsets.VpnSize;
-			StartingVpn = ReadFieldValue(readAddr, readSz);
+			StartingVpn = Helpers::ReadFieldValue(readAddr, readSz);
 
 		} while (false);
 		

@@ -19,6 +19,7 @@ public:
 	static VOID* GetProcessSectionObject(PEPROCESS Process);
 	static VOID* GetProcessUniqueProcessId(PEPROCESS Process);
 	static VOID* GetThreadStartAddress(PETHREAD Thread);
+	static VOID* GetThreadWin32StartAddress(PETHREAD Thread);
 	static PULONG GetThreadCrossThreadFlags(PETHREAD Ethread);
 	static PEX_RUNDOWN_REF GetThreadRundownProtect(PETHREAD Thread);
 	static PPEB_LDR_DATA GetPEBLdr(PPEB Peb);
@@ -27,6 +28,7 @@ public:
 	static UINT8 GetCurrentThreadApcStateIndex();
 	static PBOOLEAN GetPEBBeingDebugged(PPEB Peb);
 	static PLARGE_INTEGER GetProcessExitTime(PEPROCESS Process);
+	static ULONG64 GetThreadClonedThread(PETHREAD Thread);
 
 	// 初始化调试函数指针
 	static bool InitDbgSys(DbgSysCoreInfo* info);
@@ -38,7 +40,7 @@ public:
 	static inline EThreadOffsets _ethreadOffsets;
 	static inline EProcessOffsets _eprocessOffsets;
 	static inline PebOffsets _pebOffsets;
-	
+
 	using PNtCreateDebugObject = decltype(&NtCreateDebugObject);
 	static inline PNtCreateDebugObject g_pNtCreateDebugObject{ nullptr };
 	static inline khook _hookNtCreateDebugObject;
@@ -62,30 +64,42 @@ public:
 	using PPsGetNextProcessThread = PETHREAD(NTAPI*)(PEPROCESS Process, PETHREAD Thread);
 	static inline PPsGetNextProcessThread g_pPsGetNextProcessThread{ nullptr };
 
-	using PDbgkpWakeTarget = VOID (NTAPI*)(
+	using PDbgkpWakeTarget = VOID(NTAPI*)(
 		_In_ PDEBUG_EVENT DebugEvent
-	);
+		);
 
-	using PDbgkpConvertKernelToUserStateChange = VOID (NTAPI*)(
+	using PDbgkpConvertKernelToUserStateChange = VOID(NTAPI*)(
 		PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
 		PDEBUG_EVENT DebugEvent
-	);
+		);
 
-	using PPsCaptureExceptionPort = PVOID (NTAPI*)(
+	using PPsCaptureExceptionPort = PVOID(NTAPI*)(
 		_In_ PEPROCESS Process
 		);
 
-	using PDbgkpSendErrorMessage = NTSTATUS (NTAPI*)(
+	using PDbgkpSendErrorMessage = NTSTATUS(NTAPI*)(
 		_In_ PEXCEPTION_RECORD ExceptionRecord,
 		_In_ BOOLEAN IsFilterMessage,
 		_In_ PDBGKM_APIMSG DbgApiMsg
-	);
+		);
 
-	using PDbgkpSendApiMessageLpc = NTSTATUS (NTAPI*)(
+	using PDbgkpSendApiMessageLpc = NTSTATUS(NTAPI*)(
 		_Inout_ PDBGKM_APIMSG ApiMsg,
 		_In_ PVOID Port,
 		_In_ BOOLEAN SuspendProcess
-	);
+		);
+
+	using PDbgkpOpenHandles = VOID(NTAPI*)(
+		_In_ PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
+		_In_ PEPROCESS Process,
+		_In_ PETHREAD Thread
+		);
+
+	using PDbgkpSuppressDbgMsg = BOOLEAN(NTAPI*)(
+		_In_ PTEB Teb
+		);
+
+
 
 	static inline PDbgkpWakeTarget g_pDbgkpWakeTarget{ nullptr };
 	using PDbgkpMarkProcessPeb = decltype(&DbgkpMarkProcessPeb);
@@ -103,7 +117,7 @@ public:
 	static inline PDbgkpSuspendProcess g_pDbgkpSuspendProcess{ nullptr };
 
 	static inline PKeThawAllThreads g_pKeThawAllThreads{ nullptr };
-	
+
 	static inline PDbgkpSectionToFileHandle g_pDbgkpSectionToFileHandle{ nullptr };
 
 	static inline PPsResumeThread g_pPsResumeThread{ nullptr };
@@ -135,6 +149,12 @@ public:
 	static inline PDbgkpSendErrorMessage g_pDbgkpSendErrorMessage{ nullptr };
 
 	static inline PDbgkpSendApiMessageLpc g_pDbgkpSendApiMessageLpc{ nullptr };
+
+	static inline PDbgkpOpenHandles g_pDbgkpOpenHandles{ nullptr };
+
+	static inline PDbgkpSuppressDbgMsg g_pDbgkpSuppressDbgMsg{ nullptr };
+
+	static inline PObFastDereferenceObject g_pObFastDereferenceObject{ nullptr };
 
 	static inline bool _first = true;
 };

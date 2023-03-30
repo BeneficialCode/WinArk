@@ -208,5 +208,14 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
 	if (!pInfo->DbgkpMaxModuleMsgs)
 		return false;
+
+	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ClonedThread");
+	if (pInfo->EthreadOffsets.ClonedThread != -1) {
+		USHORT pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ClonedThread");
+		pInfo->EthreadOffsets.ClonedThreadBitField.Position = pos;
+		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ClonedThread");
+		pInfo->EthreadOffsets.ClonedThreadBitField.Size = size;
+	}
+
 	return true;
 }

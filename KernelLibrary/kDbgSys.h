@@ -47,8 +47,6 @@ NTSTATUS ObDuplicateObject(
 	_In_ KPROCESSOR_MODE PreviousMode
 );
 
-PEPROCESS PsGetCurrentProcessByThread(PETHREAD Thread);
-
 using PPsGetNextProcessThread = PETHREAD(NTAPI*) (
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread
@@ -92,6 +90,11 @@ using PPsCallImageNotifyRoutines = VOID(NTAPI*)(
 using PObFastReferenceObject = PVOID(NTAPI*) (
 	_In_ PEX_FAST_REF FastRef
 );
+
+using PObFastDereferenceObject = VOID(NTAPI*)(
+	_In_ PEX_FAST_REF FastRef,
+	_In_ PVOID Object
+	);
 
 using PExfAcquirePushLockShared = PVOID(NTAPI*)(
 	_Inout_ PEX_PUSH_LOCK PushLock
@@ -266,25 +269,8 @@ ExFastRefAddAdditionalReferenceCounts(
 	_In_ ULONG RefsToAdd
 );
 
-//PETHREAD PsGetNextProcessThread(
-//	_In_ PEPROCESS Process,
-//	_In_ PETHREAD Thread
-//);
-
 // 取得Section对应的文件句柄
-//HANDLE DbgkpSectionToFileHandle(
-//	_In_ PVOID SectionObject
-//);
 
-//NTSTATUS PsSuspendThread(
-//	_In_ PETHREAD Thread,
-//	_Out_opt_ PULONG PreviousSuspendCount
-//);
-
-//NTSTATUS PsResumeThread(
-//	_In_ PETHREAD Thread,
-//	_Out_opt_ PULONG PreviousSuspendCount
-//);
 
 VOID DbgkSendSystemDllMessages(
 	PETHREAD Thread,
@@ -292,15 +278,7 @@ VOID DbgkSendSystemDllMessages(
 	PDBGKM_APIMSG ApiMsg
 );
 
-
-
-//BOOLEAN DbgkpSuppressDbgMsg(
-//	_In_ PTEB Teb
-//);
-
-
 // 向当前进程的异常端口发送异常的第二轮处理机会
-
 
 
 
@@ -353,10 +331,6 @@ NTSTATUS NtSetInformationDebugObject(
 );
 
 // 查询调试信息输出的过滤级别
-NTSTATUS NtQueryDebugFilterState(
-	_In_ ULONG ComponentId,
-	_In_ ULONG Level
-);
 
 // 设置调试信息输出的过滤级别
 NTSTATUS NtSetDebugFilterState(
@@ -373,11 +347,7 @@ NTSTATUS DbgkOpenProcessObject(
 );
 
 // 打开进程，线程对象，增加引用计数
-VOID DbgkpOpenHandles(
-	_In_ PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
-	_In_ PEPROCESS Process,
-	_In_ PETHREAD Thread
-);
+
 
 // 关闭调试对象
 VOID DbgkpCloseObject(

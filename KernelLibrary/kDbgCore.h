@@ -784,3 +784,72 @@ Return Value:
 }
 
 #endif
+
+
+FORCEINLINE
+VOID
+ProbeForWriteSmallStructure(
+	IN PVOID Address,
+	IN SIZE_T Size,
+	IN ULONG Alignment
+)
+
+/*++
+Routine Description:
+	Probes a structure for write access whose size is known at compile time.
+Arguments:
+	Address - Supples a pointer to the structure.
+	Size - Supplies the size of the structure.
+	Alignment - Supplies the alignment of structure.
+Return Value:
+	None
+--*/
+
+{
+
+	ASSERT((Alignment == 1) || (Alignment == 2) ||
+		(Alignment == 4) || (Alignment == 8) ||
+		(Alignment == 16));
+
+	//
+	// If the size of the structure is > 4k then call the standard routine.
+	// wow64 uses a page size of 4k even on ia64.
+	//
+
+	if ((Size == 0) || (Size >= 0x1000)) {
+
+		ASSERT(0);
+
+		ProbeForWrite(Address, Size, Alignment);
+
+	}
+	else {
+		if (((ULONG_PTR)(Address) & (Alignment - 1)) != 0) {
+			ExRaiseDatatypeMisalignment();
+		}
+
+#if defined(_AMD64_)
+
+		if ((ULONG_PTR)(Address) >= (ULONG_PTR)MM_USER_PROBE_ADDRESS) {
+			Address = (UCHAR* const)MM_USER_PROBE_ADDRESS;
+		}
+
+		((volatile UCHAR*)(Address))[0] = ((volatile UCHAR*)(Address))[0];
+		((volatile UCHAR*)(Address))[Size - 1] = ((volatile UCHAR*)(Address))[Size - 1];
+
+#else
+
+		if ((ULONG_PTR)(Address) >= (ULONG_PTR)MM_USER_PROBE_ADDRESS) {
+			*((volatile UCHAR* const)MM_USER_PROBE_ADDRESS) = 0;
+		}
+
+		*(volatile UCHAR*)(Address) = *(volatile UCHAR*)(Address);
+		if (Size > Alignment) {
+			((volatile UCHAR*)(Address))[(Size - 1) & ~(SIZE_T)(Alignment - 1)] =
+				((volatile UCHAR*)(Address))[(Size - 1) & ~(SIZE_T)(Alignment - 1)];
+		}
+
+#endif
+
+	}
+}

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "kDbgUtil.h"
 #include "detours.h"
+#include "Helpers.h"
 
 extern POBJECT_TYPE* DbgkDebugObjectType;
 extern PFAST_MUTEX g_pDbgkpProcessDebugPortMutex;
@@ -46,6 +47,10 @@ VOID* kDbgUtil::GetThreadStartAddress(PETHREAD Thread) {
 	return *reinterpret_cast<VOID**>((char*)Thread + _ethreadOffsets.StartAddress);
 }
 
+VOID* kDbgUtil::GetThreadWin32StartAddress(PETHREAD Thread) {
+	return *reinterpret_cast<VOID**>((char*)Thread + _ethreadOffsets.Win32StartAddress);
+}
+
 PULONG kDbgUtil::GetThreadCrossThreadFlags(PETHREAD Ethread) {
 	return reinterpret_cast<PULONG>((char*)Ethread + _ethreadOffsets.CrossThreadFlags);
 }
@@ -80,6 +85,11 @@ CLIENT_ID kDbgUtil::GetThreadCid(PETHREAD Thread) {
 
 PLARGE_INTEGER kDbgUtil::GetProcessExitTime(PEPROCESS Process) {
 	return reinterpret_cast<PLARGE_INTEGER>((char*)Process + _eprocessOffsets.ExitTime);
+}
+
+ULONG64 kDbgUtil::GetThreadClonedThread(PETHREAD Thread) {
+	PUCHAR readAddr = (PUCHAR)Thread + _ethreadOffsets.ClonedThread;
+	return Helpers::ReadBitField(readAddr, &_ethreadOffsets.ClonedThreadBitField);
 }
 
 bool kDbgUtil::HookDbgSys() {
@@ -160,6 +170,9 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpSendErrorMessage = (PDbgkpSendErrorMessage)info->DbgkpSendErrorMessage;
 		g_pPsCaptureExceptionPort = (PPsCaptureExceptionPort)info->PsCaptureExceptionPort;
 		g_pDbgkpSendApiMessageLpc = (PDbgkpSendApiMessageLpc)info->DbgkpSendApiMessageLpc;
+		g_pDbgkpOpenHandles = (PDbgkpOpenHandles)info->DbgkpOpenHandles;
+		g_pDbgkpSuppressDbgMsg = (PDbgkpSuppressDbgMsg)info->DbgkpSuppressDbgMsg;
+		g_pObFastDereferenceObject = (PObFastDereferenceObject)info->ObFastDereferenceObject;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

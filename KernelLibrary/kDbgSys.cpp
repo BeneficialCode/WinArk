@@ -5,6 +5,7 @@
 #include "kDbgUtil.h"
 #include "NtWow64.h"
 
+
 // 调试对象类型
 POBJECT_TYPE* DbgkDebugObjectType;
 
@@ -20,7 +21,27 @@ NtCreateDebugObject(
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
 	_In_ ULONG Flags
-) {
+) 
+/*++
+
+Routine Description:
+
+	Creates a new debug object that maintains the context for a single debug session. Multiple processes may be
+	associated with a single debug object.
+
+Arguments:
+
+	DebugObjectHandle - Pointer to a handle to recive the output objects handle
+	DesiredAccess     - Required handle access
+	ObjectAttributes  - Standard object attributes structure
+	Flags             - Only one flag DEBUG_KILL_ON_CLOSE
+
+Return Value:
+
+	NTSTATUS - Status of call.
+
+--*/
+{
 	return kDbgUtil::g_pNtCreateDebugObject(DebugObjectHandle,
 		DesiredAccess, ObjectAttributes, Flags);
 	NTSTATUS status;
@@ -102,10 +123,13 @@ NTSTATUS NtDebugActiveProcess(
 /*++
 Routine Description:
 	Attach a debug object to a process.
+
 Arguments:
 	ProcessHandle     - Handle to a process to be debugged
 	DebugObjectHandle - Handle to a debug object
+
 Return Value:
+
 	NTSTATUS - Status of call.
 --*/
 {
@@ -136,11 +160,6 @@ Return Value:
 		ObDereferenceObject(Process);
 		return STATUS_ACCESS_DENIED;
 	}
-
-	/*if (PreviousMode == UserMode) {
-		ObDereferenceObject(Process);
-		return STATUS_PROCESS_IS_PROTECTED;
-	}*/
 
 	// 得到调试句柄关联的调试对象DebugObject
 	status = ObReferenceObjectByHandle(DebugObjectHandle,
@@ -266,7 +285,8 @@ Return Value:
 
 	None.
 
---*/ {
+--*/ 
+{
 	KAPC_STATE ApcState;
 
 	//
@@ -310,13 +330,16 @@ DbgkpSetProcessDebugObject(
 	_In_ PETHREAD LastThread
 )
 /*++
+
 Routine Description:
 	Attach a debug object to a process.
+
 Arguments:
 	Process     - Process to be debugged
 	DebugObject - Debug object to attach
 	MsgStatus   - Status from queing the messages
 	LastThread  - Last thread seen in attach loop.
+
 Return Value:
 	NTSTATUS - Status of call.
 --*/
@@ -517,7 +540,8 @@ VOID DbgkSendSystemDllMessages(
 	PETHREAD Thread,
 	PDEBUG_OBJECT DebugObject,
 	PDBGKM_APIMSG ApiMsg
-) {
+) 
+{
 	NTSTATUS status;
 	PDBGKM_LOAD_DLL LoadDll;
 	PIMAGE_NT_HEADERS NtHeaders;
@@ -617,16 +641,22 @@ NTSTATUS DbgkpPostFakeThreadMessages(
 	PETHREAD* pLastThread
 )
 /*++
+
 Routine Description:
 	This routine posts the faked initial process create, thread create messages
+
 Arguments:
+
 	Process      - Process to be debugged
 	DebugObject  - Debug object to queue messages to
 	StartThread  - Thread to start search from
 	pFirstThread - First thread found in the list
 	pLastThread  - Last thread found in the list
+
 Return Value:
+
 	None.
+
 --*/
 {
 	NTSTATUS status;
@@ -812,10 +842,13 @@ DbgkpPostModuleMessages(
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread,
 	_In_ PDEBUG_OBJECT DebugObject)
-	/*++
-		Routine Description:
-			This routine posts the module load messages when we debug an active process.
-	--*/
+/*++
+
+Routine Description:
+
+	This routine posts the module load messages when we debug an active process.
+
+--*/
 {
 	PPEB Peb = kDbgUtil::GetProcessPeb(Process);
 	PPEB_LDR_DATA Ldr = nullptr;
@@ -1126,36 +1159,12 @@ VOID DbgkUnMapViewOfSection(
 	DbgkpSendApiMessage(0x1, &ApiMsg);
 }
 
-PEPROCESS PsGetCurrentProcessByThread(PETHREAD Thread) {
-	//return Thread->Tcb.Process;
-	return nullptr;
-}
-
-//PSYSTEM_DLL_INFO PsQuerySystemDllInfo(
-//	ULONG index
-//) {
-//	PSYSTEM_DLL Dll;
-//	Dll = PspSystemDlls[index];
-//	if (Dll != nullptr && Dll->DllInfo.DllBase != nullptr) {
-//		return &Dll->DllInfo;
-//	}
-//	
-//	return nullptr;
-//}
-
-//PVOID ObFastReferenceObjectLocked(
-//	_In_ PEX_FAST_REF FastRef
-//) {
-//	PVOID Object;
-//	EX_FAST_REF OldRef;
-//
-//	return nullptr;
-//}
-
 VOID DbgkCreateThread(
 	PETHREAD Thread
-)/*++
- Routine Description:
+)
+/*++
+
+Routine Description:
 
 	This function is called when a new thread begins to execute. If the
 	thread has an associated DebugPort, then a message is sent thru the
@@ -1171,8 +1180,12 @@ Arguments:
 	
 	Thread - New thread just being started.
 
+Return Value:
 
- --*/ {
+	None.
+
+ --*/ 
+{
 	PVOID Port;
 	DBGKM_APIMSG m;
 	PDBGKM_CREATE_THREAD CreateThreadArgs;
@@ -1188,13 +1201,13 @@ Arguments:
 	PVOID Object;
 	PETHREAD CurrentThread;
 
+
 #if defined(_WIN64)
 	PVOID Wow64Process = nullptr;
 #endif
 
-	PAGED_CODE();
-
-	Process = PsGetCurrentProcessByThread(Thread);
+	CurrentThread = PsGetCurrentThread();
+	Process = kDbgUtil::GetThreadApcState(CurrentThread)->Process;
 
 #if defined(_WIN64)
 	Wow64Process = kDbgUtil::GetProcessWow64Process(Process);
@@ -1240,6 +1253,7 @@ Arguments:
 		ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
 		
+
 		PsReferenceProcessFilePointer((PEPROCESS)Process, &FileObject);
 		status = SeLocateProcessImageName((PEPROCESS)Process, &ImageName);
 		if (!NT_SUCCESS(status)) {
@@ -1297,22 +1311,22 @@ Arguments:
 
 				FileObject = CcGetFileObjectFromSectionPtrs((PSECTION_OBJECT_POINTERS)Object);
 				if (FileObject != nullptr) {
-					//ObFastDereferenceObject(&sysDll->FastRef, Object);
+					kDbgUtil::g_pObFastDereferenceObject(&sysDll->SectionObjectFastRef, Object);
 				}
-				/*PsCallImageNotifyRoutines(&sysDll->DllInfo.FileName,
-					Process->UniqueProcessId,
+				kDbgUtil::g_pPsCallImageNotifyRoutines(&info->Ntdll32Path,
+					kDbgUtil::GetProcessUniqueProcessId(Process),
 					FileObject,
-					&ImageInfoEx);*/
+					&ImageInfoEx);
 
 				ObDereferenceObject(FileObject);
 			}
 		}
 
 		// 检测新创建的线程所在的进程是否正在被调试
-		/*PDEBUG_OBJECT DebugObject = (PDEBUG_OBJECT)Process->DebugPort;
-		if (DebugObject == nullptr) {
+		PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(Process);
+		if (*pDebugObject == nullptr) {
 			return;
-		}*/
+		}
 		// 判断是否调用过调试函数
 		if ((OldFlags & PS_PROCESS_FLAGS_CREATE_REPORTED) == 0) {
 			CreateThreadArgs = &m.u.CreateProcess.InitialThread;
@@ -1321,15 +1335,16 @@ Arguments:
 
 			CreateProcessArgs = &m.u.CreateProcess;
 			CreateProcessArgs->SubSystemKey = 0;
-			/*	CreateProcessArgs->FileHandle = DbgkpSectionToFileHandle(
-					Process->SectionObject
-				);*/
-				//CreateProcessArgs->BaseOfImage = Process->SectionBaseAddress;
+			PVOID SectionObject = kDbgUtil::GetProcessSectionObject(Process);
+			CreateProcessArgs->FileHandle = kDbgUtil::g_pDbgkpSectionToFileHandle(SectionObject);
+
+			PVOID SectionBaseAddress = kDbgUtil::GetProcessSectionBaseAddress(Process);
+			CreateProcessArgs->BaseOfImage = SectionBaseAddress;
 			CreateProcessArgs->DebugInfoFileOffset = 0;
 			CreateProcessArgs->DebugInfoSize = 0;
 
 			__try {
-				//NtHeaders = RtlImageNtHeader(Process->SectionBaseAddress);
+				NtHeaders = RtlImageNtHeader(SectionBaseAddress);
 				if (NtHeaders) {
 					CreateThreadArgs->StartAddress = (PVOID)(DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, AddressOfEntryPoint) +
 						DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, ImageBase));
@@ -1355,22 +1370,19 @@ Arguments:
 		else {
 			CreateThreadArgs = &m.u.CreateThread;
 			CreateThreadArgs->SubSystemKey = 0;
-			//CreateThreadArgs->StartAddress = Thread->Win32Thread;
-
+			CreateThreadArgs->StartAddress = kDbgUtil::GetThreadWin32StartAddress(Thread);
 			DBGKM_FORMAT_API_MSG(m, DbgKmCreateThreadApi, sizeof(*CreateThreadArgs));
-
 			DbgkpSendApiMessage(1, &m);
 		}
-
-		/*if (Thread->ClonedThread == TRUE) {
+		ULONG ClonedThread = kDbgUtil::GetThreadClonedThread(Thread);
+		if (ClonedThread) {
 			DbgkpPostModuleMessages(
-				(PEPROCESS)Process,
+				Process,
 				Thread,
 				nullptr
 			);
-		}*/
+		}
 	}
-
 }
 
 NTSTATUS
@@ -1550,7 +1562,7 @@ Return Value:
 	PDEBUG_OBJECT DebugObject;
 	LARGE_INTEGER Tmo = { 0 };
 	LARGE_INTEGER StartTime = { 0 };
-	DBGUI_WAIT_STATE_CHANGE waitState;
+	DBGUI_WAIT_STATE_CHANGE waitState{};
 	PEPROCESS Process;
 	PETHREAD Thread;
 
@@ -1565,7 +1577,7 @@ Return Value:
 			KeQuerySystemTime(&StartTime);
 		}
 		if (PreviousMode != KernelMode) {
-			ProbeForWrite(WaitStateChange, sizeof(*WaitStateChange), TYPE_ALIGNMENT(DBGUI_WAIT_STATE_CHANGE));
+			ProbeForWriteSmallStructure(WaitStateChange, sizeof(*WaitStateChange), sizeof(UCHAR));
 		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {
@@ -1586,6 +1598,10 @@ Return Value:
 	Process = nullptr;
 	Thread = nullptr;
 
+	BOOLEAN GotEvent;
+	PDEBUG_EVENT DebugEvent, DebugEvent2;
+	PLIST_ENTRY Entry, Entry2;
+
 	while (true) {
 		// 在调试对象有事件时产生
 		status = KeWaitForSingleObject(&DebugObject->EventsPresent,
@@ -1595,8 +1611,121 @@ Return Value:
 			break;
 		}
 
+		GotEvent = FALSE;
 
+		DebugEvent = nullptr;
+
+		ExAcquireFastMutex(&DebugObject->Mutex);
+
+		//
+		// If the object is delete pending then return an error.
+		//
+		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING)==0) {
+
+			for (Entry = DebugObject->EventList.Flink;
+				Entry != &DebugObject->EventList;
+				Entry = Entry->Flink) {
+
+				DebugEvent = CONTAINING_RECORD(Entry, DEBUG_EVENT, EventList);
+
+				//
+				// If this event has not been given back to the user yet and is not
+				// inactive then pass it back.
+				// We check to see if we have any other outstanding messages for this
+				// thread as this confuses VC. You can only get multiple events
+				// for the same thread for the attach faked messages.
+				//
+				if ((DebugEvent->Flags & (DEBUG_EVENT_READ | DEBUG_EVENT_INACTIVE)) == 0) {
+					GotEvent = TRUE;
+					for (Entry2 = DebugObject->EventList.Flink;
+						Entry2 != Entry;
+						Entry2 = Entry2->Flink) {
+
+						DebugEvent2 = CONTAINING_RECORD(Entry2, DEBUG_EVENT, EventList);
+
+						if (DebugEvent->ClientId.UniqueProcess == DebugEvent2->ClientId.UniqueProcess) {
+							//
+							// This event has the same process as an earlier event. Mark it as inactive.
+							//
+							DebugEvent->Flags |= DEBUG_EVENT_INACTIVE;
+							DebugEvent->BackoutThread = nullptr;
+							GotEvent = FALSE;
+							break;
+						}
+					}
+					if (GotEvent) {
+						break;
+					}
+				}
+			}
+
+			if (GotEvent) {
+				Process = DebugEvent->Process;
+				Thread = DebugEvent->Thread;
+				ObReferenceObject(Thread);
+				ObReferenceObject(Process);
+				kDbgUtil::g_pDbgkpConvertKernelToUserStateChange(&waitState, DebugEvent);
+				DebugEvent->Flags |= DEBUG_EVENT_READ;
+			}
+			else {
+				//
+				// No unread events there. Clear the event.
+				KeClearEvent(&DebugObject->EventsPresent);
+			}
+			status = STATUS_SUCCESS;;
+
+		}
+		else {
+			status = STATUS_DEBUGGER_INACTIVE;
+		}
+
+		ExReleaseFastMutex(&DebugObject->Mutex);
+
+		if (NT_SUCCESS(status)) {
+			//
+			// If we woke up and found nothing
+			//
+			if (GotEvent == FALSE) {
+				//
+				// If timeout is a delta time then adjust it for the wait so far.
+				//
+				if (Tmo.QuadPart < 0) {
+					LARGE_INTEGER NewTime;
+					KeQuerySystemTime(&NewTime);
+					Tmo.QuadPart = Tmo.QuadPart + (NewTime.QuadPart - StartTime.QuadPart);
+					StartTime = NewTime;
+					if (Tmo.QuadPart >= 0) {
+						status = STATUS_TIMEOUT;
+						break;
+					}
+				}
+			}
+			else {
+				//
+				// Fixup needed handles. The caller could have guessed the thread id etc by now and made the target thread
+				// continue. This isn't a problem as we won't do anything damaging to the system in this case. The caller
+				// won't get the correct results but they set out to break us.
+				//
+				kDbgUtil::g_pDbgkpOpenHandles(&waitState, Process, Thread);
+				ObDereferenceObject(Thread);
+				ObDereferenceObject(Process);
+				break;
+			}
+		}
+		else {
+			break;
+		}
 	}
+
+	ObDereferenceObject(DebugObject);
+
+	__try {
+		*WaitStateChange = waitState;
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		status = GetExceptionCode();
+	}
+	return status;
 }
 
 NTSTATUS NtDebugContinue(
@@ -1825,28 +1954,6 @@ Routine Description:
 	}
 
 	return status;
-}
-
-LOGICAL ExFastRefDereference(
-	_Inout_ PEX_FAST_REF FastRef,
-	_In_ PVOID Object
-) {
-	EX_FAST_REF OldRef, NewRef;
-
-	while (true) {
-		OldRef = ReadForWriteAccess(FastRef);
-		if ((OldRef.Value ^ (ULONG_PTR)Object) >= MAX_FAST_REFS) {
-			return FALSE;
-		}
-
-		NewRef.Value = OldRef.Value + 1;
-		NewRef.Object = InterlockedCompareExchangePointerRelease(&FastRef->Object, NewRef.Object, OldRef.Object);
-
-		if (NewRef.Object != OldRef.Object) {
-			continue;
-		}
-		break;
-	}
 }
 
 EX_FAST_REF
@@ -2333,15 +2440,6 @@ Return Value:
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS NtQueryDebugFilterState(
-	_In_ ULONG ComponentId,
-	_In_ ULONG Level
-) {
-
-
-	return STATUS_SUCCESS;
-}
-
 NTSTATUS NtSetDebugFilterState(
 	_In_ ULONG ComponentId,
 	_In_ ULONG Level,
@@ -2365,78 +2463,6 @@ NTSTATUS DbgkCopyProcessDebugPort(
 	_Out_ PBOOLEAN bFlag
 ) {
 	return STATUS_SUCCESS;
-}
-
-VOID DbgkpOpenHandles(
-	_In_ PDBGUI_WAIT_STATE_CHANGE WaitStateChange,
-	_In_ PEPROCESS Process,
-	_In_ PETHREAD Thread
-) {
-	NTSTATUS status;
-	PEPROCESS CurrentProcess = nullptr;
-	HANDLE OldHandle;
-
-	switch (WaitStateChange->NewState)
-	{
-		case DbgCreateThreadStateChange:
-			status = ObOpenObjectByPointer(Thread, 0, nullptr, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME | \
-				THREAD_QUERY_INFORMATION | THREAD_SET_INFORMATION | THREAD_TERMINATE |
-				READ_CONTROL | SYNCHRONIZE, *PsThreadType, KernelMode, &WaitStateChange->StateInfo.CreateThread.HandleToThread);
-			if (!NT_SUCCESS(status)) {
-				WaitStateChange->StateInfo.CreateThread.HandleToThread = nullptr;
-			}
-			break;
-
-		case DbgCreateProcessStateChange:
-			status = ObOpenObjectByPointer(Thread, 0, nullptr, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME | \
-				THREAD_QUERY_INFORMATION | THREAD_SET_INFORMATION | THREAD_TERMINATE |
-				READ_CONTROL | SYNCHRONIZE, *PsThreadType, KernelMode, &WaitStateChange->StateInfo.CreateThread.HandleToThread);
-			if (!NT_SUCCESS(status)) {
-				WaitStateChange->StateInfo.CreateThread.HandleToThread = nullptr;
-			}
-			status = ObOpenObjectByPointer(Process, 0, nullptr, PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION |
-				PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_CREATE_THREAD | PROCESS_TERMINATE |
-				READ_CONTROL | SYNCHRONIZE, *PsProcessType, KernelMode, &WaitStateChange->StateInfo.CreateProcessInfo.HandleToProcess);
-			if (!NT_SUCCESS(status)) {
-				WaitStateChange->StateInfo.CreateProcessInfo.HandleToProcess = nullptr;
-			}
-
-			OldHandle = WaitStateChange->StateInfo.CreateProcessInfo.NewProcess.FileHandle;
-			if (OldHandle != nullptr) {
-				CurrentProcess = PsGetCurrentProcess();
-				status = ObDuplicateObject((PEPROCESS)CurrentProcess, OldHandle, (PEPROCESS)CurrentProcess,
-					&WaitStateChange->StateInfo.CreateProcessInfo.NewProcess.FileHandle,
-					0,
-					0,
-					DUPLICATE_SAME_ACCESS,
-					KernelMode);
-				if (!NT_SUCCESS(status)) {
-					WaitStateChange->StateInfo.CreateProcessInfo.NewProcess.FileHandle = nullptr;
-				}
-				ObCloseHandle(OldHandle, KernelMode);
-			}
-			break;
-
-		case DbgLoadDllStateChange:
-			OldHandle = WaitStateChange->StateInfo.LoadDll.FileHandle;
-			if (OldHandle != nullptr) {
-				status = ObDuplicateObject((PEPROCESS)CurrentProcess,
-					OldHandle, (PEPROCESS)CurrentProcess,
-					&WaitStateChange->StateInfo.LoadDll.FileHandle,
-					0,
-					0,
-					DUPLICATE_SAME_ACCESS,
-					KernelMode);
-				if (!NT_SUCCESS(status)) {
-					WaitStateChange->StateInfo.LoadDll.FileHandle = nullptr;
-				}
-				ObCloseHandle(OldHandle, KernelMode);
-			}
-			break;
-
-		default:
-			break;
-	}
 }
 
 NTSTATUS PsTerminateProcess(
