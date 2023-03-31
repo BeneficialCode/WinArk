@@ -39,6 +39,14 @@ public:
 private:
 	bool InitDbgSymbols(DbgSysCoreInfo* pInfo);
 
+	bool InitRoutines(DbgSysCoreInfo* pInfo);
+
+	bool InitEprocessOffsets(DbgSysCoreInfo* pInfo);
+
+	bool InitEthreadOffsets(DbgSysCoreInfo* pInfo);
+
+	bool InitPebOffsets(DbgSysCoreInfo* pInfo);
+
 private:
 	CButton m_CheckImageLoad;
 	WinSys::BasicSystemInfo m_BasicSysInfo;

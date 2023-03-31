@@ -156,5 +156,47 @@ public:
 
 	static inline PObFastDereferenceObject g_pObFastDereferenceObject{ nullptr };
 
+	using PDbgkCreateThread = decltype(&DbgkCreateThread);
+	static inline PDbgkCreateThread g_pDbgkCreateThread{ nullptr };
+
+	using PDbgkExitThread = decltype(&DbgkExitThread);
+	static inline PDbgkExitThread g_pDbgkExitThread{ nullptr };
+
+	using PDbgkExitProcess = decltype(&DbgkExitProcess);
+	static inline PDbgkExitProcess g_pDbgkExitProcess{ nullptr };
+
+	using PDbgkMapViewOfSection = decltype(&DbgkMapViewOfSection);
+	static inline PDbgkMapViewOfSection g_pDbgkMapViewOfSection{ nullptr };
+
+	using PDbgkUnMapViewOfSection = decltype(&DbgkUnMapViewOfSection);
+	static inline PDbgkUnMapViewOfSection g_pDbgkUnMapViewOfSection{ nullptr };
+
+	using PNtWaitForDebugEvent = decltype(&NtWaitForDebugEvent);
+	static inline PNtWaitForDebugEvent g_pNtWaitForDebugEvent{ nullptr };
+
+	using PNtDebugContinue = decltype(&NtDebugContinue);
+	static inline PNtDebugContinue g_pNtDebugContinue{ nullptr };
+
+	using PNtRemoveProcessDebug = decltype(&NtRemoveProcessDebug);
+	static inline PNtRemoveProcessDebug g_pNtRemoveProcessDebug{ nullptr };
+
+	using PDbgkForwardException = decltype(&DbgkForwardException);
+	static inline PDbgkForwardException g_pDbgkForwardException{ nullptr };
+
+	using PDbgkCopyProcessDebugPort = decltype(&DbgkCopyProcessDebugPort);
+	static inline PDbgkCopyProcessDebugPort g_pDbgkCopyProcessDebugPort{ nullptr };
+
+	using PDbgkClearProcessDebugObject = decltype(&DbgkClearProcessDebugObject);
+	static inline PDbgkClearProcessDebugObject g_pDbgkClearProcessDebugObject{ nullptr };
+
+	using PNtSetInformationDebugObject = decltype(&NtSetInformationDebugObject);
+	static inline PNtSetInformationDebugObject g_pNtSetInformationDebugObject{ nullptr };
+
+	using PPsTerminateProcess = NTSTATUS (NTAPI*)(
+		PEPROCESS Process,
+		NTSTATUS Status
+	);
+	static inline PPsTerminateProcess g_pPsTerminateProcess{ nullptr };
+
 	static inline bool _first = true;
 };

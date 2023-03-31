@@ -113,6 +113,27 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 }
 
 bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
+	bool initSuccess = false;
+	initSuccess = InitRoutines(pInfo);
+	if (!initSuccess)
+		return initSuccess;
+
+	initSuccess = InitEprocessOffsets(pInfo);
+	if (!initSuccess)
+		return initSuccess;
+
+	initSuccess = InitEthreadOffsets(pInfo);
+	if (!initSuccess)
+		return initSuccess;
+
+	initSuccess = InitPebOffsets(pInfo);
+	if (!initSuccess)
+		return initSuccess;
+
+	return true;
+}
+
+bool CSystemConfigDlg::InitRoutines(DbgSysCoreInfo* pInfo) {
 	pInfo->NtCreateDebugObjectAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtCreateDebugObject");
 	if (!pInfo->NtCreateDebugObjectAddress)
 		return false;
@@ -137,10 +158,6 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->DbgkpSetProcessDebugObject)
 		return false;
 
-	pInfo->EprocessOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "RundownProtect");
-	if (pInfo->EprocessOffsets.RundownProtect == -1)
-		return false;
-
 	pInfo->DbgkpPostFakeThreadMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpPostFakeThreadMessages");
 	if (!pInfo->DbgkpPostFakeThreadMessages)
 		return false;
@@ -149,20 +166,8 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->DbgkpPostModuleMessages)
 		return false;
 
-	pInfo->EthreadOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "RundownProtect");
-	if (!pInfo->EthreadOffsets.RundownProtect)
-		return false;
-
-	pInfo->EthreadOffsets.CrossThreadFlags = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "CrossThreadFlags");
-	if (!pInfo->EthreadOffsets.RundownProtect)
-		return false;
-
 	pInfo->PsGetNextProcessThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsGetNextProcessThread");
 	if (!pInfo->PsGetNextProcessThread)
-		return false;
-
-	pInfo->EprocessOffsets.DebugPort = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "DebugPort");
-	if (!pInfo->EprocessOffsets.DebugPort)
 		return false;
 
 	pInfo->DbgkpProcessDebugPortMutex = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpProcessDebugPortMutex");
@@ -181,10 +186,6 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	if (!pInfo->DbgkpMaxModuleMsgs)
 		return false;
 
-	pInfo->PebOffsets.Ldr = SymbolHelper::GetKernelStructMemberOffset("_PEB", "Ldr");
-	if (!pInfo->PebOffsets.Ldr)
-		return false;
-
 	pInfo->MmGetFileNameForAddress = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MmGetFileNameForAddress");
 	if (!pInfo->MmGetFileNameForAddress)
 		return false;
@@ -196,17 +197,196 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 	pInfo->DbgkpQueueMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpQueueMessage");
 	if (!pInfo->DbgkpQueueMessage)
 		return false;
+
+	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
+	if (!pInfo->DbgkpMaxModuleMsgs)
+		return false;
+
+	pInfo->KeThawAllThreads = (void*)SymbolHelper::GetKernelSymbolAddressFromName("KeThawAllThreads");
+	if (pInfo->KeThawAllThreads) {
+
+	}
+
+	pInfo->DbgkpSectionToFileHandle = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSectionToFileHandle");
+	if (!pInfo->DbgkpSectionToFileHandle)
+		return false;
+
+	pInfo->PsResumeThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsResumeThread");
+	if (!pInfo->PsResumeThread)
+		return false;
+
+	pInfo->DbgkSendSystemDllMessages = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkSendSystemDllMessages");
+	if (!pInfo->DbgkSendSystemDllMessages)
+		return false;
+
+	pInfo->PsSuspendThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsSuspendThread");
+	if (!pInfo->PsSuspendThread)
+		return false;
+
+	pInfo->PsQuerySystemDllInfo = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsQuerySystemDllInfo");
+	if (!pInfo->PsQuerySystemDllInfo)
+		return false;
+
+	pInfo->PsCallImageNotifyRoutines = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsCallImageNotifyRoutines");
+	if (!pInfo->PsCallImageNotifyRoutines)
+		return false;
+
+	pInfo->ObFastReferenceObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ObFastReferenceObject");
+	if (!pInfo->ObFastReferenceObject)
+		return false;
+
+	pInfo->ExfAcquirePushLockShared = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ExfAcquirePushLockShared");
+	if (!pInfo->ExfAcquirePushLockShared)
+		return false;
+
+	pInfo->ExfReleasePushLockShared = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ExfReleasePushLockShared");
+	if (!pInfo->ExfReleasePushLockShared)
+		return false;
+
+	pInfo->ObFastReferenceObjectLocked = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ObFastReferenceObjectLocked");
+	if (!pInfo->ObFastReferenceObjectLocked)
+		return false;
+
+	pInfo->PsGetNextProcess = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsGetNextProcess");
+	if (!pInfo->PsGetNextProcess)
+		return false;
+
+	pInfo->DbgkpConvertKernelToUserStateChange = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpConvertKernelToUserStateChange");
+	if (!pInfo->DbgkpConvertKernelToUserStateChange)
+		return false;
+
+	pInfo->PsCaptureExceptionPort = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsCaptureExceptionPort");
+	if (!pInfo->PsCaptureExceptionPort)
+		return false;
+
+
+	pInfo->DbgkpSendErrorMessage = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSendErrorMessage");
+	if (!pInfo->DbgkpSendErrorMessage)
+		return false;
+
+	pInfo->DbgkpSendApiMessageLpc = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSendApiMessageLpc");
+	if (!pInfo->DbgkpSendApiMessageLpc)
+		return false;
+
+	pInfo->DbgkpOpenHandles = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpOpenHandles");
+	if (!pInfo->DbgkpOpenHandles)
+		return false;
+
+	pInfo->DbgkpSuppressDbgMsg = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpSuppressDbgMsg");
+	if (!pInfo->DbgkpSuppressDbgMsg)
+		return false;
+
+	pInfo->ObFastDereferenceObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ObFastDereferenceObject");
+	if (!pInfo->ObFastDereferenceObject)
+		return false;
+
+	pInfo->DbgkCreateThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkCreateThread");
+	if (!pInfo->DbgkCreateThread)
+		return false;
+
+	pInfo->DbgkExitThread = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkExitThread");
+	if (!pInfo->DbgkExitThread)
+		return false;
+
+	pInfo->DbgkExitProcess = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkExitProcess");
+	if (!pInfo->DbgkExitProcess)
+		return false;
+
+	pInfo->DbgkMapViewOfSection = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkMapViewOfSection");
+	if (!pInfo->DbgkMapViewOfSection)
+		return false;
+
+	pInfo->DbgkUnMapViewOfSection = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkUnMapViewOfSection");
+	if (!pInfo->DbgkUnMapViewOfSection)
+		return false;
+
+	pInfo->NtWaitForDebugEvent = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtWaitForDebugEvent");
+	if (!pInfo->NtWaitForDebugEvent)
+		return false;
+
+	pInfo->NtDebugContinue = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtDebugContinue");
+	if (!pInfo->NtDebugContinue)
+		return false;
+
+	pInfo->NtRemoveProcessDebug = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtRemoveProcessDebug");
+	if (!pInfo->NtRemoveProcessDebug)
+		return false;
+
+	pInfo->DbgkForwardException = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkForwardException");
+	if (!pInfo->DbgkForwardException)
+		return false;
+
+	pInfo->DbgkCopyProcessDebugPort = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkCopyProcessDebugPort");
+	if (!pInfo->DbgkCopyProcessDebugPort)
+		return false;
+
+	pInfo->DbgkClearProcessDebugObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkClearProcessDebugObject");
+	if (!pInfo->DbgkClearProcessDebugObject)
+		return false;
+
+	pInfo->NtSetInformationDebugObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("NtSetInformationDebugObject");
+	if (!pInfo->NtSetInformationDebugObject)
+		return false;
+
+	pInfo->PsTerminateProcess = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsTerminateProcess");
+	if (!pInfo->PsTerminateProcess)
+		return false;
+	return true;
+}
+
+bool CSystemConfigDlg::InitEprocessOffsets(DbgSysCoreInfo* pInfo) {
+	pInfo->EprocessOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "RundownProtect");
+	if (pInfo->EprocessOffsets.RundownProtect == -1)
+		return false;
+
 #ifdef  _WIN64
 	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
 	if (!pInfo->EprocessOffsets.Wow64Process)
 		return false;
 #endif //  _WIN64
+
+	pInfo->EprocessOffsets.DebugPort = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "DebugPort");
+	if (!pInfo->EprocessOffsets.DebugPort)
+		return false;
+
 	pInfo->EprocessOffsets.Peb = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Peb");
 	if (!pInfo->EprocessOffsets.Peb)
 		return false;
 
-	pInfo->DbgkpMaxModuleMsgs = (void*)SymbolHelper::GetKernelSymbolAddressFromName("DbgkpMaxModuleMsgs");
-	if (!pInfo->DbgkpMaxModuleMsgs)
+	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
+	if (!pInfo->EprocessOffsets.Wow64Process)
+		return false;
+
+	pInfo->EprocessOffsets.Flags = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Flags");
+	if (!pInfo->EprocessOffsets.Flags)
+		return false;
+
+	pInfo->EprocessOffsets.SectionBaseAddress = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "SectionBaseAddress");
+	if (!pInfo->EprocessOffsets.SectionBaseAddress)
+		return false;
+
+	pInfo->EprocessOffsets.SectionObject = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "SectionObject");
+	if (!pInfo->EprocessOffsets.SectionObject)
+		return false;
+
+	pInfo->EprocessOffsets.UniqueProcessId = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "UniqueProcessId");
+	if (!pInfo->EprocessOffsets.UniqueProcessId)
+		return false;
+
+	pInfo->EprocessOffsets.ExitTime = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "ExitTime");
+	if (!pInfo->EprocessOffsets.ExitTime)
+		return false;
+
+	return true;
+}
+
+bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
+	pInfo->EthreadOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "RundownProtect");
+	if (!pInfo->EthreadOffsets.RundownProtect)
+		return false;
+
+	pInfo->EthreadOffsets.CrossThreadFlags = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "CrossThreadFlags");
+	if (!pInfo->EthreadOffsets.RundownProtect)
 		return false;
 
 	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ClonedThread");
@@ -216,6 +396,52 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ClonedThread");
 		pInfo->EthreadOffsets.ClonedThreadBitField.Size = size;
 	}
+	else {
+		return false;
+	}
+
+	pInfo->EthreadOffsets.Cid = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Cid");
+	if (!pInfo->EthreadOffsets.Cid)
+		return false;
+
+	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ThreadInserted");
+	if (pInfo->EthreadOffsets.ClonedThread != -1) {
+		USHORT pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ThreadInserted");
+		pInfo->EthreadOffsets.ThreadInsertedBitField.Position = pos;
+		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ThreadInserted");
+		pInfo->EthreadOffsets.ThreadInsertedBitField.Size = size;
+	}
+	else {
+		return false;
+	}
+
+	pInfo->EthreadOffsets.Tcb = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Tcb");
+	if (!pInfo->EthreadOffsets.Tcb)
+		return false;
+
+	pInfo->EthreadOffsets.StartAddress = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "StartAddress");
+	if (!pInfo->EthreadOffsets.StartAddress)
+		return false;
+	
+	pInfo->EthreadOffsets.ApcState = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ApcState");
+	if (!pInfo->EthreadOffsets.ApcState)
+		return false;
+
+	pInfo->EthreadOffsets.ApcStateIndex = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ApcStateIndex");
+	if (!pInfo->EthreadOffsets.ApcStateIndex)
+		return false;
+
+	pInfo->EthreadOffsets.Win32StartAddress = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Win32StartAddress");
+	if (!pInfo->EthreadOffsets.Win32StartAddress)
+		return false;
+
+	return true;
+}
+
+bool CSystemConfigDlg::InitPebOffsets(DbgSysCoreInfo* pInfo) {
+	pInfo->PebOffsets.Ldr = SymbolHelper::GetKernelStructMemberOffset("_PEB", "Ldr");
+	if (!pInfo->PebOffsets.Ldr)
+		return false;
 
 	return true;
 }

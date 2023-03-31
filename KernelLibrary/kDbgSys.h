@@ -366,10 +366,5 @@ NTSTATUS DbgkCopyProcessDebugPort(
 	_Out_ PBOOLEAN bFlag
 );
 
-NTSTATUS PsTerminateProcess(
-	PEPROCESS Process,
-	NTSTATUS Status
-);
-
 
 VOID DbgkpDeleteObject(_In_ PDEBUG_OBJECT DebugObject);

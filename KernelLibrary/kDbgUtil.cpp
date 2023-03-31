@@ -109,6 +109,117 @@ bool kDbgUtil::HookDbgSys() {
 		if (!NT_SUCCESS(status))
 			return false;
 	}
+	
+	if (g_pDbgkCreateThread) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCreateThread, DbgkCreateThread);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkExitThread) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitThread, DbgkExitThread);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkExitProcess) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitProcess, DbgkExitProcess);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkMapViewOfSection) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkMapViewOfSection, DbgkMapViewOfSection);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkUnMapViewOfSection) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkUnMapViewOfSection, DbgkUnMapViewOfSection);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtWaitForDebugEvent) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtWaitForDebugEvent, NtWaitForDebugEvent);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtDebugContinue) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugContinue, NtDebugContinue);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtRemoveProcessDebug) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtRemoveProcessDebug, NtRemoveProcessDebug);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkForwardException) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkForwardException, DbgkForwardException);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkCopyProcessDebugPort) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCopyProcessDebugPort, DbgkCopyProcessDebugPort);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkClearProcessDebugObject) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkClearProcessDebugObject, DbgkClearProcessDebugObject);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtSetInformationDebugObject) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtSetInformationDebugObject, NtSetInformationDebugObject);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+
+
 	return true;
 }
 
@@ -128,6 +239,115 @@ bool kDbgUtil::UnhookDbgSys() {
 	status = DetourTransactionCommit();
 	if (!NT_SUCCESS(status))
 		return false;
+
+	if (g_pDbgkCreateThread) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCreateThread, DbgkCreateThread);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkExitThread) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitThread, DbgkExitThread);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkExitProcess) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitProcess, DbgkExitProcess);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkMapViewOfSection) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkMapViewOfSection, DbgkMapViewOfSection);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkUnMapViewOfSection) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkUnMapViewOfSection, DbgkUnMapViewOfSection);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtWaitForDebugEvent) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtWaitForDebugEvent, NtWaitForDebugEvent);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtDebugContinue) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtDebugContinue, NtDebugContinue);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtRemoveProcessDebug) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtRemoveProcessDebug, NtRemoveProcessDebug);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkForwardException) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkForwardException, DbgkForwardException);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkCopyProcessDebugPort) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCopyProcessDebugPort, DbgkCopyProcessDebugPort);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pDbgkClearProcessDebugObject) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkClearProcessDebugObject, DbgkClearProcessDebugObject);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
+	if (g_pNtSetInformationDebugObject) {
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtSetInformationDebugObject, NtSetInformationDebugObject);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+
 	return true;
 }
 
@@ -173,6 +393,19 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkpOpenHandles = (PDbgkpOpenHandles)info->DbgkpOpenHandles;
 		g_pDbgkpSuppressDbgMsg = (PDbgkpSuppressDbgMsg)info->DbgkpSuppressDbgMsg;
 		g_pObFastDereferenceObject = (PObFastDereferenceObject)info->ObFastDereferenceObject;
+		g_pDbgkCreateThread = (PDbgkCreateThread)info->DbgkCreateThread;
+		g_pDbgkExitThread = (PDbgkExitThread)info->DbgkExitThread;
+		g_pDbgkExitProcess = (PDbgkExitProcess)info->DbgkExitProcess;
+		g_pDbgkMapViewOfSection = (PDbgkMapViewOfSection)info->DbgkMapViewOfSection;
+		g_pDbgkUnMapViewOfSection = (PDbgkUnMapViewOfSection)info->DbgkUnMapViewOfSection;
+		g_pNtWaitForDebugEvent = (PNtWaitForDebugEvent)info->NtWaitForDebugEvent;
+		g_pNtDebugContinue = (PNtDebugContinue)info->NtDebugContinue;
+		g_pNtRemoveProcessDebug = (PNtRemoveProcessDebug)info->NtRemoveProcessDebug;
+		g_pDbgkForwardException = (PDbgkForwardException)info->DbgkForwardException;
+		g_pDbgkCopyProcessDebugPort = (PDbgkCopyProcessDebugPort)info->DbgkCopyProcessDebugPort;
+		g_pDbgkClearProcessDebugObject = (PDbgkClearProcessDebugObject)info->DbgkClearProcessDebugObject;
+		g_pNtSetInformationDebugObject = (PNtSetInformationDebugObject)info->NtSetInformationDebugObject;
+		g_pPsTerminateProcess = (PPsTerminateProcess)info->PsTerminateProcess;
 #ifdef _WIN64
 		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
 #endif // _WIN64

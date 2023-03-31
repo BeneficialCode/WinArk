@@ -2387,22 +2387,22 @@ Return Value:
 			*ReturnLength = 0;
 		}
 
-		switch (DebugObjectInformationClass) {
-			case DebugObjectFlagsInformation:
-			{
-				if (DebugInformationLength != sizeof(ULONG)) {
-					if (ARGUMENT_PRESENT(ReturnLength)) {
-						*ReturnLength = sizeof(ULONG);
-					}
-					return STATUS_INFO_LENGTH_MISMATCH;
-				}
-				Flags = *(PULONG)DebugInformation;
-
-				break;
+switch (DebugObjectInformationClass) {
+	case DebugObjectFlagsInformation:
+	{
+		if (DebugInformationLength != sizeof(ULONG)) {
+			if (ARGUMENT_PRESENT(ReturnLength)) {
+				*ReturnLength = sizeof(ULONG);
 			}
-			default:
-				return STATUS_INVALID_PARAMETER;
+			return STATUS_INFO_LENGTH_MISMATCH;
 		}
+		Flags = *(PULONG)DebugInformation;
+
+		break;
+	}
+	default:
+		return STATUS_INVALID_PARAMETER;
+}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 		return GetExceptionCode();
@@ -2440,35 +2440,55 @@ Return Value:
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS NtSetDebugFilterState(
-	_In_ ULONG ComponentId,
-	_In_ ULONG Level,
-	_In_ BOOLEAN State
-) {
-	return STATUS_SUCCESS;
-}
-
-NTSTATUS DbgkOpenProcessObject(
-	_In_ PEPROCESS Process,
-	_In_ PACCESS_STATE AccessState,
-	_In_ ACCESS_MASK DesiredAccess
-) {
-	return STATUS_SUCCESS;
-}
-
 NTSTATUS DbgkCopyProcessDebugPort(
 	_In_ PEPROCESS TargetProcess,
 	_In_ PEPROCESS SourceProcess,
 	_In_ PDEBUG_OBJECT DebugObject,
 	_Out_ PBOOLEAN bFlag
-) {
-	return STATUS_SUCCESS;
-}
+)
+/*++
 
-NTSTATUS PsTerminateProcess(
-	PEPROCESS Process,
-	NTSTATUS Status
-) {
+Routine Description:
+
+	Copies a debug port from one process to another.
+
+Arguments:
+
+	TargetProcess - Process to move port to
+	SourceProcess - Process to move port from
+
+--*/
+{
+
+	PDEBUG_OBJECT* pDebugObject = kDbgUtil::GetProcessDebugPort(TargetProcess);
+
+	// New process. Needs no locks.
+	*pDebugObject = nullptr;
+
+	PDEBUG_OBJECT* pSourceDebugPort = kDbgUtil::GetProcessDebugPort(SourceProcess);
+	if (*pSourceDebugPort != nullptr) {
+		ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
+		DebugObject = *pSourceDebugPort;
+		PULONG pFlags = kDbgUtil::GetProcessFlags(SourceProcess);
+		if (DebugObject != nullptr && (*pFlags & PS_PROCESS_FLAGS_NO_DEBUG_INHERIT) == 0){
+			//
+			// We must not propagate a debug port thats got no handles left.
+			//
+			ExAcquireFastMutex(&DebugObject->Mutex);
+
+			//
+			// If the object is delete pending then don't propagate this object.
+			//
+			if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
+				ObReferenceObject(DebugObject);
+				*pDebugObject = DebugObject;
+			}
+
+			ExReleaseFastMutex(&DebugObject->Mutex);
+		}
+		ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
+	}
+
 	return STATUS_SUCCESS;
 }
 
@@ -2555,7 +2575,7 @@ Return Value:
 				// If the caller wanted process deletion on debugger dying (old interface) then kill off the process.
 				//
 				if (DebugObject->Flags & DEBUG_OBJECT_KILL_ON_CLOSE) {
-					PsTerminateProcess(Process, STATUS_DEBUGGER_INACTIVE);
+					kDbgUtil::g_pPsTerminateProcess(Process, STATUS_DEBUGGER_INACTIVE);
 				}
 				ObDereferenceObject(DebugObject);
 			}

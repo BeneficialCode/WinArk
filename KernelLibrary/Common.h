@@ -227,12 +227,12 @@ struct EProcessOffsets {
 
 struct EThreadOffsets {
 	ULONG CrossThreadFlags;
-	ULONG SystemThread;
 	ULONG Cid;
 	ULONG ClonedThread;
 	BitField ClonedThreadBitField;
 	ULONG RundownProtect;
 	ULONG ThreadInserted;
+	BitField ThreadInsertedBitField;
 	ULONG Tcb;
 	ULONG StartAddress;
 	ULONG ApcState;
