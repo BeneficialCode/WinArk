@@ -555,6 +555,7 @@ VOID DbgkSendSystemDllMessages(
 		Process = PsGetThreadProcess(Thread);
 	}
 	else {
+		Thread = KeGetCurrentThread();
 		Process = kDbgUtil::GetThreadApcState(Thread)->Process;
 	}
 	
