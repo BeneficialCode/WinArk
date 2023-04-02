@@ -3,6 +3,9 @@
 #include "detours.h"
 #include "Helpers.h"
 
+extern PULONG	g_pPspNotifyEnableMask;
+extern PEX_CALLBACK g_pPspLoadImageNotifyRoutine;
+
 extern POBJECT_TYPE* DbgkDebugObjectType;
 extern PFAST_MUTEX g_pDbgkpProcessDebugPortMutex;
 extern PULONG g_pDbgkpMaxModuleMsgs;
@@ -24,7 +27,7 @@ PDEBUG_OBJECT* kDbgUtil::GetProcessDebugPort(PEPROCESS Process) {
 }
 
 PWOW64_PROCESS kDbgUtil::GetProcessWow64Process(PEPROCESS Process) {
-	return *reinterpret_cast<PWOW64_PROCESS*>((char*)Process + _eprocessOffsets.Wow64Process);
+	return *reinterpret_cast<PWOW64_PROCESS*>((char*)Process + _eprocessOffsets.WoW64Process);
 }
 
 PULONG kDbgUtil::GetProcessFlags(PEPROCESS Process) {
@@ -68,12 +71,12 @@ PBOOLEAN kDbgUtil::GetPEBBeingDebugged(PPEB Peb) {
 }
 
 PKAPC_STATE kDbgUtil::GetThreadApcState(PETHREAD Thread) {
-	return *reinterpret_cast<PKAPC_STATE*>((char*)Thread + _ethreadOffsets.ApcState);
+	return *reinterpret_cast<PKAPC_STATE*>((char*)Thread + _kthreadOffsets.ApcState);
 }
 
 UINT8 kDbgUtil::GetCurrentThreadApcStateIndex() {
 	PETHREAD Thread = KeGetCurrentThread();
-	return *reinterpret_cast<UINT8*>((char*)Thread + _ethreadOffsets.ApcStateIndex);
+	return *reinterpret_cast<UINT8*>((char*)Thread + _kthreadOffsets.ApcStateIndex);
 }
 
 CLIENT_ID kDbgUtil::GetThreadCid(PETHREAD Thread) {
@@ -94,7 +97,7 @@ ULONG64 kDbgUtil::GetThreadClonedThread(PETHREAD Thread) {
 
 bool kDbgUtil::HookDbgSys() {
 	if (g_pNtCreateDebugObject) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtCreateDebugObject, NewNtCreateDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -102,7 +105,7 @@ bool kDbgUtil::HookDbgSys() {
 			return false;
 	}
 	if (g_pNtDebugActiveProcess) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugActiveProcess, NtDebugActiveProcess);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugActiveProcess, NewNtDebugActiveProcess);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -111,7 +114,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 	
 	if (g_pDbgkCreateThread) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCreateThread, DbgkCreateThread);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCreateThread, NewDbgkCreateThread);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -120,7 +123,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkExitThread) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitThread, DbgkExitThread);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitThread, NewDbgkExitThread);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -129,7 +132,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkExitProcess) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitProcess, DbgkExitProcess);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkExitProcess, NewDbgkExitProcess);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -138,7 +141,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkMapViewOfSection) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkMapViewOfSection, DbgkMapViewOfSection);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkMapViewOfSection, NewDbgkMapViewOfSection);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -147,7 +150,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkUnMapViewOfSection) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkUnMapViewOfSection, DbgkUnMapViewOfSection);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkUnMapViewOfSection, NewDbgkUnMapViewOfSection);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -156,7 +159,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pNtWaitForDebugEvent) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtWaitForDebugEvent, NtWaitForDebugEvent);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtWaitForDebugEvent, NewNtWaitForDebugEvent);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -165,7 +168,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pNtDebugContinue) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugContinue, NtDebugContinue);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtDebugContinue, NewNtDebugContinue);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -174,7 +177,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pNtRemoveProcessDebug) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtRemoveProcessDebug, NtRemoveProcessDebug);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtRemoveProcessDebug, NewNtRemoveProcessDebug);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -183,7 +186,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkForwardException) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkForwardException, DbgkForwardException);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkForwardException, NewDbgkForwardException);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -192,7 +195,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkCopyProcessDebugPort) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCopyProcessDebugPort, DbgkCopyProcessDebugPort);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCopyProcessDebugPort, NewDbgkCopyProcessDebugPort);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -201,7 +204,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pDbgkClearProcessDebugObject) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkClearProcessDebugObject, DbgkClearProcessDebugObject);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkClearProcessDebugObject, NewDbgkClearProcessDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -210,7 +213,7 @@ bool kDbgUtil::HookDbgSys() {
 	}
 
 	if (g_pNtSetInformationDebugObject) {
-		NTSTATUS status = DetourAttach((PVOID*)&g_pNtSetInformationDebugObject, NtSetInformationDebugObject);
+		NTSTATUS status = DetourAttach((PVOID*)&g_pNtSetInformationDebugObject, NewNtSetInformationDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -224,7 +227,7 @@ bool kDbgUtil::HookDbgSys() {
 }
 
 bool kDbgUtil::UnhookDbgSys() {
-	NTSTATUS status = DetourDetach((PVOID*)&g_pNtCreateDebugObject, NtCreateDebugObject);
+	NTSTATUS status = DetourDetach((PVOID*)&g_pNtCreateDebugObject, NewNtCreateDebugObject);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -232,7 +235,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	if (!NT_SUCCESS(status))
 		return false;
 
-	status = DetourDetach((PVOID*)&g_pNtDebugActiveProcess, NtDebugActiveProcess);
+	status = DetourDetach((PVOID*)&g_pNtDebugActiveProcess, NewNtDebugActiveProcess);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -241,7 +244,7 @@ bool kDbgUtil::UnhookDbgSys() {
 		return false;
 
 	if (g_pDbgkCreateThread) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCreateThread, DbgkCreateThread);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCreateThread, NewDbgkCreateThread);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -250,7 +253,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkExitThread) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitThread, DbgkExitThread);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitThread, NewDbgkExitThread);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -259,7 +262,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkExitProcess) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitProcess, DbgkExitProcess);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkExitProcess, NewDbgkExitProcess);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -268,7 +271,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkMapViewOfSection) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkMapViewOfSection, DbgkMapViewOfSection);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkMapViewOfSection, NewDbgkMapViewOfSection);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -277,7 +280,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkUnMapViewOfSection) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkUnMapViewOfSection, DbgkUnMapViewOfSection);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkUnMapViewOfSection, NewDbgkUnMapViewOfSection);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -286,7 +289,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pNtWaitForDebugEvent) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pNtWaitForDebugEvent, NtWaitForDebugEvent);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtWaitForDebugEvent, NewNtWaitForDebugEvent);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -295,7 +298,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pNtDebugContinue) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pNtDebugContinue, NtDebugContinue);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtDebugContinue, NewNtDebugContinue);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -304,7 +307,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pNtRemoveProcessDebug) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pNtRemoveProcessDebug, NtRemoveProcessDebug);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtRemoveProcessDebug, NewNtRemoveProcessDebug);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -313,7 +316,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkForwardException) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkForwardException, DbgkForwardException);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkForwardException, NewDbgkForwardException);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -322,7 +325,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkCopyProcessDebugPort) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCopyProcessDebugPort, DbgkCopyProcessDebugPort);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkCopyProcessDebugPort, NewDbgkCopyProcessDebugPort);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -331,7 +334,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pDbgkClearProcessDebugObject) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkClearProcessDebugObject, DbgkClearProcessDebugObject);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pDbgkClearProcessDebugObject, NewDbgkClearProcessDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -340,7 +343,7 @@ bool kDbgUtil::UnhookDbgSys() {
 	}
 
 	if (g_pNtSetInformationDebugObject) {
-		NTSTATUS status = DetourDetach((PVOID*)&g_pNtSetInformationDebugObject, NtSetInformationDebugObject);
+		NTSTATUS status = DetourDetach((PVOID*)&g_pNtSetInformationDebugObject, NewNtSetInformationDebugObject);
 		if (!NT_SUCCESS(status))
 			return false;
 		status = DetourTransactionCommit();
@@ -353,24 +356,23 @@ bool kDbgUtil::UnhookDbgSys() {
 
 bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 	if (_first) {
+		RtlCopyMemory(&_eprocessOffsets, &info->EprocessOffsets, sizeof(EProcessOffsets));
+		RtlCopyMemory(&_pebOffsets, &info->PebOffsets, sizeof(PebOffsets));
+		RtlCopyMemory(&_ethreadOffsets, &info->EthreadOffsets, sizeof(EThreadOffsets));
+		RtlCopyMemory(&_kthreadOffsets, &info->KthreadOffsets, sizeof(KThreadOffsets));
 		g_pNtCreateDebugObject = (PNtCreateDebugObject)info->NtCreateDebugObjectAddress;
 		g_pZwProtectVirtualMemory = (PZwProtectVirtualMemory)info->ZwProtectVirtualMemory;
 		DbgkDebugObjectType = (POBJECT_TYPE*)info->DbgkDebugObjectTypeAddress;
 		g_pNtDebugActiveProcess = (PNtDebugActiveProcess)info->NtDebugActiveProcess;
 		g_pDbgkpPostFakeProcessCreateMessages = (PDbgkpPostFakeProcessCreateMessages)info->DbgkpPostFakeProcessCreateMessages;
 		g_pDbgkpSetProcessDebugObject = (PDbgkpSetProcessDebugObject)info->DbgkpSetProcessDebugObject;
-		_eprocessOffsets.RundownProtect = info->EprocessOffsets.RundownProtect;
 		g_pDbgkpPostFakeThreadMessages = (PDbgkpPostFakeThreadMessages)info->DbgkpPostFakeThreadMessages;
 		g_pDbgkpPostModuleMessages = (PDbgkpPostModuleMessages)info->DbgkpPostModuleMessages;
-		_ethreadOffsets.CrossThreadFlags = info->EthreadOffsets.CrossThreadFlags;
-		_ethreadOffsets.RundownProtect = info->EthreadOffsets.RundownProtect;
 		g_pPsGetNextProcessThread = (PPsGetNextProcessThread)info->PsGetNextProcessThread;
-		_eprocessOffsets.DebugPort = info->EprocessOffsets.DebugPort;
 		g_pDbgkpProcessDebugPortMutex = (PFAST_MUTEX)info->DbgkpProcessDebugPortMutex;
 		g_pDbgkpMarkProcessPeb = (PDbgkpMarkProcessPeb)info->DbgkpMarkProcessPeb;
 		g_pDbgkpWakeTarget = (PDbgkpWakeTarget)info->DbgkpWakeTarget;
 		g_pDbgkpMaxModuleMsgs = (PULONG)info->DbgkpMaxModuleMsgs;
-		_pebOffsets.Ldr = info->PebOffsets.Ldr;
 		g_pMmGetFileNameForAddress = (PMmGetFileNameForAddress)info->MmGetFileNameForAddress;
 		g_pDbgkpQueueMessage = (PDbgkpQueueMessage)info->DbgkpQueueMessage;
 		g_pDbgkpSendApiMessage = (PDbgkpSendApiMessage)info->DbgkpSendApiMessage;
@@ -380,7 +382,6 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkSendSystemDllMessages = (PDbgkSendSystemDllMessages)info->DbgkSendSystemDllMessages;
 		g_pPsSuspendThread = (PPsSuspendThread)info->PsSuspendThread;
 		g_pPsQuerySystemDllInfo = (PPsQuerySystemDllInfo)info->PsQuerySystemDllInfo;
-		g_pPsCallImageNotifyRoutines = (PPsCallImageNotifyRoutines)info->PsCallImageNotifyRoutines;
 		g_pObFastReferenceObject = (PObFastReferenceObject)info->ObFastReferenceObject;
 		g_pExfAcquirePushLockShared = (PExfAcquirePushLockShared)info->ExfAcquirePushLockShared;
 		g_pExfReleasePushLockShared = (PExfReleasePushLockShared)info->ExfReleasePushLockShared;
@@ -406,11 +407,10 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pDbgkClearProcessDebugObject = (PDbgkClearProcessDebugObject)info->DbgkClearProcessDebugObject;
 		g_pNtSetInformationDebugObject = (PNtSetInformationDebugObject)info->NtSetInformationDebugObject;
 		g_pPsTerminateProcess = (PPsTerminateProcess)info->PsTerminateProcess;
-#ifdef _WIN64
-		_eprocessOffsets.Wow64Process = info->EprocessOffsets.Wow64Process;
-#endif // _WIN64
-		_eprocessOffsets.Peb = info->EprocessOffsets.Peb;
-
+		g_pPspNotifyEnableMask = (PULONG)info->PspNotifyEnableMask;
+		g_pPspLoadImageNotifyRoutine = (PEX_CALLBACK)info->PspLoadImageNotifyRoutine;
+		g_pMiSectionControlArea = (PMiSectionControlArea)info->MiSectionControlArea;
+		g_pMiReferenceControlAreaFile = (PMiReferenceControlAreaFile)info->MiReferenceControlAreaFile;
 		_first = false;
 	}
 	

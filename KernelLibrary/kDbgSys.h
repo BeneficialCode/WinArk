@@ -81,11 +81,6 @@ using PDbgkpResumeProcess = VOID(NTAPI*) (
 
 using PPsQuerySystemDllInfo = PPS_SYSTEM_DLL_INFO(NTAPI*)(_In_ ULONG Type);
 
-using PPsCallImageNotifyRoutines = VOID(NTAPI*)(
-	_In_ PUNICODE_STRING ImageName,
-	_In_ HANDLE ProcessId,
-	_In_ PVOID FileObject,
-	_Out_ PIMAGE_INFO_EX ImageInfoEx);
 
 using PObFastReferenceObject = PVOID(NTAPI*) (
 	_In_ PEX_FAST_REF FastRef
@@ -115,7 +110,7 @@ using PPsGetNextProcess = PEPROCESS (NTAPI*)(
 // 创建调试对象
 NTSTATUS 
 NTAPI
-NtCreateDebugObject(
+NewNtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -124,7 +119,7 @@ NtCreateDebugObject(
 
 // 与一个已经运行的进程建立调试会话
 NTSTATUS
-NtDebugActiveProcess(
+NewNtDebugActiveProcess(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
 );
@@ -179,29 +174,29 @@ NTSTATUS DbgkpPostModuleMessages(
 *
 */
 // 采集线程创建事件
-VOID DbgkCreateThread(
+VOID NewDbgkCreateThread(
 	PETHREAD Thread
 );
 
 // 线程退出消息
-VOID DbgkExitThread(
+VOID NewDbgkExitThread(
 	NTSTATUS ExitStatus
 );
 
 // 进程退出消息
-VOID DbgkExitProcess(
+VOID NewDbgkExitProcess(
 	NTSTATUS ExitStatus
 );
 
 // 模块加载
-VOID DbgkMapViewOfSection(
+VOID NewDbgkMapViewOfSection(
+	_In_ PEPROCESS Process,
 	_In_ PVOID SectionObject,
-	_In_ PVOID BaseAddress,
-	_In_ PEPROCESS Process
+	_In_ PVOID BaseAddress
 );
 
 // 模块卸载
-VOID DbgkUnMapViewOfSection(
+VOID NewDbgkUnMapViewOfSection(
 	_In_ PEPROCESS Process,
 	_In_ PVOID BaseAddress
 );
@@ -217,7 +212,7 @@ NTSTATUS DbgkpQueueMessage(
 
 
 // 等待调试事件
-NTSTATUS NtWaitForDebugEvent(
+NTSTATUS NewNtWaitForDebugEvent(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ BOOLEAN Alertable,
 	_In_opt_ PLARGE_INTEGER Timeout,
@@ -226,14 +221,14 @@ NTSTATUS NtWaitForDebugEvent(
 
 
 // 回复调试事件，恢复被调试进程
-NTSTATUS NtDebugContinue(
+NTSTATUS NewNtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
 );
 
 // 分离调试会话
-NTSTATUS NtRemoveProcessDebug(
+NTSTATUS NewNtRemoveProcessDebug(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
 );
@@ -288,7 +283,7 @@ VOID DbgkpResumeProcess(
 );
 
 // 向调试子系统发送异常消息
-BOOLEAN DbgkForwardException(
+BOOLEAN NewDbgkForwardException(
 	_In_ PEXCEPTION_RECORD ExceptionRecord,
 	_In_ BOOLEAN DebugException,
 	_In_ BOOLEAN SecondChance
@@ -315,14 +310,14 @@ VOID DbgkpMarkProcessPeb(
 //	_Out_ PUNICODE_STRING FileName
 //);
 
-NTSTATUS DbgkClearProcessDebugObject(
+NTSTATUS NewDbgkClearProcessDebugObject(
 	_In_ PEPROCESS Process,
 	_In_ PDEBUG_OBJECT SourceDebugObject
 );
 
 
 // 设置调试对象的属性
-NTSTATUS NtSetInformationDebugObject(
+NTSTATUS NewNtSetInformationDebugObject(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ DEBUG_OBJECT_INFORMATION_CLASS DebugObjectInformationClass,
 	_In_ PVOID DebugInformation,
@@ -359,7 +354,7 @@ VOID DbgkpCloseObject(
 );
 
 // 拷贝调试对象
-NTSTATUS DbgkCopyProcessDebugPort(
+NTSTATUS NewDbgkCopyProcessDebugPort(
 	_In_ PEPROCESS TargetProcess,
 	_In_ PEPROCESS SourceProcess,
 	_In_ PDEBUG_OBJECT DebugObject,

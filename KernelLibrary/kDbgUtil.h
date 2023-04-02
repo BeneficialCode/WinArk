@@ -39,13 +39,14 @@ public:
 	static inline TcbOffsets _tcbOffsets;
 	static inline EThreadOffsets _ethreadOffsets;
 	static inline EProcessOffsets _eprocessOffsets;
+	static inline KThreadOffsets _kthreadOffsets;
 	static inline PebOffsets _pebOffsets;
 
-	using PNtCreateDebugObject = decltype(&NtCreateDebugObject);
+	using PNtCreateDebugObject = decltype(&NewNtCreateDebugObject);
 	static inline PNtCreateDebugObject g_pNtCreateDebugObject{ nullptr };
 	static inline khook _hookNtCreateDebugObject;
 
-	using PNtDebugActiveProcess = decltype(&NtDebugActiveProcess);
+	using PNtDebugActiveProcess = decltype(&NewNtDebugActiveProcess);
 	static inline PNtDebugActiveProcess g_pNtDebugActiveProcess{ nullptr };
 
 	using PDbgkpPostFakeProcessCreateMessages = decltype(&DbgkpPostFakeProcessCreateMessages);
@@ -130,7 +131,6 @@ public:
 
 	static inline PPsQuerySystemDllInfo g_pPsQuerySystemDllInfo{ nullptr };
 
-	static inline PPsCallImageNotifyRoutines g_pPsCallImageNotifyRoutines{ nullptr };
 
 	static inline PObFastReferenceObject g_pObFastReferenceObject{ nullptr };
 
@@ -156,40 +156,40 @@ public:
 
 	static inline PObFastDereferenceObject g_pObFastDereferenceObject{ nullptr };
 
-	using PDbgkCreateThread = decltype(&DbgkCreateThread);
+	using PDbgkCreateThread = decltype(&NewDbgkCreateThread);
 	static inline PDbgkCreateThread g_pDbgkCreateThread{ nullptr };
 
-	using PDbgkExitThread = decltype(&DbgkExitThread);
+	using PDbgkExitThread = decltype(&NewDbgkExitThread);
 	static inline PDbgkExitThread g_pDbgkExitThread{ nullptr };
 
-	using PDbgkExitProcess = decltype(&DbgkExitProcess);
+	using PDbgkExitProcess = decltype(&NewDbgkExitProcess);
 	static inline PDbgkExitProcess g_pDbgkExitProcess{ nullptr };
 
-	using PDbgkMapViewOfSection = decltype(&DbgkMapViewOfSection);
+	using PDbgkMapViewOfSection = decltype(&NewDbgkMapViewOfSection);
 	static inline PDbgkMapViewOfSection g_pDbgkMapViewOfSection{ nullptr };
 
-	using PDbgkUnMapViewOfSection = decltype(&DbgkUnMapViewOfSection);
+	using PDbgkUnMapViewOfSection = decltype(&NewDbgkUnMapViewOfSection);
 	static inline PDbgkUnMapViewOfSection g_pDbgkUnMapViewOfSection{ nullptr };
 
-	using PNtWaitForDebugEvent = decltype(&NtWaitForDebugEvent);
+	using PNtWaitForDebugEvent = decltype(&NewNtWaitForDebugEvent);
 	static inline PNtWaitForDebugEvent g_pNtWaitForDebugEvent{ nullptr };
 
-	using PNtDebugContinue = decltype(&NtDebugContinue);
+	using PNtDebugContinue = decltype(&NewNtDebugContinue);
 	static inline PNtDebugContinue g_pNtDebugContinue{ nullptr };
 
-	using PNtRemoveProcessDebug = decltype(&NtRemoveProcessDebug);
+	using PNtRemoveProcessDebug = decltype(&NewNtRemoveProcessDebug);
 	static inline PNtRemoveProcessDebug g_pNtRemoveProcessDebug{ nullptr };
 
-	using PDbgkForwardException = decltype(&DbgkForwardException);
+	using PDbgkForwardException = decltype(&NewDbgkForwardException);
 	static inline PDbgkForwardException g_pDbgkForwardException{ nullptr };
 
-	using PDbgkCopyProcessDebugPort = decltype(&DbgkCopyProcessDebugPort);
+	using PDbgkCopyProcessDebugPort = decltype(&NewDbgkCopyProcessDebugPort);
 	static inline PDbgkCopyProcessDebugPort g_pDbgkCopyProcessDebugPort{ nullptr };
 
-	using PDbgkClearProcessDebugObject = decltype(&DbgkClearProcessDebugObject);
+	using PDbgkClearProcessDebugObject = decltype(&NewDbgkClearProcessDebugObject);
 	static inline PDbgkClearProcessDebugObject g_pDbgkClearProcessDebugObject{ nullptr };
 
-	using PNtSetInformationDebugObject = decltype(&NtSetInformationDebugObject);
+	using PNtSetInformationDebugObject = decltype(&NewNtSetInformationDebugObject);
 	static inline PNtSetInformationDebugObject g_pNtSetInformationDebugObject{ nullptr };
 
 	using PPsTerminateProcess = NTSTATUS (NTAPI*)(
@@ -197,6 +197,12 @@ public:
 		NTSTATUS Status
 	);
 	static inline PPsTerminateProcess g_pPsTerminateProcess{ nullptr };
+
+	using PMiSectionControlArea = PVOID(NTAPI*)(PVOID Section);
+	static inline PMiSectionControlArea g_pMiSectionControlArea{ nullptr };
+
+	using PMiReferenceControlAreaFile = PFILE_OBJECT (NTAPI*)(PVOID SectionControlArea);
+	static inline PMiReferenceControlAreaFile g_pMiReferenceControlAreaFile{ nullptr };
 
 	static inline bool _first = true;
 };

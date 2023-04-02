@@ -45,6 +45,8 @@ private:
 
 	bool InitEthreadOffsets(DbgSysCoreInfo* pInfo);
 
+	bool InitKthreadOffsets(DbgSysCoreInfo* pInfo);
+
 	bool InitPebOffsets(DbgSysCoreInfo* pInfo);
 
 private:

@@ -10,12 +10,11 @@
 #include "khook.h"
 #include "Helpers.h"
 #include "Section.h"
-
+#include "SysMon.h"
 
 #define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
-PULONG	g_pPspNotifyEnableMask;
-EX_CALLBACK* PspLoadImageNotifyRoutine;
+
 SysMonGlobals g_SysMonGlobals;
 UNICODE_STRING g_BackupDir;
 
@@ -25,6 +24,14 @@ Section g_sec;		// native section object
 Section g_secWow;	// Wow64 section object
 #endif // _WIN64
 
+/*
+	PspNotifyEnableMask是一个系统通知回调是否产生的一个标记
+	0位——标记是否产生模块回调。
+	3位——标记是否产生线程回调。
+	其他位有待分析......
+*/
+PULONG	g_pPspNotifyEnableMask;
+PEX_CALLBACK g_pPspLoadImageNotifyRoutine;
 
 PUCHAR GetProcessNameByProcessId(HANDLE ProcessId) {
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -925,4 +932,46 @@ NTSTATUS RemoveMiniFilter(MiniFilterData* pData) {
 		ExFreePoolWithTag(ppFltList, 'tsil');
 
 	return status;
+}
+
+VOID PsCallImageNotifyRoutines(
+	_In_ PUNICODE_STRING ImageName,
+	_In_ HANDLE ProcessId,
+	_Inout_ PIMAGE_INFO_EX ImageInfoEx,
+	_In_ PVOID FileObject
+) {
+	PLOAD_IMAGE_NOTIFY_ROUTINE Rtn;
+	ULONG i;
+
+	PEX_CALLBACK_ROUTINE_BLOCK CallBack;
+
+	KeEnterCriticalRegion();
+
+	if (*g_pPspNotifyEnableMask & 0x1) {
+		ImageInfoEx->Size = sizeof(IMAGE_INFO_EX);
+		ImageInfoEx->ImageInfo.ExtendedInfoPresent = TRUE;
+		ImageInfoEx->FileObject = (FILE_OBJECT*)FileObject;
+
+#ifdef _WIN64
+		static ULONG Max = 64;
+#else
+		static ULONG Max = 8;
+#endif
+		PEX_CALLBACK callback = g_pPspLoadImageNotifyRoutine;
+		int j = 0;
+		for (ULONG i = 0; i < Max; i++) {
+			if (!MmIsAddressValid(callback))
+				break;
+			auto block = ExReferenceCallBackBlock(callback);
+			if (block != nullptr) {
+				Rtn = (PLOAD_IMAGE_NOTIFY_ROUTINE)block->Function;
+				Rtn(ImageName, ProcessId, &ImageInfoEx->ImageInfo);
+				ExDereferenceCallBackBlock(callback, block);
+				++j;
+			}
+			callback++;
+		}
+	}
+
+	KeLeaveCriticalRegion();
 }

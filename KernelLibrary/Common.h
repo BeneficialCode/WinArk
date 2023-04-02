@@ -210,7 +210,7 @@ struct EProcessOffsets {
 	ULONG CrossThreadFlags;		// ULONG
 	ULONG Peb;					// 
 	ULONG DebugPort;
-	ULONG Wow64Process;
+	ULONG WoW64Process;
 	ULONG Flags;
 	ULONG SectionBaseAddress;
 	ULONG SectionObject;
@@ -235,9 +235,12 @@ struct EThreadOffsets {
 	BitField ThreadInsertedBitField;
 	ULONG Tcb;
 	ULONG StartAddress;
+	ULONG Win32StartAddress;
+};
+
+struct KThreadOffsets {
 	ULONG ApcState;
 	ULONG ApcStateIndex;
-	ULONG Win32StartAddress;
 };
 
 struct TcbOffsets {

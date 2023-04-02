@@ -9,12 +9,8 @@
 #include "..\Anti-Rootkit\AntiRootkit.h"
 
 
-/*
-	PspNotifyEnableMask是一个系统通知回调是否产生的一个标记
-	0位——标记是否产生模块回调。
-	3位——标记是否产生线程回调。
-	其他位有待分析......
-*/
+
+
 template<typename T>
 struct FullItem {
 	LIST_ENTRY Entry;
@@ -106,7 +102,6 @@ typedef struct _OB_POST_CALLBACK_ENTRY {
 }OB_POST_CALLBACK_ENTRY,*POB_POST_CALLBACK_ENTRY;
 
 extern SysMonGlobals g_SysMonGlobals;
-extern PULONG	g_pPspNotifyEnableMask;
 extern UNICODE_STRING g_BackupDir;
 
 extern Section g_sec;		// native section object
@@ -114,6 +109,8 @@ extern Section g_sec;		// native section object
 #ifdef _WIN64
 extern Section g_secWow;	// Wow64 section object
 #endif // _WIN64
+
+
 
 void PushItem(LIST_ENTRY* entry);
 
@@ -186,3 +183,10 @@ NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo);
 NTSTATUS RemoveMiniFilter(MiniFilterData* pData);
 
 KSTART_ROUTINE RemoveFilter;
+
+VOID PsCallImageNotifyRoutines(
+	_In_ PUNICODE_STRING ImageName,
+	_In_ HANDLE ProcessId,
+	_Inout_ PIMAGE_INFO_EX ImageInfoEx,
+	_In_ PVOID FileObject
+);

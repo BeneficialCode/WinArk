@@ -11,7 +11,7 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
 
 	m_BasicSysInfo = SystemInformation::GetBasicSystemInfo();
-	
+
 	GetDlgItem(IDC_REMOVE_CALLBACK).EnableWindow(FALSE);
 
 	CString text;
@@ -30,7 +30,7 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	SetDlgItemInt(IDC_PROCESSOR_COUNT, m_BasicSysInfo.NumberOfProcessors);
 
 	std::string brand = SystemInformation::GetCpuBrand();
-	SetDlgItemTextA(m_hWnd,IDC_PROCESSOR, brand.c_str());
+	SetDlgItemTextA(m_hWnd, IDC_PROCESSOR, brand.c_str());
 
 	return TRUE;
 }
@@ -53,12 +53,12 @@ LRESULT CSystemConfigDlg::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	if (checkCode == BST_CHECKED) {
 		count += 1;
 		success = DriverHelper::SetImageLoadNotify();
-		if(success)
+		if (success)
 			m_CheckImageLoad.EnableWindow(FALSE);
 	}
 
 	if (count == 0) {
-		AtlMessageBox(m_hWnd, L"未选择任何配置项", L"错误",MB_ICONERROR);
+		AtlMessageBox(m_hWnd, L"未选择任何配置项", L"错误", MB_ICONERROR);
 		return FALSE;
 	}
 	GetDlgItem(IDC_SET_CALLBACK).EnableWindow(FALSE);
@@ -112,7 +112,7 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	return TRUE;
 }
 
-bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
+bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo* pInfo) {
 	bool initSuccess = false;
 	initSuccess = InitRoutines(pInfo);
 	if (!initSuccess)
@@ -127,6 +127,10 @@ bool CSystemConfigDlg::InitDbgSymbols(DbgSysCoreInfo *pInfo) {
 		return initSuccess;
 
 	initSuccess = InitPebOffsets(pInfo);
+	if (!initSuccess)
+		return initSuccess;
+
+	initSuccess = InitKthreadOffsets(pInfo);
 	if (!initSuccess)
 		return initSuccess;
 
@@ -225,10 +229,6 @@ bool CSystemConfigDlg::InitRoutines(DbgSysCoreInfo* pInfo) {
 
 	pInfo->PsQuerySystemDllInfo = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsQuerySystemDllInfo");
 	if (!pInfo->PsQuerySystemDllInfo)
-		return false;
-
-	pInfo->PsCallImageNotifyRoutines = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsCallImageNotifyRoutines");
-	if (!pInfo->PsCallImageNotifyRoutines)
 		return false;
 
 	pInfo->ObFastReferenceObject = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ObFastReferenceObject");
@@ -331,6 +331,24 @@ bool CSystemConfigDlg::InitRoutines(DbgSysCoreInfo* pInfo) {
 	pInfo->PsTerminateProcess = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PsTerminateProcess");
 	if (!pInfo->PsTerminateProcess)
 		return false;
+
+	pInfo->PspNotifyEnableMask = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspNotifyEnableMask");
+	if (!pInfo->PspNotifyEnableMask)
+		return false;
+
+	pInfo->PspLoadImageNotifyRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspLoadImageNotifyRoutine");
+	if (!pInfo->PspLoadImageNotifyRoutine)
+		return false;
+
+
+
+	pInfo->MiSectionControlArea = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MiSectionControlArea");
+	if (!pInfo->MiSectionControlArea)
+		return false;
+
+	pInfo->MiReferenceControlAreaFile = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MiReferenceControlAreaFile");
+	if (!pInfo->MiReferenceControlAreaFile)
+		return false;
 	return true;
 }
 
@@ -340,41 +358,37 @@ bool CSystemConfigDlg::InitEprocessOffsets(DbgSysCoreInfo* pInfo) {
 		return false;
 
 #ifdef  _WIN64
-	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
-	if (!pInfo->EprocessOffsets.Wow64Process)
+	pInfo->EprocessOffsets.WoW64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "WoW64Process");
+	if (pInfo->EprocessOffsets.WoW64Process == -1)
 		return false;
 #endif //  _WIN64
 
 	pInfo->EprocessOffsets.DebugPort = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "DebugPort");
-	if (!pInfo->EprocessOffsets.DebugPort)
+	if (pInfo->EprocessOffsets.DebugPort == -1)
 		return false;
 
 	pInfo->EprocessOffsets.Peb = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Peb");
-	if (!pInfo->EprocessOffsets.Peb)
-		return false;
-
-	pInfo->EprocessOffsets.Wow64Process = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Wow64Process");
-	if (!pInfo->EprocessOffsets.Wow64Process)
+	if (pInfo->EprocessOffsets.Peb == -1)
 		return false;
 
 	pInfo->EprocessOffsets.Flags = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "Flags");
-	if (!pInfo->EprocessOffsets.Flags)
+	if (pInfo->EprocessOffsets.Flags == -1)
 		return false;
 
 	pInfo->EprocessOffsets.SectionBaseAddress = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "SectionBaseAddress");
-	if (!pInfo->EprocessOffsets.SectionBaseAddress)
+	if (pInfo->EprocessOffsets.SectionBaseAddress == -1)
 		return false;
 
 	pInfo->EprocessOffsets.SectionObject = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "SectionObject");
-	if (!pInfo->EprocessOffsets.SectionObject)
+	if (pInfo->EprocessOffsets.SectionObject == -1)
 		return false;
 
 	pInfo->EprocessOffsets.UniqueProcessId = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "UniqueProcessId");
-	if (!pInfo->EprocessOffsets.UniqueProcessId)
+	if (pInfo->EprocessOffsets.UniqueProcessId == -1)
 		return false;
 
 	pInfo->EprocessOffsets.ExitTime = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "ExitTime");
-	if (!pInfo->EprocessOffsets.ExitTime)
+	if (pInfo->EprocessOffsets.ExitTime == -1)
 		return false;
 
 	return true;
@@ -382,11 +396,11 @@ bool CSystemConfigDlg::InitEprocessOffsets(DbgSysCoreInfo* pInfo) {
 
 bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 	pInfo->EthreadOffsets.RundownProtect = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "RundownProtect");
-	if (!pInfo->EthreadOffsets.RundownProtect)
+	if (pInfo->EthreadOffsets.RundownProtect == -1)
 		return false;
 
 	pInfo->EthreadOffsets.CrossThreadFlags = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "CrossThreadFlags");
-	if (!pInfo->EthreadOffsets.RundownProtect)
+	if (pInfo->EthreadOffsets.CrossThreadFlags == -1)
 		return false;
 
 	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ClonedThread");
@@ -401,11 +415,11 @@ bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 	}
 
 	pInfo->EthreadOffsets.Cid = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Cid");
-	if (!pInfo->EthreadOffsets.Cid)
+	if (pInfo->EthreadOffsets.Cid == -1)
 		return false;
 
-	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ThreadInserted");
-	if (pInfo->EthreadOffsets.ClonedThread != -1) {
+	pInfo->EthreadOffsets.ThreadInserted = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ThreadInserted");
+	if (pInfo->EthreadOffsets.ThreadInserted != -1) {
 		USHORT pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ThreadInserted");
 		pInfo->EthreadOffsets.ThreadInsertedBitField.Position = pos;
 		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ThreadInserted");
@@ -416,23 +430,15 @@ bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 	}
 
 	pInfo->EthreadOffsets.Tcb = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Tcb");
-	if (!pInfo->EthreadOffsets.Tcb)
+	if (pInfo->EthreadOffsets.Tcb == -1)
 		return false;
 
 	pInfo->EthreadOffsets.StartAddress = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "StartAddress");
-	if (!pInfo->EthreadOffsets.StartAddress)
-		return false;
-	
-	pInfo->EthreadOffsets.ApcState = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ApcState");
-	if (!pInfo->EthreadOffsets.ApcState)
-		return false;
-
-	pInfo->EthreadOffsets.ApcStateIndex = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ApcStateIndex");
-	if (!pInfo->EthreadOffsets.ApcStateIndex)
+	if (pInfo->EthreadOffsets.StartAddress == -1)
 		return false;
 
 	pInfo->EthreadOffsets.Win32StartAddress = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "Win32StartAddress");
-	if (!pInfo->EthreadOffsets.Win32StartAddress)
+	if (pInfo->EthreadOffsets.Win32StartAddress == -1)
 		return false;
 
 	return true;
@@ -441,6 +447,18 @@ bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 bool CSystemConfigDlg::InitPebOffsets(DbgSysCoreInfo* pInfo) {
 	pInfo->PebOffsets.Ldr = SymbolHelper::GetKernelStructMemberOffset("_PEB", "Ldr");
 	if (!pInfo->PebOffsets.Ldr)
+		return false;
+
+	return true;
+}
+
+bool CSystemConfigDlg::InitKthreadOffsets(DbgSysCoreInfo* pInfo) {
+	pInfo->KthreadOffsets.ApcState = SymbolHelper::GetKernelStructMemberOffset("_KTHREAD", "ApcState");
+	if (pInfo->KthreadOffsets.ApcState == -1)
+		return false;
+
+	pInfo->KthreadOffsets.ApcStateIndex = SymbolHelper::GetKernelStructMemberOffset("_KTHREAD", "ApcStateIndex");
+	if (pInfo->KthreadOffsets.ApcStateIndex == -1)
 		return false;
 
 	return true;

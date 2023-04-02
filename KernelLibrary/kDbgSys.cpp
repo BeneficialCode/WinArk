@@ -14,9 +14,10 @@ PFAST_MUTEX	g_pDbgkpProcessDebugPortMutex;
 
 PULONG g_pDbgkpMaxModuleMsgs;
 
+extern PULONG	g_pPspNotifyEnableMask;
 
 NTSTATUS NTAPI
-NtCreateDebugObject(
+NewNtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -42,8 +43,6 @@ Return Value:
 
 --*/
 {
-	return kDbgUtil::g_pNtCreateDebugObject(DebugObjectHandle,
-		DesiredAccess, ObjectAttributes, Flags);
 	NTSTATUS status;
 	HANDLE handle;
 	PDEBUG_OBJECT DebugObject;
@@ -71,7 +70,7 @@ Return Value:
 		PreviousMode,
 		*DbgkDebugObjectType,
 		ObjectAttributes,
-		PreviousMode,
+		Flags,
 		nullptr,
 		sizeof(DEBUG_OBJECT),
 		0,
@@ -116,7 +115,7 @@ Return Value:
 	return status;
 }
 
-NTSTATUS NtDebugActiveProcess(
+NTSTATUS NewNtDebugActiveProcess(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
 )
@@ -1031,10 +1030,10 @@ Routine Description:
 	return STATUS_SUCCESS;
 }
 
-VOID DbgkMapViewOfSection(
+VOID NewDbgkMapViewOfSection(
+	_In_ PEPROCESS Process,
 	_In_ PVOID SectionObject,
-	_In_ PVOID BaseAddress,
-	_In_ PEPROCESS Process
+	_In_ PVOID BaseAddress
 ) 
 /*++
 
@@ -1113,7 +1112,7 @@ Arguments:
 	}
 }
 
-VOID DbgkUnMapViewOfSection(
+VOID NewDbgkUnMapViewOfSection(
 	_In_ PEPROCESS Process,
 	_In_ PVOID BaseAddress
 )/*++
@@ -1159,7 +1158,7 @@ VOID DbgkUnMapViewOfSection(
 	DbgkpSendApiMessage(0x1, &ApiMsg);
 }
 
-VOID DbgkCreateThread(
+VOID NewDbgkCreateThread(
 	PETHREAD Thread
 )
 /*++
@@ -1198,7 +1197,7 @@ Return Value:
 	ULONG OldFlags = 0;
 	PFILE_OBJECT FileObject;
 	OBJECT_ATTRIBUTES ioStatus;
-	PVOID Object;
+	PVOID SectionObject;
 	PETHREAD CurrentThread;
 
 
@@ -1207,6 +1206,7 @@ Return Value:
 #endif
 
 	CurrentThread = PsGetCurrentThread();
+
 	Process = kDbgUtil::GetThreadApcState(CurrentThread)->Process;
 
 #if defined(_WIN64)
@@ -1260,7 +1260,7 @@ Return Value:
 			ImageName = nullptr;
 		}
 		
-		kDbgUtil::g_pPsCallImageNotifyRoutines(ImageName, PsGetProcessId(Process), FileObject, &ImageInfoEx);
+		PsCallImageNotifyRoutines(ImageName, PsGetProcessId(Process), &ImageInfoEx, FileObject);
 		if (ImageName) {
 			//因为在SeLocateProcessImageName中为ImageName申请了内存，所以要在此处释放掉
 			ExFreePool(ImageName);
@@ -1300,25 +1300,26 @@ Return Value:
 				
 				PPS_SYSTEM_DLL sysDll = CONTAINING_RECORD(info, PS_SYSTEM_DLL, SystemDllInfo);
 				
-				Object = kDbgUtil::g_pObFastReferenceObject(&sysDll->SectionObjectFastRef);
-				if (Object == nullptr) {
+				SectionObject = kDbgUtil::g_pObFastReferenceObject(&sysDll->SectionObjectFastRef);
+				if (SectionObject == nullptr) {
 					KeEnterCriticalRegion();
 					ExAcquirePushLockShared((PEX_PUSH_LOCK_S)&sysDll->PushLock);
-					Object = kDbgUtil::g_pObFastReferenceObjectLocked(&sysDll->SectionObjectFastRef);
+					SectionObject = kDbgUtil::g_pObFastReferenceObjectLocked(&sysDll->SectionObjectFastRef);
 					ExReleasePushLockShared((PEX_PUSH_LOCK_S)&sysDll->PushLock);
 					KeLeaveCriticalRegion();
 				}
-
-				FileObject = CcGetFileObjectFromSectionPtrs((PSECTION_OBJECT_POINTERS)Object);
+				
+				PVOID SectionControlArea = kDbgUtil::g_pMiSectionControlArea(SectionObject);
+				FileObject = kDbgUtil::g_pMiReferenceControlAreaFile(SectionControlArea);
 				if (FileObject != nullptr) {
-					kDbgUtil::g_pObFastDereferenceObject(&sysDll->SectionObjectFastRef, Object);
+					kDbgUtil::g_pObFastDereferenceObject(&sysDll->SectionObjectFastRef, SectionObject);
 				}
-				kDbgUtil::g_pPsCallImageNotifyRoutines(&info->Ntdll32Path,
-					kDbgUtil::GetProcessUniqueProcessId(Process),
-					FileObject,
-					&ImageInfoEx);
-
-				ObDereferenceObject(FileObject);
+				PsCallImageNotifyRoutines(&info->Ntdll32Path,
+					PsGetProcessId(Process),
+					&ImageInfoEx,
+					FileObject);
+				if(FileObject!=nullptr)
+					ObDereferenceObject(FileObject);
 			}
 		}
 
@@ -1533,7 +1534,7 @@ Return Value:
 	return status;
 }
 
-NTSTATUS NtWaitForDebugEvent(
+NTSTATUS NewNtWaitForDebugEvent(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ BOOLEAN Alertable,
 	_In_opt_ PLARGE_INTEGER Timeout,
@@ -1728,7 +1729,7 @@ Return Value:
 	return status;
 }
 
-NTSTATUS NtDebugContinue(
+NTSTATUS NewNtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
@@ -1842,7 +1843,7 @@ Return Value:
 	return status;
 }
 
-NTSTATUS NtRemoveProcessDebug(
+NTSTATUS NewNtRemoveProcessDebug(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
 ) 
@@ -1894,7 +1895,7 @@ Return Value:
 		return status;
 	}
 
-	status = DbgkClearProcessDebugObject((PEPROCESS)Process, DebugObject);
+	status = NewDbgkClearProcessDebugObject((PEPROCESS)Process, DebugObject);
 
 	ObDereferenceObject(DebugObject);
 	ObDereferenceObject(Process);
@@ -2004,7 +2005,7 @@ ExFastRefAddAdditionalReferenceCounts(
 	return TRUE;
 }
 
-VOID DbgkExitThread(
+VOID NewDbgkExitThread(
 	NTSTATUS ExitStatus
 ) 
 /*++
@@ -2068,7 +2069,7 @@ Return Value:
 	}
 }
 
-VOID DbgkExitProcess(
+VOID NewDbgkExitProcess(
 	NTSTATUS ExitStatus
 )
 /*++
@@ -2131,7 +2132,7 @@ Return Value:
 	DbgkpSendApiMessage(FALSE, &ApiMsg);
 }
 
-BOOLEAN DbgkForwardException(
+BOOLEAN NewDbgkForwardException(
 	_In_ PEXCEPTION_RECORD ExceptionRecord,
 	_In_ BOOLEAN DebugException,
 	_In_ BOOLEAN SecondChance
@@ -2249,7 +2250,7 @@ Return Value:
 	}
 }
 
-NTSTATUS DbgkClearProcessDebugObject(
+NTSTATUS NewDbgkClearProcessDebugObject(
 	_In_ PEPROCESS Process,
 	_In_ PDEBUG_OBJECT SourceDebugObject
 )
@@ -2334,7 +2335,7 @@ Return Value:
 	return status;
 }
 
-NTSTATUS NtSetInformationDebugObject(
+NTSTATUS NewNtSetInformationDebugObject(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ DEBUG_OBJECT_INFORMATION_CLASS DebugObjectInformationClass,
 	_In_ PVOID DebugInformation,
@@ -2440,7 +2441,7 @@ switch (DebugObjectInformationClass) {
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS DbgkCopyProcessDebugPort(
+NTSTATUS NewDbgkCopyProcessDebugPort(
 	_In_ PEPROCESS TargetProcess,
 	_In_ PEPROCESS SourceProcess,
 	_In_ PDEBUG_OBJECT DebugObject,
