@@ -61,6 +61,8 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Session Manager",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager)"},
 		{ L"Zip New Shell",LR"(HKEY_CLASSES_ROOT\.zip\CompressedFolder\ShellNew)"},
 		{ L"tab completion",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor)"},
+		{ L"Service Group Order",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\ServiceGroupOrder)"},
+		{ L"Group Order List",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GroupOrderList)"},
 	};
 
 	for (const auto& [name, path] : locations) {
