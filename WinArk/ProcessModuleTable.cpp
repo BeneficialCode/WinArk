@@ -256,3 +256,14 @@ std::wstring CProcessModuleTable::GetFileDescription(std::wstring path) {
 	}
 	return L"";
 }
+
+bool CProcessModuleTable::CompareItems(const std::shared_ptr<WinSys::ModuleInfo>& p1, const std::shared_ptr<WinSys::ModuleInfo>& p2, int col, bool asc) {
+	switch (static_cast<ModuleColumn>(col)) {
+	case ModuleColumn::Base: return SortHelper::SortNumbers(p1->Base, p2->Base, asc);
+	case ModuleColumn::ImageBase: return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
+	case ModuleColumn::ModuleName: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
+	case ModuleColumn::ModuleSize: return SortHelper::SortNumbers(p1->ModuleSize, p2->ModuleSize, asc);
+	}
+
+	return false;
+}

@@ -33,6 +33,7 @@ public:
 	CProcessModuleTable(BarInfo& bars, TableInfo& table, HANDLE hProcess);
 
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ModuleInfo>& info, int column);
+	bool CompareItems(const std::shared_ptr<WinSys::ModuleInfo>& p1, const std::shared_ptr<WinSys::ModuleInfo>& p2,int col, bool asc);
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);

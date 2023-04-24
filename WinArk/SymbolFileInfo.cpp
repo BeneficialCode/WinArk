@@ -22,6 +22,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
 	bool isExist = std::filesystem::is_regular_file(fileName);
 	if (isExist) {
+		// How to know the pdb file has downloaded completley since the last time?
 		auto fileSize = std::filesystem::file_size(fileName);
 		if(fileSize)
 			return true;
