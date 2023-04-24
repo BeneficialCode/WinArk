@@ -22,16 +22,22 @@ git clone https://github.com/BeneficialCode/Anti-Rootkit
 
 ## Test environments
 
+### Windows 7 x86
 ![Windows 7 x86](resources/win7_x86.png)
 
+### Windows 7 x64
 ![Windows 7 x64](resources/win7_x64.png)
 
+### Windows 8 x64
 ![Windows 8 x64](resources/win8_x64.png)
 
+### Windows 10 x64
 ![Windows 10 x64](resources/win10_x64.png)
 
+### Windows Server 2016 x64
 ![Windows Server 2016 x64](resources/winserver_2016_x64.png)
 
+### Windows 11 x64
 ![Windows 11 x64](resources/win11_x64.png)
 
 
