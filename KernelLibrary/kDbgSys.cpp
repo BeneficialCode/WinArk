@@ -1283,12 +1283,16 @@ Return Value:
 				__try {
 					NtHeaders = RtlImageNtHeader(info->ImageBase);
 					if (NtHeaders) {
+#ifdef _WIN64
 						if (Wow64Process != nullptr) {
 							ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER((PIMAGE_NT_HEADERS32)NtHeaders, SizeOfImage);
 						}
 						else {
+#endif
 							ImageInfoEx.ImageInfo.ImageSize = DBGKP_FIELD_FROM_IMAGE_OPTIONAL_HEADER(NtHeaders, SizeOfImage);
+#ifdef _WIN64
 						}
+#endif
 					}
 				}
 				__except (EXCEPTION_EXECUTE_HANDLER) {
