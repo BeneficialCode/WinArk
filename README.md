@@ -1,4 +1,4 @@
-# Anti-Rootkit ![image](doc/resources/WinArk.ico)
+# WinArk ![image](doc/resources/WinArk.ico)
 
 ## Introduction
 
