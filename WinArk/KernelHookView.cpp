@@ -60,12 +60,12 @@ LRESULT CKernelHookView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 void CKernelHookView::InitSSDTHookTable() {
 	BarDesc bars[] = {
-		{12,"服务号",0},
-		{55,"服务函数名",0},
-		{20,"原始函数地址",0},
-		{10,"是否Hook",0},
-		{20,"当前函数地址",0},
-		{260,"当前函数地址所在模块",0}
+		{12,"Service Number",0},
+		{55,"Service Name",0},
+		{20,"Original Address",0},
+		{10,"Is Hook",0},
+		{20,"Current Address",0},
+		{260,"Driver Path",0}
 	};
 
 	TableInfo table = {
@@ -95,12 +95,12 @@ void CKernelHookView::InitSSDTHookTable() {
 
 void CKernelHookView::InitShadowSSDTHookTable() {
 	BarDesc bars[] = {
-		{15,"服务号",0},
-		{55,"服务函数名",0},
-		{20,"原始函数地址",0},
-		{10,"是否Hook",0},
-		{20,"当前函数地址",0},
-		{260,"当前函数地址所在模块",0}
+		{15,"Service Number",0},
+		{55,"Service Name",0},
+		{20,"Original Address",0},
+		{10,"Is Hook",0},
+		{20,"Current Address",0},
+		{260,"Driver Path",0}
 	};
 
 	TableInfo table = {
@@ -130,10 +130,10 @@ void CKernelHookView::InitShadowSSDTHookTable() {
 
 void CKernelHookView::InitMiniFilterTable() {
 	BarDesc bars[] = {
-		{15,"过滤服务名",0},
-		{15,"实例个数",0},
-		{35,"海拔",0},
-		{210,"框架ID",0},
+		{15,"Filter Name",0},
+		{15,"Instance count",0},
+		{35,"Altitude",0},
+		{210,"Frame ID",0},
 	};
 
 	TableInfo table = {
@@ -237,10 +237,10 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 
 void CKernelHookView::InitKernelNotifyTable() {
 	BarDesc bars[] = {
-		{20,"回调函数地址",0},
-		{25,"回调类型",0},
-		{25,"文件厂商",0},
-		{115,"所在模块",0},
+		{20,"Callout Address",0},
+		{25,"Callout Type",0},
+		{25,"Company Name",0},
+		{115,"Driver Path",0},
 	};
 
 	TableInfo table = {

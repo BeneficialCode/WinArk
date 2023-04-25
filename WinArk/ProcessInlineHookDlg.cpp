@@ -8,11 +8,11 @@ LRESULT CInlineHookDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 LRESULT CInlineHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{20,"挂钩对象",0},
-		{14,"钩子类型",0},
-		{62,"挂钩位置",0},
-		{22,"目标地址",0},
-		{260,"目标地址所属模块",0},
+		{20,"Hook Object",0},
+		{14,"Hook Type",0},
+		{62,"Hook Address",0},
+		{22,"Target Address",0},
+		{260,"Target Module",0},
 	};
 
 	TableInfo table = {

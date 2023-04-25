@@ -8,11 +8,11 @@ LRESULT CEATHookDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT CEATHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{20,"挂钩对象",0},
-		{10,"钩子类型",0},
-		{52,"挂钩位置",0},
-		{52,"目标地址",0},
-		{260,"目标地址所属模块",0},
+		{20,"Hook Object",0},
+		{10,"Hook Type",0},
+		{52,"Hook Address",0},
+		{52,"Target Address",0},
+		{260,"Target Path",0},
 	};
 
 	TableInfo table = {

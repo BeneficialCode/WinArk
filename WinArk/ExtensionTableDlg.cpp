@@ -9,9 +9,9 @@ LRESULT CExtensionTableDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 LRESULT CExtensionTableDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{22,"函数地址",0},
-		{25,"文件厂商",0},
-		{260,"目标地址所属模块",0},
+		{22,"Routine",0},
+		{25,"Company Name",0},
+		{260,"Driver Path",0},
 	};
 
 	TableInfo table = {

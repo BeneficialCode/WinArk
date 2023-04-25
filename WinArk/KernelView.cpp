@@ -114,9 +114,9 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 
 void CKernelView::InitPiDDBCacheTable() {
 	BarDesc bars[] = {
-		{22,"驱动名",0},
-		{55,"加载状态",0},
-		{50,"时间戳/文件哈希",0},
+		{22,"Driver Name",0},
+		{55,"Load Status",0},
+		{50,"Timestamp/File Hash",0},
 	};
 
 	TableInfo table = {
@@ -146,10 +146,10 @@ void CKernelView::InitPiDDBCacheTable() {
 
 void CKernelView::InitUnloadedDriverTable() {
 	BarDesc bars[] = {
-		{22,"驱动名",0},
-		{20,"起始地址",0},
-		{20,"结束地址",0},
-		{40,"卸载时间",0},
+		{22,"Driver Name",0},
+		{20,"Begin Address",0},
+		{20,"End Address",0},
+		{40,"Unload Time",0},
 	};
 
 	TableInfo table = {
@@ -179,13 +179,13 @@ void CKernelView::InitUnloadedDriverTable() {
 
 void CKernelView::InitDpcTimerTable() {
 	BarDesc bars[] = {
-		{22,"定时器对象",0},
-		{20,"DPC对象",0},
-		{20,"函数入口",0},
+		{22,"Timer Object",0},
+		{20,"DPC Object",0},
+		{20,"Routine",0},
 		{18,"DueTime",0},
-		{10,"触发周期",0},
-		{30,"文件厂商",0},
-		{260,"函数入口所在内核模块",0},
+		{10,"Period",0},
+		{30,"Company Name",0},
+		{260,"Driver Path",0},
 	};
 
 	TableInfo table = {
@@ -215,12 +215,12 @@ void CKernelView::InitDpcTimerTable() {
 
 void CKernelView::InitIoTimerTable() {
 	BarDesc bars[] = {
-		{22,"设备对象",0},
+		{22,"Device Object",0},
 		{20,"Type",0},
 		{18,"TimerFlag",0},
-		{20,"函数入口",0},
-		{30,"文件厂商",0},
-		{260,"函数入口所在内核模块",0},
+		{20,"Routine",0},
+		{30,"Company Name",0},
+		{260,"Driver Path",0},
 	};
 
 	TableInfo table = {

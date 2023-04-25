@@ -13,10 +13,10 @@ LRESULT CMiniFilterDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lP
 		{12,"MajorCode",0},
 		{32,"I/O Operation 类型",0},
 		{22,"Flag",0},
-		{22,"函数地址",0},
-		{25,"回调类型",0},
-		{25,"文件厂商",0},
-		{260,"目标地址所属模块",0},
+		{22,"Routine",0},
+		{25,"Callout Type",0},
+		{25,"Company Name",0},
+		{260,"Driver Path",0},
 	};
 
 	TableInfo table = {

@@ -57,21 +57,21 @@ void CMainFrame::UpdateUI() {
 
 void CMainFrame::InitProcessTable() {
 	BarDesc bars[] = {
-		{19,"进程名",0},
-		{19,"进程ID",0},
-		{9,"会话",0},
-		{20,"用户名",0},
+		{19,"Process Name",0},
+		{19,"Process ID",0},
+		{9,"Session",0},
+		{20,"User Name",0},
 		{20,"EPROCESS",0},
-		{12,"优先级",0},
-		{9,"线程数",0},
-		{9,"句柄数",0},
-		{19,"属性",0},
-		{20,"创建时间",0},
-		{30,"描述",0},
-		{20,"文件厂商",0},
-		{20,"文件版本",0},
-		{56,"映像路径",0},
-		{856,"命令行参数",0}
+		{12,"Priority",0},
+		{9,"Threads",0},
+		{9,"Handles",0},
+		{19,"Attributes",0},
+		{20,"Create Time",0},
+		{30,"Description",0},
+		{20,"Company Name",0},
+		{20,"File Version",0},
+		{56,"Image Path",0},
+		{856,"Commandline",0}
 	};
 	TableInfo table = {
 		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
@@ -96,17 +96,17 @@ void CMainFrame::InitProcessTable() {
 
 void CMainFrame::InitNetworkTable() {
 	BarDesc bars[] = {
-		{20,"进程名",0},
-		{20,"进程ID",0},
-		{10,"协议",0},
-		{15,"状态",0},
-		{20,"本地地址",0},
-		{10,"本地端口",0},
-		{20,"远程地址",0},
-		{10,"远程端口",0},
-		{20,"创建时间",0},
-		{30,"模块名",0},
-		{256,"模块路径",0},
+		{20,"Process Name",0},
+		{20,"Process ID",0},
+		{10,"Protocol",0},
+		{15,"Status",0},
+		{20,"Local Address",0},
+		{10,"Local Port",0},
+		{20,"Remote Address",0},
+		{10,"Remote Port",0},
+		{20,"Create Time",0},
+		{30,"Module Name",0},
+		{256,"Module Path",0},
 	};
 
 	TableInfo table = {
@@ -129,12 +129,12 @@ void CMainFrame::InitNetworkTable() {
 
 void CMainFrame::InitKernelModuleTable() {
 	BarDesc bars[] = {
-		{20,"驱动文件名",0},
-		{20,"映像基址",0},
-		{10,"映像大小",0},
-		{16,"加载顺序",0},
-		{22,"文件厂商",0},
-		{260,"全路径",0},
+		{20,"Driver File Name",0},
+		{20,"Image Base",0},
+		{10,"Image Size",0},
+		{16,"Load Order",0},
+		{22,"Company Name",0},
+		{260,"Full Path",0},
 	};
 
 	TableInfo table = {
@@ -157,13 +157,13 @@ void CMainFrame::InitKernelModuleTable() {
 
 void CMainFrame::InitDriverTable() {
 	BarDesc bars[] = {
-		{20,"驱动服务名",0},
-		{20,"显示名称",0},
-		{10,"状态",0},
-		{20,"驱动类型",0},
-		{20,"启动类型",0},
-		{20,"描述",0},
-		{260,"二进制路径",0},
+		{20,"Driver Service Name",0},
+		{20,"Display Name",0},
+		{10,"Status",0},
+		{20,"Driver Type",0},
+		{20,"Boot Type",0},
+		{20,"Description",0},
+		{260,"Binary Path",0},
 	};
 
 	TableInfo table = {
@@ -186,23 +186,23 @@ void CMainFrame::InitDriverTable() {
 
 void CMainFrame::InitServiceTable() {
 	BarDesc bars[] = {
-		{20,"服务名",0},
-		{20,"显示名称",0},
-		{10,"状态",0},
-		{20,"服务类型",0},
-		{20,"进程ID"},
-		{30,"进程名"},
-		{20,"启动类型",0},
-		{260,"二进制路径",0},
-		{30,"账户名",0},
-		{20,"错误控制",0},
-		{50,"描述",0},
-		{50,"服务权限",0},
-		{20,"触发器",0},
-		{20,"依赖",0},
-		{50,"接受的控制",0},
-		{30,"安全标识符",0},
-		{20,"Security ID类型"}
+		{20,"Serivce Name",0},
+		{20,"Display Name",0},
+		{10,"Status",0},
+		{20,"Service Type",0},
+		{20,"Process ID"},
+		{30,"Process Name"},
+		{20,"Boot Type",0},
+		{260,"Binary Path",0},
+		{30,"Account Name",0},
+		{20,"Error Control",0},
+		{50,"Description",0},
+		{50,"Service Right",0},
+		{20,"Trigger",0},
+		{20,"Dependencies",0},
+		{50,"Allow Control",0},
+		{30,"Security ID",0},
+		{20,"Security ID Type"}
 	};
 
 	TableInfo table = {

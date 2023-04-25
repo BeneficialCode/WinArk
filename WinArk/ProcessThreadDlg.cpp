@@ -10,10 +10,10 @@ LRESULT CThreadDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 LRESULT CThreadDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{12,"线程状态",0},
-		{15,"线程Id",0},
-		{15,"所属进程Id",0},
-		{20,"进程名",0},
+		{12,"Thread Status",0},
+		{15,"Thread Id",0},
+		{15,"Process Id",0},
+		{20,"Process Name",0},
 		{20,"CPUTime",0},
 		{30,"CreateTime",0},
 		{10,"Priority",0},
@@ -32,7 +32,7 @@ LRESULT CThreadDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		{30,"ComFlags",0},
 		{30,"ComApartment",0},
 		{25,"WaitTime",0},
-		{260,"所属模块",0}
+		{260,"Module",0}
 	};
 
 	TableInfo table = {

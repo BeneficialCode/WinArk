@@ -10,15 +10,15 @@ LRESULT CModuleDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{25,"模块名",0},
-		{8,"类型",0},
-		{8,"位数",0},
-		{42,"描述",0},
-		{15,"映像大小",0},
-		{20,"基地址",0},
-		{20,"镜像基址",0},
-		{70,"属性",0},
-		{260,"所在路径",0}
+		{25,"Module Name",0},
+		{8,"Type",0},
+		{8,"Bits",0},
+		{42,"Description",0},
+		{15,"Module Size",0},
+		{20,"Base",0},
+		{20,"Image Base",0},
+		{70,"Characteristics",0},
+		{260,"Module Path",0}
 	};
 
 	TableInfo table = {

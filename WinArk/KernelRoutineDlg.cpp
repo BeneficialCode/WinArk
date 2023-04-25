@@ -10,9 +10,9 @@ LRESULT  CKernelRoutineDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 LRESULT CKernelRoutineDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
 		{12,"Code",0},
-		{36,"名称",0},
-		{18,"函数地址",0},
-		{260,"目标模块",0},
+		{36,"Name",0},
+		{18,"Routine",0},
+		{260,"Driver Path",0},
 	};
 
 	TableInfo table = {

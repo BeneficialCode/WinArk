@@ -10,13 +10,13 @@ LRESULT CHandleDlg::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 LRESULT CHandleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	BarDesc bars[] = {
-		{22,"类型",0},
-		{20,"地址",0},
+		{22,"Type",0},
+		{20,"Address",0},
 		{25,"Name",0},
-		{20,"句柄值",0},
-		{30,"进程名",0},
+		{20,"Handle Value",0},
+		{30,"Process Name",0},
 		{30,"PID",0},
-		{20,"属性",0},
+		{20,"Attribute",0},
 		{50,"Access Mask",0},
 		{50,"Decoded Access Mask",0},
 		{30,"Details",0}
