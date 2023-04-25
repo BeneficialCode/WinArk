@@ -45,6 +45,9 @@ struct SymbolFileInfo {
 	downslib_error Download(std::string url, std::wstring fileName, 
 		std::string userAgent, unsigned int timeout,downslib_cb = nullptr, void* userdata = nullptr);
 
+	unsigned long long GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
+		unsigned int timeout);
+
 	CString _pdbSignature;
 	CString _pdbFile;
 	PdbValidationData _pdbValidation;

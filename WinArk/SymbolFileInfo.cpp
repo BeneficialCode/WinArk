@@ -24,8 +24,18 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	if (isExist) {
 		// How to know the pdb file has downloaded completley since the last time?
 		auto fileSize = std::filesystem::file_size(fileName);
-		if(fileSize)
-			return true;
+		if (fileSize) {
+			unsigned long long contentSize = GetPdbSize(url, fileName, "WinArk", 1000);
+			if (contentSize != fileSize) {
+				int ret = AtlMessageBox(nullptr, L"The pdb size is not equal the content size from symbol server", L"Are you sure to run WinArk>", MB_OKCANCEL);
+				if (ret == IDCANCEL) {
+					return false;
+				}
+				return true;
+			}
+			else
+				return true;
+		}
 	}
 	
 	for (auto& iter : std::filesystem::directory_iterator(localPath)) {
@@ -113,7 +123,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		}
 		if (hUrl != nullptr)
 			::InternetCloseHandle(hUrl);
-		if (hInternet != NULL)
+		if (hInternet != nullptr)
 			::InternetCloseHandle(hInternet);
 		if (hConnect != nullptr)
 			::InternetCloseHandle(hConnect);
@@ -227,3 +237,95 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	return downslib_error::ok;
 }
 
+unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
+	unsigned int timeout) {
+	HINTERNET hInternet = nullptr;
+	HINTERNET hUrl = nullptr;
+	HANDLE hFile = nullptr;
+	HINTERNET hConnect = nullptr;
+
+	Cleanup cleanup([&]()
+	{
+		DWORD lastError = ::GetLastError();
+		if (hFile != INVALID_HANDLE_VALUE) {
+			bool doDelete = false;
+			LARGE_INTEGER fileSize;
+			if (lastError != ERROR_SUCCESS || (::GetFileSizeEx(hFile, &fileSize) && fileSize.QuadPart == 0)) {
+				doDelete = true;
+			}
+			::CloseHandle(hFile);
+			if (doDelete)
+				DeleteFile(fileName.c_str());
+		}
+		if (hUrl != nullptr)
+			::InternetCloseHandle(hUrl);
+		if (hInternet != nullptr)
+			::InternetCloseHandle(hInternet);
+		if (hConnect != nullptr)
+			::InternetCloseHandle(hConnect);
+		::SetLastError(lastError);
+	});
+
+
+	hFile = ::CreateFile(fileName.c_str(), GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return 0;
+
+	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
+		nullptr, nullptr, 0);
+
+	if (!hInternet)
+		return 0;
+
+	DWORD flags;
+	DWORD len = sizeof(flags);
+
+	::InternetSetOptionA(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
+	flags = INTERNET_FLAG_RELOAD;
+	if (strncmp(url.c_str(), "https://", 8) == 0)
+		flags |= INTERNET_FLAG_SECURE;
+
+	hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+	DWORD error = ::GetLastError();
+	if (error == ERROR_INTERNET_INVALID_CA) {
+		std::string serviceName = "msdl.microsoft.com";
+		// Connect to the http server
+		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
+			INTERNET_DEFAULT_HTTP_PORT, nullptr,
+			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
+		int pos = url.find(".com") + 4;
+		std::string objName(url.begin() + pos, url.end());
+		hUrl = HttpOpenRequestA(hConnect, "GET",
+			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
+
+		HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+		error = ::GetLastError();
+		if (error == ERROR_INTERNET_INVALID_CA) {
+			// https://stackoverflow.com/questions/41357008/how-to-ignore-certificate-in-httppost-request-in-winapi
+			flags = 0;
+			InternetQueryOption(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, &len);
+			flags |= SECURITY_SET_MASK;
+			InternetSetOptionA(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, sizeof(flags));
+			HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+		}
+	}
+	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
+		url.insert(4, "s");
+		flags |= INTERNET_FLAG_SECURE;
+		hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+	}
+	if (!hUrl)
+		return 0;
+
+	// Get HTTP content length
+	char buffer[1 << 11];
+	memset(buffer, 0, sizeof(buffer));
+	len = sizeof(buffer);
+	unsigned long long totalBytes = 0;
+	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_CONTENT_LENGTH, buffer, &len, 0)) {
+		if (sscanf_s(buffer, "%llu", &totalBytes) != 1)
+			totalBytes = 0;
+	}
+
+	return totalBytes;
+}
