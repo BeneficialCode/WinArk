@@ -289,7 +289,7 @@ LRESULT CWFPFilterTable::OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		WFPHelpers::HlprFwpmEngineClose(&engineHandle);
 
 	if (!ok) {
-		AtlMessageBox(m_hWnd, L"É¾³ýÊ§°Ü!", L"Error", MB_ICONERROR);
+		AtlMessageBox(m_hWnd, L"Delete failed!", L"Error", MB_ICONERROR);
 	}
 	if (ok) {
 		Refresh();

@@ -257,7 +257,7 @@ void CMainFrame::InitDriverInterface() {
 	}
 	if (DriverHelper::IsDriverLoaded()) {
 		if (DriverHelper::GetVersion() < DriverHelper::GetCurrentVersion()) {
-			auto response = AtlMessageBox(nullptr, L"Çý¶¯¸üÐÂ£¨A newer driver is available with new functionality. Update?£©",
+			auto response = AtlMessageBox(nullptr, L"Driver Update£¨A newer driver is available with new functionality. Update?£©",
 				IDS_TITLE, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON1);
 			if (response == IDYES) {
 				if (SecurityHelper::IsRunningElevated()) {
@@ -397,7 +397,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"Config",
 		L"Event Trace",
 		L"Logon Sessions",
-		L"Detect Bypass"
+		L""
 	};
 
 	int i = 0;

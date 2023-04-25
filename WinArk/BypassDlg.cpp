@@ -27,27 +27,27 @@ LRESULT CBypassDlg::OnBypass(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	}
 
 	if (flag == 0) {
-		AtlMessageBox(m_hWnd, L"未选择任何绕过项", L"参数错误", MB_ICONERROR);
+		AtlMessageBox(m_hWnd, L"You should select at least one option", L"Parameters error", MB_ICONERROR);
 		return FALSE;
 	}
 	if (m_enable) {
 		bool ok = DriverHelper::Unbypass(flag);
 		if (ok) {
-			SetDlgItemText(IDC_BYPASS, L"启用检测绕过");
+			SetDlgItemText(IDC_BYPASS, L"Enable Bypass Detect");
 			m_enable = false;
 		}
 		else {
-			AtlMessageBox(m_hWnd, L"禁用失败");
+			AtlMessageBox(m_hWnd, L"Disable Failed");
 		}
 	}
 	else {
 		bool ok = DriverHelper::Bypass(flag);
 		if (ok) {
-			SetDlgItemText(IDC_BYPASS, L"禁用检测绕过");
+			SetDlgItemText(IDC_BYPASS, L"Disable Bypass Detect");
 			m_enable = true;
 		}
 		else {
-			AtlMessageBox(m_hWnd, L"启用失败");
+			AtlMessageBox(m_hWnd, L"Enable failed");
 		}
 	}
 

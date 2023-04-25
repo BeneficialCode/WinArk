@@ -58,7 +58,7 @@ LRESULT CSystemConfigDlg::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	}
 
 	if (count == 0) {
-		AtlMessageBox(m_hWnd, L"未选择任何配置项", L"错误", MB_ICONERROR);
+		AtlMessageBox(m_hWnd, L"You should select one config", L"Error", MB_ICONERROR);
 		return FALSE;
 	}
 	GetDlgItem(IDC_SET_CALLBACK).EnableWindow(FALSE);
@@ -84,11 +84,11 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	if (m_enableDbgSys) {
 		bool success = DriverHelper::DisableDbgSys();
 		if (success) {
-			SetDlgItemText(IDC_ENABLE_DBGSYS, L"启用调试子系统");
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Enable Dbg Subsystem");
 			m_enableDbgSys = false;
 		}
 		else {
-			AtlMessageBox(m_hWnd, L"禁用失败!");
+			AtlMessageBox(m_hWnd, L"Disable failed");
 		}
 	}
 	else {
@@ -102,11 +102,11 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 			success = DriverHelper::EnableDbgSys(&info);
 		} while (false);
 		if (success) {
-			SetDlgItemText(IDC_ENABLE_DBGSYS, L"禁用调试子系统");
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Disable Dbg Subsystem");
 			m_enableDbgSys = true;
 		}
 		else {
-			AtlMessageBox(m_hWnd, L"启用失败!");
+			AtlMessageBox(m_hWnd, L"Enable Failed!");
 		}
 	}
 	return TRUE;

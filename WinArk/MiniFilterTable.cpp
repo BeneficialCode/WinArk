@@ -360,7 +360,7 @@ LRESULT CMiniFilterTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	bool ok = DriverHelper::RemoveMiniFilter(data, size);
 	if (!ok) {
-		AtlMessageBox(m_hWnd, L"ÒÆ³ýÊ§°Ü!", L"Error", MB_ICONERROR);
+		AtlMessageBox(m_hWnd, L"Remove Failed!", L"Error", MB_ICONERROR);
 	}
 	if (ok) {
 		Refresh();
