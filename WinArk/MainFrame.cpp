@@ -384,20 +384,20 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	struct {
 		PCWSTR Name;
 	}columns[] = {
-		L"进程",
-		L"内核模块",
-		L"内核",
-		L"内核钩子",
-		L"网络",
-		L"驱动",
-		L"注册表",
-		L"设备",
-		L"窗口",
-		L"服务",
-		L"配置",
-		L"事件追踪",
+		L"Process",
+		L"Kernel Module",
+		L"Kernel",
+		L"Kernel Hook",
+		L"Network",
+		L"Driver",
+		L"Registry",
+		L"Device",
+		L"Windows",
+		L"Services",
+		L"Config",
+		L"Event Trace",
 		L"Logon Sessions",
-		L"检测对抗"
+		L"Detect Bypass"
 	};
 
 	int i = 0;
