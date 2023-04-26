@@ -1164,6 +1164,10 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (!MmIsAddressValid(pCount)) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
 			ULONG count = *pCount;
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(int);
@@ -1279,6 +1283,10 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+			if (!MmIsAddressValid(pCount)) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
 			ULONG count = *pCount;
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(count);

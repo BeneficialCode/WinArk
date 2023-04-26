@@ -241,22 +241,11 @@ unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring file
 	unsigned int timeout) {
 	HINTERNET hInternet = nullptr;
 	HINTERNET hUrl = nullptr;
-	HANDLE hFile = nullptr;
 	HINTERNET hConnect = nullptr;
 
 	Cleanup cleanup([&]()
 	{
 		DWORD lastError = ::GetLastError();
-		if (hFile != INVALID_HANDLE_VALUE) {
-			bool doDelete = false;
-			LARGE_INTEGER fileSize;
-			if (lastError != ERROR_SUCCESS || (::GetFileSizeEx(hFile, &fileSize) && fileSize.QuadPart == 0)) {
-				doDelete = true;
-			}
-			::CloseHandle(hFile);
-			if (doDelete)
-				DeleteFile(fileName.c_str());
-		}
 		if (hUrl != nullptr)
 			::InternetCloseHandle(hUrl);
 		if (hInternet != nullptr)
@@ -265,11 +254,6 @@ unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring file
 			::InternetCloseHandle(hConnect);
 		::SetLastError(lastError);
 	});
-
-
-	hFile = ::CreateFile(fileName.c_str(), GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return 0;
 
 	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
 		nullptr, nullptr, 0);
