@@ -387,7 +387,7 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"ÒÆ³ý»Øµ÷£º%p?", p.Routine);
+	text.Format(L"Remove notify£º%p?", p.Routine);
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
@@ -413,12 +413,20 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			data.Type = NotifyType::ProcessObjectNotify;
 			data.Address = p.Address;
 			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+			if (data.Offset == -1) {
+				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+				return 0;
+			}
 			break;
 		case CallbackType::ThreadObPostOperationNotify:
 		case CallbackType::ThreadObPreOperationNotify:
 			data.Type = NotifyType::ThreadObjectNotify;
 			data.Address = p.Address;
 			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+			if (data.Offset == -1) {
+				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+				return 0;
+			}
 			break;
 
 		case CallbackType::RegistryNotify:

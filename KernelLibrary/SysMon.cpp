@@ -538,6 +538,10 @@ bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCal
 	POB_CALLBACK_ENTRY callbackEntry = nullptr;
 	ULONG count = 0;
 
+	if (callbackListOffset == -1) {
+		return false;
+	}
+
 	if (!objectType) {
 		return false;
 	}
@@ -576,7 +580,12 @@ LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
 		return count;
 	}
 
+	if (callbackListOffset == -1) {
+		return count;
+	}
+
 	callbackListHead = (PLIST_ENTRY)((PUCHAR)objectType + callbackListOffset);
+
 	nextEntry = callbackListHead->Flink;
 
 	while (nextEntry != callbackListHead) {
