@@ -240,6 +240,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
+	DriverHelper::LoadDriver(false);
+
 	_Module.Term();
 	::CoUninitialize();
 	::CloseHandle(g_hSingleInstMutex);
