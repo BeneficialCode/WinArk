@@ -219,7 +219,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (!::wcsstr(lpstrCmdLine, L"runas")) {
 		if (g_hSingleInstMutex) {
 			if (::GetLastError() == ERROR_ALREADY_EXISTS) {
-				MessageBox(nullptr, L"ÇëÎðÖØ¸´Æô¶¯!!!", L"Error", MB_ICONERROR);
+				MessageBox(nullptr, L"Please do not double start!!!", L"Error", MB_ICONERROR);
 				return -1;
 			}
 		}
