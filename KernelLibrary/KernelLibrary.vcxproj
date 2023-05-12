@@ -250,7 +250,9 @@
     <ClInclude Include="kDbgSys.h" />
     <ClInclude Include="kDbgUtil.h" />
     <ClInclude Include="khook.h" />
+    <ClInclude Include="ksocket.h" />
     <ClInclude Include="kstring.h" />
+    <ClInclude Include="ktdi.h" />
     <ClInclude Include="kvector.h" />
     <ClInclude Include="LinkedList.h" />
     <ClInclude Include="Logging.h" />
@@ -299,7 +301,9 @@
     <ClCompile Include="kDbgSys.cpp" />
     <ClCompile Include="kDbgUtil.cpp" />
     <ClCompile Include="khook.cpp" />
+    <ClCompile Include="ksocket.cpp" />
     <ClCompile Include="kstring.cpp" />
+    <ClCompile Include="ktdi.cpp" />
     <ClCompile Include="kvector.cpp" />
     <ClCompile Include="LinkedList.cpp" />
     <ClCompile Include="Logging.cpp" />

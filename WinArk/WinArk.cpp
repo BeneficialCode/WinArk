@@ -239,7 +239,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		return 0;
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
-
+	
 	DriverHelper::LoadDriver(false);
 
 	_Module.Term();

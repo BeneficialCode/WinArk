@@ -34,6 +34,9 @@
     <Filter Include="Timer">
       <UniqueIdentifier>{c59f543e-d208-4f78-899d-a0147ca066cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{568d9ff4-a4e3-4b4f-af30-d482ec4f3944}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -183,6 +186,12 @@
     <ClInclude Include="WinExtHosts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ksocket.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="ktdi.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -310,6 +319,12 @@
     </ClCompile>
     <ClCompile Include="WinExtHosts.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ksocket.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ktdi.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
