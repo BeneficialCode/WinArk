@@ -27,3 +27,5 @@ NTSTATUS tdi_open_connection_endpoint(PUNICODE_STRING devName, PVOID connectionC
 NTSTATUS tdi_associate_address(PFILE_OBJECT connectionFileObject, HANDLE addressHandle);
 NTSTATUS tdi_connect(PFILE_OBJECT connectionFileObject, ULONG addr, USHORT port);
 NTSTATUS tdi_query_address(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT port);
+NTSTATUS tdi_recv_dgram(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT port, char* buf, int len, ULONG flags);
+NTSTATUS tdi_send_dgram(PFILE_OBJECT addressFileObject, ULONG addr, USHORT port, const char* buf, int len);

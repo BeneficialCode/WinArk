@@ -387,3 +387,183 @@ NTSTATUS tdi_query_address(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT 
 
 	return status;
 }
+
+NTSTATUS tdi_recv_dgram(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT port, char* buf, int len, ULONG flags) {
+	PDEVICE_OBJECT devObj;
+	KEVENT event;
+	PTDI_CONNECTION_INFORMATION remoteInfo;
+	PTDI_CONNECTION_INFORMATION returnInfo;
+	PTA_IP_ADDRESS returnAddr;
+	PIRP irp;
+	PMDL mdl;
+	IO_STATUS_BLOCK iosb;
+	NTSTATUS status;
+
+	devObj = IoGetRelatedDeviceObject(addressFileObject);
+
+	KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+	SIZE_T size = 2 * sizeof(TDI_CONNECTION_INFORMATION) + sizeof(TA_IP_ADDRESS);
+	remoteInfo = (PTDI_CONNECTION_INFORMATION)ExAllocatePoolWithTag(NonPagedPool, size, KTDI_TAG);
+
+	if (remoteInfo == nullptr) {
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	RtlZeroMemory(remoteInfo, size);
+
+	remoteInfo->RemoteAddressLength = 0;
+	remoteInfo->RemoteAddress = nullptr;
+
+	returnInfo = (PTDI_CONNECTION_INFORMATION)((PUCHAR)remoteInfo + sizeof(TDI_CONNECTION_INFORMATION));
+
+	returnInfo->RemoteAddressLength = sizeof(TA_IP_ADDRESS);
+	returnInfo->RemoteAddress = (PUCHAR)returnInfo + sizeof(TDI_CONNECTION_INFORMATION);
+
+	returnAddr = (PTA_IP_ADDRESS)returnInfo->RemoteAddress;
+
+	returnAddr->TAAddressCount = 1;
+	returnAddr->Address[0].AddressLength = TDI_ADDRESS_LENGTH_IP;
+	returnAddr->Address[0].AddressType = TDI_ADDRESS_TYPE_IP;
+
+	irp = TdiBuildInternalDeviceControlIrp(TDI_RECEIVE_DATAGRAM, devObj, addressFileObject, &event, &iosb);
+
+	if (irp == nullptr) {
+		ExFreePool(remoteInfo);
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	if (len) {
+		mdl = IoAllocateMdl(buf, len, FALSE, FALSE, nullptr);
+		if (mdl == nullptr) {
+			IoFreeIrp(irp);
+			ExFreePool(remoteInfo);
+			return STATUS_INSUFFICIENT_RESOURCES;
+		}
+
+		__try {
+			MmProbeAndLockPages(mdl, KernelMode, IoWriteAccess);
+			status = STATUS_SUCCESS;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+			IoFreeMdl(mdl);
+			IoFreeIrp(irp);
+			ExFreePool(remoteInfo);
+			status = STATUS_INVALID_USER_BUFFER;
+		}
+
+		if (!NT_SUCCESS(status)) {
+			return status;
+		}
+	}
+
+	TdiBuildReceiveDatagram(irp, devObj, addressFileObject, nullptr, nullptr, 
+		len ? mdl : 0, 
+		len,
+		remoteInfo, 
+		returnInfo, 
+		flags);
+
+	status = IoCallDriver(devObj, irp);
+
+	if (status == STATUS_PENDING) {
+		KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, nullptr);
+		status = iosb.Status;
+	}
+
+	if (addr) {
+		*addr = returnAddr->Address[0].Address[0].in_addr;
+	}
+	if (port) {
+		*port = returnAddr->Address[0].Address[0].sin_port;
+	}
+
+	ExFreePool(remoteInfo);
+
+	return NT_SUCCESS(status) ? (int)iosb.Information : status;
+}
+
+NTSTATUS tdi_send_dgram(PFILE_OBJECT addressFileObject, ULONG addr, USHORT port, const char* buf, int len) {
+	PDEVICE_OBJECT devObj;
+	KEVENT event;
+	PTDI_CONNECTION_INFORMATION remoteInfo;
+	PTA_IP_ADDRESS remoteAddr;
+	PIRP irp;
+	PMDL mdl;
+	IO_STATUS_BLOCK iosb;
+	NTSTATUS status;
+
+	devObj = IoGetRelatedDeviceObject(addressFileObject);
+
+	KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+	SIZE_T size = sizeof(TDI_CONNECTION_INFORMATION) + sizeof(TA_IP_ADDRESS);
+	remoteInfo = (PTDI_CONNECTION_INFORMATION)ExAllocatePoolWithTag(NonPagedPool, size, KTDI_TAG);
+	if (remoteInfo == nullptr) {
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	RtlZeroMemory(remoteInfo, size);
+
+	remoteInfo->RemoteAddressLength = sizeof(TA_IP_ADDRESS);
+	remoteInfo->RemoteAddress = (PUCHAR)remoteInfo + sizeof(TDI_CONNECTION_INFORMATION);
+
+	remoteAddr = (PTA_IP_ADDRESS)remoteInfo->RemoteAddress;
+
+	remoteAddr->TAAddressCount = 1;
+	remoteAddr->Address[0].AddressLength = TDI_ADDRESS_LENGTH_IP;
+	remoteAddr->Address[0].AddressType = TDI_ADDRESS_TYPE_IP;
+	remoteAddr->Address[0].Address[0].sin_port = port;
+	remoteAddr->Address[0].Address[0].in_addr = addr;
+
+	irp = TdiBuildInternalDeviceControlIrp(TDI_SEND_DATAGRAM, devObj, addressFileObject, &event, &iosb);
+
+	if (irp == nullptr)
+	{
+		ExFreePool(remoteInfo);
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	if (len)
+	{
+		mdl = IoAllocateMdl((void*)buf, len, FALSE, FALSE, nullptr);
+
+		if (mdl == nullptr)
+		{
+			IoFreeIrp(irp);
+			ExFreePool(remoteInfo);
+			return STATUS_INSUFFICIENT_RESOURCES;
+		}
+
+		__try
+		{
+			MmProbeAndLockPages(mdl, KernelMode, IoReadAccess);
+			status = STATUS_SUCCESS;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			IoFreeMdl(mdl);
+			IoFreeIrp(irp);
+			ExFreePool(remoteInfo);
+			status = STATUS_INVALID_USER_BUFFER;
+		}
+
+		if (!NT_SUCCESS(status))
+		{
+			return status;
+		}
+	}
+
+	TdiBuildSendDatagram(irp, devObj, addressFileObject, nullptr, nullptr, len ? mdl : 0, len, remoteInfo);
+
+	status = IoCallDriver(devObj, irp);
+
+	if (status == STATUS_PENDING) {
+		KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, nullptr);
+		status = iosb.Status;
+	}
+
+	ExFreePool(remoteInfo);
+
+	return NT_SUCCESS(status) ? (int)iosb.Information : status;
+}

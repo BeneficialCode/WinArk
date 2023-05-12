@@ -351,3 +351,135 @@ int listen(HANDLE socket, int backlog) {
 
 	return -1;
 }
+
+int recv(HANDLE socket, char* buf, int len, int flags) {
+	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
+
+	if (s->type == SOCK_DGRAM) {
+		
+	}
+}
+
+int recvfrom(HANDLE socket, char* buf, int len, int flags, struct sockaddr* addr, int* addrlen) {
+	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
+	struct sockaddr_in* returnAddr = (sockaddr_in*)addr;
+
+	if (s->type == SOCK_STREAM) {
+		return recv(socket, buf, len, flags);
+	}
+	else if (s->type == SOCK_DGRAM) {
+		u_long* sin_addr = 0;
+		u_short* sin_port = 0;
+
+		if (!s->isBound) {
+			return -1;
+		}
+
+		if (addr != nullptr & addrlen != nullptr && *addrlen >= sizeof(sockaddr_in)) {
+			sin_addr = &returnAddr->sin_addr.s_addr;
+			sin_port = &returnAddr->sin_port;
+			*addrlen = sizeof(sockaddr_in);
+		}
+
+		return tdi_recv_dgram(s->addressFileObject, sin_addr, sin_port, buf, len, TDI_RECEIVE_NORMAL);
+	}
+	else {
+		return -1;
+	}
+}
+
+int send(HANDLE socket, const char* buf, int len, int flags) {
+	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
+
+	if (!s->isConnected) {
+		return -1;
+	}
+
+	if (s->type == SOCK_DGRAM) {
+		return sendto(socket, buf, len, flags, &s->peer, sizeof(s->peer));
+	}
+}
+
+int sendto(HANDLE socket, const char* buf, int len, int flags, 
+	const struct sockaddr* addr, int addrlen) {
+	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
+	const sockaddr_in* remoteAddr = (const sockaddr_in*)addr;
+
+	if (s->type == SOCK_STREAM) {
+		return send(socket, buf, len, flags);
+	}
+	else if (s->type == SOCK_DGRAM) {
+		sockaddr_in localAddr;
+		NTSTATUS status;
+
+		localAddr.sin_family = AF_INET;
+		localAddr.sin_port = 0;
+		localAddr.sin_addr.s_addr = INADDR_ANY;
+
+		status = bind(socket, (struct sockaddr*)&localAddr, sizeof(localAddr));
+		if (!NT_SUCCESS(status)) {
+			return status;
+		}
+
+		return tdi_send_dgram(s->addressFileObject,
+			remoteAddr->sin_addr.s_addr,
+			remoteAddr->sin_port,
+			buf, len);
+	}
+	else {
+		return -1;
+	}
+}
+
+int shutdown(HANDLE socket, int how) {
+	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
+
+	if (!s->isConnected) {
+		return -1;
+	}
+
+	if (s->type == SOCK_STREAM) {
+		s->isShuttingdown = TRUE;
+		return tdi_disconnect(s->streamSocket->connectionFileObject, TDI_DISCONNECT_RELEASE);
+	}
+	else {
+		return -1;
+	}
+}
+
+HANDLE socket(int af, int type, int protocol) {
+	PSOCKET s;
+	
+	if (af != AF_INET) {
+		return LongToHandle(STATUS_INVALID_PARAMETER);
+	}
+
+	s = (PSOCKET)ExAllocatePoolWithTag(NonPagedPool, sizeof(SOCKET), SOCK_TAG);
+
+	if (!s) {
+		return LongToHandle(STATUS_INSUFFICIENT_RESOURCES);
+	}
+
+	RtlZeroMemory(s, sizeof(SOCKET));
+
+	s->type = type;
+	s->addressHandle = (HANDLE)-1;
+
+	return (HANDLE)(-(INT_PTR)s);
+}
+
+int stream_recv(HANDLE socket, char* buf, int len) {
+	int left, recvBytes;
+	char* p;
+	left = len;
+	p = buf;
+	while (left > 0) {
+		recvBytes = left > 65536 ? 65536 : left;
+		recvBytes = recv(socket, p, recvBytes, 0);
+		if (recvBytes < 0)
+			return recvBytes;
+		left -= recvBytes;
+		p += recvBytes;
+	}
+	return 0;
+}

@@ -32,3 +32,11 @@ int getpeername(HANDLE socket, struct sockaddr* addr, int* addrlen);
 int getsockname(HANDLE socket, struct sockaddr* addr, int* addrlen);
 char* inet_ntoa(struct in_addr addr);
 int listen(HANDLE socket, int backlog);
+int recv(HANDLE socket, char* buf, int len, int flags);
+int recvfrom(HANDLE socket, char* buf, int len, int flags, struct sockaddr* addr, int* addrlen);
+int send(HANDLE socket, const char* buf, int len, int flags);
+int sendto(HANDLE socket, const char* buf, int len, int flags, const struct sockaddr* addr,
+    int addrlen);
+int shutdown(HANDLE socket, int how);
+HANDLE socket(int af, int type, int protocol);
+int stream_recv(HANDLE socket, char* buf, int len);
