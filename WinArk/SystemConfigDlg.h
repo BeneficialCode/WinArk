@@ -15,6 +15,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_SET_CALLBACK,OnSetCallback)
 		COMMAND_ID_HANDLER(IDC_REMOVE_CALLBACK,OnRemoveCallback)
 		COMMAND_ID_HANDLER(IDC_ENABLE_DBGSYS,OnEnableDbgSys)
+		COMMAND_ID_HANDLER(ID_DBG_ADD,OnAddDebugger)
+		COMMAND_ID_HANDLER(ID_DBG_REMOVE,OnRemoveDebugger)
+		NOTIFY_HANDLER(IDC_DEBUGGER_LIST,NM_RCLICK,OnListViewContext)
 		CHAIN_MSG_MAP(CDialogResize<CSystemConfigDlg>)
 	END_MSG_MAP()
 
@@ -34,6 +37,9 @@ public:
 	LRESULT OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnListViewContext(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnAddDebugger(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRemoveDebugger(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 private:
@@ -53,4 +59,5 @@ private:
 	CButton m_CheckImageLoad;
 	WinSys::BasicSystemInfo m_BasicSysInfo;
 	bool m_enableDbgSys = false;
+	CListViewCtrl m_List;
 };

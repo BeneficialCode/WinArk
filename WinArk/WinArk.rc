@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -206,16 +206,16 @@ BEGIN
     LTEXT           "Static",IDC_MESSAGE,25,18,247,8
 END
 
-IDD_CONFIG DIALOGEX 0, 0, 702, 297
+IDD_CONFIG DIALOGEX 0, 0, 664, 294
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Image Callback Config",IDC_GROUP_CALLBACK,7,7,375,120,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     CONTROL         "Backup the Driver load（Intercept）",IDC_INTERCEPT_DRIVER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,33,134,10
-    PUSHBUTTON      "Set Callback",IDC_SET_CALLBACK,258,105,50,14
-    PUSHBUTTON      "Remove Callback",IDC_REMOVE_CALLBACK,326,105,50,14
-    GROUPBOX        "System Info",IDC_GROUP_SYSINFO,399,6,291,121,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Set Callback",IDC_SET_CALLBACK,229,105,50,14
+    PUSHBUTTON      "Remove Callback",IDC_REMOVE_CALLBACK,305,105,71,14
+    GROUPBOX        "System Info",IDC_GROUP_SYSINFO,399,6,249,121,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
     LTEXT           "Windows Version:",IDC_STATIC,411,31,58,8
     LTEXT           "",IDC_WIN_VERSION,473,31,141,8
     LTEXT           "Boot Time:",IDC_STATIC,411,47,35,8
@@ -226,8 +226,9 @@ BEGIN
     LTEXT           "",IDC_PROCESSOR_COUNT,474,79,149,8
     LTEXT           "Processor:",IDC_STATIC,412,95,35,8
     LTEXT           "",IDC_PROCESSOR,474,94,149,8
-    GROUPBOX        "Dbg Subsystem",IDC_GROUP_DBGSYS,7,141,688,143,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
-    PUSHBUTTON      "Enable Dbg Subsystem",IDC_ENABLE_DBGSYS,276,181,127,64
+    GROUPBOX        "Dbg Subsystem",IDC_GROUP_DBGSYS,7,141,641,143,BS_FLAT,WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
+    PUSHBUTTON      "Enable",IDC_ENABLE_DBGSYS,576,198,63,30
+    CONTROL         "",IDC_DEBUGGER_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,16,159,552,110
 END
 
 IDD_EVENT_PROPS DIALOGEX 0, 0, 351, 264
@@ -396,9 +397,9 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 695
+        RIGHTMARGIN, 657
         TOPMARGIN, 6
-        BOTTOMMARGIN, 290
+        BOTTOMMARGIN, 287
     END
 
     IDD_EVENT_PROPS, DIALOG
@@ -846,6 +847,15 @@ BEGIN
     MENUITEM "Help",                        0
 END
 
+IDR_DBG_CONTEXT MENU
+BEGIN
+    POPUP "Dbg"
+    BEGIN
+        MENUITEM "Add",                         ID_DBG_ADD
+        MENUITEM "Remove",                      ID_DBG_REMOVE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -893,12 +903,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1417,7 +1427,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

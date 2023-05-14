@@ -9,6 +9,13 @@ using namespace WinSys;
 LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	//DlgResize_Init(true);
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
+	m_List.Attach(GetDlgItem(IDC_DEBUGGER_LIST));
+	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_GRIDLINES);
+	
+	m_List.InsertColumn(0, L"Debugger", LVCFMT_LEFT, 80);
+	CRect rect;
+	m_List.GetClientRect(&rect);
+	m_List.InsertColumn(1, L"Path", LVCFMT_LEFT, rect.Width());
 
 	m_BasicSysInfo = SystemInformation::GetBasicSystemInfo();
 
@@ -462,4 +469,40 @@ bool CSystemConfigDlg::InitKthreadOffsets(DbgSysCoreInfo* pInfo) {
 		return false;
 
 	return true;
+}
+
+LRESULT CSystemConfigDlg::OnListViewContext(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	CPoint pt;
+	::GetCursorPos(&pt);
+	CMenu menu;
+	menu.LoadMenu(IDR_DBG_CONTEXT);
+	auto hMenu = menu.GetSubMenu(0);
+	int index = m_List.GetSelectionMark();
+	if (index == -1) {
+		menu.EnableMenuItem(ID_DBG_REMOVE, MF_GRAYED);
+	}
+	TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_hWnd, nullptr);
+	return 0;
+}
+
+LRESULT CSystemConfigDlg::OnAddDebugger(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WCHAR path[MAX_PATH] = { 0 };
+	CFileDialog dlg(TRUE, L"Debugger", nullptr, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_EXPLORER, L"Executables (*.exe)\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		int n = m_List.AddItem(m_List.GetItemCount(), 0, dlg.m_szFileTitle, 0);
+		m_List.SetItemText(n, 1, dlg.m_szFileName);
+	}
+
+	return 0;
+}
+
+LRESULT CSystemConfigDlg::OnRemoveDebugger(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ATLASSERT(m_List.GetSelectedCount() > 0);
+	int index = -1;
+	index = m_List.GetSelectionMark();
+	if (index == -1) {
+		return 0;
+	}
+	m_List.DeleteItem(index);
+	return 0;
 }
