@@ -395,7 +395,7 @@ NTSTATUS tdi_recv_dgram(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT por
 	PTDI_CONNECTION_INFORMATION returnInfo;
 	PTA_IP_ADDRESS returnAddr;
 	PIRP irp;
-	PMDL mdl;
+	PMDL mdl = nullptr;
 	IO_STATUS_BLOCK iosb;
 	NTSTATUS status;
 
@@ -489,7 +489,7 @@ NTSTATUS tdi_send_dgram(PFILE_OBJECT addressFileObject, ULONG addr, USHORT port,
 	PTDI_CONNECTION_INFORMATION remoteInfo;
 	PTA_IP_ADDRESS remoteAddr;
 	PIRP irp;
-	PMDL mdl;
+	PMDL mdl = nullptr;
 	IO_STATUS_BLOCK iosb;
 	NTSTATUS status;
 
@@ -564,6 +564,58 @@ NTSTATUS tdi_send_dgram(PFILE_OBJECT addressFileObject, ULONG addr, USHORT port,
 	}
 
 	ExFreePool(remoteInfo);
+
+	return NT_SUCCESS(status) ? (int)iosb.Information : status;
+}
+
+NTSTATUS tdi_recv_stream(PFILE_OBJECT connectionFileObject, char* buf, int len, ULONG flags) {
+	PDEVICE_OBJECT devObj;
+	KEVENT event;
+	PIRP irp;
+	PMDL mdl = nullptr;
+	IO_STATUS_BLOCK iosb;
+	NTSTATUS status;
+
+	devObj = IoGetRelatedDeviceObject(connectionFileObject);
+
+	KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+	irp = TdiBuildInternalDeviceControlIrp(TDI_RECEIVE, devObj, connectionFileObject, &event, &iosb);
+
+	if (irp == nullptr) {
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	if (len) {
+		mdl = IoAllocateMdl(buf, len, FALSE, FALSE, nullptr);
+		if (mdl == nullptr) {
+			IoFreeIrp(irp);
+			return STATUS_INSUFFICIENT_RESOURCES;
+		}
+
+		__try {
+			MmProbeAndLockPages(mdl, KernelMode, IoWriteAccess);
+			status = STATUS_SUCCESS;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+			IoFreeMdl(mdl);
+			IoFreeIrp(irp);
+			status = STATUS_INVALID_USER_BUFFER;
+		}
+
+		if (!NT_SUCCESS(status)) {
+			return status;
+		}
+	}
+
+	TdiBuildReceive(irp, devObj, connectionFileObject, nullptr, nullptr, len ? mdl : 0, flags, len);
+
+	status = IoCallDriver(devObj, irp);
+
+	if (status == STATUS_PENDING) {
+		KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, nullptr);
+		status = iosb.Status;
+	}
 
 	return NT_SUCCESS(status) ? (int)iosb.Information : status;
 }

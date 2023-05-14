@@ -24,6 +24,8 @@ typedef unsigned short  u_short;
 typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 
+#define MSG_OOB             0x1
+
 
 int bind(HANDLE socket, const struct sockaddr* addr, int addrlen);
 int close(HANDLE socket);

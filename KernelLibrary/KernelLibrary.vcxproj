@@ -265,6 +265,7 @@
     <ClInclude Include="ObjectAttributes.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PEParser.h" />
+    <ClInclude Include="ProcessNetFilter.h" />
     <ClInclude Include="ProcessProtect.h" />
     <ClInclude Include="QueuedSpinLock.h" />
     <ClInclude Include="RegistryKey.h" />
@@ -323,6 +324,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PEParser.cpp" />
+    <ClCompile Include="ProcessNetFilter.cpp" />
     <ClCompile Include="ProcessProtect.cpp" />
     <ClCompile Include="QueuedSpinLock.cpp" />
     <ClCompile Include="RegistryKey.cpp" />

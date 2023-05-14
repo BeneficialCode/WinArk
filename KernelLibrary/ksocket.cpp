@@ -356,7 +356,19 @@ int recv(HANDLE socket, char* buf, int len, int flags) {
 	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
 
 	if (s->type == SOCK_DGRAM) {
-		
+		return recvfrom(socket, buf, len, flags, nullptr, nullptr);
+	}
+	else if (s->type == SOCK_STREAM) {
+		if (!s->isConnected) {
+			return -1;
+		}
+
+		return tdi_recv_stream(s->streamSocket->connectionFileObject,
+			buf, len,
+			flags == MSG_OOB ? TDI_RECEIVE_EXPEDITED : TDI_RECEIVE_NORMAL);
+	}
+	else {
+		return -1;
 	}
 }
 

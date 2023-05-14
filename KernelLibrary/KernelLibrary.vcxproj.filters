@@ -192,6 +192,9 @@
     <ClInclude Include="ktdi.h">
       <Filter>Network</Filter>
     </ClInclude>
+    <ClInclude Include="ProcessNetFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -325,6 +328,9 @@
     </ClCompile>
     <ClCompile Include="ktdi.cpp">
       <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessNetFilter.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
