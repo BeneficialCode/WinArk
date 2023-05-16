@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "alarm", "alarm\alarm.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcMon", "ProcMon\ProcMon.vcxproj", "{495C31CF-8DD9-45AC-B53E-E70F3791C925}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DbgEngine", "DbgEngine\DbgEngine.vcxproj", "{09A755E6-67B4-4DBD-956A-0AFD923B779B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -182,6 +184,18 @@ Global
 		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x64.Build.0 = Release|x64
 		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x86.ActiveCfg = Release|Win32
 		{495C31CF-8DD9-45AC-B53E-E70F3791C925}.Release|x86.Build.0 = Release|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|ARM.ActiveCfg = Debug|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|x64.ActiveCfg = Debug|x64
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|x64.Build.0 = Debug|x64
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|x86.ActiveCfg = Debug|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Debug|x86.Build.0 = Debug|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|ARM.ActiveCfg = Release|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|ARM64.ActiveCfg = Release|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|x64.ActiveCfg = Release|x64
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|x64.Build.0 = Release|x64
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|x86.ActiveCfg = Release|Win32
+		{09A755E6-67B4-4DBD-956A-0AFD923B779B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
