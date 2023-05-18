@@ -3,6 +3,10 @@
 #pragma comment(lib,"ntdllp.lib")
 
 
+
+DWORD WINAPI MainThread(void* params);
+
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -11,6 +15,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+    {
+        DisableThreadLibraryCalls(hModule);
+        CreateThread(nullptr, 0, MainThread, nullptr, 0, nullptr);
+        break;
+    }
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
@@ -19,3 +28,9 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     return TRUE;
 }
 
+
+DWORD WINAPI MainThread(void* params) {
+    OutputDebugString(L"DbgEngine initialize...\n");
+
+    return 0;
+}

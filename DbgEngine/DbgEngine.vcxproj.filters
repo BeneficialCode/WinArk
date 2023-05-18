@@ -34,7 +34,6 @@
     <None Include="Exports.def">
       <Filter>源文件</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="loadcfg32.asm">
