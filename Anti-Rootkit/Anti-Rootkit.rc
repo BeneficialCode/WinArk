@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource2.h"
+#include "resource1.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource2.h\0"
+    "resource1.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -50,9 +50,9 @@ END
 // Version
 //
 
-DRIVER_VERSION_INFO VERSIONINFO
- FILEVERSION 1,2,1,0
- PRODUCTVERSION 1,0,0,1
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2023,5,19,1
+ PRODUCTVERSION 1,2,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -67,14 +67,14 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "CompanyName", "YuanOS Corporation"
-            VALUE "FileDescription", "Anti-RootKit Driver"
-            VALUE "FileVersion", "1.2.1.0"
+            VALUE "CompanyName", "YuanOS Coporation"
+            VALUE "FileDescription", "Anti-Rootkit Driver"
+            VALUE "FileVersion", "2023.5.19.1"
             VALUE "InternalName", "AntiRootkit.sys"
-            VALUE "LegalCopyright", "YuanOS Coporation Copyright (C) 2020"
+            VALUE "LegalCopyright", "YuanOS Coporation Copyright (C) 2023"
             VALUE "OriginalFilename", "AntiRootkit.sys"
             VALUE "ProductName", "AntiRootkit"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", "1.2.1.0"
         END
     END
     BLOCK "VarFileInfo"

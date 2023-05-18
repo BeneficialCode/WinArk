@@ -264,16 +264,15 @@ mkdir $(ProjectDir)..\Bin</Command>
     <ClInclude Include="AntiRootkit.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
-    <ClInclude Include="resource2.h" />
     <ClInclude Include="util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Anti-Rootkit.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KernelLibrary\KernelLibrary.vcxproj">
       <Project>{c8530718-a24c-4f86-bf28-cf5192f1751b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Anti-Rootkit.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
