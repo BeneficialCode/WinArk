@@ -26,6 +26,10 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		auto fileSize = std::filesystem::file_size(fileName);
 		if (fileSize) {
 			unsigned long long contentSize = GetPdbSize(url, fileName, "WinArk", 1000);
+			if (contentSize == 0) {
+				// Other error
+				return true;
+			}
 			if (contentSize != fileSize) {
 				int ret = AtlMessageBox(nullptr, L"The pdb size is not equal the content size from symbol server", L"Are you sure to run WinArk>", MB_OKCANCEL);
 				if (ret == IDCANCEL) {
