@@ -1,8 +1,12 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by Anti-Rootkit.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 Anti-Rootkit.rc 使用
+//
+#define SUBLANG_CHINESE_SIMPLIFIED      0x02
+#define LANG_CHINESE                    0x04
+#define DRIVER_VERSION_INFO             65535
 
-// 新对象的下一组默认值
+// Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

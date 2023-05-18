@@ -50,8 +50,8 @@ END
 // Version
 //
 
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
+DRIVER_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,2,1,0
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -59,9 +59,9 @@ VS_VERSION_INFO VERSIONINFO
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x40004L
- FILETYPE 0x0L
- FILESUBTYPE 0x0L
+ FILEOS 0x40000L
+ FILETYPE 0x3L
+ FILESUBTYPE 0x7L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
@@ -69,8 +69,8 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "YuanOS Corporation"
             VALUE "FileDescription", "Anti-RootKit Driver"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "TODO: <ÄÚ²¿Ãû³Æ>"
+            VALUE "FileVersion", "1.2.1.0"
+            VALUE "InternalName", "AntiRootkit.sys"
             VALUE "LegalCopyright", "YuanOS Coporation Copyright (C) 2020"
             VALUE "OriginalFilename", "AntiRootkit.sys"
             VALUE "ProductName", "AntiRootkit"

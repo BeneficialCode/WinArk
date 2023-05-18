@@ -2,6 +2,9 @@
 // Microsoft Visual C++ generated include file.
 // Used by Anti-Rootkit.rc
 
+#define LANG_CHINESE                    0x04
+#define SUBLANG_CHINESE_SIMPLIFIED      0x02
+
 // 新对象的下一组默认值
 // 
 #ifdef APSTUDIO_INVOKED
