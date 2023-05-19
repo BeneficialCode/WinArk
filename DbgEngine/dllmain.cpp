@@ -22,8 +22,12 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
         break;
+    case DLL_PROCESS_DETACH:
+    {
+        MH_Uninitialize();
+        break;
+    }
     }
     return TRUE;
 }
@@ -31,6 +35,10 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 DWORD WINAPI MainThread(void* params) {
     OutputDebugString(L"DbgEngine initialize...\n");
-
+    MH_STATUS status = MH_Initialize();
+    if (status != MH_OK) {
+        OutputDebugString(L"Minhook init failed");
+        return -1;
+    }
     return 0;
 }
