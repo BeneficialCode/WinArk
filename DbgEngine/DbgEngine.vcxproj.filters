@@ -18,6 +18,9 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DebugCore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -27,6 +30,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="loadcfg.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
