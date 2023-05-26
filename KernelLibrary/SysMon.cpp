@@ -80,11 +80,11 @@ void OnProcessNotify(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _Inout_op
 		}
 		PushItem(&info->Entry);
 
-		KdPrint(("[Library] %s [%ld] 创建进程%wZ\n", GetProcessNameByProcessId(CreateInfo->ParentProcessId),
-			CreateInfo->ParentProcessId, CreateInfo->ImageFileName));
+		LogInfo("%s [%ld] Create Process %wZ\n", GetProcessNameByProcessId(CreateInfo->ParentProcessId),
+			CreateInfo->ParentProcessId, CreateInfo->ImageFileName);
 		PUCHAR name = PsGetProcessImageFileName(Process);
 		if (!_stricmp(reinterpret_cast<const char*>(name), "calc.exe")) {
-			KdPrint(("禁止创建计算器进程"));
+			LogInfo("Disable create calc.exe!");
 			CreateInfo->CreationStatus = STATUS_UNSUCCESSFUL;// 返回失败
 		}
 	}
@@ -124,12 +124,13 @@ void OnThreadNotify(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Cr
 	item.ThreadId = HandleToUlong(ThreadId);
 
 	PushItem(&info->Entry);
-
 	if (Create) {
-		KdPrint(("线程创建: PID= %ld,TID= %ld\n", ProcessId, ThreadId));
+		bool sameProcess = ProcessId == PsGetCurrentProcessId();
+		LogInfo("Thread Create: PID= %ld,TID= %ld Same process: %d\n", 
+			ProcessId, ThreadId, sameProcess);
 	}
 	else {
-		KdPrint(("线程退出: PID= %ld,TID= %ld\n", ProcessId, ThreadId));
+		LogInfo("Thread Exit: PID= %ld,TID= %ld\n", ProcessId, ThreadId);
 	}
 }
 
