@@ -363,3 +363,31 @@ ULONG64 Helpers::ReadFieldValue(PUCHAR readAddr, ULONG readSize) {
 	RtlCopyMemory(&value, readAddr, readSize);
 	return value;
 }
+
+NTSTATUS Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, const VOID* base,
+	ULONG_PTR size, PVOID* ppFound) {
+	ASSERT(ppFound != NULL && pattern != NULL && base != NULL);
+	if (ppFound == NULL || pattern == NULL || base == NULL)
+		return STATUS_INVALID_PARAMETER;
+
+	for (ULONG_PTR i = 0; i < size - len; i++)
+	{
+		BOOLEAN found = TRUE;
+		for (ULONG_PTR j = 0; j < len; j++)
+		{
+			if (pattern[j] != wildcard && pattern[j] != ((PCUCHAR)base)[i + j])
+			{
+				found = FALSE;
+				break;
+			}
+		}
+
+		if (found != FALSE)
+		{
+			*ppFound = (PUCHAR)base + i;
+			return STATUS_SUCCESS;
+		}
+	}
+
+	return STATUS_NOT_FOUND;
+}

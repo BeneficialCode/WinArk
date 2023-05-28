@@ -25,6 +25,9 @@ public:
 	static ULONG64 ReadBitField(PUCHAR readAddr, BitField* pBitField);
 	static ULONG64 ReadFieldValue(PUCHAR readAddr, ULONG readSize);
 
+	static NTSTATUS SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, const VOID* base,
+		ULONG_PTR size, PVOID* ppFound);
+
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };
 

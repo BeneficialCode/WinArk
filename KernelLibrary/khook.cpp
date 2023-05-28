@@ -4,6 +4,7 @@
 #include "Helpers.h"
 #include "PEParser.h"
 #include <intrin.h>
+#include "Logging.h"
 
 SystemServiceTable* khook::_ntTable = nullptr;
 SystemServiceTable* khook::_win32kTable = nullptr;
@@ -117,7 +118,8 @@ bool khook::GetShadowSystemServiceTable() {
 #else
 		// x64 code
 		PEParser parser(_kernelImageBase);
-		for (int i = 0; parser.GetSectionCount(); i++) {
+		int count = parser.GetSectionCount();
+		for (int i = 0; i < count; i++) {
 			auto pSec = parser.GetSectionHeader(i);
 			if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
 				pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
@@ -162,7 +164,8 @@ bool khook::GetSystemServiceTable() {
 #else
 		// x64 code
 		PEParser parser(_kernelImageBase);
-		for (int i = 0; parser.GetSectionCount(); i++) {
+		int count = parser.GetSectionCount();
+		for (int i = 0; i < count; i++) {
 			auto pSec = parser.GetSectionHeader(i);
 			if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
 				pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
@@ -449,6 +452,10 @@ bool khook::UnhookShadowSSDT() {
 
 
 bool khook::GetKernelAndWin32kBase() {
+	if (_kernelImageBase && _win32kImageBase) {
+		return true;
+	}
+
 	void* buffer = nullptr;
 	ULONG size = 1 << 18;
 
@@ -926,4 +933,80 @@ ULONG khook::GetShadowServiceLimit() {
 		return 0;
 
 	return _win32kTable->NumberOfServices;
+}
+
+void khook::DetectInlineHook() {
+	bool success = GetKernelAndWin32kBase();
+	if (!success) {
+		return;
+	}
+#ifndef _WIN64
+	// x86 code
+	
+#else
+	// x64 code
+	PEParser parser(_kernelImageBase);
+	int count = parser.GetSectionCount();
+	for (int i = 0; i < count; i++) {
+		auto pSec = parser.GetSectionHeader(i);
+		if (pSec == nullptr) {
+			continue;
+		}
+		if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
+			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
+			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
+			(*(PULONG)pSec->Name != 'TINI') &&
+			(*(PULONG)pSec->Name != 'EGAP')) {
+			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
+			ULONG patternSize = sizeof(pattern1);
+			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
+
+			ULONG_PTR maxSearchAddr = maxAddress - sizeof(pattern1);
+			ULONG_PTR searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, sizeof(pattern1), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)){
+					LogInfo("Detect suspicious hook type 1 at %p\n", pFound);
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc\xc3";
+			maxSearchAddr = maxAddress - sizeof(pattern2);
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, sizeof(pattern2), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)){
+					LogInfo("Detect suspicious hook type 2 at %p\n", pFound);
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern3[] = "\xe9\xcc\xcc\xcc\xcc";
+			maxSearchAddr = maxAddress - sizeof(pattern3);
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, sizeof(pattern3), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)){
+					LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+				}
+				else {
+					break;
+				}
+			}
+
+		}
+	}
+#endif // !_WIN64
 }

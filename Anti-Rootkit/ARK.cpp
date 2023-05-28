@@ -363,6 +363,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			pSystemServiceTable += 1;
 			khook::_win32kTable = pSystemServiceTable;
+			khook::DetectInlineHook();
 			*(PULONG*)Irp->AssociatedIrp.SystemBuffer = pSystemServiceTable->ServiceTableBase;
 			len = sizeof(PULONG);
 			status = STATUS_SUCCESS;

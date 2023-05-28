@@ -6,6 +6,7 @@
 #include "KernelModuleTracker.h"
 #include "ProcessModuleTracker.h"
 #include <shellapi.h>
+#include <cassert>
 
 
 std::wstring Helpers::GetDosNameFromNtName(PCWSTR name) {
@@ -319,3 +320,28 @@ bool Helpers::WriteString(HANDLE hFile, std::wstring const& text) {
 }
 
 
+bool Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard,
+	ULONG_PTR len, const void* base, ULONG_PTR size, PVOID* ppFound) {
+	assert(ppFound != nullptr && pattern != nullptr && base != nullptr);
+
+	if (ppFound == nullptr || pattern == nullptr || base == nullptr) {
+		return false;
+	}
+
+	for (ULONG_PTR i = 0; i < size - len; i++) {
+		bool found = true;
+		for (ULONG j = 0; j < len; j++) {
+			if (pattern[j] != wildcard && pattern[j] != ((PUCHAR)base)[i + j]) {
+				found = false;
+				break;
+			}
+		}
+
+		if (found != false) {
+			*ppFound = (PUCHAR)base + i;
+			return true;
+		}
+	}
+
+	return false;
+}

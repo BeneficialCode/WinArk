@@ -490,6 +490,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize, ui
 		}
 	}
 	else {
+
 		count = cs_disasm(_x86handle, code, codeSize, address, 0, &insn);
 		if (count > 0) {
 			for (size_t j = 0; j < count; j++) {

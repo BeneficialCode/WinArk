@@ -209,7 +209,7 @@ public:
     bool UnhookShadowSSDT();
 
 	bool GetSystemServiceNumber(const char* exportName, PULONG index);
-	bool GetKernelAndWin32kBase();
+	static bool GetKernelAndWin32kBase();
     bool GetShadowSystemServiceNumber(PUNICODE_STRING symbolName, PULONG index);
     
     static bool SearchSessionProcess();
@@ -228,6 +228,8 @@ public:
     bool HookKernelApi(PVOID api,void* newfunc,bool first);
     bool UnhookKernelApi(bool end);
     NTSTATUS SecureExchange(PVOID opcodes);
+
+    static void DetectInlineHook();
 
 private:
 	HookInfo* _info = nullptr;
