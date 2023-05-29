@@ -63,6 +63,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"tab completion",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor)"},
 		{ L"Service Group Order",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\ServiceGroupOrder)"},
 		{ L"Group Order List",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GroupOrderList)"},
+		{ L"WinHttpAutoProxySvc",LR"(HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WinHttpAutoProxySvc)"}
 	};
 
 	for (const auto& [name, path] : locations) {
