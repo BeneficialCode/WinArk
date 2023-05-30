@@ -935,7 +935,7 @@ ULONG khook::GetShadowServiceLimit() {
 	return _win32kTable->NumberOfServices;
 }
 
-void khook::DetectInlineHook() {
+void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 	bool success = GetKernelAndWin32kBase();
 	if (!success) {
 		return;
@@ -947,6 +947,7 @@ void khook::DetectInlineHook() {
 	// x64 code
 	PEParser parser(_kernelImageBase);
 	int count = parser.GetSectionCount();
+	ULONG totalCount = 0;
 	for (int i = 0; i < count; i++) {
 		auto pSec = parser.GetSectionHeader(i);
 		if (pSec == nullptr) {
@@ -968,8 +969,14 @@ void khook::DetectInlineHook() {
 				PVOID pFound = NULL;
 				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, sizeof(pattern1), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
 				if (NT_SUCCESS(status)){
+					if (totalCount >= desiredCount) {
+						break;
+					}
+					pData[totalCount].Address = (ULONG_PTR)pFound;
+					pData[totalCount].Type = KernelHookType::x64HookType1;
 					LogInfo("Detect suspicious hook type 1 at %p\n", pFound);
 					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
 				}
 				else {
 					break;
@@ -983,8 +990,14 @@ void khook::DetectInlineHook() {
 				PVOID pFound = NULL;
 				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, sizeof(pattern2), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
 				if (NT_SUCCESS(status)){
+					if (totalCount >= desiredCount) {
+						break;
+					}
+					pData[totalCount].Address = (ULONG_PTR)pFound;
+					pData[totalCount].Type = KernelHookType::x64HookType2;
 					LogInfo("Detect suspicious hook type 2 at %p\n", pFound);
 					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
 				}
 				else {
 					break;
@@ -998,8 +1011,14 @@ void khook::DetectInlineHook() {
 				PVOID pFound = NULL;
 				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, sizeof(pattern3), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
 				if (NT_SUCCESS(status)){
+					if (totalCount >= desiredCount) {
+						break;
+					}
+					pData[totalCount].Address = (ULONG_PTR)pFound;
+					pData[totalCount].Type = KernelHookType::x64HookType3;
 					LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
 					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
 				}
 				else {
 					break;
@@ -1008,5 +1027,87 @@ void khook::DetectInlineHook() {
 
 		}
 	}
+	LogInfo("Total inline count: %d\n", totalCount);
 #endif // !_WIN64
+}
+
+ULONG khook::GetInlineHookCount() {
+	bool success = GetKernelAndWin32kBase();
+	if (!success) {
+		return 0;
+	}
+
+#ifndef _WIN64
+	// x86 code
+
+#else
+	// x64 code
+	PEParser parser(_kernelImageBase);
+	int count = parser.GetSectionCount();
+	ULONG totalCount = 0;
+	for (int i = 0; i < count; i++) {
+		auto pSec = parser.GetSectionHeader(i);
+		if (pSec == nullptr) {
+			continue;
+		}
+		if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
+			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
+			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
+			(*(PULONG)pSec->Name != 'TINI') &&
+			(*(PULONG)pSec->Name != 'EGAP')) {
+			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
+			ULONG patternSize = sizeof(pattern1);
+			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
+
+			ULONG_PTR maxSearchAddr = maxAddress - sizeof(pattern1);
+			ULONG_PTR searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, sizeof(pattern1), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc\xc3";
+			maxSearchAddr = maxAddress - sizeof(pattern2);
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, sizeof(pattern2), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern3[] = "\xe9\xcc\xcc\xcc\xcc";
+			maxSearchAddr = maxAddress - sizeof(pattern3);
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, sizeof(pattern3), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
+				}
+				else {
+					break;
+				}
+			}
+
+		}
+	}
+#endif
+
+	LogInfo("Total inline count: %d\n", totalCount);
+	return totalCount;
 }

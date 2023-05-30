@@ -13,6 +13,7 @@ struct Helpers abstract final {
 	static DWORD GetKernelModuleImageSize(std::string moduleName);
 
 	static std::string GetKernelModuleByAddress(ULONG_PTR address);
+	static std::string GetKernelModuleNameByAddress(ULONG_PTR address);
 	static std::wstring GetUserModuleByAddress(ULONG_PTR address, ULONG pid);
 	static std::wstring StringToWstring(const std::string& str);
 	static std::string WstringToString(const std::wstring& wstr);

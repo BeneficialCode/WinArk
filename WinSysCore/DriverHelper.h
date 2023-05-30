@@ -63,6 +63,9 @@ struct DriverHelper final {
 	static bool EnumWinExtHosts(PVOID pList, WinExtHostInfo* pInfo, ULONG size);
 
 	static bool EnumExtTable(ExtHostData* pData, void* pInfo, ULONG size);
+
+	static bool DetectInlineHook(ULONG count,KernelInlineHookData* pInfo, ULONG size);
+	static ULONG GetKernelInlineHookCount();
 private:
 	static bool OpenDevice();
 

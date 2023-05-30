@@ -230,7 +230,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		if (!NT_SUCCESS(status)) {
 			break;
 		}
-
+		
 		// 所有的资源申请，请考虑失败的情况下，会引发什么问题
 		g_RegisterPath.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool,
 			RegistryPath->Length, DRIVER_TAG);
@@ -363,7 +363,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 			pSystemServiceTable += 1;
 			khook::_win32kTable = pSystemServiceTable;
-			khook::DetectInlineHook();
 			*(PULONG*)Irp->AssociatedIrp.SystemBuffer = pSystemServiceTable->ServiceTableBase;
 			len = sizeof(PULONG);
 			status = STATUS_SUCCESS;
@@ -1577,6 +1576,45 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				len = dic.OutputBufferLength;
 				status = STATUS_SUCCESS;
 			}
+			break;
+		}
+
+		case IOCTL_ARK_DETECT_KERNEL_INLINE_HOOK:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			ULONG count = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			KernelInlineHookData* pData = (KernelInlineHookData*)Irp->AssociatedIrp.SystemBuffer;
+			if (dic.OutputBufferLength < sizeof(KernelInlineHookData)*count) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			khook::DetectInlineHook(count, pData);
+			len = dic.OutputBufferLength;
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_GET_KERNEL_INLINE_HOOK_COUNT:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.OutputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			ULONG count = khook::GetInlineHookCount();
+			status = STATUS_SUCCESS;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+			len = sizeof(count);
 			break;
 		}
 	}

@@ -337,3 +337,13 @@ struct ExtHostData {
 	USHORT Version;
 	USHORT Count;
 };
+
+enum class KernelHookType {
+	x64HookType1, x64HookType2, x64HookType3
+};
+
+struct KernelInlineHookData {
+	ULONG_PTR Address;
+	KernelHookType Type;
+	ULONG_PTR TargetAddress;
+};

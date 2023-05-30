@@ -221,6 +221,22 @@ std::string Helpers::GetKernelModuleByAddress(ULONG_PTR address) {
 	return "";
 }
 
+std::string Helpers::GetKernelModuleNameByAddress(ULONG_PTR address) {
+	WinSys::KernelModuleTracker m_Tracker;
+
+	auto count = m_Tracker.EnumModules();
+	auto modules = m_Tracker.GetModules();
+	for (decltype(count) i = 0; i < count; i++) {
+		auto m = modules[i];
+		ULONG_PTR limit = (ULONG_PTR)((char*)m->ImageBase + m->ImageSize);
+		if (address > (ULONG_PTR)m->ImageBase && address < limit) {
+			return m->Name;
+		}
+	}
+
+	return "";
+}
+
 
 std::wstring Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
 	std::wstring moduleName = L"";

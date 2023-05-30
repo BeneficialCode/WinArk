@@ -229,7 +229,8 @@ public:
     bool UnhookKernelApi(bool end);
     NTSTATUS SecureExchange(PVOID opcodes);
 
-    static void DetectInlineHook();
+    static void DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData);
+    static ULONG GetInlineHookCount();
 
 private:
 	HookInfo* _info = nullptr;

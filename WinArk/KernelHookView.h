@@ -4,6 +4,7 @@
 #include "KernelNotifyTable.h"
 #include "MiniFilterTable.h"
 #include "WFPFilterTable.h"
+#include "KernelInlineHookTable.h"
 
 
 class CKernelHookView:
@@ -30,9 +31,10 @@ public:
 	void InitKernelNotifyTable();
 	void InitMiniFilterTable();
 	void InitWFPFilterTable();
+	void InitInlineHookTable();
 
 	enum class TabColumn : int {
-		SSDT,ShadowSSDT,ObjectCallback,MiniFilter,WFPFilter
+		SSDT,ShadowSSDT,ObjectCallback,MiniFilter,WFPFilter,InlineHook
 	};
 private:
 	// 动态创建出来的控件
@@ -43,6 +45,7 @@ private:
 	CKernelNotifyTable* m_KernelNotifyTable{ nullptr };
 	CMiniFilterTable* m_MiniFilterTable{ nullptr };
 	CWFPFilterTable* m_WFPFilterTable{ nullptr };
+	CKernelInlineHookTable* m_InlineHookTable{ nullptr };
 	HWND m_hwndArray[16];
 	int _index = 0;
 };
