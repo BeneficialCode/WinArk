@@ -91,7 +91,7 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	if (m_enableDbgSys) {
 		bool success = DriverHelper::DisableDbgSys();
 		if (success) {
-			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Enable Dbg Subsystem");
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Enable");
 			m_enableDbgSys = false;
 		}
 		else {
@@ -109,7 +109,7 @@ LRESULT CSystemConfigDlg::OnEnableDbgSys(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 			success = DriverHelper::EnableDbgSys(&info);
 		} while (false);
 		if (success) {
-			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Disable Dbg Subsystem");
+			SetDlgItemText(IDC_ENABLE_DBGSYS, L"Disable");
 			m_enableDbgSys = true;
 		}
 		else {
