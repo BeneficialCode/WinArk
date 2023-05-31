@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "KernelInlineHookTable.h"
 #include "DriverHelper.h"
+#include "SymbolHelper.h"
 
 
 CKernelInlineHookTable::CKernelInlineHookTable(BarInfo& bars, TableInfo& table)
@@ -35,7 +36,19 @@ int CKernelInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select,
 
 	case Column::Address:
 	{
-		s.Format(L"0x%p", info.Address);
+		s.Format(L"0x%p  ", info.Address);
+		DWORD64 offset = 0;
+		auto symbol = SymbolHelper::GetSymbolFromAddress(info.Address,&offset);
+		if (symbol) {
+			std::string name = symbol->GetSymbolInfo()->Name;
+			s += Helpers::StringToWstring(name).c_str();
+			if (offset != 0) {
+				CString temp;
+				temp.Format(L"+ 0x%x", offset);
+				s += temp;
+			}
+			
+		}
 		break;
 	}
 

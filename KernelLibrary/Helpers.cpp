@@ -375,6 +375,12 @@ NTSTATUS Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, c
 		BOOLEAN found = TRUE;
 		for (ULONG_PTR j = 0; j < len; j++)
 		{
+			PUCHAR pMem = (PUCHAR)base + i + j;
+			BOOLEAN isValid = MmIsAddressValid(pMem);
+			if (!isValid) {
+				found = FALSE;
+				break;
+			}
 			if (pattern[j] != wildcard && pattern[j] != ((PCUCHAR)base)[i + j])
 			{
 				found = FALSE;

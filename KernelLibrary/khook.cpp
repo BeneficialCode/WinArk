@@ -5,6 +5,7 @@
 #include "PEParser.h"
 #include <intrin.h>
 #include "Logging.h"
+#include "Zydis/Zydis.h"
 
 SystemServiceTable* khook::_ntTable = nullptr;
 SystemServiceTable* khook::_win32kTable = nullptr;
@@ -948,34 +949,56 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 	PEParser parser(_kernelImageBase);
 	int count = parser.GetSectionCount();
 	ULONG totalCount = 0;
+
+	// Initialize Zydis decoder and formatter
+	ZydisDecoder decoder;
+	if (!ZYAN_SUCCESS(ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64)))
+		return;
+
+	ZydisFormatter formatter;
+	if (!ZYAN_SUCCESS(ZydisFormatterInit(&formatter, ZYDIS_FORMATTER_STYLE_INTEL)))
+		return;
+
+	SIZE_T readOffset = 0;
+	ZydisDecodedInstruction instruction;
+	ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
+	ZyanStatus status;
+	CHAR printBuffer[128];
+
 	for (int i = 0; i < count; i++) {
 		auto pSec = parser.GetSectionHeader(i);
 		if (pSec == nullptr) {
 			continue;
 		}
-		if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
+		if (pSec->Characteristics & IMAGE_SCN_MEM_READ &&
+			pSec->Characteristics & IMAGE_SCN_CNT_CODE &&
 			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
 			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
-			(*(PULONG)pSec->Name != 'TINI') &&
-			(*(PULONG)pSec->Name != 'EGAP')) {
+			(*(PULONG)pSec->Name != 'TINI')) {
 			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
-			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
-			ULONG patternSize = sizeof(pattern1);
 			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
+			LogInfo("start address: %p max address: %p\n", startAddr, maxAddress);
 
-			ULONG_PTR maxSearchAddr = maxAddress - sizeof(pattern1);
+			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
+			ULONG patternSize = sizeof(pattern1) - 1;
+			
+
+			ULONG_PTR maxSearchAddr = maxAddress - patternSize;
 			ULONG_PTR searchAddr = startAddr;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, sizeof(pattern1), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)){
+				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
 					if (totalCount >= desiredCount) {
 						break;
 					}
 					pData[totalCount].Address = (ULONG_PTR)pFound;
 					pData[totalCount].Type = KernelHookType::x64HookType1;
-					LogInfo("Detect suspicious hook type 1 at %p\n", pFound);
+					ULONG_PTR targetAddress = *(PULONG_PTR)((PUCHAR)pFound + 2);
+					pData[totalCount].TargetAddress = targetAddress;
 					searchAddr = (ULONG_PTR)pFound + patternSize;
+					LogInfo("Detect suspicious hook type 1 at %p\n", pFound);
+					LogInfo("Target Address: 0x%-16llX\n", targetAddress);
 					totalCount++;
 				}
 				else {
@@ -984,17 +1007,187 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			}
 
 			UCHAR pattern2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc\xc3";
-			maxSearchAddr = maxAddress - sizeof(pattern2);
+			patternSize = sizeof(pattern2) - 1;
+			maxSearchAddr = maxAddress - patternSize;
 			searchAddr = startAddr;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, sizeof(pattern2), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)){
+				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
 					if (totalCount >= desiredCount) {
 						break;
 					}
 					pData[totalCount].Address = (ULONG_PTR)pFound;
 					pData[totalCount].Type = KernelHookType::x64HookType2;
+					ULONG lowAddr = *(PULONG)((PUCHAR)pFound + 1);
+					ULONG highAddr = *(PULONG)((PUCHAR)pFound + 9);
+					ULONG_PTR targetAddress = ((ULONG_PTR)highAddr << 32) | lowAddr;
+					pData[totalCount].TargetAddress = targetAddress;
+					LogInfo("Detect suspicious hook type 2 at %p\n", pFound);
+					LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+					totalCount++;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern3[] = "\xe9\xcc\xcc\xcc\xcc";
+			patternSize = sizeof(pattern3) - 1;
+			maxSearchAddr = maxAddress - patternSize;
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+
+					SIZE_T length = sizeof(pattern3);
+					// Start the decode loop
+					while ((status = ZydisDecoderDecodeFull(&decoder,
+						pFound,
+						length - readOffset, &instruction,
+						operands)) != ZYDIS_STATUS_NO_MORE_DATA)
+					{
+						NT_ASSERT(ZYAN_SUCCESS(status));
+						if (!ZYAN_SUCCESS(status))
+						{
+							readOffset++;
+							continue;
+						}
+
+						// Format and print the instruction
+						const ZyanU64 instrAddress = (ZyanU64)pFound;
+						ZydisFormatterFormatInstruction(
+							&formatter, &instruction, operands, instruction.operand_count_visible, printBuffer,
+							sizeof(printBuffer), instrAddress, NULL);
+
+						readOffset += instruction.length;
+
+						if (instruction.machine_mode != ZYDIS_MACHINE_MODE_LONG_64) {
+							continue;
+						}
+						if (instruction.mnemonic != ZYDIS_MNEMONIC_JMP) {
+							continue;
+						}
+						if (instruction.operand_count != 2) {
+							continue;
+						}
+						if (operands[0].type != ZYDIS_OPERAND_TYPE_IMMEDIATE) {
+							continue;
+						}
+						if (operands[1].type != ZYDIS_OPERAND_TYPE_REGISTER) {
+							continue;
+						}
+
+						if (operands[1].reg.value != ZYDIS_REGISTER_RIP) {
+							continue;
+						}
+						ULONG_PTR targetAddress = instrAddress + instruction.length
+							+ operands[0].imm.value.u;
+						if (targetAddress < maxAddress) {
+							continue;
+						}
+						BOOLEAN isValid = MmIsAddressValid((PVOID)targetAddress);
+						if (!isValid) {
+							continue;
+						}
+						LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+						if (totalCount >= desiredCount) {
+							break;
+						}
+						pData[totalCount].Address = (ULONG_PTR)pFound;
+						pData[totalCount].Type = KernelHookType::x64HookType3;
+						pData[totalCount].TargetAddress = targetAddress;
+						totalCount++;
+						LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+						LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
+					}
+
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+				}
+				else {
+					break;
+				}
+			}
+
+
+		}
+	}
+#endif
+
+}
+
+ULONG khook::GetInlineHookCount() {
+	bool success = GetKernelAndWin32kBase();
+	if (!success) {
+		return 0;
+	}
+	ULONG totalCount = 0;
+#ifndef _WIN64
+	// x86 code
+
+#else
+	// x64 code
+	PEParser parser(_kernelImageBase);
+	int count = parser.GetSectionCount();
+	
+
+	// Initialize Zydis decoder and formatter
+	ZydisDecoder decoder;
+	if (!ZYAN_SUCCESS(ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64)))
+		return 0;
+
+	ZydisFormatter formatter;
+	if (!ZYAN_SUCCESS(ZydisFormatterInit(&formatter, ZYDIS_FORMATTER_STYLE_INTEL)))
+		return 0;
+
+	SIZE_T readOffset = 0;
+	ZydisDecodedInstruction instruction;
+	ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
+	ZyanStatus status;
+	CHAR printBuffer[128];
+
+	for (int i = 0; i < count; i++) {
+		auto pSec = parser.GetSectionHeader(i);
+		if (pSec == nullptr) {
+			continue;
+		}
+		if (pSec->Characteristics & IMAGE_SCN_MEM_READ &&
+			pSec->Characteristics & IMAGE_SCN_CNT_CODE &&
+			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
+			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
+			(*(PULONG)pSec->Name != 'TINI')) {
+			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
+
+			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
+			ULONG patternSize = sizeof(pattern1) - 1;
+			LogInfo("start address: %p max address: %p\n", startAddr, maxAddress);
+
+			ULONG_PTR maxSearchAddr = maxAddress - patternSize;
+			ULONG_PTR searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+					searchAddr = (ULONG_PTR)pFound + patternSize;
+					LogInfo("Detect suspicious hook type 1 at %p\n", pFound);
+					totalCount++;
+				}
+				else {
+					break;
+				}
+			}
+
+			UCHAR pattern2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc\xc3";
+			patternSize = sizeof(pattern2) - 1;
+			maxSearchAddr = maxAddress - patternSize;
+			searchAddr = startAddr;
+			while (searchAddr <= maxSearchAddr) {
+				PVOID pFound = NULL;
+				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
 					LogInfo("Detect suspicious hook type 2 at %p\n", pFound);
 					searchAddr = (ULONG_PTR)pFound + patternSize;
 					totalCount++;
@@ -1005,109 +1198,84 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			}
 
 			UCHAR pattern3[] = "\xe9\xcc\xcc\xcc\xcc";
-			maxSearchAddr = maxAddress - sizeof(pattern3);
+			patternSize = sizeof(pattern3) - 1;
+			maxSearchAddr = maxAddress - patternSize;
 			searchAddr = startAddr;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, sizeof(pattern3), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)){
-					if (totalCount >= desiredCount) {
-						break;
+				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, patternSize, (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
+				if (NT_SUCCESS(status)) {
+
+					SIZE_T length = sizeof(pattern3);
+					// Start the decode loop
+					while ((status = ZydisDecoderDecodeFull(&decoder,
+						pFound,
+						length - readOffset, &instruction,
+						operands)) != ZYDIS_STATUS_NO_MORE_DATA)
+					{
+						NT_ASSERT(ZYAN_SUCCESS(status));
+						if (!ZYAN_SUCCESS(status))
+						{
+							readOffset++;
+							continue;
+						}
+
+						// Format and print the instruction
+						const ZyanU64 instrAddress = (ZyanU64)pFound;
+						ZydisFormatterFormatInstruction(
+							&formatter, &instruction, operands, instruction.operand_count_visible, printBuffer,
+							sizeof(printBuffer), instrAddress, NULL);
+
+						readOffset += instruction.length;
+
+						if (instruction.machine_mode != ZYDIS_MACHINE_MODE_LONG_64) {
+							continue;
+						}
+						if (instruction.mnemonic != ZYDIS_MNEMONIC_JMP) {
+							continue;
+						}
+						if (instruction.operand_count != 2) {
+							continue;
+						}
+						if (operands[0].type != ZYDIS_OPERAND_TYPE_IMMEDIATE) {
+							continue;
+						}
+						if (operands[1].type != ZYDIS_OPERAND_TYPE_REGISTER) {
+							continue;
+						}
+
+						if (operands[1].reg.value != ZYDIS_REGISTER_RIP) {
+							continue;
+						}
+						ULONG_PTR targetAddress = instrAddress + instruction.length
+							+ operands[0].imm.value.u;
+						if (targetAddress < maxAddress) {
+							continue;
+						}
+						BOOLEAN isValid = MmIsAddressValid((PVOID)targetAddress);
+						if (!isValid) {
+							continue;
+						}
+						LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+
+						totalCount++;
+						LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+						LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
 					}
-					pData[totalCount].Address = (ULONG_PTR)pFound;
-					pData[totalCount].Type = KernelHookType::x64HookType3;
-					LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+
 					searchAddr = (ULONG_PTR)pFound + patternSize;
-					totalCount++;
 				}
 				else {
 					break;
 				}
 			}
+
 
 		}
 	}
-	LogInfo("Total inline count: %d\n", totalCount);
-#endif // !_WIN64
-}
-
-ULONG khook::GetInlineHookCount() {
-	bool success = GetKernelAndWin32kBase();
-	if (!success) {
-		return 0;
-	}
-
-#ifndef _WIN64
-	// x86 code
-
-#else
-	// x64 code
-	PEParser parser(_kernelImageBase);
-	int count = parser.GetSectionCount();
-	ULONG totalCount = 0;
-	for (int i = 0; i < count; i++) {
-		auto pSec = parser.GetSectionHeader(i);
-		if (pSec == nullptr) {
-			continue;
-		}
-		if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
-			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
-			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
-			(*(PULONG)pSec->Name != 'TINI') &&
-			(*(PULONG)pSec->Name != 'EGAP')) {
-			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
-			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
-			ULONG patternSize = sizeof(pattern1);
-			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
-
-			ULONG_PTR maxSearchAddr = maxAddress - sizeof(pattern1);
-			ULONG_PTR searchAddr = startAddr;
-			while (searchAddr <= maxSearchAddr) {
-				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, sizeof(pattern1), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)) {
-					searchAddr = (ULONG_PTR)pFound + patternSize;
-					totalCount++;
-				}
-				else {
-					break;
-				}
-			}
-
-			UCHAR pattern2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc\xc3";
-			maxSearchAddr = maxAddress - sizeof(pattern2);
-			searchAddr = startAddr;
-			while (searchAddr <= maxSearchAddr) {
-				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, sizeof(pattern2), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)) {
-					searchAddr = (ULONG_PTR)pFound + patternSize;
-					totalCount++;
-				}
-				else {
-					break;
-				}
-			}
-
-			UCHAR pattern3[] = "\xe9\xcc\xcc\xcc\xcc";
-			maxSearchAddr = maxAddress - sizeof(pattern3);
-			searchAddr = startAddr;
-			while (searchAddr <= maxSearchAddr) {
-				PVOID pFound = NULL;
-				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, sizeof(pattern3), (void*)searchAddr, pSec->Misc.VirtualSize, &pFound);
-				if (NT_SUCCESS(status)) {
-					searchAddr = (ULONG_PTR)pFound + patternSize;
-					totalCount++;
-				}
-				else {
-					break;
-				}
-			}
-
-		}
-	}
+	
 #endif
-
 	LogInfo("Total inline count: %d\n", totalCount);
+	
 	return totalCount;
 }

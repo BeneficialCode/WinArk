@@ -120,21 +120,25 @@
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
     <TargetName>AntiRootkit</TargetName>
+    <LibraryPath>../deps/zydis/msvc/bin/DebugX86Kernel;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
     <TargetName>AntiRootkit</TargetName>
+    <LibraryPath>../deps/zydis/msvc/bin/ReleaseX86Kernel;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
     <TargetName>AntiRootkit</TargetName>
+    <LibraryPath>../deps/zydis/msvc/bin/DebugX64Kernel;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
     <TargetName>AntiRootkit</TargetName>
+    <LibraryPath>../deps/zydis/msvc/bin/ReleaseX64Kernel;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
@@ -184,7 +188,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fltmgr.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
@@ -201,7 +205,7 @@ mkdir $(ProjectDir)..\Bin</Command>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fltmgr.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Message>copy driver to bin path</Message>
@@ -220,7 +224,7 @@ mkdir $(ProjectDir)..\Bin</Command>
     <Link>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fltmgr.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
@@ -242,7 +246,7 @@ mkdir $(ProjectDir)..\Bin</Command>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <AssemblyDebug>false</AssemblyDebug>
       <AdditionalOptions>/debug:"NONE" /release /pdbcompress %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fltmgr.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>
