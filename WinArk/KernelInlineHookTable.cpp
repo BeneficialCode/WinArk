@@ -166,6 +166,7 @@ LRESULT CKernelInlineHookTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lP
 }
 
 void CKernelInlineHookTable::Refresh() {
+	m_Table.data.info.clear();
 	ULONG count = DriverHelper::GetKernelInlineHookCount();
 	if (count == 0) {
 		return;
