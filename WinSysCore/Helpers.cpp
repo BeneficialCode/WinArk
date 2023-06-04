@@ -270,11 +270,11 @@ std::wstring Helpers::StringToWstring(const std::string& str) {
 }
 
 std::string Helpers::WstringToString(const std::wstring& wstr) {
-	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), nullptr, 0, nullptr, nullptr);
+	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
 	len += 1;
 	std::unique_ptr<char[]> buffer = std::make_unique<char[]>(len);
 	memset(buffer.get(), 0, sizeof(char) * len);
-	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), buffer.get(), len, nullptr, nullptr);
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, buffer.get(), len, nullptr, nullptr);
 	std::string str(buffer.get());
 	return str;
 }

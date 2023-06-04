@@ -535,7 +535,7 @@ void CTable<T>::PaintTable(HWND hw) {
 						int select = 0;
 						int symName = 0;
 						int len = ParseTableEntry(s, mask, select, info, col);
-						std::string t = Helpers::WstringToString(s.GetString());
+						select |= DRAW_UNICODE;
 						HBRUSH hBkBrush;
 						if (!(m_Table.mode & TABLE_USERDEF)	// ·Ç×Ô»æ
 							&& i==m_Table.data.selected
@@ -636,10 +636,7 @@ void CTable<T>::PaintTable(HWND hw) {
 											ExtTextOutW(hdcMem, entry.left + g_AvWidthFont / 2, bottom, ETO_CLIPPED | ETO_OPAQUE,
 												&txt, s.GetString(), len, NULL);
 										}
-										else {
-											ExtTextOutA(hdcMem, entry.left + g_AvWidthFont / 2, bottom, ETO_CLIPPED | ETO_OPAQUE,
-												&txt, t.c_str(), len, NULL);
-										}
+										
 										if (drawMask & DRAW_UL) {
 											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
 											MoveToEx(hdcMem, txt.left, bottom - 1, NULL);
@@ -928,9 +925,6 @@ void CTable<T>::PaintTable(HWND hw) {
 									if (select & DRAW_UNICODE) {
 										symName = s[j];
 									}
-									else {
-										symName = t.at(j);
-									}
 								}
 								drawMask = mask;
 								if (!(drawMask & DRAW_MASK)) {
@@ -1002,10 +996,7 @@ void CTable<T>::PaintTable(HWND hw) {
 								opt = ETO_CLIPPED | ETO_OPAQUE;
 							}
 							if (select & DRAW_UNICODE) {
-								ExtTextOutW(hdcMem, entry.left + g_AvWidthFont / 2, bottom, opt, &entry, s.GetString(), len, NULL);
-							}
-							else {
-								ExtTextOutA(hdcMem, entry.left + g_AvWidthFont / 2, bottom, opt, &entry, t.c_str(), t.length(), NULL);
+								ExtTextOut(hdcMem, entry.left + g_AvWidthFont / 2, bottom, opt, &entry, s.GetString(), len, NULL);
 							}
 							if (select & DRAW_TOP) {
 								entry.top -= fontHeight / 2;
