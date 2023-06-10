@@ -39,6 +39,16 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	std::string brand = SystemInformation::GetCpuBrand();
 	SetDlgItemTextA(m_hWnd, IDC_PROCESSOR, brand.c_str());
 
+	GetFirmwareEnvironmentVariable(L"",
+		L"{00000000-0000-0000-0000-000000000000}", 
+		nullptr, 0);
+	if (GetLastError() == ERROR_INVALID_FUNCTION) {
+		SetDlgItemText(IDC_BOOT_MODE, L"Legacy");
+	}
+	else {
+		SetDlgItemText(IDC_BOOT_MODE, L"UEFI");
+	}
+
 	return TRUE;
 }
 
