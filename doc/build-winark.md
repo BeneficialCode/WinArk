@@ -27,7 +27,7 @@ git submodule update --recursive --init
 <3> Batch Build `Zycore Debug/Release Kernel Win32 & x64`
 
 Note: If you faced a error ———— 'A WDK corresponding to target '10.0.22000.0' xxxxx ...', Please change the sdk version.
-After getting the Zydis librabry, you can do the next step 3.
+After getting the Zydis librabry, you can do the next step.
 
 2. Open the Anti-Rootkit.sln in Visual Studio 2019.
 3. Compile the driver in Release mode first.
