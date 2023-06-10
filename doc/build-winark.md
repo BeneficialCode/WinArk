@@ -14,11 +14,19 @@ vcpkg install capstone[x86]:x64-windows-static
 ## Compiling
 1. First clone the repo
 ```
-git clone https://github.com/BeneficialCode/Anti-Rootkit
+git clone https://github.com/BeneficialCode/WinArk
+cd WinArk
+git submodule update --recursive --init
 ```
-1. Open the Anti-Rootkit.sln in Visual Studio 2019.
-2. Compile the driver in Release mode first.
-3. Compile the WinArk.
+1. Compile the Zydis kernel library
+<1> Open the Zydis.sln in VS2019
+<2> Batch Build `Zydis Debug/Release Kernel Win32 & x64`
+<3> Batch Build `Zycore Debug/Release Kernel Win32 & x64`
+Note: If you faced a error ———— 'A WDK corresponding to target '10.0.22000.0' xxxxx ...', Please change the sdk version.
+After getting the Zydis librabry, you can do the next step 3.
+3. Open the Anti-Rootkit.sln in Visual Studio 2019.
+4. Compile the driver in Release mode first.
+5. Compile the WinArk.
 
 ## Test environments
 
