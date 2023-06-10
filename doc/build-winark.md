@@ -21,7 +21,9 @@ git submodule update --recursive --init
 1. Compile the Zydis kernel library
 
 <1> Open the Zydis.sln in VS2019
+
 <2> Batch Build `Zydis Debug/Release Kernel Win32 & x64`
+
 <3> Batch Build `Zycore Debug/Release Kernel Win32 & x64`
 
 Note: If you faced a error ———— 'A WDK corresponding to target '10.0.22000.0' xxxxx ...', Please change the sdk version.
