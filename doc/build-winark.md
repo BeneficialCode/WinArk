@@ -12,7 +12,7 @@ vcpkg install capstone[x86]:x64-windows-static
 ```
 
 ## Compiling
-1. First clone the repo
+1. First clone the repo then download the submodules
 ```
 git clone https://github.com/BeneficialCode/WinArk
 cd WinArk
