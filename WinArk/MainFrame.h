@@ -22,6 +22,7 @@
 #include "QuickFindDlg.h"
 #include "LogonSessionsView.h"
 #include "BypassDlg.h"
+#include "ExplorerView.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -30,7 +31,7 @@ enum class TabColumn :int {
 	Kernel, 
 	KernelHook,
 	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession,
-	BypassDectect,
+	BypassDectect,Explorer
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -99,6 +100,7 @@ public:
 	void InitEtwView();
 	void InitLogonSessionsView();
 	void InitBypassDectectView();
+	void InitExplorerView();
 
 	void LoadSettings(PCWSTR filename = nullptr);
 	void SaveSettings(PCWSTR filename = nullptr);
@@ -178,6 +180,7 @@ private:
 	
 	CMultiPaneStatusBarCtrl m_StatusBar;
 
+	CExplorerView m_ExplorerView;
 	CRegistryManagerView m_RegView;
 	CDeviceManagerView m_DevView;
 	CWindowsView m_WinView;
@@ -198,7 +201,7 @@ private:
 	CString m_StatusText;
 
 	// table array
-	HWND m_hwndArray[16];
+	HWND m_hwndArray[20];
 	// current select tab
 	int _index = 0;
 

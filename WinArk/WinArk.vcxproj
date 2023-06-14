@@ -250,6 +250,7 @@
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
+    <ClCompile Include="ExplorerView.cpp" />
     <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="ExtensionTableDlg.cpp" />
     <ClCompile Include="HexEdit.cpp" />
@@ -362,6 +363,7 @@
     <ClCompile Include="ServiceTable.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="ShadowSSDTTable.cpp" />
+    <ClCompile Include="ShellMgr.cpp" />
     <ClCompile Include="SortHelpler.cpp" />
     <ClCompile Include="SSDTHookTable.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -406,6 +408,7 @@
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
+    <ClInclude Include="ExplorerView.h" />
     <ClInclude Include="ExtensionTable.h" />
     <ClInclude Include="ExtensionTableDlg.h" />
     <ClInclude Include="HexEdit.h" />
@@ -525,6 +528,7 @@
     <ClInclude Include="ServiceTable.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="ShadowSSDTTable.h" />
+    <ClInclude Include="ShellMgr.h" />
     <ClInclude Include="SizeGrip.h" />
     <ClInclude Include="SortedFilteredVector.h" />
     <ClInclude Include="SortHelper.h" />

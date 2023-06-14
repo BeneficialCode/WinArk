@@ -492,6 +492,12 @@
     <ClCompile Include="KernelInlineHookTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="ExplorerView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ShellMgr.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -973,6 +979,12 @@
     </ClInclude>
     <ClInclude Include="KernelInlineHookTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplorerView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellMgr.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

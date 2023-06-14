@@ -397,7 +397,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"Config",
 		L"Event Trace",
 		L"Logon Sessions",
-		L""
+		L"Bypass Detect",
+		L"Explorer"
 	};
 
 	int i = 0;
@@ -447,6 +448,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitEtwView();
 	InitLogonSessionsView();
 	InitBypassDectectView();
+	InitExplorerView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -546,6 +548,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::BypassDectect:
 			m_BypassView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::Explorer:
+			m_ExplorerView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -1057,4 +1062,10 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	PostMessage(WM_CLOSE);
 
 	return 0;
+}
+
+void CMainFrame::InitExplorerView() {
+	m_ExplorerView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_ExplorerView.m_WndSplitter.ShowWindow(SW_SHOW);
+	m_hwndArray[static_cast<int>(TabColumn::Explorer)] = m_ExplorerView.m_hWnd;
 }
