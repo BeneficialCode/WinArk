@@ -175,3 +175,260 @@ HRESULT CExplorerView::FillTreeView(LPSHELLFOLDER lpsf, LPITEMIDLIST lpifq, HTRE
 
 	return hr;
 }
+
+LRESULT CExplorerView::OnTVSelChanged(int, LPNMHDR pnmh, BOOL&) {
+	LPNMTREEVIEW lpTV = (LPNMTREEVIEW)pnmh;
+	LPTVITEMDATA lptvid = (LPTVITEMDATA)lpTV->itemNew.lParam;
+	if (lptvid != nullptr) {
+		CComPtr<IShellFolder> spFolder;
+		HRESULT hr = lptvid->spParentFolder->BindToObject(lptvid->lpi, 0,
+			IID_IShellFolder, (LPVOID*)&spFolder);
+		if (FAILED(hr))
+			return hr;
+
+		if (m_WndListView.GetItemCount() > 0)
+			m_WndListView.DeleteAllItems();
+		
+		FillListView(lptvid, spFolder);
+
+		WCHAR psz[MAX_PATH] = { 0 };
+		m_ShellMgr.GetName(lptvid->spParentFolder, lptvid->lpi, SHGDN_FORPARSING, psz);
+
+		if (StrChr(psz, L'{')) // special case
+			m_ShellMgr.GetName(lptvid->spParentFolder, lptvid->lpi, SHGDN_NORMAL, psz);
+
+		int nImage = 0;
+		int nSelectedImage = 0;
+		m_WndTreeView.GetItemImage(lpTV->itemNew.hItem, nImage, nSelectedImage);
+	}
+
+	return 0;
+}
+
+BOOL CExplorerView::FillListView(LPTVITEMDATA lptvid, LPSHELLFOLDER pShellFolder) {
+	ATLASSERT(pShellFolder != nullptr);
+
+	CComPtr<IEnumIDList> spEnumIDList;
+	HRESULT hr = pShellFolder->EnumObjects(m_WndListView.GetParent(),
+		SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &spEnumIDList);
+	if (FAILED(hr))
+		return FALSE;
+
+	CShellItemIDList lpifqThisItem;
+	CShellItemIDList lpi;
+	ULONG fetched = 0;
+	UINT flags = 0;
+	LVITEM lvi = { 0 };
+	lvi.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM;
+	int ctr = 0;
+
+	while (spEnumIDList->Next(1, &lpi, &fetched) == S_OK) {
+		// Get some memory for the ITEMDATA structure
+		LPLVITEMDATA lplvid = new LVITEMDATA;
+		if (lplvid == nullptr)
+			return FALSE;
+
+		// Since you are interested in the display attributes as well as other attributes
+		// you need to set attrs to SFGAO_DISPLAYATTRMASK before calling GetAttributesOf
+		ULONG attrs = SFGAO_DISPLAYATTRMASK;
+		hr = pShellFolder->GetAttributesOf(1, (const struct _ITEMIDLIST**)&lpi, &attrs);
+		if (FAILED(hr))
+			return FALSE;
+
+		lplvid->Attribs = attrs;
+
+		lpifqThisItem = m_ShellMgr.ConcatPidls(lptvid->lpifq, lpi);
+
+		lvi.iItem = ctr;
+		lvi.iSubItem = 0;
+		lvi.pszText = LPSTR_TEXTCALLBACK;
+		lvi.cchTextMax = MAX_PATH;
+		flags = SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON;
+		lvi.iImage = I_IMAGECALLBACK;
+
+		lplvid->spParentFolder.p = pShellFolder;
+		pShellFolder->AddRef();
+
+		// Now make a copy of the ITEMIDLIST
+		lplvid->lpi = m_ShellMgr.CopyITEMID(lpi);
+
+		lvi.lParam = (LPARAM)lplvid;
+
+		// Add the item to the list view control
+		int n = m_WndListView.InsertItem(&lvi);
+		m_WndListView.AddItem(n, 1, LPSTR_TEXTCALLBACK, I_IMAGECALLBACK);
+		m_WndListView.AddItem(n, 2, LPSTR_TEXTCALLBACK, I_IMAGECALLBACK);
+		m_WndListView.AddItem(n, 3, LPSTR_TEXTCALLBACK, I_IMAGECALLBACK);
+		m_WndListView.AddItem(n, 4, LPSTR_TEXTCALLBACK, I_IMAGECALLBACK);
+		
+		ctr++;
+		lpifqThisItem = nullptr;
+		lpi = nullptr; // free PIDL the shell gave you
+	}
+
+	return TRUE;
+}
+
+LRESULT CExplorerView::OnLVGetDispInfo(int, LPNMHDR pnmh, BOOL&){
+	NMLVDISPINFO* plvdi = (NMLVDISPINFO*)pnmh;
+	if (plvdi == nullptr)
+		return 0;
+
+	LPLVITEMDATA lplvid = (LPLVITEMDATA)plvdi->item.lParam;
+
+	HTREEITEM hti = m_WndTreeView.GetSelectedItem();
+	TVITEM tvi = { 0 };
+	tvi.mask = TVIF_PARAM;
+	tvi.hItem = hti;
+
+	m_WndTreeView.GetItem(&tvi);
+	if (tvi.lParam <= 0)
+		return 0L;
+
+	LPTVITEMDATA lptvid = (LPTVITEMDATA)tvi.lParam;
+	if (lptvid == nullptr)
+		return 0L;
+
+	CShellItemIDList pidlTemp = m_ShellMgr.ConcatPidls(lptvid->lpifq, lplvid->lpi);
+	plvdi->item.iImage = m_ShellMgr.GetIconIndex(pidlTemp, 
+		SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+	if (plvdi->item.iSubItem == 0 && (plvdi->item.mask & LVIF_TEXT)) {
+		// File Name
+		// SHGetDisplayNameFlags
+		m_ShellMgr.GetName(lplvid->spParentFolder, lplvid->lpi, SHGDN_NORMAL, plvdi->item.pszText);
+	}
+	else {
+		CComPtr<IShellFolder2> spFolder2;
+		HRESULT hr = lptvid->spParentFolder->QueryInterface(IID_IShellFolder2, (void**)&spFolder2);
+		if (FAILED(hr))
+			return hr;
+
+		SHELLDETAILS sd = { 0 };
+		sd.fmt = LVCFMT_CENTER;
+		sd.cxChar = 15;
+
+		hr = spFolder2->GetDetailsOf(lplvid->lpi, plvdi->item.iSubItem, &sd);
+		if (FAILED(hr))
+			return hr;
+
+		CComHeapPtr<wchar_t> spszName;
+		StrRetToStr(&sd.str, lplvid->lpi.m_pidl, &spszName);
+		lstrcpy(m_szListViewBuffer, spszName);
+		plvdi->item.pszText = m_szListViewBuffer;
+	}
+
+	plvdi->item.mask |= LVIF_DI_SETITEM;
+
+	return 0;
+}
+
+LRESULT CExplorerView::OnTVItemExpanding(int, LPNMHDR pnmh, BOOL&){
+	CWaitCursor wait;
+	LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)pnmh;
+	if ((pnmtv->itemNew.state & TVIS_EXPANDEDONCE))
+		return 0L;
+
+	LPTVITEMDATA lptvid = (LPTVITEMDATA)pnmtv->itemNew.lParam;
+
+	CComPtr<IShellFolder> spFolder;
+	HRESULT hr = lptvid->spParentFolder->BindToObject(lptvid->lpi, 0, IID_IShellFolder,
+		(LPVOID*)&spFolder);
+
+	if (FAILED(hr))
+		return hr;
+
+	FillTreeView(spFolder, lptvid->lpifq, pnmtv->itemNew.hItem);
+
+	
+	return 0;
+}
+
+LRESULT CExplorerView::OnTVDeleteItem(int, LPNMHDR pnmh, BOOL&){
+	LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)pnmh;
+	LPTVITEMDATA lptvid = (LPTVITEMDATA)pnmtv->itemOld.lParam;
+	delete lptvid;
+
+	return 0;
+}
+
+LRESULT CExplorerView::OnLVDeleteItem(int, LPNMHDR pnmh, BOOL&)
+{
+	LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)pnmh;
+
+	LVITEM lvi;
+	lvi.mask = LVIF_PARAM;
+	lvi.iItem = pnmlv->iItem;
+	lvi.iSubItem = 0;
+
+	if (!m_WndListView.GetItem(&lvi))
+		return 0;
+
+	LPLVITEMDATA lplvid = (LPLVITEMDATA)lvi.lParam;
+	delete lplvid;
+
+	return 0;
+}
+
+LRESULT CExplorerView::OnNMRClick(int, LPNMHDR pnmh, BOOL&){
+	POINT pt = { 0,0 };
+	::GetCursorPos(&pt);
+	POINT ptClient = pt;
+	if (pnmh->hwndFrom != NULL)
+		::ScreenToClient(pnmh->hwndFrom, &ptClient);
+
+	if (pnmh->hwndFrom == m_WndTreeView.m_hWnd)
+	{
+		TVHITTESTINFO tvhti = { 0 };
+		tvhti.pt = ptClient;
+		m_WndTreeView.HitTest(&tvhti);
+		if ((tvhti.flags & TVHT_ONITEMLABEL) != 0)
+		{
+			TVITEM tvi = { 0 };
+			tvi.mask = TVIF_PARAM;
+			tvi.hItem = tvhti.hItem;
+			if (m_WndTreeView.GetItem(&tvi) != FALSE)
+			{
+				LPTVITEMDATA lptvid = (LPTVITEMDATA)tvi.lParam;
+				if (lptvid != NULL) {
+					m_ShellMgr.DoContextMenu(::GetParent(m_WndTreeView.m_hWnd), lptvid->spParentFolder, lptvid->lpi, pt);
+					RefreshTreeView();
+				}
+			}
+		}
+	}
+	else if (pnmh->hwndFrom == m_WndListView.m_hWnd)
+	{
+		LVHITTESTINFO lvhti = { 0 };
+		lvhti.pt = ptClient;
+		m_WndListView.HitTest(&lvhti);
+		if ((lvhti.flags & LVHT_ONITEMLABEL) != 0)
+		{
+			LVITEM lvi = { 0 };
+			lvi.mask = LVIF_PARAM;
+			lvi.iItem = lvhti.iItem;
+			if (m_WndListView.GetItem(&lvi) != FALSE)
+			{
+				LPLVITEMDATA lptvid = (LPLVITEMDATA)lvi.lParam;
+				if (lptvid != NULL) {
+					m_ShellMgr.DoContextMenu(::GetParent(m_WndListView.m_hWnd), lptvid->spParentFolder, lptvid->lpi, pt);
+					RefreshTreeView();
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+void CExplorerView::RefreshTreeView(){
+	CComPtr<IShellFolder> spFolder;
+	HRESULT hr = ::SHGetDesktopFolder(&spFolder);
+	if (SUCCEEDED(hr)) {
+		CWaitCursor wait;
+		m_WndTreeView.DeleteAllItems();
+		FillTreeView(spFolder, nullptr, TVI_ROOT);
+		m_WndTreeView.Expand(m_WndTreeView.GetRootItem());
+		m_WndTreeView.SelectItem(m_WndTreeView.GetRootItem());
+	}
+}
+
