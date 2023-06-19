@@ -249,8 +249,8 @@ void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
 	if (ignoreCase)
 		find.MakeLower();
 
-	int from = searchDown ? start + 1 : start - 1 + m_Table.data.n;
-	int to = searchDown ? m_Table.data.n + start : start + 1;
+	int from = searchDown ? start + 1 : static_cast<int>(start - 1 + m_Table.data.n);
+	int to = searchDown ? static_cast<int>(m_Table.data.n + start) : start + 1;
 	int step = searchDown ? 1 : -1;
 
 	int findIndex = -1;

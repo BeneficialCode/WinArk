@@ -245,7 +245,7 @@ bool CProcessInlineHookTable::IsInCodeBlock(ULONG_PTR address) {
 }
 
 void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize) {
-	cs_detail* d1, * d2;
+	cs_detail* d1;
 	d1 = insn[j].detail;
 	if (d1 == nullptr)
 		return;
@@ -332,7 +332,7 @@ void CProcessInlineHookTable::CheckX86HookType2(cs_insn* insn, size_t j, size_t 
 	if (d2->x86.op_count != 0)
 		return;
 
-	ULONG targetAddress = d1->x86.operands[0].imm;
+	ULONG_PTR targetAddress = d1->x86.operands[0].imm;
 	SIZE_T size;
 	ULONG dummy;
 	bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)targetAddress, &dummy, 4, &size);
@@ -398,7 +398,7 @@ void CProcessInlineHookTable::CheckX86HookType3(cs_insn* insn, size_t j, size_t 
 	if (d1->x86.operands[0].reg != d2->x86.operands[0].reg)
 		return;
 
-	ULONG targetAddress = d1->x86.operands[1].imm;
+	ULONG_PTR targetAddress = d1->x86.operands[1].imm;
 	// 排除无效的内存地址
 	SIZE_T size;
 	ULONG dummy;
@@ -681,8 +681,8 @@ void CProcessInlineHookTable::CheckX64HookType2(cs_insn* insn, size_t j, size_t 
 		return;
 
 	InlineHookInfo info;
-	ULONG lowAddr = d1->x86.operands[0].imm;
-	ULONG highAddr = d2->x86.operands[1].imm;
+	ULONG_PTR lowAddr = d1->x86.operands[0].imm;
+	ULONG_PTR highAddr = d2->x86.operands[1].imm;
 	info.TargetAddress = ((ULONG_PTR)highAddr << 32) | lowAddr;
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(info.TargetAddress);
@@ -700,7 +700,7 @@ void CProcessInlineHookTable::CheckX64HookType2(cs_insn* insn, size_t j, size_t 
 
 void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
 	ULONG_PTR base, size_t size) {
-	cs_detail* d1, * d2;
+	cs_detail* d1;
 	d1 = insn[j].detail;
 	if (d1 == nullptr)
 		return;

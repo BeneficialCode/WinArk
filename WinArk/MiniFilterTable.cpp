@@ -167,6 +167,7 @@ CString CMiniFilterTable::AltitudeToGroupName(int altitude) {
 	else if (altitude >= 20000 && altitude <= 29999) {
 		return L"FSFilter System";
 	}
+	return L"";
 }
 
 int CMiniFilterTable::ParseTableEntry(CString& s, char& mask, int& select, MiniFilterInfo& info, int column) {
@@ -343,8 +344,8 @@ LRESULT CMiniFilterTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	ATLASSERT(selected >= 0);
 	auto& info = m_Table.data.info[selected];
 
-	auto len = info.FilterName.length();
-	DWORD size = len * sizeof(WCHAR) + sizeof(MiniFilterData);
+	DWORD len = static_cast<DWORD>(info.FilterName.length());
+	DWORD size = static_cast<DWORD>(len * sizeof(WCHAR) + sizeof(MiniFilterData));
 
 	auto pData = std::make_unique<BYTE[]>(size);
 	if (!pData)

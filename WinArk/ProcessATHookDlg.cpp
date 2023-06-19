@@ -32,7 +32,7 @@ LRESULT CEATHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPara
 	bool x64 = m_px.GetBitness() == 64 ? true : false;
 	m_ProcEATHookTable = new CProcessATHookTable(info, table, pid, x64);
 	WCHAR proc[25];
-	_itow(pid, proc, 10);
+	_itow_s(pid, proc, 10);
 	std::wstring title = L"Address Table Hook Process: pid = ";
 	title += proc;
 	SetWindowText(title.c_str());

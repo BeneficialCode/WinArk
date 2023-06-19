@@ -190,12 +190,12 @@ void CWinExtHostsTable::Refresh() {
 		ULONG count = 0;
 		count = DriverHelper::GetWinExtHostsCount(pListHead);
 		if (count > 0) {
-			SIZE_T size = (count + 5) * sizeof(WinExtHostInfo);
+			ULONG size = (count + 5) * sizeof(WinExtHostInfo);
 			wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 			WinExtHostInfo* pInfo = (WinExtHostInfo*)buffer.get();
 			bool success = DriverHelper::EnumWinExtHosts(pListHead, pInfo, size);
 			if (pInfo != nullptr && success) {
-				for (int i = 0; i < count; i++) {
+				for (ULONG i = 0; i < count; i++) {
 					m_Table.data.info.push_back(pInfo[i]);
 				}
 			}

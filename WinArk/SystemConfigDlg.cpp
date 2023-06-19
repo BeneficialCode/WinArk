@@ -422,9 +422,9 @@ bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 
 	pInfo->EthreadOffsets.ClonedThread = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ClonedThread");
 	if (pInfo->EthreadOffsets.ClonedThread != -1) {
-		USHORT pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ClonedThread");
+		ULONG pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ClonedThread");
 		pInfo->EthreadOffsets.ClonedThreadBitField.Position = pos;
-		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ClonedThread");
+		ULONG size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ClonedThread");
 		pInfo->EthreadOffsets.ClonedThreadBitField.Size = size;
 	}
 	else {
@@ -437,9 +437,9 @@ bool CSystemConfigDlg::InitEthreadOffsets(DbgSysCoreInfo* pInfo) {
 
 	pInfo->EthreadOffsets.ThreadInserted = SymbolHelper::GetKernelStructMemberOffset("_ETHREAD", "ThreadInserted");
 	if (pInfo->EthreadOffsets.ThreadInserted != -1) {
-		USHORT pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ThreadInserted");
+		ULONG pos = SymbolHelper::GetKernelBitFieldPos("_ETHREAD", "ThreadInserted");
 		pInfo->EthreadOffsets.ThreadInsertedBitField.Position = pos;
-		USHORT size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ThreadInserted");
+		ULONG size = SymbolHelper::GetKernelStructMemberSize("_ETHREAD", "ThreadInserted");
 		pInfo->EthreadOffsets.ThreadInsertedBitField.Size = size;
 	}
 	else {

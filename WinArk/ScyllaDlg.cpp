@@ -16,7 +16,7 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	DWORD pid = static_cast<DWORD>(lParam);
 	std::wstring bitness = m_px.GetBitness() == 64 ? L" (x64) " : L" (x86) ";
 	WCHAR proc[25];
-	_itow(pid, proc, 10);
+	_itow_s(pid, proc, 10);
 	std::wstring title = L"Dump Process: pid = ";
 	title += proc;
 	title += bitness;

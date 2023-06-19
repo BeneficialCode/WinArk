@@ -15,9 +15,6 @@
 // 解决标准库std::min与min宏冲突
 #define NOMINMAX
 
-#ifndef __cpp_lib_format
-#define __cpp_lib_format
-#endif
 
 #include <atlbase.h>
 #include <atlstr.h>

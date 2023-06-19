@@ -109,7 +109,7 @@ LRESULT CColorsSelectionDlg::OnSave(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 }
 
 void CColorsSelectionDlg::SetColor() {
-    for (int i = 0; i < m_CountColors; i++) {
+    for (UINT i = 0; i < m_CountColors; i++) {
         switch (i) {
             case 0:
                 g_myColor[g_myScheme[0].textcolor] = m_Colors[i].Color;

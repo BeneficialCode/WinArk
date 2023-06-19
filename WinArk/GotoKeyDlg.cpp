@@ -70,7 +70,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		ListItem item{ name,path};
 		m_Items.push_back(item);
 	}
-	UpdateList(m_List, m_Items.size());
+	UpdateList(m_List, static_cast<int>(m_Items.size()));
 
 	return 0;
 }

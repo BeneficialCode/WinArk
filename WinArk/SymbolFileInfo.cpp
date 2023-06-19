@@ -62,7 +62,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		[](void* userdata,unsigned long long readBytes,unsigned long long totalBytes) {
 			CProgressDlg* pDlg = (CProgressDlg*)userdata;
 			if (totalBytes) {
-				pDlg->UpdateProgress(readBytes);
+				pDlg->UpdateProgress(static_cast<int>(readBytes));
 			}
 			return true;
 		}, 
@@ -161,7 +161,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
 			INTERNET_DEFAULT_HTTP_PORT, nullptr,
 			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
-		int pos = url.find(".com") + 4;
+		int pos = static_cast<int>(url.find(".com") + 4);
 		std::string objName(url.begin() + pos, url.end());
 		hUrl = HttpOpenRequestA(hConnect, "GET",
 			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
@@ -195,7 +195,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 			totalBytes = 0;
 	}
 
-	_dlg.SetProgressRange(totalBytes);
+	_dlg.SetProgressRange(static_cast<int>(totalBytes));
 
 	// Get HTTP status code
 	len = sizeof(buffer);
@@ -281,7 +281,7 @@ unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring file
 		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
 			INTERNET_DEFAULT_HTTP_PORT, nullptr,
 			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
-		int pos = url.find(".com") + 4;
+		int pos = static_cast<int>(url.find(".com") + 4);
 		std::string objName(url.begin() + pos, url.end());
 		hUrl = HttpOpenRequestA(hConnect, "GET",
 			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);

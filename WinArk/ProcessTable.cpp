@@ -252,7 +252,7 @@ LRESULT CProcessTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	return 0;
 }
 
-int CProcessTable::GetRowImage(HWND, int row) const {
+int CProcessTable::GetRowImage(HWND, size_t row) const {
 	return GetProcessInfoEx(m_Table.data.info[row].get()).GetImageIndex(m_Images);
 }
 

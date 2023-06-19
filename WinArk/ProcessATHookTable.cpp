@@ -436,7 +436,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 									}
 								}
 							}
-							else if(stricmp(host.c_str(), lib.Name.c_str()) == 0) {
+							else if(_stricmp(host.c_str(), lib.Name.c_str()) == 0) {
 								idx = j;
 								orgLib = orgSymbol->ModuleInfo.ImageName;
 								orgFuncName = orgSymName;

@@ -150,7 +150,7 @@ void CIoTimerTable::Refresh() {
 		if (p != nullptr) {
 			memset(p, 0, size);
 			DriverHelper::EnumIoTimer(&data, p, size);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				std::shared_ptr<IoTimerInfo> info = std::make_shared<IoTimerInfo>();
 				info->DeviceObject = p[i].DeviceObject;
 				info->TimerFlag = p[i].TimerFlag;

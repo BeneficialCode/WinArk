@@ -214,4 +214,5 @@ bool CProcessHandleTable::CompareItems(const std::shared_ptr<WinSys::HandleInfo>
 			return SortHelper::SortStrings(m_DetailsCache[p1.get()], m_DetailsCache[p2.get()], asc);
 		}
 	}
+	return false;
 }
