@@ -114,6 +114,9 @@
     <ClCompile Include="ApiSets.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="NewKernelHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Processes.h">
@@ -216,6 +219,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ApiSets.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NewKernelHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
