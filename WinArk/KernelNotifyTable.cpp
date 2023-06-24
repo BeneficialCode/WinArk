@@ -192,7 +192,7 @@ void CKernelNotifyTable::Refresh() {
 		if (p != nullptr) {
 			p->Count = count + 1;
 			DriverHelper::EnumProcessNotify(&info, p);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				CallbackInfo info;
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::CreateProcessNotify;
@@ -210,13 +210,13 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Offset = offset;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = Max * sizeof(ObCallbackInfo);
+		ULONG size = Max * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
 		if (p != nullptr) {
 			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				CallbackInfo info;
 				info.Routine = p[i].PostOperation;
 				info.Type = CallbackType::ProcessObPostOperationNotify;
@@ -241,12 +241,12 @@ void CKernelNotifyTable::Refresh() {
 	notifyInfo.Type = NotifyType::ThreadObjectNotify;
 	count = DriverHelper::GetObCallbackCount(&notifyInfo);
 	if (count > 0) {
-		SIZE_T size = Max * sizeof(ObCallbackInfo);
+		ULONG size = Max * sizeof(ObCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
 		if (p != nullptr) {
 			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				if (p[i].PostOperation) {
 					CallbackInfo info;
 					info.Routine = p[i].PostOperation;
@@ -289,7 +289,7 @@ void CKernelNotifyTable::Refresh() {
 		if (p != nullptr) {
 			p->Count = count + 1;
 			DriverHelper::EnumThreadNotify(&info, p);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				CallbackInfo item;
 				item.Routine = p->Address[i];
 				item.Type = CallbackType::CreateThreadNotify;
@@ -315,7 +315,7 @@ void CKernelNotifyTable::Refresh() {
 		if (p != nullptr) {
 			p->Count = count + 1;
 			DriverHelper::EnumImageLoadNotify(&info, p);
-			for (int i = 0; i < count; i++) {
+			for (ULONG i = 0; i < count; i++) {
 				CallbackInfo info;
 				info.Routine = p->Address[i];
 				info.Type = CallbackType::LoadImageNotify;
@@ -330,7 +330,7 @@ void CKernelNotifyTable::Refresh() {
 	pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("CmpCallbackCount");
 	count = DriverHelper::GetCmCallbackCount(&pCount);
 	if (count > 0) {
-		SIZE_T size = Max * sizeof(CmCallbackInfo);
+		DWORD size = Max * sizeof(CmCallbackInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		CmCallbackInfo* p = (CmCallbackInfo*)buffer.get();
 		if (p != nullptr) {
@@ -339,7 +339,7 @@ void CKernelNotifyTable::Refresh() {
 			DriverHelper::EnumCmCallbackNotify(callbackListHead, p, size);
 			/*symbol = handler.GetSymbolFromName("CmpPreloadedHivesList");
 			PVOID pCmpPreloadedHivesList = (PVOID)symbol->GetSymbolInfo()->Address;*/
-			for (int i = 0; i < count; ++i) {
+			for (ULONG i = 0; i < count; ++i) {
 				CallbackInfo info;
 				info.Routine = p[i].Address;
 				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);

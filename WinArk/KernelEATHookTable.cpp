@@ -41,6 +41,8 @@ int CKernelEATHookTable::ParseTableEntry(CString& s, char& mask, int& select, Ke
 bool CKernelEATHookTable::CompareItems(const KernelEATHookInfo& s1, const KernelEATHookInfo& s2, int col, bool asc) {
 	switch (static_cast<Column>(col))
 	{
+	case Column::Address:
+		return SortHelper::SortNumbers(s1.Address, s2.Address, asc);
 		default:
 			break;
 	}
@@ -130,8 +132,8 @@ void CKernelEATHookTable::CheckEATHook() {
 
 	std::vector<ExportedSymbol> exports = parser.GetExports();
 	void* eat = (byte*)_info->ImageBase + parser.GetEAT();
-	SIZE_T size = 0;
-	size = exports.size() * sizeof(DWORD);
+	ULONG size = 0;
+	size = static_cast<ULONG>(exports.size() * sizeof(DWORD));
 	if (size == 0)
 		return;
 	void* buffer = malloc(size);

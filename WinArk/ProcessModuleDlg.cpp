@@ -37,7 +37,7 @@ LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	DWORD pid = static_cast<DWORD>(lParam);
 	m_ProcModuleTable = new CProcessModuleTable(info, table,pid,m_hWnd);
 	WCHAR proc[25];
-	_itow(pid, proc, 10);
+	_itow_s(pid, proc, 10);
 	std::wstring text;
 	text.reserve(256);
 	text.resize(GetWindowTextLength());

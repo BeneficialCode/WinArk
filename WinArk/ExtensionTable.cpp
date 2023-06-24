@@ -140,7 +140,7 @@ void CExtensionTable::Refresh() {
 	data.Version = _info.Version;
 	data.Count = _info.FunctionCount;
 	ULONG count = _info.FunctionCount;
-	SIZE_T size = _info.FunctionCount * sizeof(void*);
+	ULONG size = _info.FunctionCount * sizeof(void*);
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 	PVOID* pInfo = (PVOID*)buffer.get();
 	bool success = DriverHelper::EnumExtTable(&data, pInfo, size);

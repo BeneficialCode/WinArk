@@ -497,7 +497,7 @@ bool DriverHelper::GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines) {
 
 	DWORD bytes;
 	LONG count = 0;
-	DWORD len = ::wcslen(name) + 1;
+	DWORD len = static_cast<ULONG>(::wcslen(name) + 1);
 	len = len * sizeof(WCHAR);
 
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES, (LPVOID)name, len,

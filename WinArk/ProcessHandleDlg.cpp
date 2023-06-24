@@ -38,7 +38,7 @@ LRESULT CHandleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	DWORD pid = static_cast<DWORD>(lParam);
 	m_ProcHandleTable = new CProcessHandleTable(info, table, nullptr,pid);
 	WCHAR proc[25];
-	_itow(pid, proc, 10);
+	_itow_s(pid, proc, 10);
 	std::wstring title = L"Process: pid = ";
 	title += proc;
 	SetWindowText(title.c_str());

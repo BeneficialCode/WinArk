@@ -148,7 +148,7 @@ struct TableInfo {
 template<typename T>
 struct t_sorted {
 	std::string name;				// 表名
-	int n{0};						// 实际项数
+	size_t n{0};					// 实际项数
 	int nmax;						// 最大项数
 	int selected;					// 选中索引
 	ulong seladdr;					// 选中的基地址
@@ -171,7 +171,7 @@ struct t_table {
 	int font;			// 字体
 	short scheme;		// 色彩主题
 	short hilite;		// 高亮主题
-	int offset;			// 显示首行位置
+	size_t offset;			// 显示首行位置
 	int xshift;			// 位置移动
 };
 
@@ -191,7 +191,7 @@ public:
 	void PaintTable(HWND hw);
 	int Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 	
-	virtual int GetRowImage(HWND, int row) const {
+	virtual int GetRowImage(HWND, size_t row) const {
 		return -1;
 	}
 
@@ -377,8 +377,8 @@ void CTable<T>::PaintBar(HDC hdc, LPRECT client, int iColumn) {
 				}
 
 				// 输出列标题 column captions
-				int len = 0;
-				len = m_Bar.name[i].length();
+				UINT len = 0;
+				len = static_cast<UINT>(m_Bar.name[i].length());
 				ExtTextOutA(hdc, x, y, ETO_CLIPPED | ETO_OPAQUE, &col, m_Bar.name[i].c_str(), len, NULL);
 			}
 			i++;
@@ -482,7 +482,7 @@ void CTable<T>::PaintTable(HWND hw) {
 		}
 
 		memcpy(&row, &client, sizeof(row));
-		for (int i = m_Table.offset; m_Table.mode & TABLE_USERDEF || i < m_Table.data.n; ++i) {	// 循环次数为表行数
+		for (size_t i = m_Table.offset; m_Table.mode & TABLE_USERDEF || i < m_Table.data.n; ++i) {	// 循环次数为表行数
 			if (m_Table.mode & TABLE_DIR) {
 				if (client.top >= client.bottom)
 					break;
@@ -1253,11 +1253,12 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			LONG style = GetWindowLong(hw, GWL_STYLE);
 			if (style & WS_VSCROLL) {
 				SetScrollRange(hw, SB_VERT, 0, 0x4000, false);
-				ret = SendMessage(hw, WM_USER_VABS, rows, 0);
+				ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, 0));
 				if (ret < 0)
 					ret = 0x4000 - ret;
 				if (m_Table.offset != 0&& ret == 0) {
-					ret = MulDiv(m_Table.offset+rows, 0x4000,m_Table.data.n);
+					ret = MulDiv(static_cast<int>(m_Table.offset+rows), 0x4000,
+						static_cast<int>(m_Table.data.n));
 				}
 				if (ret != GetScrollPos(hw, SB_VERT)) {
 					SetScrollPos(hw, SB_VERT, ret, true);
@@ -1288,16 +1289,16 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		}
 		case WM_USER_VABS:
 		{
-			selRow = lp + m_Table.offset;
+			selRow = static_cast<int>(lp + m_Table.offset);
 			if (selRow > (signed int)(m_Table.data.n - wp)) {
-				selRow = m_Table.data.n - wp;
+				selRow = static_cast<int>(m_Table.data.n - wp);
 			}
 			if (selRow < 0) {
 				selRow = 0;
 			}
 			m_Table.offset = selRow;
 			if (selRow) {
-				return MulDiv(selRow, 0x4000, m_Table.data.n - wp);
+				return MulDiv(selRow, 0x4000, static_cast<int>(m_Table.data.n - wp));
 			}
 			else {
 				return 0;
@@ -1306,13 +1307,14 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		case WM_USER_VREL:
 		{
 			if (m_Table.data.n > wp) {
-				selRow = MulDiv(m_Table.data.n - wp, lp, 0x4000);
+				selRow = MulDiv(static_cast<int>(m_Table.data.n - wp), 
+					static_cast<int>(lp), 0x4000);
 			}
 			else {
 				selRow = 0;
 			}
 			if (selRow > (signed int)(m_Table.data.n - wp)) {
-				selRow = m_Table.data.n - wp;
+				selRow = static_cast<int>(m_Table.data.n - wp);
 			}
 			if (selRow < 0) {
 				selRow = 0;
@@ -1323,7 +1325,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			else {
 				m_Table.offset = selRow;
 				if (selRow) {
-					return MulDiv(selRow, 0x4000, m_Table.data.n - wp);
+					return MulDiv(selRow, 0x4000, static_cast<int>(m_Table.data.n - wp));
 				}
 				else {
 					return 0;
@@ -1336,37 +1338,37 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			switch (LOWORD(wp)) {
 				case SB_LINEDOWN:
 					if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
-						ret = SendMessage(hw, WM_USER_VBYTE, rows, bottomRow);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, bottomRow));
 					}
 					else {
-						ret = SendMessage(hw, WM_USER_VABS, rows, bottomRow);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow));
 					}
 					break;
 				case SB_LINEUP:
 					if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
-						ret = SendMessage(hw, WM_USER_VBYTE, rows, -bottomRow);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -bottomRow));
 					}
 					else {
-						ret = SendMessage(hw, WM_USER_VABS, rows, -bottomRow);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, -bottomRow));
 					}
 					break;
 				case SB_PAGEUP:
 					lines = rows - 1;
 					if (lines <= 0)
 						lines = 1;
-					ret = SendMessage(hw, WM_USER_VABS, rows, bottomRow * -lines);
+					ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * -lines));
 					break;
 				case SB_PAGEDOWN:
 					lines = rows - 1;
 					if (lines <= 0)
 						lines = 1;
-					ret = SendMessage(hw, WM_USER_VABS, rows, bottomRow * lines);
+					ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * lines));
 					break;
 				case SB_THUMBTRACK:
 					iVScrollPos = HIWORD(wp);
 					if (bottomRow < 0)
 						iVScrollPos = 0x3ff - iVScrollPos;
-					ret = ::SendMessage(hw, WM_USER_VREL, rows, iVScrollPos);
+					ret = static_cast<int>(::SendMessage(hw, WM_USER_VREL, rows, iVScrollPos));
 					break;
 				default:
 					ret = -1;
@@ -1480,8 +1482,9 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 						if (!pressShiftKey) {
 							uMsg = WM_USER_STS;
 						}
-						int value = SendMessage(hw, uMsg, col << 16 | LOWORD(left / g_AvWidthFont),
-							(yPos - client.top) / g_AvHighFont);
+						int value = static_cast<int>(SendMessage(hw, uMsg, 
+							col << 16 | LOWORD(left / g_AvWidthFont),
+							(yPos - client.top) / g_AvHighFont));
 						if (value > 0) {
 							if (m_Table.mode & TABLE_FASTSEL) {
 								RedrawWindow(hw, nullptr, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
@@ -1501,7 +1504,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 					SetCapture(hw);
 					m_Bar.captured = CAPT_BAR;
 					m_Bar.mode[col] |= BAR_PRESSED;
-					m_Bar.active = col;
+					m_Bar.active = static_cast<int>(col);
 					InvalidateRect(hw, &bar, false);
 				}
 			}
@@ -1545,9 +1548,9 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			if (m_Table.mode & TABLE_USERDEF) {
 				return 0;
 			}
-			int selRow = lp + m_Table.offset;
+			int selRow = static_cast<int>(lp + m_Table.offset);
 			if (selRow >= m_Table.data.n) {
-				selRow = m_Table.data.n - 1;
+				selRow = static_cast<int>(m_Table.data.n - 1);
 			}
 			if (selRow == m_Table.data.selected && (!(m_Table.mode & TABLE_COLSEL)
 				|| HIWORD(lp) == m_Table.colsel)) {
@@ -1571,7 +1574,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			if (*(HWND*)lp != g_hWndTop && g_hWndTop) {
 				SetWindowPos(g_hWndTop, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOMOVE);
 			}
-			return DefMDIChildProc(g_hWndTop, WM_WINDOWPOSCHANGED, wp, lp);
+			return static_cast<int>(DefMDIChildProc(g_hWndTop, WM_WINDOWPOSCHANGED, wp, lp));
 		}
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
@@ -1700,7 +1703,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 						else {
 							lParam = _page;
 						}
-						ret = SendMessage(hw, WM_USER_CHGS, rows, lParam);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
 						break;
 					}
 					case VK_NEXT:
@@ -1717,36 +1720,36 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 						else {
 							lParam = _page;
 						}
-						ret = SendMessage(hw, WM_USER_CHGS, rows, lParam);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
 						break;
 					}
 					case VK_END:
 					{
-						ret = SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFE);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFE));
 						break;
 					}
 					case VK_HOME:
 					{
-						ret = SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFF);
+						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFF));
 						break;
 					}
 					case VK_UP:
 					{
 						if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
-							ret = SendMessage(hw, WM_USER_VBYTE, rows, -lines);
+							ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -lines));
 						}
 						else {
-							ret = SendMessage(hw, WM_USER_CHGS, rows, -lines);
+							ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, -lines));
 						}
 						break;
 					}
 					case VK_DOWN:
 					{
 						if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
-							ret = SendMessage(hw, WM_USER_VBYTE, rows, lines);
+							ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, lines));
 						}
 						else {
-							ret = SendMessage(hw, WM_USER_CHGS, rows, lines);
+							ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lines));
 						}
 						break;
 					}
@@ -1768,7 +1771,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		{
 			if (lp == 0x7FFFFFFF) {
 				if (bottomRow <= 0) {
-					selRow = m_Table.data.n - 1;
+					selRow = static_cast<int>(m_Table.data.n - 1);
 				}
 				else {
 					selRow = 0;
@@ -1779,14 +1782,14 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 					selRow = 0;
 				}
 				else {
-					selRow = m_Table.data.n - 1;
+					selRow = static_cast<int>(m_Table.data.n - 1);
 				}
 			}
 			else {
-				selRow = lp + m_Table.data.selected;
+				selRow = static_cast<int>(lp + m_Table.data.selected);
 			}
 			if (selRow >= m_Table.data.n) {
-				selRow = m_Table.data.n - 1;
+				selRow = static_cast<int>(m_Table.data.n - 1);
 			}
 			if (selRow < 0)
 				selRow = 0;
@@ -1799,20 +1802,20 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			if (addr) {
 				m_Table.data.seladdr = addr;
 			}
-			int offset = _page + m_Table.offset;
+			int offset = static_cast<int>(_page + m_Table.offset);
 			if (selRow >= offset + wp) {
-				offset = selRow - wp + 1;
+				offset = static_cast<int>(selRow - wp + 1);
 			}
 			if (selRow < offset)
 				offset = selRow;
 			if (offset > (signed int)(m_Table.data.n - wp)) {
-				offset = m_Table.data.n - wp;
+				offset = static_cast<int>(m_Table.data.n - wp);
 			}
 			if (offset < 0)
 				offset = 0;
 			m_Table.offset = offset;
 			if (offset) {
-				return MulDiv(offset, 0x4000, m_Table.data.n - wp);
+				return MulDiv(offset, 0x4000, static_cast<int>(m_Table.data.n - wp));
 			}
 			else {
 				return 0;

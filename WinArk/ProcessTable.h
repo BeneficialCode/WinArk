@@ -89,7 +89,7 @@ public:
 	bool InitVadSymbols(VadData* pData);
 
 
-	int GetRowImage(HWND, int row) const;
+	int GetRowImage(HWND, size_t row) const;
 	void Refresh();
 	ProcessInfoEx& GetProcessInfoEx(WinSys::ProcessInfo* pi) const;
 

@@ -165,6 +165,7 @@
     <ClCompile Include="KernelModuleTracker.cpp" />
     <ClCompile Include="LsaSecurity.cpp" />
     <ClCompile Include="NetworkInformation.cpp" />
+    <ClCompile Include="NewKernelHandler.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -200,6 +201,7 @@
     <ClInclude Include="Keys.h" />
     <ClInclude Include="LsaSecurity.h" />
     <ClInclude Include="NetworkInformation.h" />
+    <ClInclude Include="NewKernelHandler.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Processes.h" />

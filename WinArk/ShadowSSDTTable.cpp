@@ -215,7 +215,7 @@ void CShadowSSDTHookTable::GetShadowSSDTEntry() {
 }
 
 void CShadowSSDTHookTable::Refresh() {
-	for (int i = 0; i < _limit; i++) {
+	for (ULONG i = 0; i < _limit; i++) {
 		void* address = DriverHelper::GetShadowSSDTApiAddress(i);
 		if (m_Table.data.info[i].OriginalAddress != (uintptr_t)address) {
 			m_Table.data.info[i].Hooked = true;

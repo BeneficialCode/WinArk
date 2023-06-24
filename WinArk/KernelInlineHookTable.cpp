@@ -171,7 +171,7 @@ void CKernelInlineHookTable::Refresh() {
 	if (count == 0) {
 		return;
 	}
-	SIZE_T size = (count + 10) * sizeof(KernelInlineHookData);
+	DWORD size = (count + 10) * sizeof(KernelInlineHookData);
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size,
 		MEM_COMMIT, PAGE_READWRITE));
 	KernelInlineHookData* pData = (KernelInlineHookData*)buffer.get();
