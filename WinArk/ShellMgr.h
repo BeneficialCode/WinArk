@@ -80,7 +80,7 @@ typedef struct _TVItemData {
 
 class CShellMgr {
 public:
-
+	const int ID_DELETE_FILE = 32444;
 	int GetIconIndex(LPITEMIDLIST lpi, UINT flags);
 	void GetNormalAndSelectedIcons(LPITEMIDLIST lpifq, LPTVITEM lptvitem);
 	LPITEMIDLIST ConcatPidls(LPCITEMIDLIST pidl1, LPCITEMIDLIST pidl2);

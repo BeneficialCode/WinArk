@@ -7,7 +7,7 @@ class CExplorerView :
 public:
 
 	DECLARE_WND_CLASS(L"WtlExplorerWndClass")
-
+	const int ID_DELETE_FILE = 32444;
 	BEGIN_MSG_MAP(CExplorerView)
 		MESSAGE_HANDLER(WM_CREATE,OnCreate)
 		MESSAGE_HANDLER(WM_SIZE,OnSize)
@@ -20,6 +20,7 @@ public:
 
 		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnLVGetDispInfo)
 		NOTIFY_CODE_HANDLER(LVN_DELETEITEM, OnLVDeleteItem)
+		COMMAND_ID_HANDLER(ID_DELETE_FILE,OnForceDeleteFile)
 		DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 
@@ -41,6 +42,9 @@ public:
 
 	LRESULT OnLVGetDispInfo(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT OnLVDeleteItem(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+
+	LRESULT OnForceDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	void RefreshTreeView();
 

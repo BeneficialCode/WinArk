@@ -114,8 +114,16 @@ BOOL CShellMgr::DoContextMenu(HWND hWnd, LPSHELLFOLDER lpsfParent, LPITEMIDLIST 
 	if (FAILED(hr))
 		return FALSE;
 
+	CMenuHandle menu(hMenu);
+	menu.AppendMenu(MF_STRING, ID_DELETE_FILE, L"Force Delete");
+
 	int idCmd = ::TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_RETURNCMD | TPM_RIGHTBUTTON,
 		point.x, point.y, 0, hWnd, nullptr);
+
+	if (idCmd == ID_DELETE_FILE) {
+		SendMessage(hWnd, WM_COMMAND, idCmd, 0);
+		return TRUE;
+	}
 
 	if (idCmd != 0) {
 		// Execute the command that was selected.

@@ -432,3 +432,7 @@ void CExplorerView::RefreshTreeView(){
 	}
 }
 
+LRESULT CExplorerView::OnForceDeleteFile(WORD, WORD, HWND, BOOL&){
+	AtlMessageBox(0, L"Not yet implemented!", L"WTL Explorer", MB_OK | MB_ICONINFORMATION);
+	return 0;
+}
