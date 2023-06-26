@@ -51,6 +51,8 @@ public:
 	const UINT WM_RUN = WM_APP + 13;
 	const UINT TreeId = 123;
 
+	const UINT ID_EXPORT_BIN = 32000;
+
 	void SetStartKey(const CString& key);
 
 	void RunOnUiThread(std::function<void()> f);
@@ -123,6 +125,7 @@ public:
 		COMMAND_ID_HANDLER(ID_FILE_IMPORT,OnImport)
 		COMMAND_ID_HANDLER(ID_FILE_EXPORT,OnExport)
 		COMMAND_ID_HANDLER(ID_KEY_GOTO,OnGotoKey)
+		COMMAND_ID_HANDLER(ID_EXPORT_BIN,OnExportBin)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CRegistryManagerView>)
 		CHAIN_MSG_MAP(CVirtualListView<CRegistryManagerView>)
 		REFLECT_NOTIFICATIONS_EX()
@@ -186,6 +189,8 @@ public:
 	LRESULT OnProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExportBin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 
 	INT_PTR ShowValueProperties(RegistryItem& item, int index);
