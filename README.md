@@ -9,6 +9,13 @@
 
 QQ Group: 392097880
 
+### If you don't want to become a contributor or submit issues,please don't join this group. 
+
+## Contributing
+Contributing to WinArk is super appreciated.
+If you want to contribute to WinArk, please read the [Coding Conventions](doc/Coding%20Conventions.md)
+
+
 ## Screenshots
 
 ![](./Untitled%2016.png)
