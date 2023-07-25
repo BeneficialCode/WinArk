@@ -4,7 +4,7 @@
 #include "Helpers.h"
 
 DeleteKeyCommand::DeleteKeyCommand(PCWSTR path, PCWSTR name, AppCommandCallback<DeleteKeyCommand> cb)
-	:RegAppCommandBase(L"Delete Key " + CString(name), path,name, cb) {
+	:RegAppCommandBase(L"Delete Key " + CString(name), path, name, cb) {
 }
 
 bool DeleteKeyCommand::Execute() {

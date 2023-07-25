@@ -7,9 +7,9 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	CTabCtrl tabCtrl;
 	auto hTabCtrl = tabCtrl.Create(m_hWnd, &r, nullptr, WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS
 		| TCS_HOTTRACK | TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TABS,
-		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY,TabId);
+		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY, TabId);
 	m_TabCtrl.SubclassWindow(hTabCtrl);
-	
+
 	//m_TabCtrl.SetFont()
 	HFONT hFont = g_hAppFont;
 	m_TabCtrl.SetFont(hFont, true);
@@ -53,7 +53,7 @@ LRESULT CKernelHookView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	int iX = rc.left;
 	int iY = rc.top + height;
 	clientHeight -= height;
-	
+
 	::MoveWindow(m_hwndArray[_index], iX, iY, width, clientHeight, true);
 
 	bHandled = false;
@@ -201,40 +201,40 @@ void CKernelHookView::InitWFPFilterTable() {
 
 LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
-	
+
 	index = m_TabCtrl.GetCurSel();
 	for (auto hwnd : m_hwndArray) {
 		if (::IsWindow(hwnd)) {
 			::ShowWindow(hwnd, SW_HIDE);
 		}
 	}
-	
+
 
 	switch (static_cast<TabColumn>(index)) {
-		case TabColumn::SSDT:
-			m_SSDTHookTable->ShowWindow(SW_SHOW);
-			m_SSDTHookTable->SetFocus();
-			break;
-		case TabColumn::ShadowSSDT:
-			m_ShadowSSDTHookTable->ShowWindow(SW_SHOW);
-			m_ShadowSSDTHookTable->SetFocus();
-			break;
-		case TabColumn::ObjectCallback:
-			m_KernelNotifyTable->ShowWindow(SW_SHOW);
-			m_KernelNotifyTable->SetFocus();
-			break;
-		case TabColumn::MiniFilter:
-			m_MiniFilterTable->ShowWindow(SW_SHOW);
-			m_MiniFilterTable->SetFocus();
-			break;
-		case TabColumn::WFPFilter:
-			m_WFPFilterTable->ShowWindow(SW_SHOW);
-			m_WFPFilterTable->SetFocus();
-			break;
-		case TabColumn::InlineHook:
-			m_InlineHookTable->ShowWindow(SW_SHOW);
-			m_InlineHookTable->SetFocus();
-			break;
+	case TabColumn::SSDT:
+		m_SSDTHookTable->ShowWindow(SW_SHOW);
+		m_SSDTHookTable->SetFocus();
+		break;
+	case TabColumn::ShadowSSDT:
+		m_ShadowSSDTHookTable->ShowWindow(SW_SHOW);
+		m_ShadowSSDTHookTable->SetFocus();
+		break;
+	case TabColumn::ObjectCallback:
+		m_KernelNotifyTable->ShowWindow(SW_SHOW);
+		m_KernelNotifyTable->SetFocus();
+		break;
+	case TabColumn::MiniFilter:
+		m_MiniFilterTable->ShowWindow(SW_SHOW);
+		m_MiniFilterTable->SetFocus();
+		break;
+	case TabColumn::WFPFilter:
+		m_WFPFilterTable->ShowWindow(SW_SHOW);
+		m_WFPFilterTable->SetFocus();
+		break;
+	case TabColumn::InlineHook:
+		m_InlineHookTable->ShowWindow(SW_SHOW);
+		m_InlineHookTable->SetFocus();
+		break;
 	}
 	_index = index;
 	::PostMessage(m_hWnd, WM_SIZE, 0, 0);
@@ -298,7 +298,7 @@ void CKernelHookView::InitInlineHookTable() {
 
 
 	m_InlineHookTable = new CKernelInlineHookTable(info, table);
-	
+
 	RECT rect;
 	GetClientRect(&rect);
 	m_InlineHookTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);

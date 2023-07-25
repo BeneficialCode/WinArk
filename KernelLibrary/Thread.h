@@ -8,8 +8,8 @@ struct Thread {
 public:
 	NTSTATUS CreateSystemThread(PKSTART_ROUTINE routine, PVOID context);
 	NTSTATUS Close();
-	
-	static NTSTATUS SetPriporty(int id,int priority);
+
+	static NTSTATUS SetPriporty(int id, int priority);
 private:
 	HANDLE _handle;
 };

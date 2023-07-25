@@ -68,7 +68,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	};
 
 	for (const auto& [name, path] : locations) {
-		ListItem item{ name,path};
+		ListItem item{ name,path };
 		m_Items.push_back(item);
 	}
 	UpdateList(m_List, static_cast<int>(m_Items.size()));
@@ -94,8 +94,8 @@ void CGotoKeyDlg::DoSort(const SortInfo* si) {
 
 	auto compare = [&](auto& i1, auto& i2) {
 		switch (si->SortColumn) {
-			case 0: return SortHelper::SortStrings(i1.Name, i2.Name, si->SortColumn);
-			case 1: return SortHelper::SortStrings(i1.Path, i2.Path, si->SortColumn);
+		case 0: return SortHelper::SortStrings(i1.Name, i2.Name, si->SortColumn);
+		case 1: return SortHelper::SortStrings(i1.Path, i2.Path, si->SortColumn);
 		}
 		return false;
 	};
@@ -116,9 +116,9 @@ BOOL CGotoKeyDlg::OnDoubleClickList(HWND, int row, int, const POINT&) {
 CString CGotoKeyDlg::GetColumnText(HWND, int row, int col) const {
 	auto& item = m_Items[row];
 
-	switch (col){
-		case 0: return item.Name;
-		case 1: return item.Path;
+	switch (col) {
+	case 0: return item.Name;
+	case 1: return item.Path;
 	}
 	ATLASSERT(false);
 	return L"";

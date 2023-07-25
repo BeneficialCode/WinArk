@@ -171,7 +171,7 @@ FLT_PREOP_CALLBACK_STATUS DelProtectPreSetInformation(PFLT_CALLBACK_DATA Data, P
 			//
 			// using FLT_FILE_NAME_NORMALIZED is important here for parsing purposes
 			//
-			if (NT_SUCCESS(FltGetFileNameInformation(Data, 
+			if (NT_SUCCESS(FltGetFileNameInformation(Data,
 				FLT_FILE_NAME_QUERY_DEFAULT | FLT_FILE_NAME_NORMALIZED,
 				&fi))) {
 				if (!IsDeleteAllowed(&fi->Name)) {
@@ -191,9 +191,9 @@ bool IsDeleteAllowed(PCUNICODE_STRING filename) {
 	UNICODE_STRING ext;
 	NTSTATUS status;
 	status = FltParseFileName(filename, &ext, nullptr, nullptr);
-	if(NT_SUCCESS(status)) {
-		if (ext.Buffer == nullptr || ext.Length == 0 
-			||g_State.Extentions.Buffer == nullptr) {
+	if (NT_SUCCESS(status)) {
+		if (ext.Buffer == nullptr || ext.Length == 0
+			|| g_State.Extentions.Buffer == nullptr) {
 			return true;
 		}
 		UNICODE_STRING suext;
@@ -212,8 +212,8 @@ bool IsDeleteAllowed(PCUNICODE_STRING filename) {
 		//
 		// search for the prefix
 		//
-		bool del =  wcsstr(g_State.Extentions.Buffer, suext.Buffer) == nullptr;
-		
+		bool del = wcsstr(g_State.Extentions.Buffer, suext.Buffer) == nullptr;
+
 		if (suext.Buffer != nullptr) {
 			ExFreePool(suext.Buffer);
 		}

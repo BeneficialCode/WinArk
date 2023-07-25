@@ -25,7 +25,7 @@ enum class FlagBits {
 DEFINE_ENUM_FLAG_OPERATORS(FlagBits);
 
 // ModR/M flags
-enum class ModRm : UCHAR{
+enum class ModRm : UCHAR {
 	Sib = 0x10,
 	Rip = 0x20,
 	NotSib = 0x0f,
@@ -39,7 +39,7 @@ struct Disasm {
 	struct CopyEntry;
 	typedef const CopyEntry* RefCopyEntry;
 
-	typedef PUCHAR (Disasm::* CopyFunc)(RefCopyEntry pEntry, PUCHAR pDst, PUCHAR pSrc);
+	typedef PUCHAR(Disasm::* CopyFunc)(RefCopyEntry pEntry, PUCHAR pDst, PUCHAR pSrc);
 
 	struct CopyEntry {
 		ULONG FixedSize : 4;

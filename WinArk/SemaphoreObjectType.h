@@ -2,7 +2,7 @@
 
 #include "ObjectType.h"
 
-class SemaphoreObjectType :	public ObjectType {
+class SemaphoreObjectType : public ObjectType {
 public:
 	SemaphoreObjectType(int index, PCWSTR name);
 

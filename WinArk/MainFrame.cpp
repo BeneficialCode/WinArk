@@ -87,7 +87,7 @@ void CMainFrame::InitProcessTable() {
 	}
 
 	m_pProcTable = new CProcessTable(info, table);
-	m_hWndClient = m_pProcTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED| WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hWndClient = m_pProcTable->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_pProcTable->ShowWindow(SW_SHOW);
 	m_pProcTable->m_Images.Create(16, 16, ILC_COLOR32, 64, 32);
 	m_pProcTable->Refresh();
@@ -241,7 +241,7 @@ void CMainFrame::InitDriverInterface() {
 		if (!SecurityHelper::IsRunningElevated()) {
 			if (AtlMessageBox(nullptr, L"Kernel Driver not loaded. Some functionality will not be available. Install?", IDS_TITLE, MB_YESNO | MB_ICONQUESTION) == IDYES) {
 				if (SecurityHelper::IsSysRun()) {
-					if(!SecurityHelper::SysRun(L"install"))
+					if (!SecurityHelper::SysRun(L"install"))
 						AtlMessageBox(*this, L"Error running driver installer", IDS_TITLE, MB_ICONERROR);
 				}
 				else if (!SecurityHelper::RunElevated(L"install", false)) {
@@ -250,7 +250,7 @@ void CMainFrame::InitDriverInterface() {
 			}
 		}
 		else {
-			if (!DriverHelper::InstallDriver(false,pBuffer,size) || !DriverHelper::LoadDriver()) {
+			if (!DriverHelper::InstallDriver(false, pBuffer, size) || !DriverHelper::LoadDriver()) {
 				MessageBox(L"Failed to install driver. Some functionality will not be available.", L"WinArk", MB_ICONERROR);
 			}
 		}
@@ -261,7 +261,7 @@ void CMainFrame::InitDriverInterface() {
 				IDS_TITLE, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON1);
 			if (response == IDYES) {
 				if (SecurityHelper::IsRunningElevated()) {
-					if (!DriverHelper::UpdateDriver(pBuffer,size))
+					if (!DriverHelper::UpdateDriver(pBuffer, size))
 						AtlMessageBox(nullptr, L"Failed to update driver", IDS_TITLE, MB_ICONERROR);
 				}
 				else {
@@ -299,7 +299,7 @@ void CMainFrame::InitDeviceView() {
 void CMainFrame::InitWindowsView() {
 	// WS_CLIPCHILDREN 子窗口区域父窗口不负责绘制,子窗口自行绘制
 	// 不设置的话，父窗口绘制会遮挡住子窗口
-	HWND hWnd = m_WinView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPSIBLINGS| WS_CLIPCHILDREN);
+	HWND hWnd = m_WinView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::Windows)] = m_WinView.m_hWnd;
 }
 
@@ -331,7 +331,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	CMenuHandle hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
-		
+
 		CString text;
 		GetWindowText(text);
 		CString append = L"  (Administrator)";
@@ -355,7 +355,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	menu.RemoveMenu(1, MF_BYPOSITION);
 	menu.InsertMenu(1, MF_BYPOSITION, submenu.m_hMenu, text);
 	DrawMenuBar();*/
-	
+
 	// center the dialog on the screen
 	CenterWindow();
 
@@ -378,7 +378,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	r.bottom = 25;
 	auto hTabCtrl = tabCtrl.Create(m_hWnd, &r, nullptr, WS_CHILDWINDOW | WS_VISIBLE | WS_CLIPSIBLINGS
 		| TCS_HOTTRACK | TCS_SINGLELINE | TCS_RIGHTJUSTIFY | TCS_TABS,
-		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY,TabId);
+		WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_NOPARENTNOTIFY, TabId);
 	m_TabCtrl.SubclassWindow(hTabCtrl);
 	// 初始化选择夹
 	struct {
@@ -424,7 +424,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 	SetLayeredWindowAttributes(m_hWnd, 0xffffff, static_cast<BYTE>(255 * 0.8), LWA_ALPHA);
-	
+
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -493,67 +493,67 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	}
 
 	ClearToolBarButtons(m_tb);
-	
+
 	m_hWndClient = m_hwndArray[index];
 	switch (static_cast<TabColumn>(index)) {
-		case TabColumn::Process:
-			InitProcessToolBar(m_tb);
-			UIAddToolBar(m_tb.m_hWnd);
-			m_pProcTable->ShowWindow(SW_SHOW);
-			m_pProcTable->SetFocus();
-			break;
-		case TabColumn::Network:
-			m_pNetTable->ShowWindow(SW_SHOW);
-			m_pNetTable->SetFocus();
-			break;
-		case TabColumn::KernelModule:
-			m_pKernelModuleTable->ShowWindow(SW_SHOW);
-			m_pKernelModuleTable->SetFocus();
-			break;
-		case TabColumn::Driver:
-			m_pDriverTable->ShowWindow(SW_SHOW);
-			m_pDriverTable->SetFocus();
-			break;
-		case TabColumn::Registry:
-			InitRegToolBar(m_tb);
-			UIAddToolBar(m_tb.m_hWnd);
-			m_RegView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Device:
-			m_DevView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Windows:
-			m_WinView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::KernelHook:
-			m_KernelHookView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Service:
-			m_pServiceTable->ShowWindow(SW_SHOW);
-			m_pServiceTable->SetFocus();
-			break;
-		case TabColumn::Kernel:
-			m_KernelView->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Config:
-			m_SysConfigView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Etw:
-			InitEtwToolBar(m_tb);
-			UIAddToolBar(m_tb.m_hWnd);
-			m_pEtwView->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::LogonSession:
-			m_pLogonSessionView->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::BypassDectect:
-			m_BypassView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Explorer:
-			m_ExplorerView.ShowWindow(SW_SHOW);
-			break;
-		default:
-			break;
+	case TabColumn::Process:
+		InitProcessToolBar(m_tb);
+		UIAddToolBar(m_tb.m_hWnd);
+		m_pProcTable->ShowWindow(SW_SHOW);
+		m_pProcTable->SetFocus();
+		break;
+	case TabColumn::Network:
+		m_pNetTable->ShowWindow(SW_SHOW);
+		m_pNetTable->SetFocus();
+		break;
+	case TabColumn::KernelModule:
+		m_pKernelModuleTable->ShowWindow(SW_SHOW);
+		m_pKernelModuleTable->SetFocus();
+		break;
+	case TabColumn::Driver:
+		m_pDriverTable->ShowWindow(SW_SHOW);
+		m_pDriverTable->SetFocus();
+		break;
+	case TabColumn::Registry:
+		InitRegToolBar(m_tb);
+		UIAddToolBar(m_tb.m_hWnd);
+		m_RegView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Device:
+		m_DevView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Windows:
+		m_WinView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::KernelHook:
+		m_KernelHookView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Service:
+		m_pServiceTable->ShowWindow(SW_SHOW);
+		m_pServiceTable->SetFocus();
+		break;
+	case TabColumn::Kernel:
+		m_KernelView->ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Config:
+		m_SysConfigView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Etw:
+		InitEtwToolBar(m_tb);
+		UIAddToolBar(m_tb.m_hWnd);
+		m_pEtwView->ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::LogonSession:
+		m_pLogonSessionView->ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::BypassDectect:
+		m_BypassView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Explorer:
+		m_ExplorerView.ShowWindow(SW_SHOW);
+		break;
+	default:
+		break;
 	}
 	::PostMessage(m_hWnd, WM_SIZE, 0, 0);
 	_index = index;
@@ -714,18 +714,18 @@ void CMainFrame::InitEtwToolBar(CToolBarCtrl& tb, int size) {
 		else {
 			int image = tbImages.AddIcon(AtlLoadIconImage(b.image, 0, size, size));
 			BYTE fsState = TBSTATE_ENABLED;
-			
+
 			if (b.id == ID_MONITOR_START) {
 				if (m_tm.IsRunning()) {
 					fsState = TBSTATE_INDETERMINATE;
 				}
 			}
 			else if (b.id == ID_MONITOR_PAUSE) {
-				if (m_tm.IsPaused()||!m_tm.IsRunning()) {
+				if (m_tm.IsPaused() || !m_tm.IsRunning()) {
 					fsState = TBSTATE_INDETERMINATE;
 				}
 			}
-			else if(b.id == ID_MONITOR_STOP) {
+			else if (b.id == ID_MONITOR_STOP) {
 				if (!m_tm.IsRunning()) {
 					fsState = TBSTATE_INDETERMINATE;
 				}
@@ -872,7 +872,7 @@ LRESULT CMainFrame::OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	};
 	CColorsSelectionDlg dlg(Colors, _countof(Colors));
 	if (dlg.DoModal() == IDOK) {
-		
+
 	}
 	return TRUE;
 }
@@ -896,40 +896,40 @@ CString CMainFrame::GetDefaultSettingsFile() {
 	return path;
 }
 
-void CMainFrame::SetColor(ThemeColor* colors,int count) {
+void CMainFrame::SetColor(ThemeColor* colors, int count) {
 	for (int i = 0; i < count; i++) {
 		switch (i) {
-			case 0:
-				g_myColor[g_myScheme[0].textcolor] = colors[i].Color;
-				break;
+		case 0:
+			g_myColor[g_myScheme[0].textcolor] = colors[i].Color;
+			break;
 
-			case 1:
-				g_myScheme[0].hitextcolor = colors[i].Color;
-				break;
+		case 1:
+			g_myScheme[0].hitextcolor = colors[i].Color;
+			break;
 
-			case 2:
-				g_myColor[g_myScheme[0].lowcolor] = colors[i].Color;
-				break;
+		case 2:
+			g_myColor[g_myScheme[0].lowcolor] = colors[i].Color;
+			break;
 
-			case 3:
-				g_myColor[g_myScheme[0].bkcolor] = colors[i].Color;
-				break;
+		case 3:
+			g_myColor[g_myScheme[0].bkcolor] = colors[i].Color;
+			break;
 
-			case 4:
-				g_myColor[g_myScheme[0].selbkcolor] = colors[i].Color;
-				break;
+		case 4:
+			g_myColor[g_myScheme[0].selbkcolor] = colors[i].Color;
+			break;
 
-			case 5:
-				g_myColor[g_myScheme[0].linecolor] = colors[i].Color;
-				break;
+		case 5:
+			g_myColor[g_myScheme[0].linecolor] = colors[i].Color;
+			break;
 
-			case 6:
-				g_myColor[g_myScheme[0].auxcolor] = colors[i].Color;
-				break;
+		case 6:
+			g_myColor[g_myScheme[0].auxcolor] = colors[i].Color;
+			break;
 
-			case 7:
-				g_myColor[g_myScheme[0].condbkcolor] = colors[i].Color;
-				break;
+		case 7:
+			g_myColor[g_myScheme[0].condbkcolor] = colors[i].Color;
+			break;
 		}
 	}
 }
@@ -973,62 +973,62 @@ LRESULT CMainFrame::OnEditFind(WORD, WORD, HWND, BOOL&) {
 
 	m_hWndClient = m_hwndArray[index];
 	switch (static_cast<TabColumn>(index)) {
-		case TabColumn::Process:
-			//m_pProcTable->ShowWindow(SW_SHOW);
-			//m_pProcTable->SetFocus();
-			break;
-		case TabColumn::Network:
-			/*m_pNetTable->ShowWindow(SW_SHOW);
-			m_pNetTable->SetFocus();*/
-			break;
-		case TabColumn::KernelModule:
+	case TabColumn::Process:
+		//m_pProcTable->ShowWindow(SW_SHOW);
+		//m_pProcTable->SetFocus();
+		break;
+	case TabColumn::Network:
+		/*m_pNetTable->ShowWindow(SW_SHOW);
+		m_pNetTable->SetFocus();*/
+		break;
+	case TabColumn::KernelModule:
 		/*	m_pKernelModuleTable->ShowWindow(SW_SHOW);
 			m_pKernelModuleTable->SetFocus();*/
-			break;
-		case TabColumn::Driver:
-			/*m_pDriverTable->ShowWindow(SW_SHOW);
-			m_pDriverTable->SetFocus();*/
-			break;
-		case TabColumn::Registry:
-			//m_RegView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Device:
-			//m_DevView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Windows:
-			//m_WinView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::KernelHook:
-			//m_KernelHookView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Service:
-			/*m_pServiceTable->ShowWindow(SW_SHOW);
-			m_pServiceTable->SetFocus();*/
-			break;
-		case TabColumn::Kernel:
-		{
-			m_IView = m_KernelView->GetCurView();
-			if (m_IView && m_IView->IsFindSupported()) {
-				if (!m_pFindDlg) {
-					m_pFindDlg = new CFindReplaceDialog;
-					m_pFindDlg->Create(TRUE, m_FindText, nullptr, FR_DOWN, m_hWnd);
-				}
-				if (!m_pFindDlg->IsWindowVisible()) {
-					m_pFindDlg->ShowWindow(SW_SHOW);
-				}
-				m_pFindDlg->BringWindowToTop();
-				m_pFindDlg->SetFocus();
+		break;
+	case TabColumn::Driver:
+		/*m_pDriverTable->ShowWindow(SW_SHOW);
+		m_pDriverTable->SetFocus();*/
+		break;
+	case TabColumn::Registry:
+		//m_RegView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Device:
+		//m_DevView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Windows:
+		//m_WinView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::KernelHook:
+		//m_KernelHookView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Service:
+		/*m_pServiceTable->ShowWindow(SW_SHOW);
+		m_pServiceTable->SetFocus();*/
+		break;
+	case TabColumn::Kernel:
+	{
+		m_IView = m_KernelView->GetCurView();
+		if (m_IView && m_IView->IsFindSupported()) {
+			if (!m_pFindDlg) {
+				m_pFindDlg = new CFindReplaceDialog;
+				m_pFindDlg->Create(TRUE, m_FindText, nullptr, FR_DOWN, m_hWnd);
 			}
-			break;
+			if (!m_pFindDlg->IsWindowVisible()) {
+				m_pFindDlg->ShowWindow(SW_SHOW);
+			}
+			m_pFindDlg->BringWindowToTop();
+			m_pFindDlg->SetFocus();
 		}
-		case TabColumn::Config:
-			//m_SysConfigView.ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::Etw:
-			//m_pEtwView->ShowWindow(SW_SHOW);
-			break;
-		default:
-			break;
+		break;
+	}
+	case TabColumn::Config:
+		//m_SysConfigView.ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::Etw:
+		//m_pEtwView->ShowWindow(SW_SHOW);
+		break;
+	default:
+		break;
 	}
 	return 0;
 }

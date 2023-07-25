@@ -22,11 +22,11 @@ struct EventProperty {
 		return *(T*)Data.data();
 	}
 
-	BYTE* GetData(){
+	BYTE* GetData() {
 		return Data.data();
 	}
 
-	const BYTE* GetData() const{
+	const BYTE* GetData() const {
 		return Data.data();
 	}
 

@@ -16,8 +16,8 @@ std::vector<ServiceInfo> ServiceManager::EnumServices(ServiceEnumType enumType, 
 	DWORD needed;
 	DWORD count;
 	auto ok = ::EnumServicesStatusEx(hScm.get(), // SC_MANAGER_ENUMERATE_SERVICE
-		SC_ENUM_PROCESS_INFO, 
-		static_cast<DWORD>(enumType), 
+		SC_ENUM_PROCESS_INFO,
+		static_cast<DWORD>(enumType),
 		static_cast<DWORD>(enumState),
 		buffer.get(), 1 << 18, &needed, &count, nullptr, nullptr);
 	if (!ok)
@@ -29,14 +29,14 @@ std::vector<ServiceInfo> ServiceManager::EnumServices(ServiceEnumType enumType, 
 		ServiceInfo svc;
 		svc._name = data->lpServiceName;
 		svc._displayName = data->lpDisplayName;
-		::memcpy(&svc._status, &data->ServiceStatusProcess,sizeof(SERVICE_STATUS_PROCESS));
+		::memcpy(&svc._status, &data->ServiceStatusProcess, sizeof(SERVICE_STATUS_PROCESS));
 
 		services.push_back(std::move(svc));
 	}
 	return services;
 }
 
-std::vector<DriverInfo> ServiceManager::EnumServices(ServiceEnumType enumType, ServiceEnumState enumState,bool service) {
+std::vector<DriverInfo> ServiceManager::EnumServices(ServiceEnumType enumType, ServiceEnumState enumState, bool service) {
 	std::vector<DriverInfo> services;
 	wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE));
 	if (!hScm)
@@ -94,7 +94,7 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 			SERVICE_STATUS_PROCESS status;
 			if (::QueryServiceStatusEx(hService.get(), SC_STATUS_PROCESS_INFO,
 				(BYTE*)&status, sizeof(status), &needed) && status.dwProcessId > 0) {
-				wil::unique_process_handle hProcess(::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE,status.dwProcessId));
+				wil::unique_process_handle hProcess(::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, status.dwProcessId));
 				Token token(hProcess.get(), TokenAccessMask::Query);
 				if (token)
 					result->AccountName = token.GetUserNameAndSid().first;
@@ -105,7 +105,7 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 	if (result->StartType == ServiceStartType::Auto) {
 		// check if delayed auto start
 		SERVICE_DELAYED_AUTO_START_INFO info;
-		auto ok = ::QueryServiceConfig2(hService.get(), 
+		auto ok = ::QueryServiceConfig2(hService.get(),
 			SERVICE_CONFIG_DELAYED_AUTO_START_INFO,// Delayed auto start
 			(BYTE*)&info, sizeof(info), &len);
 		if (ok)
@@ -142,7 +142,7 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 	else if (result->BinaryPathName.find(global) == 0) {
 		result->BinaryPathName = result->BinaryPathName.substr(global.size());
 	}
-	
+
 	auto s = config->lpDependencies;
 	while (s && *s) {
 		result->Dependencies.emplace_back(s);
@@ -159,7 +159,7 @@ std::wstring WinSys::ServiceManager::GetServiceDescription(const std::wstring& n
 		return L"";
 	BYTE buffer[1024];
 	DWORD len;
-	if (!::QueryServiceConfig2(hService.get(), 
+	if (!::QueryServiceConfig2(hService.get(),
 		SERVICE_CONFIG_DESCRIPTION, // Service description
 		buffer,
 		sizeof(buffer), &len)) {
@@ -202,12 +202,12 @@ ServiceStatusProcess ServiceManager::GetServiceStatus(const std::wstring& name) 
 
 	DWORD len;
 	::QueryServiceStatusEx(hService.get(), SC_STATUS_PROCESS_INFO, (BYTE*)&status, sizeof(status), &len);
-	
+
 	return status;
 }
 
 std::unique_ptr<WinSys::Service> ServiceManager::Install(
-	const std::wstring& name,const std::wstring& displayName, 
+	const std::wstring& name, const std::wstring& displayName,
 	ServiceAccessMask desiredAccess, ServiceType type,
 	ServiceStartType startType, ServiceErrorControl errorControl,
 	const std::wstring& imagePath) {
@@ -290,7 +290,7 @@ std::unique_ptr<WinSys::Service> ServiceManager::Install(const ServiceInstallPar
 			*buffer == 0 ? nullptr : buffer,
 			account.empty() ? nullptr : account.c_str(),
 			params.Password.empty() ? nullptr : params.Password.c_str())
-		);
+	);
 
 	if (!hService)
 		return nullptr;

@@ -99,7 +99,7 @@ typedef struct _OB_POST_CALLBACK_ENTRY {
 	LIST_ENTRY Entry;
 	POB_CALLBACK_ENTRY CallbackEntry;
 	PVOID CallContext;
-}OB_POST_CALLBACK_ENTRY,*POB_POST_CALLBACK_ENTRY;
+}OB_POST_CALLBACK_ENTRY, * POB_POST_CALLBACK_ENTRY;
 
 extern SysMonGlobals g_SysMonGlobals;
 extern UNICODE_STRING g_BackupDir;
@@ -119,8 +119,8 @@ void OnThreadNotify(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Cr
 void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo);
 NTSTATUS OnRegistryNotify(PVOID context, PVOID arg1, PVOID arg2);
 
-bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
-bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
+bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count, KernelCallbackInfo* info);
+bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, ObCallbackInfo* info);
 LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
 bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, void* handle);
 
@@ -176,7 +176,7 @@ using PPsSetCreateProcessNotifyRoutineEx2 = NTSTATUS
 	_In_ ULONG NotifyType,
 	_In_ PVOID NotifyInformation,
 	_In_ BOOLEAN Remove
-);
+	);
 
 NTSTATUS EnumMiniFilterOperations(MiniFilterData* pData, OperationInfo* pInfo);
 

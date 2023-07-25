@@ -7,7 +7,7 @@ struct CopyKeyCommand :public RegAppCommandBase<CopyKeyCommand> {
 		AppCommandCallback<CopyKeyCommand> cb = nullptr);
 
 	const CString& GetTargetPath() const;
-	
+
 	bool Execute() override;
 	bool Undo() override;
 

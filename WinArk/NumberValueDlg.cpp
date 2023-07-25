@@ -5,7 +5,7 @@
 #include "RegHelpers.h"
 
 CNumberValueDlg::CNumberValueDlg(RegistryKey& key, PCWSTR name, DWORD type, bool readOnly)
-	:m_Key(key),m_Name(name),m_Type(type),m_ReadOnly(readOnly){
+	:m_Key(key), m_Name(name), m_Type(type), m_ReadOnly(readOnly) {
 }
 
 DWORD64 CNumberValueDlg::GetValue() const {
@@ -46,7 +46,7 @@ LRESULT CNumberValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 		GetDlgItem(IDC_VALUE).GetClientRect(&rc);
 		GetDlgItem(IDC_VALUE).SetWindowPos(nullptr, 0, 0, rc.right + extra, rc.bottom, SWP_NOMOVE | SWP_NOREPOSITION);
 	}
-	
+
 	return 0;
 }
 
@@ -77,17 +77,17 @@ LRESULT CNumberValueDlg::OnClickBase(WORD, WORD id, HWND, BOOL&) {
 
 	switch (id)
 	{
-		case IDC_HEX: 
-			m_Format = ValueFormat::Hex; 
-			break;
+	case IDC_HEX:
+		m_Format = ValueFormat::Hex;
+		break;
 
-		case IDC_DEC:
-			m_Format = ValueFormat::Decimal;
-			break;
+	case IDC_DEC:
+		m_Format = ValueFormat::Decimal;
+		break;
 
-		case IDC_BIN:
-			m_Format = ValueFormat::Binary;
-			break;
+	case IDC_BIN:
+		m_Format = ValueFormat::Binary;
+		break;
 	}
 	DisplayValue(value, false);
 	return 0;
@@ -109,23 +109,23 @@ void CNumberValueDlg::DisplayValue(DWORD64 value, bool checkRadio) {
 	CString text;
 	switch (m_Format)
 	{
-		case ValueFormat::Decimal:
-			text.Format(m_Type == REG_DWORD ? L"%u" : L"%llu", value);
-			if (checkRadio)
-				CheckDlgButton(IDC_DEC, TRUE);
-			break;
+	case ValueFormat::Decimal:
+		text.Format(m_Type == REG_DWORD ? L"%u" : L"%llu", value);
+		if (checkRadio)
+			CheckDlgButton(IDC_DEC, TRUE);
+		break;
 
-		case ValueFormat::Hex:
-			text.Format(m_Type == REG_DWORD ? L"%X" : L"%llX", value);
-			if (checkRadio)
-				CheckDlgButton(IDC_HEX, TRUE);
-			break;
+	case ValueFormat::Hex:
+		text.Format(m_Type == REG_DWORD ? L"%X" : L"%llX", value);
+		if (checkRadio)
+			CheckDlgButton(IDC_HEX, TRUE);
+		break;
 
-		case ValueFormat::Binary:
-			text = RegHelpers::ToBinary(value);
-			if (checkRadio)
-				CheckDlgButton(IDC_BIN, TRUE);
-			break;
+	case ValueFormat::Binary:
+		text = RegHelpers::ToBinary(value);
+		if (checkRadio)
+			CheckDlgButton(IDC_BIN, TRUE);
+		break;
 
 	}
 	SetDlgItemText(IDC_VALUE, text);

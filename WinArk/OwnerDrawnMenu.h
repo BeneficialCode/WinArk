@@ -127,7 +127,7 @@ struct COwnerDrawnMenu :COwnerDrawnMenuBase {
 				pen.CreatePen(PS_SOLID, 1, m_TextColor);
 				dc.SelectPen(pen);
 				dc.SelectBrush(brush);
-				dc.Polygon(pt,_countof(pt));
+				dc.Polygon(pt, _countof(pt));
 				rc.right = dis->rcItem.right;
 			}
 			dc.ExcludeClipRect(&rc);

@@ -24,7 +24,7 @@ public:
 	void Add(CString const& name, CString const& path);
 	void Clear();
 	CString const& GetPathByName(CString const& name) const;
-	
+
 
 private:
 	PCWSTR GetPath(PCWSTR path) const;

@@ -15,7 +15,7 @@ DeviceManager::DeviceManager(const wchar_t* computerName, const GUID* classGuid,
 		static_cast<DWORD>(options), nullptr, computerName, nullptr));
 }
 
-std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName /* = nullptr */, 
+std::unique_ptr<DeviceManager> DeviceManager::Create(const wchar_t* computerName /* = nullptr */,
 	const GUID* classGuid,
 	const wchar_t* enumerator /* = nullptr */, InfoSetOptions options /* = InfoSetOptions::Present | InfoSetOptions::AllClasses */) {
 	auto dm = new DeviceManager(computerName, classGuid, enumerator, options);

@@ -53,7 +53,7 @@ bool SecurityHelper::IsRunningElevated() {
 
 HICON SecurityHelper::GetShieldIcon() {
 	SHSTOCKICONINFO ssii = { sizeof(ssii) };
-	if(FAILED(::SHGetStockIconInfo(SIID_SHIELD,SHGSI_SMALLICON|SHGSI_ICON,&ssii)))
+	if (FAILED(::SHGetStockIconInfo(SIID_SHIELD, SHGSI_SMALLICON | SHGSI_ICON, &ssii)))
 		return nullptr;
 
 	return ssii.hIcon;
@@ -92,7 +92,7 @@ HANDLE SecurityHelper::OpenSystemProcessToken() {
 	HANDLE hToken{};
 	for (DWORD i = 0; i < count && !hToken; i++) {
 		if (pInfo[i].SessionId == 0 && IsSystemSid(pInfo[i].pUserSid)
-			&& !_wcsicmp(pInfo[i].pProcessName,L"services.exe")) {
+			&& !_wcsicmp(pInfo[i].pProcessName, L"services.exe")) {
 			auto hProcess = DriverHelper::OpenProcess(pInfo[i].ProcessId, PROCESS_QUERY_INFORMATION);
 			if (hProcess) {
 				::OpenProcessToken(hProcess, TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY | TOKEN_IMPERSONATE, &hToken);
@@ -152,8 +152,8 @@ bool SecurityHelper::SysRun(PCWSTR param) {
 
 	GetCurrentDirectory(MAX_PATH, path);
 	if (!::CreateProcessAsUser(hPrimary, nullptr,
-		const_cast<wchar_t*>(commandLine.c_str()), nullptr, nullptr, 
-		FALSE, 0, nullptr,path,
+		const_cast<wchar_t*>(commandLine.c_str()), nullptr, nullptr,
+		FALSE, 0, nullptr, path,
 		&si, &pi)) {
 		DWORD error = ::GetLastError();
 		if (error == ERROR_PRIVILEGE_NOT_HELD) {

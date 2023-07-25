@@ -50,13 +50,13 @@ CString TokenObjectType::GetIntegirtyLevel(HANDLE hToken, const CString& prefix)
 		auto label = (TOKEN_MANDATORY_LABEL*)buffer;
 		auto sub = ::GetSidSubAuthority(label->Label.Sid, 0);
 		switch (*sub) {
-			case SECURITY_MANDATORY_SYSTEM_RID: details = L"System"; break;
-			case SECURITY_MANDATORY_HIGH_RID: details = L"High"; break;
-			case SECURITY_MANDATORY_MEDIUM_RID: details = L"Medium"; break;
-			case SECURITY_MANDATORY_MEDIUM_PLUS_RID: details = L"Medium Plus"; break;
-			case SECURITY_MANDATORY_LOW_RID: details = L"Low"; break;
-			case SECURITY_MANDATORY_UNTRUSTED_RID: details = L"Untrusted"; break;
-			default: details = L"Unknown";
+		case SECURITY_MANDATORY_SYSTEM_RID: details = L"System"; break;
+		case SECURITY_MANDATORY_HIGH_RID: details = L"High"; break;
+		case SECURITY_MANDATORY_MEDIUM_RID: details = L"Medium"; break;
+		case SECURITY_MANDATORY_MEDIUM_PLUS_RID: details = L"Medium Plus"; break;
+		case SECURITY_MANDATORY_LOW_RID: details = L"Low"; break;
+		case SECURITY_MANDATORY_UNTRUSTED_RID: details = L"Untrusted"; break;
+		default: details = L"Unknown";
 		}
 		return prefix + L"Integrity: " + details;
 	}

@@ -4,8 +4,8 @@
 
 ChangeValueCommand::ChangeValueCommand(PCWSTR path, PCWSTR name, DWORD type, const PVOID data,
 	LONG size, AppCommandCallback<ChangeValueCommand> cb)
-	:RegAppCommandBase(L"Change Value"+CString(name),path,name,cb),
-	_type(type),_size(size){
+	:RegAppCommandBase(L"Change Value" + CString(name), path, name, cb),
+	_type(type), _size(size) {
 	_data = std::make_unique<BYTE[]>(size);
 	memcpy(_data.get(), data, size);
 }

@@ -2,26 +2,26 @@
 
 #include "../KernelLibrary/Common.h"
 /*
-DeviceType - identifies a type of device. 
-This can be one of the FILE_DEVICE_xxx constants defined in the WDK headers, 
-but this is mostly for hardware based drivers. 
-For software drivers like ours, the number doesn't matter much. 
+DeviceType - identifies a type of device.
+This can be one of the FILE_DEVICE_xxx constants defined in the WDK headers,
+but this is mostly for hardware based drivers.
+For software drivers like ours, the number doesn't matter much.
 Still, Microsoft's documentation specifies that values for 3rd parties should start with0x8000.
 */
 
 /*
-Function - an ascending number indicating a specific operation. 
-If nothing else, this number must be different between different control codes for the same driver. 
+Function - an ascending number indicating a specific operation.
+If nothing else, this number must be different between different control codes for the same driver.
 Again, any number will do, but the official documentation says 3rd party drivers should start with 0x800.
 */
 
 /*
-Method - the most important part of the control code. 
+Method - the most important part of the control code.
 It indicates how the input and output buffers provided by the client pass to the driver.
 */
 
 /*
-Access - indicates whether this operation is to the driver (FILE_WRITE_ACCESS), from the driver (FILE_READ_ACCESS), or both ways (FILE_ANY_ACCESS). 
+Access - indicates whether this operation is to the driver (FILE_WRITE_ACCESS), from the driver (FILE_READ_ACCESS), or both ways (FILE_ANY_ACCESS).
 Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the IRP_MJ_DEVICE_CONTROL handler.
 */
 
@@ -51,7 +51,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 // 用MDL锁定用户内存
 // METHOD_OUT_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress write
 // METHOD_IN_DIRECT in: Irp->AssociatedIrp.SystemBuffer out: Irp->MdlAddress read
-	
+
 #define IOCTL_ARK_OPEN_OBJECT						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x800,METHOD_BUFFERED,FILE_ANY_ACCESS)
 // 缓冲方式
 #define IOCTL_ARK_OPEN_PROCESS						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x801,METHOD_BUFFERED,FILE_ANY_ACCESS)
@@ -190,10 +190,10 @@ struct UnloadedDriverData {
 };
 
 enum class NotifyType {
-	CreateProcessNotify = 0, 
-	CreateThreadNotify, 
+	CreateProcessNotify = 0,
+	CreateThreadNotify,
 	LoadImageNotify,
-	ProcessObjectNotify, 
+	ProcessObjectNotify,
 	ThreadObjectNotify,
 	RegistryNotify
 };
@@ -203,7 +203,7 @@ struct KernelNotifyInfo {
 	ULONG Offset;
 };
 
-struct ObCallbackInfo{
+struct ObCallbackInfo {
 	PVOID RegistrationHandle;
 	PVOID PreOperation;
 	PVOID PostOperation;

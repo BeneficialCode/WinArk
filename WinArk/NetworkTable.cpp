@@ -197,14 +197,14 @@ void CNetwrokTable::DoRefresh() {
 
 PCWSTR CNetwrokTable::ConnectionTypeToString(ConnectionType type) {
 	switch (type) {
-		case WinSys::ConnectionType::Tcp:
-			return L"TCP";
-		case WinSys::ConnectionType::TcpV6:
-			return L"TCPv6";
-		case WinSys::ConnectionType::Udp:
-			return L"UDP";
-		case WinSys::ConnectionType::UdpV6:
-			return L"UDPv6";
+	case WinSys::ConnectionType::Tcp:
+		return L"TCP";
+	case WinSys::ConnectionType::TcpV6:
+		return L"TCPv6";
+	case WinSys::ConnectionType::Udp:
+		return L"UDP";
+	case WinSys::ConnectionType::UdpV6:
+		return L"UDPv6";
 	}
 	ATLASSERT(false);
 	return nullptr;
@@ -212,18 +212,18 @@ PCWSTR CNetwrokTable::ConnectionTypeToString(ConnectionType type) {
 
 PCWSTR CNetwrokTable::ConnectionStateToString(MIB_TCP_STATE state) {
 	switch (state) {
-		case MIB_TCP_STATE_CLOSED: return L"Closed";
-		case MIB_TCP_STATE_LISTEN: return L"Listen";
-		case MIB_TCP_STATE_SYN_SENT: return L"Syn Sent";
-		case MIB_TCP_STATE_SYN_RCVD: return L"Syn Received";
-		case MIB_TCP_STATE_ESTAB: return L"Established";
-		case MIB_TCP_STATE_FIN_WAIT1: return L"Fin Wait 1";
-		case MIB_TCP_STATE_FIN_WAIT2: return L"Fin Wait 2";
-		case MIB_TCP_STATE_CLOSE_WAIT:return L"Close Wait";
-		case MIB_TCP_STATE_CLOSING:return L"Closing";
-		case MIB_TCP_STATE_LAST_ACK:return L"Ack";
-		case MIB_TCP_STATE_TIME_WAIT:return L"Time Wait";
-		case MIB_TCP_STATE_DELETE_TCB:return L"Delete TCB";
+	case MIB_TCP_STATE_CLOSED: return L"Closed";
+	case MIB_TCP_STATE_LISTEN: return L"Listen";
+	case MIB_TCP_STATE_SYN_SENT: return L"Syn Sent";
+	case MIB_TCP_STATE_SYN_RCVD: return L"Syn Received";
+	case MIB_TCP_STATE_ESTAB: return L"Established";
+	case MIB_TCP_STATE_FIN_WAIT1: return L"Fin Wait 1";
+	case MIB_TCP_STATE_FIN_WAIT2: return L"Fin Wait 2";
+	case MIB_TCP_STATE_CLOSE_WAIT:return L"Close Wait";
+	case MIB_TCP_STATE_CLOSING:return L"Closing";
+	case MIB_TCP_STATE_LAST_ACK:return L"Ack";
+	case MIB_TCP_STATE_TIME_WAIT:return L"Time Wait";
+	case MIB_TCP_STATE_DELETE_TCB:return L"Delete TCB";
 	}
 	return L"";
 }
@@ -260,81 +260,81 @@ u_short CNetwrokTable::HostByteOrderToNetworkByteOrder(UINT port) {
 
 int CNetwrokTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::Connection>& info, int column) {
 	switch (column) {
-		case 0:
-			s = info->Pid == 0 ? L"" : GetProcessName(info.get()).GetString();
+	case 0:
+		s = info->Pid == 0 ? L"" : GetProcessName(info.get()).GetString();
+		break;
+	case 1:
+		if (info->Pid > 0)
+			s.Format(L"%6u (0x%05X)", info->Pid, info->Pid);
+		break;
+	case 2:
+		s = ConnectionTypeToString(info->Type);
+		break;
+	case 3:
+		s = ConnectionStateToString(info->State);
+		if (info->State == MIB_TCP_STATE_ESTAB) {
+			select |= DRAW_HILITE;
+		}
+		break;
+	case 4:
+		s = info->Type == ConnectionType::TcpV6 || info->Type == ConnectionType::UdpV6 ?
+			IPAddressToString(info->LocalAddressV6) : IPAddressToString(info->LocalAddress);
+		break;
+	case 5:
+		s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->LocalPort));
+		break;
+	case 6:
+		if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
 			break;
-		case 1:
-			if (info->Pid > 0)
-				s.Format(L"%6u (0x%05X)", info->Pid, info->Pid);
+		}
+		s = info->Type == ConnectionType::TcpV6 ? IPAddressToString(info->RemoteAddressV6) : IPAddressToString(info->RemoteAddress);
+		break;
+	case 7:
+		if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
 			break;
-		case 2:
-			s = ConnectionTypeToString(info->Type);
-			break;
-		case 3:
-			s = ConnectionStateToString(info->State);
-			if (info->State == MIB_TCP_STATE_ESTAB) {
-				select |= DRAW_HILITE;
-			}
-			break;
-		case 4:
-			s = info->Type == ConnectionType::TcpV6 || info->Type == ConnectionType::UdpV6 ?
-				IPAddressToString(info->LocalAddressV6) : IPAddressToString(info->LocalAddress);
-			break;
-		case 5:
-			s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->LocalPort));
-			break;
-		case 6:
-			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
-				break;
-			}
-			s = info->Type == ConnectionType::TcpV6 ? IPAddressToString(info->RemoteAddressV6) : IPAddressToString(info->RemoteAddress);
-			break;
-		case 7:
-			if (info->Type == ConnectionType::Udp || info->Type == ConnectionType::UdpV6) {
-				break;
-			}
-			s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->RemotePort));
-			break;
-		case 8:
-			if (info->TimeStamp)
-				s.Format(L"%s.%03d", (PCWSTR)CTime(*(FILETIME*)&info->TimeStamp).Format(L"%x %X"), info->TimeStamp % 1000);
-			break;
-		case 9:
-			s = info->ModuleName.c_str();
-		case 10:
-			s = info->ModulePath.c_str();
-		default:
-			break;
+		}
+		s.Format(L"%d", HostByteOrderToNetworkByteOrder(info->RemotePort));
+		break;
+	case 8:
+		if (info->TimeStamp)
+			s.Format(L"%s.%03d", (PCWSTR)CTime(*(FILETIME*)&info->TimeStamp).Format(L"%x %X"), info->TimeStamp % 1000);
+		break;
+	case 9:
+		s = info->ModuleName.c_str();
+	case 10:
+		s = info->ModulePath.c_str();
+	default:
+		break;
 	}
 	return s.GetLength();
 }
 
-bool CNetwrokTable::CompareItems(const std::shared_ptr<WinSys::Connection>& c1, const std::shared_ptr<WinSys::Connection>& c2, int col, bool asc){
+bool CNetwrokTable::CompareItems(const std::shared_ptr<WinSys::Connection>& c1, const std::shared_ptr<WinSys::Connection>& c2, int col, bool asc) {
 	switch (col)
 	{
-		case 0: return SortHelper::SortStrings(GetProcessName(c1.get()), GetProcessName(c2.get()),asc);
-		case 1: return SortHelper::SortNumbers(c1->Pid, c2->Pid,asc);
-		case 2: return SortHelper::SortStrings(ConnectionTypeToString(c1->Type), ConnectionTypeToString(c2->Type),asc);
-		case 3: return SortHelper::SortNumbers(c1->State, c2->State,asc);
-		case 4: return SortHelper::SortNumbers(SwapBytes(c1->LocalAddress), SwapBytes(c2->LocalAddress),asc);
-		case 5:
-		{
-			auto port1 = HostByteOrderToNetworkByteOrder(c1->LocalPort);
-			auto port2 = HostByteOrderToNetworkByteOrder(c2->LocalPort);
-			return SortHelper::SortNumbers(port1, port2, asc);
-		}
-		case 6: return SortHelper::SortNumbers(SwapBytes(c1->RemoteAddress), SwapBytes(c2->RemoteAddress),asc);
+	case 0: return SortHelper::SortStrings(GetProcessName(c1.get()), GetProcessName(c2.get()), asc);
+	case 1: return SortHelper::SortNumbers(c1->Pid, c2->Pid, asc);
+	case 2: return SortHelper::SortStrings(ConnectionTypeToString(c1->Type), ConnectionTypeToString(c2->Type), asc);
+	case 3: return SortHelper::SortNumbers(c1->State, c2->State, asc);
+	case 4: return SortHelper::SortNumbers(SwapBytes(c1->LocalAddress), SwapBytes(c2->LocalAddress), asc);
+	case 5:
+	{
+		auto port1 = HostByteOrderToNetworkByteOrder(c1->LocalPort);
+		auto port2 = HostByteOrderToNetworkByteOrder(c2->LocalPort);
+		return SortHelper::SortNumbers(port1, port2, asc);
+	}
+	case 6: return SortHelper::SortNumbers(SwapBytes(c1->RemoteAddress), SwapBytes(c2->RemoteAddress), asc);
 
-		case 7: 
-		{
-			auto port1 = HostByteOrderToNetworkByteOrder(c1->RemotePort);
-			auto port2 = HostByteOrderToNetworkByteOrder(c2->RemotePort);
-			return SortHelper::SortNumbers(port1, port2, asc);
-		}
-		case 8: return SortHelper::SortNumbers(c1->TimeStamp, c2->TimeStamp, asc);
-		case 9: return SortHelper::SortStrings(c1->ModuleName, c2->ModuleName, asc);
-		default:
-			break;
+	case 7:
+	{
+		auto port1 = HostByteOrderToNetworkByteOrder(c1->RemotePort);
+		auto port2 = HostByteOrderToNetworkByteOrder(c2->RemotePort);
+		return SortHelper::SortNumbers(port1, port2, asc);
+	}
+	case 8: return SortHelper::SortNumbers(c1->TimeStamp, c2->TimeStamp, asc);
+	case 9: return SortHelper::SortStrings(c1->ModuleName, c2->ModuleName, asc);
+	default:
+		break;
 	}
 	return false;
 }

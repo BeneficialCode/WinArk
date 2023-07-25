@@ -80,32 +80,32 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	}
 
 	switch (static_cast<TabColumn>(index)) {
-		case TabColumn::PiDDBCacheTable:
-			m_PiDDBCacheTable->ShowWindow(SW_SHOW);
-			m_PiDDBCacheTable->SetFocus();
-			break;
-		case TabColumn::UnloadedDriverTable:
-			m_UnloadedDriverTable->ShowWindow(SW_SHOW);
-			m_UnloadedDriverTable->SetFocus();
-			break;
-		case TabColumn::KernelPoolTable:
-			m_KernelPoolView->ShowWindow(SW_SHOW);
-			m_KernelPoolView->UpdatePaneText();
-			break;
-		case TabColumn::BigPoolTable:
-			m_BigPoolView->ShowWindow(SW_SHOW);
-			m_BigPoolView->UpdatePaneText();
-			break;
-		case TabColumn::DpcTimer:
-			m_DpcTimerTable->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::IoTimer:
-			m_IoTimerTable->ShowWindow(SW_SHOW);
-			break;
+	case TabColumn::PiDDBCacheTable:
+		m_PiDDBCacheTable->ShowWindow(SW_SHOW);
+		m_PiDDBCacheTable->SetFocus();
+		break;
+	case TabColumn::UnloadedDriverTable:
+		m_UnloadedDriverTable->ShowWindow(SW_SHOW);
+		m_UnloadedDriverTable->SetFocus();
+		break;
+	case TabColumn::KernelPoolTable:
+		m_KernelPoolView->ShowWindow(SW_SHOW);
+		m_KernelPoolView->UpdatePaneText();
+		break;
+	case TabColumn::BigPoolTable:
+		m_BigPoolView->ShowWindow(SW_SHOW);
+		m_BigPoolView->UpdatePaneText();
+		break;
+	case TabColumn::DpcTimer:
+		m_DpcTimerTable->ShowWindow(SW_SHOW);
+		break;
+	case TabColumn::IoTimer:
+		m_IoTimerTable->ShowWindow(SW_SHOW);
+		break;
 
-		case TabColumn::WinExtHosts:
-			m_WinExtHostsTable->ShowWindow(SW_SHOW);
-			break;
+	case TabColumn::WinExtHosts:
+		m_WinExtHostsTable->ShowWindow(SW_SHOW);
+		break;
 	}
 	_index = index;
 	::PostMessage(m_hWnd, WM_SIZE, 0, 0);
@@ -253,14 +253,14 @@ IView* CKernelView::GetCurView() {
 
 	index = m_TabCtrl.GetCurSel();
 	switch (static_cast<TabColumn>(index)) {
-		case TabColumn::PiDDBCacheTable:
-			return m_PiDDBCacheTable;
-		case TabColumn::UnloadedDriverTable:
-			break;
-		case TabColumn::KernelPoolTable:
-			return m_KernelPoolView;
-		case TabColumn::BigPoolTable:
-			return m_BigPoolView;
+	case TabColumn::PiDDBCacheTable:
+		return m_PiDDBCacheTable;
+	case TabColumn::UnloadedDriverTable:
+		break;
+	case TabColumn::KernelPoolTable:
+		return m_KernelPoolView;
+	case TabColumn::BigPoolTable:
+		return m_BigPoolView;
 	}
 
 	return nullptr;

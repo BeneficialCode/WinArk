@@ -5,9 +5,9 @@
 
 class CQuickFindDlg :public CDialogImpl<CQuickFindDlg> {
 public:
-	enum {IDD=IDD_FIND};
+	enum { IDD = IDD_FIND };
 
-	CQuickFindDlg(IQuickFind* qf):m_QuickFind(qf){}
+	CQuickFindDlg(IQuickFind* qf) :m_QuickFind(qf) {}
 
 	static const QuickFindOptions& GetSearchOptions();
 	static const CString& GetSearchText();

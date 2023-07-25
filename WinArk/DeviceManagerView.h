@@ -3,18 +3,18 @@
 #include "DeviceManager.h"
 
 class CDeviceManagerView :
-	public CWindowImpl<CDeviceManagerView,CListViewCtrl>,
+	public CWindowImpl<CDeviceManagerView, CListViewCtrl>,
 	public CVirtualListView<CDeviceManagerView> {
 public:
 	// 根据这个会创建一个窗口句柄给m_hWnd
 	DECLARE_WND_CLASS(nullptr);
 
-	bool IsSortable(HWND,int col) const;
+	bool IsSortable(HWND, int col) const;
 	void DoSort(const SortInfo* si);
 
 private:
 	enum class ItemType {
-		None,String,MultiString,Dword,Boolean,Guid,PowerData
+		None, String, MultiString, Dword, Boolean, Guid, PowerData
 	};
 	struct ItemData {
 		PCWSTR Name;
@@ -31,10 +31,10 @@ private:
 	};
 
 	BEGIN_MSG_MAP(CDeviceManagerView)
-		MESSAGE_HANDLER(WM_CREATE,OnCreate)
-		MESSAGE_HANDLER(WM_SIZE,OnSize)
-		NOTIFY_CODE_HANDLER(TVN_SELCHANGED,OnTreeSelectionChanged)
-		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnListGetDispInfo)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
+		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelectionChanged)
+		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnListGetDispInfo)
 		CHAIN_MSG_MAP(CVirtualListView<CDeviceManagerView>)
 	END_MSG_MAP()
 

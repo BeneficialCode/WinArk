@@ -7,13 +7,13 @@
 NTSTATUS FileManager::Open(PUNICODE_STRING fileName, FileAccessMask accessMask /* = FileAccessMask::All */) {
 	NTSTATUS status;
 	IO_STATUS_BLOCK ioStatus;
-	
+
 	ObjectAttributes attr(fileName, ObjectAttributesFlags::Caseinsensive | ObjectAttributesFlags::KernelHandle);
 	status = ZwCreateFile(&_handle, static_cast<ULONG>(accessMask), &attr, &ioStatus, nullptr,
 		FILE_ATTRIBUTE_NORMAL,
 		FILE_SHARE_READ,
 		FILE_OPEN_IF, // 打开或创建文件
-		FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT| // 文件被同步的打开
+		FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT | // 文件被同步的打开
 		FILE_RANDOM_ACCESS,
 		nullptr, 0);
 	return status;
@@ -37,14 +37,14 @@ FileManager::~FileManager() {
 	Close();
 }
 
-NTSTATUS FileManager::ReadFile(PVOID buffer,ULONG size,PIO_STATUS_BLOCK ioStatus,PLARGE_INTEGER offset) {
+NTSTATUS FileManager::ReadFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioStatus, PLARGE_INTEGER offset) {
 	NTSTATUS status;
 
-	status = ZwReadFile(_handle, 
+	status = ZwReadFile(_handle,
 		nullptr, // 同步读
 		nullptr, // 
 		nullptr, //
-		ioStatus, buffer, size, 
+		ioStatus, buffer, size,
 		offset, // specifies the starting byte offset in the file where the read operation will begin
 		nullptr);
 	return status;
@@ -58,7 +58,7 @@ NTSTATUS FileManager::WriteFile(PVOID buffer, ULONG size, PIO_STATUS_BLOCK ioSta
 		nullptr,// 同步写
 		nullptr,
 		nullptr,
-		ioStatus,buffer,size,offset,nullptr);
+		ioStatus, buffer, size, offset, nullptr);
 
 	return status;
 }
@@ -78,8 +78,8 @@ NTSTATUS FileManager::GetFileSize(PLARGE_INTEGER fileSize) {
 }
 
 /*
-Note   Do not specify 
-FILE_READ_DATA, FILE_WRITE_DATA, FILE_APPEND_DATA, or FILE_EXECUTE 
+Note   Do not specify
+FILE_READ_DATA, FILE_WRITE_DATA, FILE_APPEND_DATA, or FILE_EXECUTE
 when you create or open a directory.
 */
 NTSTATUS FileManager::DeleteFile(PUNICODE_STRING fileName) {
@@ -169,7 +169,7 @@ NTSTATUS FileManager::GetRootName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING roo
 	return STATUS_SUCCESS;
 }
 
-VOID FileManager::FreeMdl(_In_ PMDL mdl){
+VOID FileManager::FreeMdl(_In_ PMDL mdl) {
 	PMDL pCur = mdl, pNext;
 
 	while (pCur != nullptr) {
@@ -184,15 +184,15 @@ VOID FileManager::FreeMdl(_In_ PMDL mdl){
 
 NTSTATUS IoCompletionRoutine(
 	PDEVICE_OBJECT DeviceObject,
-	PIRP Irp, 
-	PVOID Context){
+	PIRP Irp,
+	PVOID Context) {
 
 	PKEVENT UserEvent = Irp->UserEvent;
 
 	ASSERT(UserEvent != nullptr);
 	// 拷贝完成状态
 	RtlCopyMemory(Irp->UserIosb, &Irp->IoStatus, sizeof(IO_STATUS_BLOCK));
-	
+
 	// 检查并释放MDL
 	if (Irp->MdlAddress != nullptr) {
 		FileManager::FreeMdl(Irp->MdlAddress);
@@ -310,7 +310,7 @@ NTSTATUS FileManager::IrpCreateFile(
 		if (!NT_SUCCESS(status)) {
 			break;
 		}
-		
+
 		// 分配IRP
 		Irp = IoAllocateIrp(DeviceObject->StackSize, FALSE);
 		if (Irp == nullptr) {
@@ -360,7 +360,7 @@ NTSTATUS FileManager::IrpCreateFile(
 
 		// 等待完成
 		KeWaitForSingleObject(&notifyEvent, Executive, KernelMode, FALSE, nullptr);
-		
+
 		// 得到完成状态
 		*IoStatusBlock = ioStatus;
 
@@ -498,7 +498,7 @@ NTSTATUS FileManager::IrpQueryInformationFile(
 	_Out_writes_bytes_(Length) PVOID FileInformation,
 	_In_ ULONG Length,
 	_In_ FILE_INFORMATION_CLASS FileInformationClass
-){
+) {
 	PIRP Irp;
 	PIO_STACK_LOCATION stack;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -506,8 +506,8 @@ NTSTATUS FileManager::IrpQueryInformationFile(
 	KEVENT notifyEvent;
 
 	//分配IRP
-	Irp = IoAllocateIrp(DeviceObject->StackSize,FALSE);
-	RtlZeroMemory(IoStatusBlock,sizeof(IO_STATUS_BLOCK));
+	Irp = IoAllocateIrp(DeviceObject->StackSize, FALSE);
+	RtlZeroMemory(IoStatusBlock, sizeof(IO_STATUS_BLOCK));
 	if (Irp == NULL) {
 		IoStatusBlock->Status = STATUS_INSUFFICIENT_RESOURCES;
 		return STATUS_INSUFFICIENT_RESOURCES;
@@ -544,7 +544,7 @@ NTSTATUS FileManager::IrpQueryInformationFile(
 	stack->Control = SL_INVOKE_ON_SUCCESS | SL_INVOKE_ON_ERROR | SL_INVOKE_ON_CANCEL;
 
 	//下发IRP请求
-	status = IoCallDriver(DeviceObject,Irp);
+	status = IoCallDriver(DeviceObject, Irp);
 
 	//等候请求完成
 	KeWaitForSingleObject(&notifyEvent,
@@ -578,8 +578,8 @@ NTSTATUS FileManager::IrpSetInformationFile(
 	KEVENT notifyEvent;
 
 	//分配IRP
-	Irp = IoAllocateIrp(DeviceObject->StackSize,FALSE);
-	RtlZeroMemory(IoStatusBlock,sizeof(IO_STATUS_BLOCK));
+	Irp = IoAllocateIrp(DeviceObject->StackSize, FALSE);
+	RtlZeroMemory(IoStatusBlock, sizeof(IO_STATUS_BLOCK));
 	if (Irp == NULL) {
 		IoStatusBlock->Status = STATUS_INSUFFICIENT_RESOURCES;
 		return STATUS_INSUFFICIENT_RESOURCES;
@@ -592,7 +592,7 @@ NTSTATUS FileManager::IrpSetInformationFile(
 	Irp->Flags = IRP_SYNCHRONOUS_API;
 	Irp->RequestorMode = KernelMode;
 	Irp->UserIosb = &ioStatus;
-	KeInitializeEvent(&notifyEvent,NotificationEvent,FALSE);
+	KeInitializeEvent(&notifyEvent, NotificationEvent, FALSE);
 	Irp->UserEvent = &notifyEvent;
 	Irp->Tail.Overlay.Thread = PsGetCurrentThread();
 	Irp->Tail.Overlay.OriginalFileObject = FileObject;
@@ -624,7 +624,7 @@ NTSTATUS FileManager::IrpSetInformationFile(
 	stack->Control = SL_INVOKE_ON_SUCCESS | SL_INVOKE_ON_ERROR | SL_INVOKE_ON_CANCEL;
 
 	//下发IRP请求
-	status = IoCallDriver(DeviceObject,Irp);
+	status = IoCallDriver(DeviceObject, Irp);
 
 	//等候IRP完成
 	KeWaitForSingleObject((PVOID)&notifyEvent,
@@ -661,7 +661,7 @@ NTSTATUS FileManager::IrpCleanupFile(
 	// IRP_MJ_CLEANUP
 	//
 	//分配IRP
-	Irp = IoAllocateIrp(DeviceObject->StackSize,FALSE);
+	Irp = IoAllocateIrp(DeviceObject->StackSize, FALSE);
 	if (Irp == NULL) {
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
@@ -695,7 +695,7 @@ NTSTATUS FileManager::IrpCleanupFile(
 	stack->Control = SL_INVOKE_ON_SUCCESS | SL_INVOKE_ON_ERROR | SL_INVOKE_ON_CANCEL;
 
 	//下发请求
-	status = IoCallDriver(DeviceObject,Irp);
+	status = IoCallDriver(DeviceObject, Irp);
 
 	//等待请求结束
 	KeWaitForSingleObject(&notifyEvent,
@@ -714,7 +714,7 @@ NTSTATUS FileManager::IrpCleanupFile(
 NTSTATUS FileManager::IrpCloseFile(
 	_In_ PDEVICE_OBJECT DeviceObject,
 	_In_ PFILE_OBJECT FileObject
-){
+) {
 	PIRP Irp;
 	PIO_STACK_LOCATION stack;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -763,10 +763,10 @@ NTSTATUS FileManager::IrpCloseFile(
 	stack->Control = SL_INVOKE_ON_SUCCESS | SL_INVOKE_ON_ERROR | SL_INVOKE_ON_CANCEL;
 
 	//下发IRP请求
-	status = IoCallDriver(DeviceObject,Irp);
+	status = IoCallDriver(DeviceObject, Irp);
 
 	//等待请求结束
-	KeWaitForSingleObject(&notifyEvent,Executive,
+	KeWaitForSingleObject(&notifyEvent, Executive,
 		KernelMode,
 		FALSE,
 		NULL);
@@ -781,7 +781,7 @@ NTSTATUS FileManager::IrpCloseFile(
 NTSTATUS FileManager::IrpDeleteFile(
 	IN PDEVICE_OBJECT DeviceObject, //如果指定为pFileObject->Vpb->DeviceObject,可绕过文件系统过滤驱动
 	IN PFILE_OBJECT FileObject
-){
+) {
 	PFILE_BASIC_INFORMATION fileBasicInfo = NULL;
 	PFILE_DISPOSITION_INFORMATION fileDispInfo = NULL;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -800,7 +800,7 @@ NTSTATUS FileManager::IrpDeleteFile(
 		}
 
 		//下发IRP_MJ_QUERY_INFORMATION请求查询文件属性
-		status = IrpQueryInformationFile(DeviceObject,FileObject,
+		status = IrpQueryInformationFile(DeviceObject, FileObject,
 			&ioStatus,
 			(PVOID)fileBasicInfo,
 			sizeof(FILE_BASIC_INFORMATION),
@@ -808,7 +808,7 @@ NTSTATUS FileManager::IrpDeleteFile(
 		if (!NT_SUCCESS(status)) {
 			break;
 		}
-		
+
 		//检查并去掉只读属性
 		if (fileBasicInfo->FileAttributes & FILE_ATTRIBUTE_READONLY) {
 			fileBasicInfo->FileAttributes &= ~FILE_ATTRIBUTE_READONLY;
@@ -825,16 +825,16 @@ NTSTATUS FileManager::IrpDeleteFile(
 				break;
 			}
 		}
-		
+
 
 		delete fileBasicInfo;
 		fileBasicInfo = nullptr;
 
-		
+
 
 		//分配删除操作缓冲区
 		fileDispInfo = new (PagedPool) FILE_DISPOSITION_INFORMATION;
-		
+
 		if (fileDispInfo == NULL) {
 			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
@@ -883,7 +883,7 @@ NTSTATUS FileManager::IrpDeleteFile(
 
 
 //强删文件(设备控制请求中调用)
-NTSTATUS FileManager::ForceDeleteFile(PCWSTR fileName){
+NTSTATUS FileManager::ForceDeleteFile(PCWSTR fileName) {
 	PDEVICE_OBJECT DeviceObject = nullptr;
 	PFILE_OBJECT FileObject = nullptr;
 	NTSTATUS status = STATUS_NOT_SUPPORTED;
@@ -891,7 +891,7 @@ NTSTATUS FileManager::ForceDeleteFile(PCWSTR fileName){
 	UNICODE_STRING unsFilePath;
 
 	PAGED_CODE();
-	
+
 
 	//自己发送IRP_MJ_CREATE请求打开文件
 	status = IrpCreateFile(&FileObject,

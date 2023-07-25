@@ -53,10 +53,10 @@ void CHexControl::DoPaint(CDCHandle dc, RECT& rect) {
 
 			switch (ds)
 			{
-				case 1: ::StringCchPrintf(str, _countof(str), L"%02X", data[j * m_DataSize]); break;
-				case 2:	::StringCchPrintf(str, _countof(str), L"%04X", *(WORD*)&data[j * m_DataSize]); break;
-				case 4:	::StringCchPrintf(str, _countof(str), L"%08X", *(DWORD*)&data[j * m_DataSize]); break;
-				case 8:	::StringCchPrintf(str, _countof(str), L"%0llX", *(DWORD64*)&data[j * m_DataSize]); break;
+			case 1: ::StringCchPrintf(str, _countof(str), L"%02X", data[j * m_DataSize]); break;
+			case 2:	::StringCchPrintf(str, _countof(str), L"%04X", *(WORD*)&data[j * m_DataSize]); break;
+			case 4:	::StringCchPrintf(str, _countof(str), L"%08X", *(DWORD*)&data[j * m_DataSize]); break;
+			case 8:	::StringCchPrintf(str, _countof(str), L"%0llX", *(DWORD64*)&data[j * m_DataSize]); break;
 			}
 			bool selected = m_Selection.IsSelected(offset + j);
 			dc.SetTextColor(selected ? m_Colors.SelectionText : m_Colors.Text);
@@ -176,67 +176,67 @@ LRESULT CHexControl::OnKeyDown(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	}
 
 	switch (wParam) {
-		case VK_BACK:
-			if (m_Selection.IsEmpty()) {
-				m_Buffer->Delete(m_CaretOffset - 1, m_DataSize);
-				m_CaretOffset--;
-			}
-			else {
-				m_Buffer->Delete(m_Selection.GetOffset(), m_Selection.GetLength());
-			}
-			RedrawWindow();
-			m_NotifyData.hdr.code = HCN_SIZECHANGED;
-			SendNotify(&m_NotifyData);
-			return 0;
+	case VK_BACK:
+		if (m_Selection.IsEmpty()) {
+			m_Buffer->Delete(m_CaretOffset - 1, m_DataSize);
+			m_CaretOffset--;
+		}
+		else {
+			m_Buffer->Delete(m_Selection.GetOffset(), m_Selection.GetLength());
+		}
+		RedrawWindow();
+		m_NotifyData.hdr.code = HCN_SIZECHANGED;
+		SendNotify(&m_NotifyData);
+		return 0;
 
-		case VK_DELETE:
-			if (m_Selection.IsEmpty()) {
-				m_Buffer->Delete(m_CaretOffset, m_DataSize);
-			}
-			else {
-				// 删除选中的内容
-				m_Buffer->Delete(m_Selection.GetOffset(), m_Selection.GetLength());
-			}
-			RedrawWindow();
-			m_NotifyData.hdr.code = HCN_SIZECHANGED;
-			SendNotify(&m_NotifyData);
-			return 0;
+	case VK_DELETE:
+		if (m_Selection.IsEmpty()) {
+			m_Buffer->Delete(m_CaretOffset, m_DataSize);
+		}
+		else {
+			// 删除选中的内容
+			m_Buffer->Delete(m_Selection.GetOffset(), m_Selection.GetLength());
+		}
+		RedrawWindow();
+		m_NotifyData.hdr.code = HCN_SIZECHANGED;
+		SendNotify(&m_NotifyData);
+		return 0;
 
-		case VK_ESCAPE:
-			if (m_EditDigits > 0)
-				abortEdit = true;
-			break;
+	case VK_ESCAPE:
+		if (m_EditDigits > 0)
+			abortEdit = true;
+		break;
 
-		case VK_DOWN:
-			if (m_CaretOffset + m_BytesPerLine < m_Buffer->GetSize())
-				m_CaretOffset += m_BytesPerLine;
-			else
-				m_CaretOffset = m_Buffer->GetSize();
-			break;
+	case VK_DOWN:
+		if (m_CaretOffset + m_BytesPerLine < m_Buffer->GetSize())
+			m_CaretOffset += m_BytesPerLine;
+		else
+			m_CaretOffset = m_Buffer->GetSize();
+		break;
 
-		case VK_UP:
-			if (m_CaretOffset >= m_BytesPerLine)
-				m_CaretOffset -= m_BytesPerLine;
-			else
-				m_CaretOffset = 0;
-			break;
+	case VK_UP:
+		if (m_CaretOffset >= m_BytesPerLine)
+			m_CaretOffset -= m_BytesPerLine;
+		else
+			m_CaretOffset = 0;
+		break;
 
-		case VK_RIGHT:
-			m_CaretOffset += m_DataSize;
-			if (m_CaretOffset > m_Buffer->GetSize())
-				m_CaretOffset = m_Buffer->GetSize() + m_DataSize - 1;
-			break;
+	case VK_RIGHT:
+		m_CaretOffset += m_DataSize;
+		if (m_CaretOffset > m_Buffer->GetSize())
+			m_CaretOffset = m_Buffer->GetSize() + m_DataSize - 1;
+		break;
 
-		case VK_LEFT:
-			m_CaretOffset -= m_DataSize;
-			if (m_CaretOffset < 0)
-				m_CaretOffset = 0;
-			break;
+	case VK_LEFT:
+		m_CaretOffset -= m_DataSize;
+		if (m_CaretOffset < 0)
+			m_CaretOffset = 0;
+		break;
 
-		case VK_NEXT:
-			if (m_CaretOffset + m_BytesPerLine * 20 <= m_Buffer->GetSize())
-				m_CaretOffset += m_BytesPerLine * 20;
-			break;
+	case VK_NEXT:
+		if (m_CaretOffset + m_BytesPerLine * 20 <= m_Buffer->GetSize())
+			m_CaretOffset += m_BytesPerLine * 20;
+		break;
 
 
 	}
@@ -334,24 +334,24 @@ LRESULT CHexControl::OnHScroll(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	auto pos = si.nPos;
 
 	switch (LOWORD(wParam)) {
-		case SB_LINELEFT:
-			si.nPos--;
-			break;
+	case SB_LINELEFT:
+		si.nPos--;
+		break;
 
-		case SB_LINERIGHT:
-			si.nPos++;
-			break;
+	case SB_LINERIGHT:
+		si.nPos++;
+		break;
 
-		case SB_PAGELEFT:
-			si.nPos -= si.nPage;
-			break;
+	case SB_PAGELEFT:
+		si.nPos -= si.nPage;
+		break;
 
-		case SB_PAGERIGHT:
-			si.nPos += si.nPage;
+	case SB_PAGERIGHT:
+		si.nPos += si.nPage;
 
-		case SB_THUMBTRACK:
-			si.nPos = si.nTrackPos;
-			break;
+	case SB_THUMBTRACK:
+		si.nPos = si.nTrackPos;
+		break;
 	}
 	si.fMask = SIF_POS;
 	SetScrollInfo(SB_HORZ, &si);
@@ -369,33 +369,33 @@ LRESULT CHexControl::OnVScroll(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	auto pos = si.nPos;
 
 	switch (LOWORD(wParam)) {
-		case SB_TOP:
-			si.nPos = si.nMin;
-			break;
+	case SB_TOP:
+		si.nPos = si.nMin;
+		break;
 
-		case SB_BOTTOM:
-			si.nPos = si.nMax;
-			break;
+	case SB_BOTTOM:
+		si.nPos = si.nMax;
+		break;
 
-		case SB_LINEUP:
-			si.nPos--;
-			break;
+	case SB_LINEUP:
+		si.nPos--;
+		break;
 
-		case SB_LINEDOWN:
-			si.nPos++;
-			break;
+	case SB_LINEDOWN:
+		si.nPos++;
+		break;
 
-		case SB_PAGEUP:
-			si.nPos -= si.nPage;
-			break;
+	case SB_PAGEUP:
+		si.nPos -= si.nPage;
+		break;
 
-		case SB_PAGEDOWN:
-			si.nPos += si.nPage;
-			break;
+	case SB_PAGEDOWN:
+		si.nPos += si.nPage;
+		break;
 
-		case SB_THUMBTRACK:
-			si.nPos = si.nTrackPos;
-			break;
+	case SB_THUMBTRACK:
+		si.nPos = si.nTrackPos;
+		break;
 	}
 	if (si.nPos != pos) {
 		si.fMask = SIF_POS;
@@ -824,12 +824,12 @@ int64_t Selection::GetAnchor() const {
 
 bool Selection::IsSelected(int64_t offset) const {
 	switch (_type) {
-		case SelectionType::Simple:
+	case SelectionType::Simple:
 
-		case SelectionType::Box:
-			if (offset < _offset)
-				return false;
-			return (offset - _offset) % _bytesPerLine < _width && (offset - _offset) / _bytesPerLine < _height;
+	case SelectionType::Box:
+		if (offset < _offset)
+			return false;
+		return (offset - _offset) % _bytesPerLine < _width && (offset - _offset) / _bytesPerLine < _height;
 	}
 	ATLASSERT(false);
 	return false;

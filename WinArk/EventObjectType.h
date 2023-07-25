@@ -2,7 +2,7 @@
 
 #include "ObjectType.h"
 
-class EventObjectType :	public ObjectType {
+class EventObjectType : public ObjectType {
 public:
 	EventObjectType(int index, PCWSTR name);
 

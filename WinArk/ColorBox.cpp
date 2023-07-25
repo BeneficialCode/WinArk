@@ -9,7 +9,7 @@ LRESULT CColorBox::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bH
 	return FALSE;
 }
 
-COLORREF CColorBox::MakeColorBrighter(COLORREF color,UCHAR increment) {
+COLORREF CColorBox::MakeColorBrighter(COLORREF color, UCHAR increment) {
 	UCHAR r, g, b;
 
 	r = (UCHAR)color;
@@ -42,7 +42,7 @@ LRESULT CColorBox::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHan
 	if (!_context.Hot && !_context.HasFocus)
 		dc.SetDCBrushColor(_context.SelectedColor);
 	else
-		dc.SetDCBrushColor(MakeColorBrighter(_context.SelectedColor,64));
+		dc.SetDCBrushColor(MakeColorBrighter(_context.SelectedColor, 64));
 	dc.SelectPen((HPEN)GetStockObject(DC_PEN));
 	dc.SelectBrush((HBRUSH)GetStockObject(DC_BRUSH));
 	dc.Rectangle(&rc);
@@ -97,12 +97,12 @@ LRESULT CColorBox::OnGetDlgCode(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 LRESULT CColorBox::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	switch (wParam)
 	{
-		case VK_SPACE:
-		case VK_RETURN:
-			SelectColor();
-			break;
-		default:
-			break;
+	case VK_SPACE:
+	case VK_RETURN:
+		SelectColor();
+		break;
+	default:
+		break;
 	}
 	return TRUE;
 }

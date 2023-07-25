@@ -35,7 +35,7 @@ int Error(const char* msg, DWORD error) {
 	return 1;
 }
 
-int main(int argc,const char* argv[]){
+int main(int argc, const char* argv[]) {
 	if (argc > 1)
 		return HandleCommandLine(argc, argv);
 
@@ -75,7 +75,7 @@ void WINAPI ServiceMain(DWORD dwNumServicesArgs, LPTSTR* args) {
 		// create a mailslotand configure
 		// its security descriptor to allow full control to the user running the service, 
 		// with all other users having write/read access only
-		
+
 		// create the Everyone SID
 		// 
 		BYTE worldSid[SECURITY_MAX_SID_SIZE];
@@ -170,7 +170,7 @@ void WINAPI ServiceMain(DWORD dwNumServicesArgs, LPTSTR* args) {
 		SetStatus(SERVICE_STOPPED);
 		return;
 	}
-	
+
 	SetStatus(SERVICE_RUNNING);
 
 	DWORD msgSize, count;
@@ -185,12 +185,12 @@ void WINAPI ServiceMain(DWORD dwNumServicesArgs, LPTSTR* args) {
 				break;
 
 			DWORD bytes;
-			if (msgSize == sizeof(msg) && 
+			if (msgSize == sizeof(msg) &&
 				::ReadFile(g_hMainsolt, &msg, sizeof(msg), &bytes, nullptr)) {
 				HandleMessage(msg);
 			}
 			count--;
-		} while (count>0);
+		} while (count > 0);
 	}
 	SetStatus(SERVICE_STOPPED);
 
@@ -206,21 +206,21 @@ void SetStatus(DWORD status) {
 
 void HandleMessage(const AlarmMessage& msg) {
 	switch (msg.Type)
-	{	
-		case MessageType::SetAlarm:
-			if (g_Timer == nullptr)
-				g_Timer = ::CreateThreadpoolTimer(OnTimerExpired, nullptr, nullptr);
-			::SetThreadpoolTimer(g_Timer, (PFILETIME)&msg.Time, 0, 1000);
-			break;
+	{
+	case MessageType::SetAlarm:
+		if (g_Timer == nullptr)
+			g_Timer = ::CreateThreadpoolTimer(OnTimerExpired, nullptr, nullptr);
+		::SetThreadpoolTimer(g_Timer, (PFILETIME)&msg.Time, 0, 1000);
+		break;
 
-		case MessageType::CancelAlarm:
-			if (g_Timer) {
-				::CloseThreadpoolTimer(g_Timer);
-				g_Timer = nullptr;
-			}
-			break;
-		default:
-			break;
+	case MessageType::CancelAlarm:
+		if (g_Timer) {
+			::CloseThreadpoolTimer(g_Timer);
+			g_Timer = nullptr;
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -238,10 +238,10 @@ void NTAPI OnTimerExpired(PTP_CALLBACK_INSTANCE, PVOID, PTP_TIMER) {
 DWORD WINAPI ServiceHandler(DWORD dwControl, DWORD dwEventType, LPVOID lpEventData, LPVOID lpContext) {
 	switch (dwControl)
 	{
-		case SERVICE_CONTROL_STOP:
-			SetStatus(SERVICE_STOP_PENDING);
-			::SetEvent(g_hStopEvent);
-			break;
+	case SERVICE_CONTROL_STOP:
+		SetStatus(SERVICE_STOP_PENDING);
+		::SetEvent(g_hStopEvent);
+		break;
 	}
 	return 0;
 }
@@ -266,21 +266,21 @@ int HandleCommandLine(int argc, const char* argv[]) {
 	}
 
 	if (!_stricmp(argv[1], "install") || !_stricmp(argv[1], "/install")
-		||!_stricmp(argv[1],"-install")) {
+		|| !_stricmp(argv[1], "-install")) {
 		bool start = argc > 2 && _stricmp(argv[2], "start") == 0;
 		auto error = InstallService();
 		if (error == 0 && start)
 			return StartWinArkService();
 		return error;
 	}
-	if (!_stricmp(argv[1], "uninstall")||!_stricmp(argv[1],"-uninstall")
-	||!_stricmp(argv[1],"/uinstall")){
+	if (!_stricmp(argv[1], "uninstall") || !_stricmp(argv[1], "-uninstall")
+		|| !_stricmp(argv[1], "/uinstall")) {
 		return UninstallService();
 	}
-	if (!_stricmp(argv[1], "start")||!_stricmp(argv[1],"-start")) {
+	if (!_stricmp(argv[1], "start") || !_stricmp(argv[1], "-start")) {
 		return StartWinArkService();
 	}
-	if (!_stricmp(argv[1], "stop")|| !_stricmp(argv[1], "-stop")) {
+	if (!_stricmp(argv[1], "stop") || !_stricmp(argv[1], "-stop")) {
 		return StopService();
 	}
 	return 0;

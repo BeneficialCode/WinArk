@@ -8,7 +8,7 @@
 
 struct Connection;
 class CNetwrokTable :
-	public CTable<std::shared_ptr<WinSys::Connection>>, 
+	public CTable<std::shared_ptr<WinSys::Connection>>,
 	public CWindowImpl<CNetwrokTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
@@ -32,7 +32,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
-		COMMAND_ID_HANDLER(ID_NETWORK_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_NETWORK_REFRESH, OnRefresh)
 	END_MSG_MAP()
 
 	CNetwrokTable(BarInfo& bars, TableInfo& table);
@@ -60,7 +60,7 @@ public:
 	LRESULT OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD, WORD, HWND, BOOL&);
 
-	enum class ItemState{None,New,Deleted,DeletePending = 4 };
+	enum class ItemState { None, New, Deleted, DeletePending = 4 };
 	struct ItemEx {
 		ItemState State{ ItemState::None };
 		DWORD64 TargetTime;

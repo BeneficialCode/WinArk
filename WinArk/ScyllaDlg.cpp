@@ -28,10 +28,10 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	pLoop->AddMessageFilter(this);*/
 
 	SetupStatusBar();
-	
+
 	// attach controls
 	// DoDataExchange();
-	
+
 
 	ProcessHandler();
 
@@ -77,18 +77,18 @@ void CScyllaDlg::ProcessHandler() {
 }
 
 void CScyllaDlg::UpdateStatusBar() {
-	
+
 }
 
 void CScyllaDlg::OnContextMenu(CWindow wnd, CPoint point)
 {
 	switch (wnd.GetDlgCtrlID())
 	{
-		case IDC_LIST_LOG:
-			DisplayContextMenuLog(wnd, point);
-			return;
-		default:
-			break;
+	case IDC_LIST_LOG:
+		DisplayContextMenuLog(wnd, point);
+		return;
+	default:
+		break;
 	}
 }
 

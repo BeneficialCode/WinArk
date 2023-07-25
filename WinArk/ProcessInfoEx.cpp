@@ -9,9 +9,9 @@
 #pragma comment(lib,"Version.lib")
 
 ProcessInfoEx::ProcessInfoEx(WinSys::ProcessInfo* pi) :_pi(pi) {
-	auto hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_INFORMATION|PROCESS_VM_READ);
-	if(!hProcess)
-		hProcess = DriverHelper::OpenProcess(_pi->Id,PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ);
+	auto hProcess = DriverHelper::OpenProcess(_pi->Id, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
+	if (!hProcess)
+		hProcess = DriverHelper::OpenProcess(_pi->Id, PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ);
 	if (hProcess)
 		_process.reset(new WinSys::Process(hProcess));
 }
@@ -137,7 +137,7 @@ const std::wstring& ProcessInfoEx::GetVersion() const {
 }
 
 int ProcessInfoEx::GetBitness() const {
-	if(_bitness==0){
+	if (_bitness == 0) {
 		static SYSTEM_INFO si = { 0 };
 		if (si.dwNumberOfProcessors == 0)
 			::GetNativeSystemInfo(&si);
@@ -194,7 +194,7 @@ int ProcessInfoEx::GetImageIndex(CImageList images) const {
 		::ExtractIconEx(GetExecutablePath().c_str(), 0, nullptr, &hIcon, 1);
 		if (!hIcon) {
 			SHFILEINFO sfi;
-			::SHGetFileInfo(GetExecutablePath().c_str(), FILE_ATTRIBUTE_NORMAL, &sfi, sizeof(sfi), SHGFI_ICON|SHGFI_USEFILEATTRIBUTES);
+			::SHGetFileInfo(GetExecutablePath().c_str(), FILE_ATTRIBUTE_NORMAL, &sfi, sizeof(sfi), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES);
 			hIcon = sfi.hIcon;
 		}
 		if (hIcon)

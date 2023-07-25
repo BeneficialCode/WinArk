@@ -25,7 +25,7 @@ LRESULT CBinaryValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	rc.OffsetRect(0, -30);
 
 	PostMessage(WM_SIZE);
-	
+
 	ULONG bytes = 0;
 	m_Key.QueryBinaryValue(m_Name, nullptr, &bytes);
 	m_Value.resize(bytes);
@@ -45,7 +45,7 @@ LRESULT CBinaryValueDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	m_Hex.SetFocus();
 
 	SetDlgItemText(IDC_NAME, m_Name.IsEmpty() ? RegHelpers::DefaultValueName : m_Name);
-	
+
 	return 0;
 }
 

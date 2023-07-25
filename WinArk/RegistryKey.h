@@ -17,7 +17,7 @@ struct RegistryKey {
 	~RegistryKey() {
 		Close();
 	}
-	
+
 	void Close();
 	HKEY Detach();
 	void Attach(HKEY hKey, bool own = true);
@@ -39,7 +39,7 @@ struct RegistryKey {
 	HKEY Get() const {
 		return _hKey;
 	}
-	
+
 	LSTATUS Open(HKEY parent, PCWSTR path, DWORD access = KEY_READ | KEY_WRITE);
 	LSTATUS SetValue(_In_opt_z_ LPCTSTR pszValueName, _In_ DWORD dwType, _In_opt_ const void* pValue, _In_ ULONG nBytes) noexcept;
 	LSTATUS SetBinaryValue(_In_opt_z_ LPCTSTR pszValueName, _In_opt_ const void* pValue, _In_ ULONG nBytes) noexcept;

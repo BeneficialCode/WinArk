@@ -30,7 +30,7 @@ public:
 		void SetVisible(bool);
 	};
 
-	ColumnManager(HWND hListView):m_ListView(hListView) {
+	ColumnManager(HWND hListView) :m_ListView(hListView) {
 	}
 	~ColumnManager();
 	ColumnManager(const ColumnManager&) = default;
@@ -90,7 +90,7 @@ inline void ColumnManager::ColumnInfo::SetVisible(bool visible) {
 	bool old = (Flags & ColumnFlags::Visible) == ColumnFlags::Visible;
 	if (old == visible)
 		return;
-	
+
 	if (visible)
 		Flags |= ColumnFlags::Visible;
 	else

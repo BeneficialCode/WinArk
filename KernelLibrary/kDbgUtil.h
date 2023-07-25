@@ -192,16 +192,16 @@ public:
 	using PNtSetInformationDebugObject = decltype(&NewNtSetInformationDebugObject);
 	static inline PNtSetInformationDebugObject g_pNtSetInformationDebugObject{ nullptr };
 
-	using PPsTerminateProcess = NTSTATUS (NTAPI*)(
+	using PPsTerminateProcess = NTSTATUS(NTAPI*)(
 		PEPROCESS Process,
 		NTSTATUS Status
-	);
+		);
 	static inline PPsTerminateProcess g_pPsTerminateProcess{ nullptr };
 
 	using PMiSectionControlArea = PVOID(NTAPI*)(PVOID Section);
 	static inline PMiSectionControlArea g_pMiSectionControlArea{ nullptr };
 
-	using PMiReferenceControlAreaFile = PFILE_OBJECT (NTAPI*)(PVOID SectionControlArea);
+	using PMiReferenceControlAreaFile = PFILE_OBJECT(NTAPI*)(PVOID SectionControlArea);
 	static inline PMiReferenceControlAreaFile g_pMiReferenceControlAreaFile{ nullptr };
 
 	static inline bool _first = true;

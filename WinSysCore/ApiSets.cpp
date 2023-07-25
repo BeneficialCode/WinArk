@@ -28,7 +28,7 @@ void ApiSets::Build(HANDLE hProcess) {
 	::ReadProcessMemory(hProcess, peb.ApiSetMap, &apiSetMap, sizeof(API_SET_NAMESPACE), nullptr);
 
 	auto apiSetMapAsNumber = reinterpret_cast<ULONG_PTR>(peb.ApiSetMap);
-	
+
 	PAPI_SET_NAMESPACE_ENTRY pNsEntry = reinterpret_cast<PAPI_SET_NAMESPACE_ENTRY>(apiSetMapAsNumber + apiSetMap.EntryOffset);
 
 	_entries.reserve(apiSetMap.Count);
@@ -49,7 +49,7 @@ void ApiSets::Build(HANDLE hProcess) {
 		entry.Sealed = (nsEntry.Flags & API_SET_SCHEMA_ENTRY_FLAGS_SEALED) != 0;
 
 		PAPI_SET_VALUE_ENTRY pValueEntry = reinterpret_cast<PAPI_SET_VALUE_ENTRY>(apiSetMapAsNumber + nsEntry.ValueOffset);
-		
+
 		for (ULONG j = 0; j < nsEntry.ValueCount; j++) {
 			API_SET_VALUE_ENTRY valueEntry;
 			::ReadProcessMemory(hProcess, pValueEntry, &valueEntry, sizeof(valueEntry), nullptr);
@@ -103,5 +103,5 @@ void ApiSets::SearchDirectory(const std::wstring& directory, const std::wstring&
 
 		if (::_wcsnicmp(fd.cFileName, pattern.c_str(), pattern.length()) == 0)
 			files.insert(fd.cFileName);
-	} while (::FindNextFile(hFind.get(),&fd));
+	} while (::FindNextFile(hFind.get(), &fd));
 }

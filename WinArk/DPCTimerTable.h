@@ -24,14 +24,14 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
-		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, OnLBtnUp)
 		MESSAGE_HANDLER(WM_USER_STS, OnUserSts)
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
-		COMMAND_ID_HANDLER(ID_DPCTIMER_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_DPCTIMER_REFRESH, OnRefresh)
 	END_MSG_MAP()
 
 	CDpcTimerTable(BarInfo& bars, TableInfo& table);
@@ -62,7 +62,7 @@ public:
 	void Refresh();
 
 	enum class Column {
-		Timer,DPC,Routine,DueTime,Period,CompanyName,DriverPath
+		Timer, DPC, Routine, DueTime, Period, CompanyName, DriverPath
 	};
 private:
 

@@ -31,7 +31,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
-		COMMAND_ID_HANDLER(ID_MEMORY_DUMP,OnMemoryDump)
+		COMMAND_ID_HANDLER(ID_MEMORY_DUMP, OnMemoryDump)
 	END_MSG_MAP()
 
 	CProcessMemoryTable(BarInfo& bars, TableInfo& table, DWORD pid);
@@ -59,7 +59,7 @@ public:
 
 	LRESULT OnMemoryDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	
+
 	void Refresh();
 private:
 	enum class MemoryUsage {

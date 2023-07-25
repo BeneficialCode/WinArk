@@ -46,7 +46,7 @@ std::unique_ptr<SymbolInfo> SymbolManager::GetSymbolFromAddress(DWORD pid, DWORD
 }
 
 SymbolManager::SymbolManager() {
-	
+
 }
 
 void SymbolManager::Term() {

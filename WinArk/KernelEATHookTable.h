@@ -16,7 +16,7 @@ class CKernelEATHookTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	
+
 	CKernelEATHookTable(BarInfo& bars, TableInfo& table, std::shared_ptr<WinSys::KernelModuleInfo>& info);
 	int ParseTableEntry(CString& s, char& mask, int& select, KernelEATHookInfo& info, int column);
 	bool CompareItems(const KernelEATHookInfo& s1, const KernelEATHookInfo& s2, int col, bool asc);

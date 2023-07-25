@@ -281,62 +281,62 @@ LRESULT CKernelPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 
 	if (disp->item.mask & LVIF_TEXT) {
 		switch (disp->item.iSubItem) {
-			case ColumnType::TagName:
-				StringCchCopyW(item.pszText, item.cchTextMax, CString(info.Tag));
-				break;
+		case ColumnType::TagName:
+			StringCchCopyW(item.pszText, item.cchTextMax, CString(info.Tag));
+			break;
 
-			case ColumnType::PagedAllocs:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedAllocs);
-				break;
+		case ColumnType::PagedAllocs:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedAllocs);
+			break;
 
-			case ColumnType::PagedFrees:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedFrees);
-				break;
+		case ColumnType::PagedFrees:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedFrees);
+			break;
 
-			case ColumnType::PagedDiff:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedAllocs - info.TagInfo.PagedFrees);
-				break;
+		case ColumnType::PagedDiff:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.PagedAllocs - info.TagInfo.PagedFrees);
+			break;
 
-			case ColumnType::PagedUsage:
-			{
-				auto value = info.TagInfo.PagedUsed;
-				if (value < 1 << 12)
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
-				else
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
+		case ColumnType::PagedUsage:
+		{
+			auto value = info.TagInfo.PagedUsed;
+			if (value < 1 << 12)
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
+			else
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
 
-				break;
-			}
+			break;
+		}
 
-			case ColumnType::NonPagedAllocs:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedAllocs);
-				break;
+		case ColumnType::NonPagedAllocs:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedAllocs);
+			break;
 
-			case ColumnType::NonPagedFrees:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedFrees);
-				break;
+		case ColumnType::NonPagedFrees:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedFrees);
+			break;
 
-			case ColumnType::NonPagedDiff:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedAllocs - info.TagInfo.NonPagedFrees);
-				break;
+		case ColumnType::NonPagedDiff:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.TagInfo.NonPagedAllocs - info.TagInfo.NonPagedFrees);
+			break;
 
-			case ColumnType::NonPagedUsage:
-			{
-				auto value = info.TagInfo.NonPagedUsed;
-				if (value < 1 << 12)
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
-				else
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
-				break;
-			}
+		case ColumnType::NonPagedUsage:
+		{
+			auto value = info.TagInfo.NonPagedUsed;
+			if (value < 1 << 12)
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
+			else
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
+			break;
+		}
 
-			case ColumnType::SourceName:
-				item.pszText = (PWSTR)info.SourceName;
-				break;
+		case ColumnType::SourceName:
+			item.pszText = (PWSTR)info.SourceName;
+			break;
 
-			case ColumnType::SourceDescription:
-				item.pszText = (PWSTR)info.SourceDesc;
-				break;
+		case ColumnType::SourceDescription:
+			item.pszText = (PWSTR)info.SourceDesc;
+			break;
 		}
 	}
 	return 0;
@@ -398,65 +398,65 @@ LRESULT CKernelPoolView::OnFindItem(int, LPNMHDR nmhdr, BOOL&) {
 bool CKernelPoolView::CompareItems(const TagItem& item1, const TagItem& item2) {
 	int result;
 	switch (m_SortColumn) {
-		case ColumnType::TagName:
-			result = item2.Tag.CompareNoCase(item1.Tag);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::TagName:
+		result = item2.Tag.CompareNoCase(item1.Tag);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::SourceName:
-			result = ::_wcsicmp(item2.SourceName, item1.SourceName);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::SourceName:
+		result = ::_wcsicmp(item2.SourceName, item1.SourceName);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::SourceDescription:
-			result = ::_wcsicmp(item2.SourceDesc, item1.SourceDesc);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::SourceDescription:
+		result = ::_wcsicmp(item2.SourceDesc, item1.SourceDesc);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::PagedAllocs:
-			if (m_Ascending)
-				return item1.TagInfo.PagedAllocs < item2.TagInfo.PagedAllocs;
-			else
-				return item1.TagInfo.PagedAllocs > item2.TagInfo.PagedAllocs;
+	case ColumnType::PagedAllocs:
+		if (m_Ascending)
+			return item1.TagInfo.PagedAllocs < item2.TagInfo.PagedAllocs;
+		else
+			return item1.TagInfo.PagedAllocs > item2.TagInfo.PagedAllocs;
 
-		case ColumnType::PagedFrees:
-			if (m_Ascending)
-				return item1.TagInfo.PagedFrees < item2.TagInfo.PagedFrees;
-			else
-				return item1.TagInfo.PagedFrees > item2.TagInfo.PagedFrees;
+	case ColumnType::PagedFrees:
+		if (m_Ascending)
+			return item1.TagInfo.PagedFrees < item2.TagInfo.PagedFrees;
+		else
+			return item1.TagInfo.PagedFrees > item2.TagInfo.PagedFrees;
 
-		case ColumnType::PagedUsage:
-			if (m_Ascending)
-				return item1.TagInfo.PagedUsed < item2.TagInfo.PagedUsed;
-			else
-				return item1.TagInfo.PagedUsed > item2.TagInfo.PagedUsed;
+	case ColumnType::PagedUsage:
+		if (m_Ascending)
+			return item1.TagInfo.PagedUsed < item2.TagInfo.PagedUsed;
+		else
+			return item1.TagInfo.PagedUsed > item2.TagInfo.PagedUsed;
 
-		case ColumnType::PagedDiff:
-			if (m_Ascending)
-				return item1.TagInfo.PagedAllocs - item1.TagInfo.PagedFrees < item2.TagInfo.PagedAllocs - item2.TagInfo.PagedFrees;
-			else
-				return item1.TagInfo.PagedAllocs - item1.TagInfo.PagedFrees > item2.TagInfo.PagedAllocs - item2.TagInfo.PagedFrees;
+	case ColumnType::PagedDiff:
+		if (m_Ascending)
+			return item1.TagInfo.PagedAllocs - item1.TagInfo.PagedFrees < item2.TagInfo.PagedAllocs - item2.TagInfo.PagedFrees;
+		else
+			return item1.TagInfo.PagedAllocs - item1.TagInfo.PagedFrees > item2.TagInfo.PagedAllocs - item2.TagInfo.PagedFrees;
 
-		case ColumnType::NonPagedAllocs:
-			if (m_Ascending)
-				return item1.TagInfo.NonPagedAllocs < item2.TagInfo.NonPagedAllocs;
-			else
-				return item1.TagInfo.NonPagedAllocs > item2.TagInfo.NonPagedAllocs;
+	case ColumnType::NonPagedAllocs:
+		if (m_Ascending)
+			return item1.TagInfo.NonPagedAllocs < item2.TagInfo.NonPagedAllocs;
+		else
+			return item1.TagInfo.NonPagedAllocs > item2.TagInfo.NonPagedAllocs;
 
-		case ColumnType::NonPagedFrees:
-			if (m_Ascending)
-				return item1.TagInfo.NonPagedFrees < item2.TagInfo.NonPagedFrees;
-			else
-				return item1.TagInfo.NonPagedFrees > item2.TagInfo.NonPagedFrees;
+	case ColumnType::NonPagedFrees:
+		if (m_Ascending)
+			return item1.TagInfo.NonPagedFrees < item2.TagInfo.NonPagedFrees;
+		else
+			return item1.TagInfo.NonPagedFrees > item2.TagInfo.NonPagedFrees;
 
-		case ColumnType::NonPagedDiff:
-			if (m_Ascending)
-				return item1.TagInfo.NonPagedAllocs - item1.TagInfo.NonPagedFrees < item2.TagInfo.NonPagedAllocs - item2.TagInfo.NonPagedFrees;
-			else
-				return item1.TagInfo.NonPagedAllocs - item1.TagInfo.NonPagedFrees > item2.TagInfo.NonPagedAllocs - item2.TagInfo.NonPagedFrees;
+	case ColumnType::NonPagedDiff:
+		if (m_Ascending)
+			return item1.TagInfo.NonPagedAllocs - item1.TagInfo.NonPagedFrees < item2.TagInfo.NonPagedAllocs - item2.TagInfo.NonPagedFrees;
+		else
+			return item1.TagInfo.NonPagedAllocs - item1.TagInfo.NonPagedFrees > item2.TagInfo.NonPagedAllocs - item2.TagInfo.NonPagedFrees;
 
-		case ColumnType::NonPagedUsage:
-			if (m_Ascending)
-				return item1.TagInfo.NonPagedUsed < item2.TagInfo.NonPagedUsed;
-			else
-				return item1.TagInfo.NonPagedUsed > item2.TagInfo.NonPagedUsed;
+	case ColumnType::NonPagedUsage:
+		if (m_Ascending)
+			return item1.TagInfo.NonPagedUsed < item2.TagInfo.NonPagedUsed;
+		else
+			return item1.TagInfo.NonPagedUsed > item2.TagInfo.NonPagedUsed;
 
 	}
 
@@ -493,15 +493,15 @@ int CKernelPoolView::GetChange(const SYSTEM_POOLTAG& info, const SYSTEM_POOLTAG&
 	};
 
 	switch (type) {
-		case ColumnType::NonPagedAllocs: return compare(info.NonPagedAllocs, newinfo.NonPagedAllocs);
-		case ColumnType::NonPagedFrees: return compare(info.NonPagedFrees, newinfo.NonPagedFrees);
-		case ColumnType::NonPagedDiff: return compare(info.NonPagedAllocs - info.NonPagedFrees, newinfo.NonPagedAllocs - newinfo.NonPagedFrees);
-		case ColumnType::NonPagedUsage: return compare(info.NonPagedUsed, newinfo.NonPagedUsed);
+	case ColumnType::NonPagedAllocs: return compare(info.NonPagedAllocs, newinfo.NonPagedAllocs);
+	case ColumnType::NonPagedFrees: return compare(info.NonPagedFrees, newinfo.NonPagedFrees);
+	case ColumnType::NonPagedDiff: return compare(info.NonPagedAllocs - info.NonPagedFrees, newinfo.NonPagedAllocs - newinfo.NonPagedFrees);
+	case ColumnType::NonPagedUsage: return compare(info.NonPagedUsed, newinfo.NonPagedUsed);
 
-		case ColumnType::PagedAllocs: return compare(info.PagedAllocs, newinfo.PagedAllocs);
-		case ColumnType::PagedFrees: return compare(info.PagedFrees, newinfo.PagedFrees);
-		case ColumnType::PagedDiff: return compare(info.PagedAllocs - info.PagedFrees, newinfo.PagedAllocs - newinfo.PagedFrees);
-		case ColumnType::PagedUsage: return compare(info.PagedUsed, newinfo.PagedUsed);
+	case ColumnType::PagedAllocs: return compare(info.PagedAllocs, newinfo.PagedAllocs);
+	case ColumnType::PagedFrees: return compare(info.PagedFrees, newinfo.PagedFrees);
+	case ColumnType::PagedDiff: return compare(info.PagedAllocs - info.PagedFrees, newinfo.PagedAllocs - newinfo.PagedFrees);
+	case ColumnType::PagedUsage: return compare(info.PagedUsed, newinfo.PagedUsed);
 	}
 	return 0;
 }

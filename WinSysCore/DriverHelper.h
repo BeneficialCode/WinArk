@@ -4,8 +4,8 @@
 
 struct DriverHelper final {
 	static bool LoadDriver(bool load = true);
-	static bool InstallDriver(bool justCopy = false, void* pBuffer = nullptr,DWORD size = 0);
-	static bool UpdateDriver(void* pBuffer,DWORD size);
+	static bool InstallDriver(bool justCopy = false, void* pBuffer = nullptr, DWORD size = 0);
+	static bool UpdateDriver(void* pBuffer, DWORD size);
 	static bool IsDriverLoaded();
 	static HANDLE OpenHandle(void* pObject, ACCESS_MASK);
 	static HANDLE DupHandle(HANDLE hObject, ULONG pid, ACCESS_MASK access, DWORD flags = DUPLICATE_SAME_ACCESS);
@@ -27,25 +27,25 @@ struct DriverHelper final {
 	static bool EnumThreadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
 	static bool EnumImageLoadNotify(NotifyInfo* pNotifyInfo, KernelCallbackInfo* pCallbackInfo);
 	static ULONG GetImageNotifyCount(PULONG* pCount);
-	static bool EnumPiDDBCacheTable(ULONG_PTR Address,PVOID buffer,ULONG size);
+	static bool EnumPiDDBCacheTable(ULONG_PTR Address, PVOID buffer, ULONG size);
 	static ULONG GetUnloadedDriverCount(PULONG* pCount);
-	static bool EnumUnloadedDrivers(UnloadedDriversInfo* pInfo,PVOID buffer,ULONG size);
+	static bool EnumUnloadedDrivers(UnloadedDriversInfo* pInfo, PVOID buffer, ULONG size);
 	static ULONG GetPiDDBCacheDataSize(ULONG_PTR Address);
 	static ULONG GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo);
-	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
+	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo, ObCallbackInfo* pCallbackInfo, ULONG size);
 	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
 	static ULONG GetCmCallbackCount(PULONG* pCount);
 	static ULONG GetIoTimerCount(PULONG* pCount);
-	static bool EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo,ULONG size);
+	static bool EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo, ULONG size);
 	static bool GetDriverObjectRoutines(PCWSTR name, PVOID pRoutines);
 	static bool SetImageLoadNotify();
 	static bool RemoveImageLoadNotify();
 	static bool RemoveNotify(NotifyData* pData);
 	static bool EnableDbgSys(DbgSysCoreInfo* pInfo);
 	static bool DisableDbgSys();
-	static bool EnumKernelTimer(KernelTimerData* pData,DpcTimerInfo* pInfo,SIZE_T size);
+	static bool EnumKernelTimer(KernelTimerData* pData, DpcTimerInfo* pInfo, SIZE_T size);
 	static bool EnumIoTimer(IoTimerData* pData, IoTimerInfo* pInfo, SIZE_T size);
-	static bool EnumMiniFilterOperations(MiniFilterData* pData, SIZE_T dataSize,OperationInfo* pInfo, SIZE_T size);
+	static bool EnumMiniFilterOperations(MiniFilterData* pData, SIZE_T dataSize, OperationInfo* pInfo, SIZE_T size);
 	static bool RemoveMiniFilter(MiniFilterData* pData, SIZE_T dataSize);
 
 	static ULONG GetKernelTimerCount(KernelTimerData* pData);
@@ -64,7 +64,7 @@ struct DriverHelper final {
 
 	static bool EnumExtTable(ExtHostData* pData, void* pInfo, ULONG size);
 
-	static bool DetectInlineHook(ULONG count,KernelInlineHookData* pInfo, ULONG size);
+	static bool DetectInlineHook(ULONG count, KernelInlineHookData* pInfo, ULONG size);
 	static ULONG GetKernelInlineHookCount();
 private:
 	static bool OpenDevice();

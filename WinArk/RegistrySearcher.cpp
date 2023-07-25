@@ -8,7 +8,7 @@ void RegistrySearcher::SetStartKey(PCWSTR startKey) {
 	_startKey = startKey;
 }
 
-void RegistrySearcher::SetOptions(FindOptions options){
+void RegistrySearcher::SetOptions(FindOptions options) {
 	std::lock_guard locker(_lock);
 	_options = options;
 }
@@ -76,7 +76,7 @@ bool RegistrySearcher::FindNextWorker(HKEY hKey, const CString& path) {
 	bool searchData = (_options & FindOptions::SearchData) == FindOptions::SearchData;
 	bool caseSensitive = (_options & FindOptions::MatchCase) == FindOptions::MatchCase;
 	bool wholeWords = (_options & FindOptions::MatchWholeWords) == FindOptions::MatchWholeWords;
-	
+
 	{
 		std::lock_guard locker(_lock);
 		if (!caseSensitive)

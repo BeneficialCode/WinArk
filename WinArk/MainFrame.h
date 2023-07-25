@@ -27,25 +27,25 @@
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
 enum class TabColumn :int {
-	Process, KernelModule, 
-	Kernel, 
+	Process, KernelModule,
+	Kernel,
 	KernelHook,
-	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession,
-	BypassDectect,Explorer
+	Network, Driver, Registry, Device, Windows, Service, Config, Etw, LogonSession,
+	BypassDectect, Explorer
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
 
-class CMainFrame : 
+class CMainFrame :
 	public CFrameWindowImpl<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
-	public CMessageFilter, 
+	public CMessageFilter,
 	public CIdleHandler,
 	public IMainFrame,
 	public IQuickFind
 {
 public:
-	DECLARE_FRAME_WND_CLASS(nullptr,IDR_MAINFRAME)
+	DECLARE_FRAME_WND_CLASS(nullptr, IDR_MAINFRAME)
 
 	CMainFrame() :m_TabCtrl(this) {};
 	// 如果类中有引用类型，则必须在构造函数中初始化
@@ -110,16 +110,16 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
-		MESSAGE_HANDLER(WM_CLOSE,OnClose)
+		MESSAGE_HANDLER(WM_CLOSE, OnClose)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(ID_MONITOR_START, OnMonitorStart)
 		COMMAND_ID_HANDLER(ID_MONITOR_STOP, OnMonitorStop)
 		COMMAND_ID_HANDLER(ID_MONITOR_PAUSE, OnMonitorPause)
-		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND,OnQuickFind)
-		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS,OnColors)
+		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND, OnQuickFind)
+		COMMAND_ID_HANDLER(ID_OPTIONS_COLORS, OnColors)
 		COMMAND_ID_HANDLER(ID_OPTIONS_FONT, OnOptionsFont)
-		COMMAND_ID_HANDLER(ID_RUNAS_SYSTEM,OnRunAsSystem)
-		COMMAND_ID_HANDLER(ID_EXIT,OnFileExit)
+		COMMAND_ID_HANDLER(ID_RUNAS_SYSTEM, OnRunAsSystem)
+		COMMAND_ID_HANDLER(ID_EXIT, OnFileExit)
 		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFindReplaceMessage)
 		COMMAND_ID_HANDLER(ID_EDIT_FIND, OnEditFind)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
@@ -127,14 +127,14 @@ public:
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		REFLECT_NOTIFICATIONS()
-	END_MSG_MAP()
+		END_MSG_MAP()
 public:
 	CCommandBarCtrl m_CmdBar;
 
-// Handler prototypes (uncomment arguments if needed):
-//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
+	// Handler prototypes (uncomment arguments if needed):
+	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -171,13 +171,13 @@ private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 	// CTabCtrl m_TabCtrl;
 	CToolBarCtrl m_tb;
-	
+
 	CProcessTable* m_pProcTable{ nullptr };
 	CNetwrokTable* m_pNetTable{ nullptr };
 	CKernelModuleTable* m_pKernelModuleTable{ nullptr };
 	CDriverTable* m_pDriverTable{ nullptr };
 	CServiceTable* m_pServiceTable{ nullptr };
-	
+
 	CMultiPaneStatusBarCtrl m_StatusBar;
 
 	CExplorerView m_ExplorerView;

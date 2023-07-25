@@ -41,7 +41,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_WFPFILTER_REFRESH, OnRefresh)
-		COMMAND_ID_HANDLER(ID_WFPFILTER_DELETE,OnDelete)
+		COMMAND_ID_HANDLER(ID_WFPFILTER_DELETE, OnDelete)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -72,7 +72,7 @@ public:
 	CString ActionTypeToString(UINT32 type);
 private:
 	enum class TableColumn {
-		FilterId,Mode,Flags, ActionType, LayerName,Name,Description
+		FilterId, Mode, Flags, ActionType, LayerName, Name, Description
 	};
 
 	void Refresh();

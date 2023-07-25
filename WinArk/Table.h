@@ -148,7 +148,7 @@ struct TableInfo {
 template<typename T>
 struct t_sorted {
 	std::string name;				// 表名
-	size_t n{0};					// 实际项数
+	size_t n{ 0 };					// 实际项数
 	int nmax;						// 最大项数
 	int selected;					// 选中索引
 	ulong seladdr;					// 选中的基地址
@@ -184,19 +184,19 @@ struct t_process {
 template<class T>
 class CTable {
 public:
-	CTable(BarInfo& bars,TableInfo& table);
+	CTable(BarInfo& bars, TableInfo& table);
 
 	void Defaultbar();
 	void PaintBar(HDC hdc, LPRECT rect, int iColumn);
 	void PaintTable(HWND hw);
 	int Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
-	
+
 	virtual int GetRowImage(HWND, size_t row) const {
 		return -1;
 	}
 
 	bool Sortsorteddata(int sort);
-	virtual bool CompareItems(const T& i1, const T& i2, int col,bool asc=true) {
+	virtual bool CompareItems(const T& i1, const T& i2, int col, bool asc = true) {
 		return false;
 	}
 
@@ -206,7 +206,7 @@ public:
 	static DWORD GetSeladdr(const T& t) {
 		return 0;
 	}
-	
+
 	template<>
 	static DWORD GetSeladdr(const t_process& t) {
 		return t.pid;
@@ -222,7 +222,7 @@ public:
 
 	void GetSysKeyState(UINT msg, LPARAM lp, bool& pressShift, bool& pressCtrl);
 
-	void SetTableWindowInfo(int maxColumns,int nlines = 20);
+	void SetTableWindowInfo(int maxColumns, int nlines = 20);
 
 public:
 	t_bar m_Bar;
@@ -264,7 +264,7 @@ void CTable<T>::GetSysKeyState(UINT msg, LPARAM lp, bool& pressShift, bool& pres
 }
 
 template<class T>
-CTable<T>::CTable(BarInfo& bars,TableInfo& table) {
+CTable<T>::CTable(BarInfo& bars, TableInfo& table) {
 	ATLASSERT(bars.nbar < NBAR&& bars.nbar>0);
 	ATLASSERT(bars.font > 0 && bars.font < 11);
 
@@ -508,7 +508,7 @@ void CTable<T>::PaintTable(HWND hw) {
 				info = m_Table.data.info[i];
 			}
 			int scheme = m_Table.scheme;
-			int iTxColor=0, iBkColor;
+			int iTxColor = 0, iBkColor;
 			int col;
 			int index = -1;
 			int imageWidth = 18;
@@ -517,15 +517,15 @@ void CTable<T>::PaintTable(HWND hw) {
 				if (entry.left > row.right)
 					break;
 				entry.right = entry.left + width - 1;
-				if (col == 0&&m_Images!=NULL) {
-					index = GetRowImage(hw,i);
+				if (col == 0 && m_Images != NULL) {
+					index = GetRowImage(hw, i);
 					if (index != -1) {
 						POINT pt;
-						pt.x = entry.left+5;
+						pt.x = entry.left + 5;
 						pt.y = entry.top;
 						FillRect(hdcMem, &entry, g_myBrush[Custom1]);
-						m_Images.Draw(hdcMem, index,pt, ILD_NORMAL);
-						entry.left += imageWidth+8;
+						m_Images.Draw(hdcMem, index, pt, ILD_NORMAL);
+						entry.left += imageWidth + 8;
 					}
 				}
 				if (width > 3) {
@@ -538,7 +538,7 @@ void CTable<T>::PaintTable(HWND hw) {
 						select |= DRAW_UNICODE;
 						HBRUSH hBkBrush;
 						if (!(m_Table.mode & TABLE_USERDEF)	// 非自绘
-							&& i==m_Table.data.selected
+							&& i == m_Table.data.selected
 							&& !(select & DRAW_BREAK)	// 不是断点
 							&& (!(m_Table.mode & TABLE_COLSEL) || m_Table.colsel == col)) {	// 不是在改变表项宽度
 							select |= DRAW_SELECT;
@@ -636,7 +636,7 @@ void CTable<T>::PaintTable(HWND hw) {
 											ExtTextOutW(hdcMem, entry.left + g_AvWidthFont / 2, bottom, ETO_CLIPPED | ETO_OPAQUE,
 												&txt, s.GetString(), len, NULL);
 										}
-										
+
 										if (drawMask & DRAW_UL) {
 											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
 											MoveToEx(hdcMem, txt.left, bottom - 1, NULL);
@@ -658,261 +658,261 @@ void CTable<T>::PaintTable(HWND hw) {
 											txt.top -= fontHeight / 2;
 										}
 										switch (symName) {
-											case D_SEP:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].auxcolor]);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, txt.top, NULL);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom);
-												break;
+										case D_SEP:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].auxcolor]);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, txt.top, NULL);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom);
+											break;
 
-											case D_POINT:
+										case D_POINT:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, txt.top + fontHeight / 2, NULL);
+											LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 2);
+											MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
+											break;
+
+										case D_JMPOUT:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 2 * g_AvWidthFont / 3 + 1, (txt.bottom + txt.top) / 2);
+											break;
+
+										case D_BEGIN:
+										case D_SWTOP:
+											if (symName == D_BEGIN) {
 												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, txt.top + fontHeight / 2, NULL);
-												LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 2);
-												MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
-												break;
-
-											case D_JMPOUT:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 2 * g_AvWidthFont / 3 + 1, (txt.bottom + txt.top) / 2);
-												break;
-
-											case D_BEGIN:
-											case D_SWTOP:
-												if (symName == D_BEGIN) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
-												}
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + fontHeight / 2 - 1, 0);
-												LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 - 1);
-												LineTo(hdcMem, txt.left, txt.bottom);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + fontHeight / 2 - 2, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 - 2);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												break;
-
-											case D_JMPDN:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, txt.bottom - g_AvWidthFont / 3 - 3, 0);
-												LineTo(hdcMem, txt.left + g_AvWidthFont / 3, txt.bottom - 3);
-												LineTo(hdcMem, txt.left + 2 * (g_AvWidthFont / 3) + 1, txt.bottom - g_AvWidthFont / 3 - 4);
-												break;
-
-											case D_END:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 1);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 1);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 2);
-												break;
-
-											case D_BODY:
-											case D_SWBODY:
-												if (symName == D_BODY) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
-												}
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												break;
-
-											case D_ENTRY:
-											case D_CASE:
-												if (symName == D_ENTRY) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
-												}
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2, 0);
-												LineTo(hdcMem, txt.left + 5, txt.top + fontHeight / 2);
-												MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2 - 2, 0);
-												LineTo(hdcMem, txt.left + 2, txt.top + fontHeight / 2 + 3);
-												MoveToEx(hdcMem, txt.left + 3, txt.top + fontHeight / 2 - 1, 0);
-												LineTo(hdcMem, txt.left + 3, txt.top + fontHeight / 2 + 2);
-												break;
-
-											case D_LEAF:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 1, 0);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 1);
-												MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2, 0);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 2);
-												break;
-
-											case D_SINGLE:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + 1, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + 1);
-												LineTo(hdcMem, txt.left + 1, txt.bottom - 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom - 2);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + 2, 0);
-												LineTo(hdcMem, txt.left, txt.top + 2);
-												LineTo(hdcMem, txt.left, txt.bottom - 3);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom - 3);
-												break;
-
-											case D_ENDBEG:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.bottom - 3, 0);
-												LineTo(hdcMem, txt.left, txt.bottom - 3);
-												LineTo(hdcMem, txt.left, txt.bottom);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.bottom - 4, 0);
-												LineTo(hdcMem, txt.left + 1, txt.bottom - 4);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.top + 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + 2);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + 3);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + 3);
-												break;
-
-											case D_JMPUP:
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
-												MoveToEx(hdcMem, txt.left, txt.top + g_AvWidthFont / 3 + 2, 0);
-												LineTo(hdcMem, txt.left + g_AvWidthFont / 3, txt.top + 2);
-												LineTo(hdcMem, txt.left + 2 * (g_AvWidthFont / 3) + 1, txt.top + g_AvWidthFont / 3 + 3);
-												break;
-
-											case 'a':
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
-												LineTo(hdcMem, txt.left + 1, txt.top - 1);
-												MoveToEx(hdcMem, txt.left + 1, txt.bottom - 1, 0);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
-												break;
-
-											case D_PATHDN:
-											case D_GRAYDN:
-												if (symName == D_PATHDN) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
-												}
-												MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 2);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												break;
-
-											case D_PATHDNEND:
-											case D_GRAYDNEND:
-												if (symName == D_PATHDNEND) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
-												}
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
-												LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 - 3);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 + 3);
-												break;
-
-											case 'h':
-												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 2);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 1);
-												break;
-
-											case D_PATH:
-											case D_GRAYPATH:
-												if (symName == D_PATH) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
-												}
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.bottom);
-												break;
-
-											case D_LASTCASE:
+											}
+											else {
 												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
-												MoveToEx(hdcMem, txt.left, txt.top, 0);
-												LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 1);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
-												MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2, 0);
-												LineTo(hdcMem, txt.left + 5, txt.top + fontHeight / 2);
-												MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2 - 2, 0);
-												LineTo(hdcMem, txt.left + 2, txt.top + fontHeight / 2 + 3);
-												MoveToEx(hdcMem, txt.left + 3, txt.top + fontHeight / 2 - 1, 0);
-												LineTo(hdcMem, txt.left + 3, txt.top + fontHeight / 2 + 2);
-												break;
+											}
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + fontHeight / 2 - 1, 0);
+											LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 - 1);
+											LineTo(hdcMem, txt.left, txt.bottom);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + fontHeight / 2 - 2, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 - 2);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											break;
 
-											case D_PATHUPEND:
-											case D_GRAYUPEND:
-												if (symName == D_PATHUPEND) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
-												}
-												MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
-												LineTo(hdcMem, txt.left + 1, txt.top - 1);
-												break;
+										case D_JMPDN:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, txt.bottom - g_AvWidthFont / 3 - 3, 0);
+											LineTo(hdcMem, txt.left + g_AvWidthFont / 3, txt.bottom - 3);
+											LineTo(hdcMem, txt.left + 2 * (g_AvWidthFont / 3) + 1, txt.bottom - g_AvWidthFont / 3 - 4);
+											break;
 
-											case D_PATHUP:
-											case D_GRAYUP:
-												if (symName == D_PATHUP) {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												}
-												else {
-													SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
-												}
-												MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
-												LineTo(hdcMem, txt.left + 1, txt.top - 1);
-												break;
+										case D_END:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 1);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 1);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 2);
+											break;
 
-											case 'z':
+										case D_BODY:
+										case D_SWBODY:
+											if (symName == D_BODY) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
+											}
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											break;
+
+										case D_ENTRY:
+										case D_CASE:
+											if (symName == D_ENTRY) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
+											}
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2, 0);
+											LineTo(hdcMem, txt.left + 5, txt.top + fontHeight / 2);
+											MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2 - 2, 0);
+											LineTo(hdcMem, txt.left + 2, txt.top + fontHeight / 2 + 3);
+											MoveToEx(hdcMem, txt.left + 3, txt.top + fontHeight / 2 - 1, 0);
+											LineTo(hdcMem, txt.left + 3, txt.top + fontHeight / 2 + 2);
+											break;
+
+										case D_LEAF:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 1, 0);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 1);
+											MoveToEx(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2, 0);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + fontHeight / 2 + 2);
+											break;
+
+										case D_SINGLE:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + 1, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + 1);
+											LineTo(hdcMem, txt.left + 1, txt.bottom - 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom - 2);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.top + 2, 0);
+											LineTo(hdcMem, txt.left, txt.top + 2);
+											LineTo(hdcMem, txt.left, txt.bottom - 3);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.bottom - 3);
+											break;
+
+										case D_ENDBEG:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.bottom - 3, 0);
+											LineTo(hdcMem, txt.left, txt.bottom - 3);
+											LineTo(hdcMem, txt.left, txt.bottom);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 2, txt.bottom - 4, 0);
+											LineTo(hdcMem, txt.left + 1, txt.bottom - 4);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.top + 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + 2);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + 3);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, txt.top + 3);
+											break;
+
+										case D_JMPUP:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].textcolor]);
+											MoveToEx(hdcMem, txt.left, txt.top + g_AvWidthFont / 3 + 2, 0);
+											LineTo(hdcMem, txt.left + g_AvWidthFont / 3, txt.top + 2);
+											LineTo(hdcMem, txt.left + 2 * (g_AvWidthFont / 3) + 1, txt.top + g_AvWidthFont / 3 + 3);
+											break;
+
+										case 'a':
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
+											LineTo(hdcMem, txt.left + 1, txt.top - 1);
+											MoveToEx(hdcMem, txt.left + 1, txt.bottom - 1, 0);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
+											break;
+
+										case D_PATHDN:
+										case D_GRAYDN:
+											if (symName == D_PATHDN) {
 												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
-												MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
-												LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 - 3);
-												MoveToEx(hdcMem, txt.left + 1, txt.bottom - 1, 0);
-												LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 1);
-												LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
-												MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2, 0);
-												LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 + 3);
-												break;
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
+											}
+											MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 2);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											break;
 
-											default:
-												break;
+										case D_PATHDNEND:
+										case D_GRAYDNEND:
+											if (symName == D_PATHDNEND) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
+											}
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
+											LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 - 3);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 + 3);
+											break;
+
+										case 'h':
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 2);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 1);
+											break;
+
+										case D_PATH:
+										case D_GRAYPATH:
+											if (symName == D_PATH) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
+											}
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.bottom);
+											break;
+
+										case D_LASTCASE:
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].condbkcolor]);
+											MoveToEx(hdcMem, txt.left, txt.top, 0);
+											LineTo(hdcMem, txt.left, txt.top + fontHeight / 2 + 1);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, txt.top + fontHeight / 2 + 2);
+											MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2, 0);
+											LineTo(hdcMem, txt.left + 5, txt.top + fontHeight / 2);
+											MoveToEx(hdcMem, txt.left + 2, txt.top + fontHeight / 2 - 2, 0);
+											LineTo(hdcMem, txt.left + 2, txt.top + fontHeight / 2 + 3);
+											MoveToEx(hdcMem, txt.left + 3, txt.top + fontHeight / 2 - 1, 0);
+											LineTo(hdcMem, txt.left + 3, txt.top + fontHeight / 2 + 2);
+											break;
+
+										case D_PATHUPEND:
+										case D_GRAYUPEND:
+											if (symName == D_PATHUPEND) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
+											}
+											MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
+											LineTo(hdcMem, txt.left + 1, txt.top - 1);
+											break;
+
+										case D_PATHUP:
+										case D_GRAYUP:
+											if (symName == D_PATHUP) {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											}
+											else {
+												SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].lowcolor]);
+											}
+											MoveToEx(hdcMem, txt.left + 2 * (g_AvWidthFont / 3), (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, txt.left + 3, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 2);
+											LineTo(hdcMem, txt.left + 1, txt.top - 1);
+											break;
+
+										case 'z':
+											SelectObject(hdcMem, g_myPen[g_myScheme[m_Table.scheme].hitextcolor]);
+											MoveToEx(hdcMem, txt.left + 1, txt.top, 0);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 - 1);
+											LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 - 3);
+											MoveToEx(hdcMem, txt.left + 1, txt.bottom - 1, 0);
+											LineTo(hdcMem, txt.left + 1, (txt.bottom + txt.top) / 2 + 1);
+											LineTo(hdcMem, txt.left + 2, (txt.bottom + txt.top) / 2);
+											MoveToEx(hdcMem, g_AvWidthFont + txt.left - 1, (txt.bottom + txt.top) / 2, 0);
+											LineTo(hdcMem, g_AvWidthFont + txt.left - 4, (txt.bottom + txt.top) / 2 + 3);
+											break;
+
+										default:
+											break;
 										}
 									}
 									symName = 0;
@@ -1083,7 +1083,7 @@ void CTable<T>::PaintTable(HWND hw) {
 }
 
 template<class T>
-void CTable<T>::SetTableWindowInfo(int maxColumns,int nlines) {
+void CTable<T>::SetTableWindowInfo(int maxColumns, int nlines) {
 	ATLASSERT(nlines > 5 && maxColumns > 2);
 
 	m_Rect.right = GetSystemMetrics(SM_CXVSCROLL) - 1;
@@ -1130,7 +1130,7 @@ template<class T>
 int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	RECT client, bar;
 	int bottomRow;
-	int xPos=0, yPos = 0;
+	int xPos = 0, yPos = 0;
 	WPARAM col = -1;
 	int newdx;
 	bool pressShiftKey, pressCtrlKey;
@@ -1160,7 +1160,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	int xshift;
 	int iHScrollPos, iVScrollPos;
 	int lines;
-	int iSplitLine = -1, left=0, x;
+	int iSplitLine = -1, left = 0, x;
 
 	if (msg == WM_MOUSEMOVE || WM_LBUTTONDOWN == msg || msg == WM_LBUTTONDBLCLK || msg == WM_LBUTTONUP
 		|| msg == WM_RBUTTONDOWN || (msg == WM_TIMER && wp == 1)) {
@@ -1173,7 +1173,7 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			yPos = GET_Y_LPARAM(lp);
 		}
 		onBar = yPos >= bar.top && yPos < bar.bottom;
-		if (!onBar&&msg==WM_RBUTTONDOWN) {
+		if (!onBar && msg == WM_RBUTTONDOWN) {
 			Tablefunction(hw, WM_LBUTTONDOWN, wp, lp);
 		}
 		if (bottomRow < 0) {
@@ -1201,101 +1201,128 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		}
 	}
 	switch (msg) {
-		case WM_RBUTTONDOWN:
-		{
-			return onBar ? false : true;
+	case WM_RBUTTONDOWN:
+	{
+		return onBar ? false : true;
+	}
+	case WM_HSCROLL:
+	{
+		newdx = -client.right;
+		int i = 0;
+		while (i < m_Bar.nbar) {
+			newdx += m_Bar.dx[i];
+			++i;
 		}
-		case WM_HSCROLL:
-		{
+		iHScrollPos = m_Table.xshift;
+		switch (LOWORD(wp)) {
+		case SB_LINELEFT:
+			iHScrollPos -= g_AvWidthFont;
+			break;
+		case SB_LINERIGHT:
+			iHScrollPos += g_AvWidthFont;
+			break;
+		case SB_PAGELEFT:
+			iHScrollPos -= 8 * g_AvWidthFont;
+			break;
+		case SB_LEFT:
+			iHScrollPos = 0;
+			break;
+		case SB_RIGHT:
+			iHScrollPos = newdx;
+			break;
+		case SB_THUMBTRACK:
+			iHScrollPos = MulDiv(HIWORD(wp), newdx, 0x4000);
+			break;
+		default:
+			break;
+		}
+		if (iHScrollPos > newdx) {
+			iHScrollPos = newdx;
+		}
+		if (iHScrollPos < 0) {
+			iHScrollPos = 0;
+		}
+		if (iHScrollPos != m_Table.xshift) {
+			m_Table.xshift = iHScrollPos;
+			InvalidateRect(hw, nullptr, false);
+		}
+		return 0;
+	}
+	case WM_USER_SCR:
+	{
+		LONG style = GetWindowLong(hw, GWL_STYLE);
+		if (style & WS_VSCROLL) {
+			SetScrollRange(hw, SB_VERT, 0, 0x4000, false);
+			ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, 0));
+			if (ret < 0)
+				ret = 0x4000 - ret;
+			if (m_Table.offset != 0 && ret == 0) {
+				ret = MulDiv(static_cast<int>(m_Table.offset + rows), 0x4000,
+					static_cast<int>(m_Table.data.n));
+			}
+			if (ret != GetScrollPos(hw, SB_VERT)) {
+				SetScrollPos(hw, SB_VERT, ret, true);
+			}
+		}
+		if (style & WS_HSCROLL) {
+			SetScrollRange(hw, SB_HORZ, 0, 0x4000, false);
 			newdx = -client.right;
 			int i = 0;
 			while (i < m_Bar.nbar) {
 				newdx += m_Bar.dx[i];
 				++i;
 			}
-			iHScrollPos = m_Table.xshift;
-			switch (LOWORD(wp)) {
-				case SB_LINELEFT:
-					iHScrollPos -= g_AvWidthFont;
-					break;
-				case SB_LINERIGHT:
-					iHScrollPos += g_AvWidthFont;
-					break;
-				case SB_PAGELEFT:
-					iHScrollPos -= 8 * g_AvWidthFont;
-					break;
-				case SB_LEFT:
-					iHScrollPos = 0;
-					break;
-				case SB_RIGHT:
-					iHScrollPos = newdx;
-					break;
-				case SB_THUMBTRACK:
-					iHScrollPos = MulDiv(HIWORD(wp), newdx, 0x4000);
-					break;
-				default:
-					break;
-			}
-			if (iHScrollPos > newdx) {
-				iHScrollPos = newdx;
-			}
-			if (iHScrollPos < 0) {
-				iHScrollPos = 0;
-			}
-			if (iHScrollPos != m_Table.xshift) {
-				m_Table.xshift = iHScrollPos;
-				InvalidateRect(hw, nullptr, false);
-			}
-			return 0;
+			int nPos;
+			nPos = MulDiv(m_Table.xshift, 0x4000, newdx);
+			SetScrollPos(hw, SB_HORZ, nPos, true);
 		}
-		case WM_USER_SCR:
-		{
-			LONG style = GetWindowLong(hw, GWL_STYLE);
-			if (style & WS_VSCROLL) {
-				SetScrollRange(hw, SB_VERT, 0, 0x4000, false);
-				ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, 0));
-				if (ret < 0)
-					ret = 0x4000 - ret;
-				if (m_Table.offset != 0&& ret == 0) {
-					ret = MulDiv(static_cast<int>(m_Table.offset+rows), 0x4000,
-						static_cast<int>(m_Table.data.n));
-				}
-				if (ret != GetScrollPos(hw, SB_VERT)) {
-					SetScrollPos(hw, SB_VERT, ret, true);
-				}
-			}
-			if (style & WS_HSCROLL) {
-				SetScrollRange(hw, SB_HORZ, 0, 0x4000, false);
-				newdx = -client.right;
-				int i = 0;
-				while (i < m_Bar.nbar) {
-					newdx += m_Bar.dx[i];
-					++i;
-				}
-				int nPos;
-				nPos = MulDiv(m_Table.xshift, 0x4000, newdx);
-				SetScrollPos(hw, SB_HORZ, nPos, true);
-			}
-			return 0;
-		}
-		case WM_DESTROY:
-		{
-			if (hw == g_hWndTop)
-				g_hWndTop = 0;
-			if (m_Table.mode & TABLE_SAVEPOS) {
+		return 0;
+	}
+	case WM_DESTROY:
+	{
+		if (hw == g_hWndTop)
+			g_hWndTop = 0;
+		if (m_Table.mode & TABLE_SAVEPOS) {
 
-			}
+		}
+		return 0;
+	}
+	case WM_USER_VABS:
+	{
+		selRow = static_cast<int>(lp + m_Table.offset);
+		if (selRow > (signed int)(m_Table.data.n - wp)) {
+			selRow = static_cast<int>(m_Table.data.n - wp);
+		}
+		if (selRow < 0) {
+			selRow = 0;
+		}
+		m_Table.offset = selRow;
+		if (selRow) {
+			return MulDiv(selRow, 0x4000, static_cast<int>(m_Table.data.n - wp));
+		}
+		else {
 			return 0;
 		}
-		case WM_USER_VABS:
-		{
-			selRow = static_cast<int>(lp + m_Table.offset);
-			if (selRow > (signed int)(m_Table.data.n - wp)) {
-				selRow = static_cast<int>(m_Table.data.n - wp);
-			}
-			if (selRow < 0) {
-				selRow = 0;
-			}
+	}
+	case WM_USER_VREL:
+	{
+		if (m_Table.data.n > wp) {
+			selRow = MulDiv(static_cast<int>(m_Table.data.n - wp),
+				static_cast<int>(lp), 0x4000);
+		}
+		else {
+			selRow = 0;
+		}
+		if (selRow > (signed int)(m_Table.data.n - wp)) {
+			selRow = static_cast<int>(m_Table.data.n - wp);
+		}
+		if (selRow < 0) {
+			selRow = 0;
+		}
+		if (lp && selRow == m_Table.offset) {
+			return -1;
+		}
+		else {
 			m_Table.offset = selRow;
 			if (selRow) {
 				return MulDiv(selRow, 0x4000, static_cast<int>(m_Table.data.n - wp));
@@ -1304,523 +1331,496 @@ int CTable<T>::Tablefunction(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 				return 0;
 			}
 		}
-		case WM_USER_VREL:
-		{
-			if (m_Table.data.n > wp) {
-				selRow = MulDiv(static_cast<int>(m_Table.data.n - wp), 
-					static_cast<int>(lp), 0x4000);
+	}
+	case WM_VSCROLL:
+	{
+		pressShiftKey = GetKeyState(VK_SHIFT) & 0x8000;
+		switch (LOWORD(wp)) {
+		case SB_LINEDOWN:
+			if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
+				ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, bottomRow));
 			}
 			else {
-				selRow = 0;
+				ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow));
 			}
-			if (selRow > (signed int)(m_Table.data.n - wp)) {
-				selRow = static_cast<int>(m_Table.data.n - wp);
-			}
-			if (selRow < 0) {
-				selRow = 0;
-			}
-			if (lp && selRow == m_Table.offset) {
-				return -1;
+			break;
+		case SB_LINEUP:
+			if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
+				ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -bottomRow));
 			}
 			else {
-				m_Table.offset = selRow;
-				if (selRow) {
-					return MulDiv(selRow, 0x4000, static_cast<int>(m_Table.data.n - wp));
-				}
-				else {
-					return 0;
-				}
+				ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, -bottomRow));
+			}
+			break;
+		case SB_PAGEUP:
+			lines = rows - 1;
+			if (lines <= 0)
+				lines = 1;
+			ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * -lines));
+			break;
+		case SB_PAGEDOWN:
+			lines = rows - 1;
+			if (lines <= 0)
+				lines = 1;
+			ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * lines));
+			break;
+		case SB_THUMBTRACK:
+			iVScrollPos = HIWORD(wp);
+			if (bottomRow < 0)
+				iVScrollPos = 0x3ff - iVScrollPos;
+			ret = static_cast<int>(::SendMessage(hw, WM_USER_VREL, rows, iVScrollPos));
+			break;
+		default:
+			ret = -1;
+			break;
+		}
+		if (ret >= 0) {
+			if (m_Table.mode & TABLE_FASTSEL) {
+				RedrawWindow(hw, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+			}
+			else {
+				InvalidateRect(hw, NULL, false);
 			}
 		}
-		case WM_VSCROLL:
-		{
-			pressShiftKey = GetKeyState(VK_SHIFT) & 0x8000;
-			switch (LOWORD(wp)) {
-				case SB_LINEDOWN:
-					if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
-						ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, bottomRow));
-					}
-					else {
-						ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow));
-					}
-					break;
-				case SB_LINEUP:
-					if (pressShiftKey && m_Table.mode & TABLE_USERDEF) {
-						ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -bottomRow));
-					}
-					else {
-						ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, -bottomRow));
-					}
-					break;
-				case SB_PAGEUP:
-					lines = rows - 1;
-					if (lines <= 0)
-						lines = 1;
-					ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * -lines));
-					break;
-				case SB_PAGEDOWN:
-					lines = rows - 1;
-					if (lines <= 0)
-						lines = 1;
-					ret = static_cast<int>(SendMessage(hw, WM_USER_VABS, rows, bottomRow * lines));
-					break;
-				case SB_THUMBTRACK:
-					iVScrollPos = HIWORD(wp);
-					if (bottomRow < 0)
-						iVScrollPos = 0x3ff - iVScrollPos;
-					ret = static_cast<int>(::SendMessage(hw, WM_USER_VREL, rows, iVScrollPos));
-					break;
-				default:
-					ret = -1;
-					break;
-			}
-			if (ret >= 0) {
-				if (m_Table.mode & TABLE_FASTSEL) {
-					RedrawWindow(hw, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-				}
-				else {
-					InvalidateRect(hw, NULL, false);
-				}
-			}
-			return 0;
-		}
-		case WM_MOUSEMOVE:
-		{
-			HCURSOR hCursor;
-			if (m_Bar.captured && GetCapture() == hw) {
-				switch (m_Bar.captured) {
-					case CAPT_SPLIT:
-						hCursor = LoadCursor(NULL, IDC_SIZEWE);
-						SetCursor(hCursor);
-						newdx = xPos + m_Bar.dx[m_Bar.active] - m_Bar.prevx;
-						if (newdx < 3) {
-							int distance = 3 - newdx;
-							newdx = 3;
-							xPos += distance;
-						}
-						if (m_Bar.dx[m_Bar.active] != newdx) {
-							m_Bar.dx[m_Bar.active] = newdx;
-							InvalidateRect(hw, nullptr, false);
-						}
-						break;
-					case CAPT_BAR:
-						hCursor = LoadCursor(NULL, IDC_ARROW);
-						SetCursor(hCursor);
-						if (!onBar, m_Bar.active != col || m_Bar.mode[m_Bar.active] & BAR_PRESSED) {
-							m_Bar.mode[m_Bar.active] &= ~BAR_PRESSED;
-							InvalidateRect(hw, &bar, false);
-						}
-						else {
-							m_Bar.mode[m_Bar.active] |= BAR_PRESSED;
-							InvalidateRect(hw, &bar, false);
-						}
-						break;
-					case CAPT_DATA:
-						hCursor = LoadCursor(NULL, IDC_ARROW);
-						SetCursor(hCursor);
-						if (yPos < client.top || yPos >= client.bottom) {
-							if (yPos >= client.bottom) {
-								if (m_Bar.active <= 0) {
-									SetTimer(hw, 1, 50, NULL);
-								}
-								m_Bar.active = 1;
-								if (client.bottom + 48 < yPos) {
-									m_Bar.active += (yPos - client.bottom - 48) / 16;
-								}
-							}
-							else {
-								if (m_Bar.active >= 0) {
-									SetTimer(hw, 1, 50, NULL);
-								}
-								m_Bar.active = -1;
-								if (client.top - 48 > yPos) {
-									m_Bar.active -= (client.top - 48 - yPos) / 16;
-								}
-							}
-						}
-						else {
-							KillTimer(hw, 1);
-							m_Bar.active = 0;
-							if (SendMessage(hw, WM_USER_CNTS, col << 16 | LOWORD(left / g_AvWidthFont),
-								(yPos - client.top) / g_AvHighFont)) {
-								if (m_Table.mode & TABLE_FASTSEL) {
-									RedrawWindow(hw, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-								}
-								else {
-									InvalidateRect(hw, NULL, false);
-								}
-							}
-						}
-						break;
-				}
-				m_Bar.prevx = xPos;
-			}
-			else if (iSplitLine < 0) {
-				hCursor = LoadCursor(NULL, IDC_ARROW);
-				SetCursor(hCursor);
-			}
-			else {
+		return 0;
+	}
+	case WM_MOUSEMOVE:
+	{
+		HCURSOR hCursor;
+		if (m_Bar.captured && GetCapture() == hw) {
+			switch (m_Bar.captured) {
+			case CAPT_SPLIT:
 				hCursor = LoadCursor(NULL, IDC_SIZEWE);
 				SetCursor(hCursor);
-			}
-			return 0;
-		}
-		case WM_LBUTTONDBLCLK: {
-			bool handle = onBar || iSplitLine >= 0 ||
-				SendMessage(hw, WM_USER_DBLCLK, ((uint16_t)col << 16) | (uint16_t)(left / g_AvWidthFont), (yPos - client.top) / g_AvHighFont) != 1;
-			if (!handle)
+				newdx = xPos + m_Bar.dx[m_Bar.active] - m_Bar.prevx;
+				if (newdx < 3) {
+					int distance = 3 - newdx;
+					newdx = 3;
+					xPos += distance;
+				}
+				if (m_Bar.dx[m_Bar.active] != newdx) {
+					m_Bar.dx[m_Bar.active] = newdx;
+					InvalidateRect(hw, nullptr, false);
+				}
 				break;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			SetFocus(hw);
-			if (iSplitLine < 0) {
-				if (!onBar || (col & 0x80000000) != 0 || m_Bar.mode[col] & (BAR_NOSORT | BAR_DISABLED)) {
-					if (!onBar || (col & 0x80000000) != 0) {
-						pressShiftKey = GetKeyState(VK_SHIFT) & 0x800;
-						UINT uMsg = WM_USER_CNTS;
-						if (!pressShiftKey) {
-							uMsg = WM_USER_STS;
+			case CAPT_BAR:
+				hCursor = LoadCursor(NULL, IDC_ARROW);
+				SetCursor(hCursor);
+				if (!onBar, m_Bar.active != col || m_Bar.mode[m_Bar.active] & BAR_PRESSED) {
+					m_Bar.mode[m_Bar.active] &= ~BAR_PRESSED;
+					InvalidateRect(hw, &bar, false);
+				}
+				else {
+					m_Bar.mode[m_Bar.active] |= BAR_PRESSED;
+					InvalidateRect(hw, &bar, false);
+				}
+				break;
+			case CAPT_DATA:
+				hCursor = LoadCursor(NULL, IDC_ARROW);
+				SetCursor(hCursor);
+				if (yPos < client.top || yPos >= client.bottom) {
+					if (yPos >= client.bottom) {
+						if (m_Bar.active <= 0) {
+							SetTimer(hw, 1, 50, NULL);
 						}
-						int value = static_cast<int>(SendMessage(hw, uMsg, 
-							col << 16 | LOWORD(left / g_AvWidthFont),
-							(yPos - client.top) / g_AvHighFont));
-						if (value > 0) {
-							if (m_Table.mode & TABLE_FASTSEL) {
-								RedrawWindow(hw, nullptr, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-							}
-							else {
-								InvalidateRect(hw, nullptr, false);
-							}
+						m_Bar.active = 1;
+						if (client.bottom + 48 < yPos) {
+							m_Bar.active += (yPos - client.bottom - 48) / 16;
 						}
-						if (value >= 0) {
-							SetCapture(hw);
-							m_Bar.captured = CAPT_DATA;
-							m_Bar.active = 0;
+					}
+					else {
+						if (m_Bar.active >= 0) {
+							SetTimer(hw, 1, 50, NULL);
+						}
+						m_Bar.active = -1;
+						if (client.top - 48 > yPos) {
+							m_Bar.active -= (client.top - 48 - yPos) / 16;
 						}
 					}
 				}
 				else {
-					SetCapture(hw);
-					m_Bar.captured = CAPT_BAR;
-					m_Bar.mode[col] |= BAR_PRESSED;
-					m_Bar.active = static_cast<int>(col);
-					InvalidateRect(hw, &bar, false);
+					KillTimer(hw, 1);
+					m_Bar.active = 0;
+					if (SendMessage(hw, WM_USER_CNTS, col << 16 | LOWORD(left / g_AvWidthFont),
+						(yPos - client.top) / g_AvHighFont)) {
+						if (m_Table.mode & TABLE_FASTSEL) {
+							RedrawWindow(hw, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+						}
+						else {
+							InvalidateRect(hw, NULL, false);
+						}
+					}
+				}
+				break;
+			}
+			m_Bar.prevx = xPos;
+		}
+		else if (iSplitLine < 0) {
+			hCursor = LoadCursor(NULL, IDC_ARROW);
+			SetCursor(hCursor);
+		}
+		else {
+			hCursor = LoadCursor(NULL, IDC_SIZEWE);
+			SetCursor(hCursor);
+		}
+		return 0;
+	}
+	case WM_LBUTTONDBLCLK: {
+		bool handle = onBar || iSplitLine >= 0 ||
+			SendMessage(hw, WM_USER_DBLCLK, ((uint16_t)col << 16) | (uint16_t)(left / g_AvWidthFont), (yPos - client.top) / g_AvHighFont) != 1;
+		if (!handle)
+			break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		SetFocus(hw);
+		if (iSplitLine < 0) {
+			if (!onBar || (col & 0x80000000) != 0 || m_Bar.mode[col] & (BAR_NOSORT | BAR_DISABLED)) {
+				if (!onBar || (col & 0x80000000) != 0) {
+					pressShiftKey = GetKeyState(VK_SHIFT) & 0x800;
+					UINT uMsg = WM_USER_CNTS;
+					if (!pressShiftKey) {
+						uMsg = WM_USER_STS;
+					}
+					int value = static_cast<int>(SendMessage(hw, uMsg,
+						col << 16 | LOWORD(left / g_AvWidthFont),
+						(yPos - client.top) / g_AvHighFont));
+					if (value > 0) {
+						if (m_Table.mode & TABLE_FASTSEL) {
+							RedrawWindow(hw, nullptr, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+						}
+						else {
+							InvalidateRect(hw, nullptr, false);
+						}
+					}
+					if (value >= 0) {
+						SetCapture(hw);
+						m_Bar.captured = CAPT_DATA;
+						m_Bar.active = 0;
+					}
 				}
 			}
 			else {
 				SetCapture(hw);
-				m_Bar.captured = CAPT_SPLIT;
-				m_Bar.active = iSplitLine;
-				m_Bar.prevx = xPos;
+				m_Bar.captured = CAPT_BAR;
+				m_Bar.mode[col] |= BAR_PRESSED;
+				m_Bar.active = static_cast<int>(col);
+				InvalidateRect(hw, &bar, false);
 			}
-			return 0;
 		}
-		case WM_LBUTTONUP:
-		{
-			if (GetCapture() == hw) {
-				ReleaseCapture();
-				if (m_Bar.captured == CAPT_BAR) {
-					if (m_Bar.mode[m_Bar.active] & BAR_PRESSED) {
-						m_Bar.mode[m_Bar.active] &= ~BAR_PRESSED;
-						if (m_Bar.mode[m_Bar.active] & BAR_BUTTON) {
-							InvalidateRect(hw, &bar, false);
-							SendMessage(hw, WM_USER_BAR, m_Bar.active, 0);
-						}
-						else if (Sortsorteddata(m_Bar.active)) {
-							InvalidateRect(hw, nullptr, false);// 重新排序了，则刷新整个窗口
-						}
-						else {
-							InvalidateRect(hw, &bar, false);
-						}
+		else {
+			SetCapture(hw);
+			m_Bar.captured = CAPT_SPLIT;
+			m_Bar.active = iSplitLine;
+			m_Bar.prevx = xPos;
+		}
+		return 0;
+	}
+	case WM_LBUTTONUP:
+	{
+		if (GetCapture() == hw) {
+			ReleaseCapture();
+			if (m_Bar.captured == CAPT_BAR) {
+				if (m_Bar.mode[m_Bar.active] & BAR_PRESSED) {
+					m_Bar.mode[m_Bar.active] &= ~BAR_PRESSED;
+					if (m_Bar.mode[m_Bar.active] & BAR_BUTTON) {
+						InvalidateRect(hw, &bar, false);
+						SendMessage(hw, WM_USER_BAR, m_Bar.active, 0);
+					}
+					else if (Sortsorteddata(m_Bar.active)) {
+						InvalidateRect(hw, nullptr, false);// 重新排序了，则刷新整个窗口
+					}
+					else {
+						InvalidateRect(hw, &bar, false);
 					}
 				}
-				else if (m_Bar.captured == CAPT_DATA) {
-					KillTimer(hw, 1);
-				}
-				m_Bar.captured = CAPT_FREE;
 			}
+			else if (m_Bar.captured == CAPT_DATA) {
+				KillTimer(hw, 1);
+			}
+			m_Bar.captured = CAPT_FREE;
+		}
+		return 0;
+	}
+	case WM_USER_CNTS:
+	case WM_USER_STS:
+	{
+		if (m_Table.mode & TABLE_USERDEF) {
 			return 0;
 		}
-		case WM_USER_CNTS:
-		case WM_USER_STS:
-		{
-			if (m_Table.mode & TABLE_USERDEF) {
-				return 0;
+		int selRow = static_cast<int>(lp + m_Table.offset);
+		if (selRow >= m_Table.data.n) {
+			selRow = static_cast<int>(m_Table.data.n - 1);
+		}
+		if (selRow == m_Table.data.selected && (!(m_Table.mode & TABLE_COLSEL)
+			|| HIWORD(lp) == m_Table.colsel)) {
+			return 0;
+		}
+		if (selRow > 0) {
+			auto item = Getsortedbyselection(selRow);
+			m_Table.data.seladdr = GetSeladdr(item);
+		}
+		m_Table.data.selected = selRow;
+		if (m_Table.mode & TABLE_COLSEL) {
+			m_Table.colsel = HIWORD(wp);
+		}
+		else {
+			m_Table.colsel = 0;
+		}
+		return 1;
+	}
+	case WM_WINDOWPOSCHANGED:
+	{
+		if (*(HWND*)lp != g_hWndTop && g_hWndTop) {
+			SetWindowPos(g_hWndTop, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOMOVE);
+		}
+		return static_cast<int>(DefMDIChildProc(g_hWndTop, WM_WINDOWPOSCHANGED, wp, lp));
+	}
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+	{
+		GetSysKeyState(msg, lp, pressShiftKey, pressCtrlKey);
+		int count = lp & 0x7FFF;
+		if (count != 0) {
+			if (count > 0x10) {
+				count = 16;
 			}
-			int selRow = static_cast<int>(lp + m_Table.offset);
-			if (selRow >= m_Table.data.n) {
-				selRow = static_cast<int>(m_Table.data.n - 1);
+		}
+		else {
+			count = 1;
+		}
+		int shift;
+		if (wp == VK_LEFT) {
+			int colsel = m_Table.colsel;
+			if (pressCtrlKey) {
+				xshift = 0;
+				for (int i = 0; i < m_Bar.nbar && xshift + m_Bar.dx[i] < m_Table.xshift; i++) {
+					xshift += m_Bar.dx[i];
+				}
 			}
-			if (selRow == m_Table.data.selected && (!(m_Table.mode & TABLE_COLSEL)
-				|| HIWORD(lp) == m_Table.colsel)) {
-				return 0;
-			}
-			if (selRow > 0) {
-				auto item = Getsortedbyselection(selRow);
-				m_Table.data.seladdr = GetSeladdr(item);
-			}
-			m_Table.data.selected = selRow;
-			if (m_Table.mode & TABLE_COLSEL) {
-				m_Table.colsel = HIWORD(wp);
+			else if (m_Table.mode & TABLE_COLSEL) {
+				--colsel;
+				xshift = m_Table.xshift;
+				int width;
+				do {
+					width = m_Bar.dx[colsel];
+					--colsel;
+				} while (colsel >= 0 && width <= 3);
+
+				if (colsel < 0) {
+					colsel = m_Table.colsel;
+				}
+				else {
+					xshift = 0;
+					for (int i = 0; colsel > i; i++) {
+						xshift += m_Bar.dx[i];
+					}
+					if (xshift > m_Table.xshift) {
+						xshift = m_Table.xshift;
+					}
+				}
 			}
 			else {
-				m_Table.colsel = 0;
+				xshift = m_Table.xshift - count * g_AvWidthFont;
+			}
+			if (xshift < 0) {
+				xshift = 0;
+			}
+			if (xshift != m_Table.xshift || colsel != m_Table.colsel) {
+				m_Table.xshift = xshift;
+				m_Table.colsel = colsel;
+				InvalidateRect(hw, nullptr, NULL);
 			}
 			return 1;
 		}
-		case WM_WINDOWPOSCHANGED:
-		{
-			if (*(HWND*)lp != g_hWndTop && g_hWndTop) {
-				SetWindowPos(g_hWndTop, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOMOVE);
+		else if (wp == VK_RIGHT) {
+			int col = m_Table.colsel;
+			int newdx = 0;
+			if (pressCtrlKey) {
+				shift = 0;
+				for (int i = 0; i < m_Bar.nbar; i++) {
+					if (m_Table.xshift >= newdx && i < m_Bar.nbar - 1) {
+						shift += m_Bar.dx[i];
+					}
+					newdx += m_Bar.dx[i];
+				}
 			}
-			return static_cast<int>(DefMDIChildProc(g_hWndTop, WM_WINDOWPOSCHANGED, wp, lp));
-		}
-		case WM_KEYDOWN:
-		case WM_SYSKEYDOWN:
-		{
-			GetSysKeyState(msg, lp, pressShiftKey, pressCtrlKey);
-			int count = lp & 0x7FFF;
-			if (count != 0) {
-				if (count > 0x10) {
-					count = 16;
+			else if (m_Table.mode & TABLE_COLSEL) {
+				int tmp;
+				do {
+					tmp = m_Bar.dx[col];
+					col++;
+				} while (col < m_Bar.nbar && tmp <= 3);
+				if (col >= m_Bar.nbar) {
+					for (int i = 0; i < m_Bar.nbar; i++) {
+						newdx += m_Bar.dx[i];
+					}
+					col = m_Table.colsel;
+					shift = m_Table.xshift;
+				}
+				else {
+					shift = 0;
+
+					for (int i = 0; col > i; i++) {
+						shift += m_Bar.dx[i];
+					}
+					newdx = shift + m_Bar.dx[col];
 				}
 			}
 			else {
-				count = 1;
-			}
-			int shift;
-			if (wp == VK_LEFT) {
-				int colsel = m_Table.colsel;
-				if (pressCtrlKey) {
-					xshift = 0;
-					for (int i = 0; i < m_Bar.nbar && xshift + m_Bar.dx[i] < m_Table.xshift; i++) {
-						xshift += m_Bar.dx[i];
-					}
+				for (int i = 0; i < m_Bar.nbar; i++) {
+					newdx += m_Bar.dx[i];
 				}
-				else if (m_Table.mode & TABLE_COLSEL) {
-					--colsel;
-					xshift = m_Table.xshift;
-					int width;
-					do {
-						width = m_Bar.dx[colsel];
-						--colsel;
-					} while (colsel >= 0 && width <= 3);
-
-					if (colsel < 0) {
-						colsel = m_Table.colsel;
-					}
-					else {
-						xshift = 0;
-						for (int i = 0; colsel > i; i++) {
-							xshift += m_Bar.dx[i];
-						}
-						if (xshift > m_Table.xshift) {
-							xshift = m_Table.xshift;
-						}
-					}
+				shift = count * g_AvWidthFont + m_Table.xshift;
+			}
+			newdx -= client.right;
+			if (shift > newdx) {
+				shift = newdx;
+			}
+			if (shift < 0)
+				shift = 0;
+			if (shift != m_Table.xshift || col != m_Table.colsel) {
+				m_Table.xshift = shift;
+				m_Table.colsel = col;
+				InvalidateRect(hw, nullptr, false);
+			}
+			return 1;
+		}
+		else {
+			lines = count * bottomRow;
+			switch (wp) {
+			case VK_PRIOR:
+			{
+				int totalRow = rows - 1;
+				if (totalRow <= 0) {
+					totalRow = 1;
+				}
+				_page = lines * -totalRow;
+				LPARAM lParam;
+				if (pressCtrlKey) {
+					lParam = 0x7FFFFFFF;
 				}
 				else {
-					xshift = m_Table.xshift - count * g_AvWidthFont;
+					lParam = _page;
 				}
-				if (xshift < 0) {
-					xshift = 0;
-				}
-				if (xshift != m_Table.xshift || colsel != m_Table.colsel) {
-					m_Table.xshift = xshift;
-					m_Table.colsel = colsel;
-					InvalidateRect(hw, nullptr, NULL);
-				}
-				return 1;
+				ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
+				break;
 			}
-			else if (wp == VK_RIGHT) {
-				int col = m_Table.colsel;
-				int newdx = 0;
-				if (pressCtrlKey) {
-					shift = 0;
-					for (int i = 0; i < m_Bar.nbar; i++) {
-						if (m_Table.xshift >= newdx && i < m_Bar.nbar - 1) {
-							shift += m_Bar.dx[i];
-						}
-						newdx += m_Bar.dx[i];
-					}
+			case VK_NEXT:
+			{
+				int totalRow = rows - 1;
+				if (totalRow <= 0) {
+					totalRow = 1;
 				}
-				else if (m_Table.mode & TABLE_COLSEL) {
-					int tmp;
-					do {
-						tmp = m_Bar.dx[col];
-						col++;
-					} while (col < m_Bar.nbar && tmp <= 3);
-					if (col >= m_Bar.nbar) {
-						for (int i = 0; i < m_Bar.nbar; i++) {
-							newdx += m_Bar.dx[i];
-						}
-						col = m_Table.colsel;
-						shift = m_Table.xshift;
-					}
-					else {
-						shift = 0;
-
-						for (int i = 0; col > i; i++) {
-							shift += m_Bar.dx[i];
-						}
-						newdx = shift + m_Bar.dx[col];
-					}
+				_page = lines * totalRow;
+				LPARAM lParam;
+				if (pressCtrlKey) {
+					lParam = 0x7FFFFFFF;
 				}
 				else {
-					for (int i = 0; i < m_Bar.nbar; i++) {
-						newdx += m_Bar.dx[i];
-					}
-					shift = count * g_AvWidthFont + m_Table.xshift;
+					lParam = _page;
 				}
-				newdx -= client.right;
-				if (shift > newdx) {
-					shift = newdx;
+				ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
+				break;
+			}
+			case VK_END:
+			{
+				ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFE));
+				break;
+			}
+			case VK_HOME:
+			{
+				ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFF));
+				break;
+			}
+			case VK_UP:
+			{
+				if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
+					ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -lines));
 				}
-				if (shift < 0)
-					shift = 0;
-				if (shift != m_Table.xshift || col != m_Table.colsel) {
-					m_Table.xshift = shift;
-					m_Table.colsel = col;
+				else {
+					ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, -lines));
+				}
+				break;
+			}
+			case VK_DOWN:
+			{
+				if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
+					ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, lines));
+				}
+				else {
+					ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lines));
+				}
+				break;
+			}
+			default:
+				break;
+			}
+			if (ret >= 0) {
+				if (m_Table.mode & TABLE_FASTSEL) {
+					RedrawWindow(hw, nullptr, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				}
+				else {
 					InvalidateRect(hw, nullptr, false);
 				}
-				return 1;
 			}
-			else {
-				lines = count * bottomRow;
-				switch (wp) {
-					case VK_PRIOR:
-					{
-						int totalRow = rows - 1;
-						if (totalRow <= 0) {
-							totalRow = 1;
-						}
-						_page = lines * -totalRow;
-						LPARAM lParam;
-						if (pressCtrlKey) {
-							lParam = 0x7FFFFFFF;
-						}
-						else {
-							lParam = _page;
-						}
-						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
-						break;
-					}
-					case VK_NEXT:
-					{
-						int totalRow = rows - 1;
-						if (totalRow <= 0) {
-							totalRow = 1;
-						}
-						_page = lines * totalRow;
-						LPARAM lParam;
-						if (pressCtrlKey) {
-							lParam = 0x7FFFFFFF;
-						}
-						else {
-							lParam = _page;
-						}
-						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lParam));
-						break;
-					}
-					case VK_END:
-					{
-						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFE));
-						break;
-					}
-					case VK_HOME:
-					{
-						ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, 0x7FFFFFFF));
-						break;
-					}
-					case VK_UP:
-					{
-						if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
-							ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, -lines));
-						}
-						else {
-							ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, -lines));
-						}
-						break;
-					}
-					case VK_DOWN:
-					{
-						if (pressCtrlKey && m_Table.mode & TABLE_USERDEF) {
-							ret = static_cast<int>(SendMessage(hw, WM_USER_VBYTE, rows, lines));
-						}
-						else {
-							ret = static_cast<int>(SendMessage(hw, WM_USER_CHGS, rows, lines));
-						}
-						break;
-					}
-					default:
-						break;
-				}
-				if (ret >= 0) {
-					if (m_Table.mode & TABLE_FASTSEL) {
-						RedrawWindow(hw, nullptr, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-					}
-					else {
-						InvalidateRect(hw, nullptr, false);
-					}
-				}
-				return 1;
-			}
+			return 1;
 		}
-		case WM_USER_CHGS:
-		{
-			if (lp == 0x7FFFFFFF) {
-				if (bottomRow <= 0) {
-					selRow = static_cast<int>(m_Table.data.n - 1);
-				}
-				else {
-					selRow = 0;
-				}
-			}
-			else if (lp == 0x7FFFFFFE) {
-				if (bottomRow <= 0) {
-					selRow = 0;
-				}
-				else {
-					selRow = static_cast<int>(m_Table.data.n - 1);
-				}
-			}
-			else {
-				selRow = static_cast<int>(lp + m_Table.data.selected);
-			}
-			if (selRow >= m_Table.data.n) {
+	}
+	case WM_USER_CHGS:
+	{
+		if (lp == 0x7FFFFFFF) {
+			if (bottomRow <= 0) {
 				selRow = static_cast<int>(m_Table.data.n - 1);
 			}
-			if (selRow < 0)
-				selRow = 0;
-			if (selRow == m_Table.data.selected)
-				return -1;
-			auto item = Getsortedbyselection(selRow);
-			ulong addr = GetSeladdr(item);
-
-			m_Table.data.selected = selRow;
-			if (addr) {
-				m_Table.data.seladdr = addr;
-			}
-			int offset = static_cast<int>(_page + m_Table.offset);
-			if (selRow >= offset + wp) {
-				offset = static_cast<int>(selRow - wp + 1);
-			}
-			if (selRow < offset)
-				offset = selRow;
-			if (offset > (signed int)(m_Table.data.n - wp)) {
-				offset = static_cast<int>(m_Table.data.n - wp);
-			}
-			if (offset < 0)
-				offset = 0;
-			m_Table.offset = offset;
-			if (offset) {
-				return MulDiv(offset, 0x4000, static_cast<int>(m_Table.data.n - wp));
-			}
 			else {
-				return 0;
+				selRow = 0;
 			}
 		}
+		else if (lp == 0x7FFFFFFE) {
+			if (bottomRow <= 0) {
+				selRow = 0;
+			}
+			else {
+				selRow = static_cast<int>(m_Table.data.n - 1);
+			}
+		}
+		else {
+			selRow = static_cast<int>(lp + m_Table.data.selected);
+		}
+		if (selRow >= m_Table.data.n) {
+			selRow = static_cast<int>(m_Table.data.n - 1);
+		}
+		if (selRow < 0)
+			selRow = 0;
+		if (selRow == m_Table.data.selected)
+			return -1;
+		auto item = Getsortedbyselection(selRow);
+		ulong addr = GetSeladdr(item);
+
+		m_Table.data.selected = selRow;
+		if (addr) {
+			m_Table.data.seladdr = addr;
+		}
+		int offset = static_cast<int>(_page + m_Table.offset);
+		if (selRow >= offset + wp) {
+			offset = static_cast<int>(selRow - wp + 1);
+		}
+		if (selRow < offset)
+			offset = selRow;
+		if (offset > (signed int)(m_Table.data.n - wp)) {
+			offset = static_cast<int>(m_Table.data.n - wp);
+		}
+		if (offset < 0)
+			offset = 0;
+		m_Table.offset = offset;
+		if (offset) {
+			return MulDiv(offset, 0x4000, static_cast<int>(m_Table.data.n - wp));
+		}
+		else {
+			return 0;
+		}
+	}
 	}
 	return 1;
 }

@@ -412,7 +412,7 @@ int send(HANDLE socket, const char* buf, int len, int flags) {
 	}
 }
 
-int sendto(HANDLE socket, const char* buf, int len, int flags, 
+int sendto(HANDLE socket, const char* buf, int len, int flags,
 	const struct sockaddr* addr, int addrlen) {
 	PSOCKET s = (PSOCKET)(-(INT_PTR)socket);
 	const sockaddr_in* remoteAddr = (const sockaddr_in*)addr;
@@ -461,7 +461,7 @@ int shutdown(HANDLE socket, int how) {
 
 HANDLE socket(int af, int type, int protocol) {
 	PSOCKET s;
-	
+
 	if (af != AF_INET) {
 		return LongToHandle(STATUS_INVALID_PARAMETER);
 	}

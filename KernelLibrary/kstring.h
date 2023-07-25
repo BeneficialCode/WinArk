@@ -1,10 +1,10 @@
 #pragma once
 
 
-template<ULONG Tag,POOL_TYPE PoolType = PagedPool>
+template<ULONG Tag, POOL_TYPE PoolType = PagedPool>
 class kstring final {
 public:
-	explicit kstring(const wchar_t* str=nullptr):kstring(str,0){ }
+	explicit kstring(const wchar_t* str = nullptr) :kstring(str, 0) { }
 	kstring(const wchar_t* str, ULONG count) {
 		if (str) {
 			m_Len = count == 0 ? static_cast<ULONG>(wcslen(str)) : count;
@@ -138,7 +138,7 @@ public:
 		auto newAlloc = false;
 		m_Len += len;
 		if (m_Len + 1 > m_Capacity) {
-			newBuffer = Allocate(m_Capacity = m_Len+8,m_str);
+			newBuffer = Allocate(m_Capacity = m_Len + 8, m_str);
 			newAlloc = true;
 		}
 		::wcsncat_s(newBuffer, m_Capacity, str, len);

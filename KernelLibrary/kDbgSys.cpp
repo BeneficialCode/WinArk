@@ -22,7 +22,7 @@ NewNtCreateDebugObject(
 	_In_ ACCESS_MASK DesiredAccess,
 	_In_ POBJECT_ATTRIBUTES ObjectAttributes,
 	_In_ ULONG Flags
-) 
+)
 /*++
 
 Routine Description:
@@ -252,16 +252,16 @@ VOID DbgkpFreeDebugEvent(
 	NTSTATUS status;
 
 	switch (DebugEvent->ApiMsg.ApiNumber) {
-		case DbgKmCreateProcessApi:
-			if (DebugEvent->ApiMsg.u.CreateProcess.FileHandle != nullptr) {
-				status = ObCloseHandle(DebugEvent->ApiMsg.u.CreateProcess.FileHandle, KernelMode);
-			}
-			break;
-		case DbgKmCreateThreadApi:
-			if (DebugEvent->ApiMsg.u.LoadDll.FileHandle != nullptr) {
-				status = ObCloseHandle(DebugEvent->ApiMsg.u.LoadDll.FileHandle, KernelMode);
-			}
-			break;
+	case DbgKmCreateProcessApi:
+		if (DebugEvent->ApiMsg.u.CreateProcess.FileHandle != nullptr) {
+			status = ObCloseHandle(DebugEvent->ApiMsg.u.CreateProcess.FileHandle, KernelMode);
+		}
+		break;
+	case DbgKmCreateThreadApi:
+		if (DebugEvent->ApiMsg.u.LoadDll.FileHandle != nullptr) {
+			status = ObCloseHandle(DebugEvent->ApiMsg.u.LoadDll.FileHandle, KernelMode);
+		}
+		break;
 	}
 	ObDereferenceObject(DebugEvent->Process);
 	ObDereferenceObject(DebugEvent->Thread);
@@ -270,11 +270,11 @@ VOID DbgkpFreeDebugEvent(
 
 VOID DbgkpMarkProcessPeb(
 	_In_ PEPROCESS Process
-) 
+)
 /*++
 
 Routine Description:
-	
+
 	This routine writes the debug variable in the PEB
 
 Arguments:
@@ -284,14 +284,14 @@ Return Value:
 
 	None.
 
---*/ 
+--*/
 {
 	KAPC_STATE ApcState;
 
 	//
 	// Acquire process rundown protection as we are about to look at the processes address space
 	// 
-	
+
 	if (ExAcquireRundownProtection(kDbgUtil::GetProcessRundownProtect(Process))) {
 		PPEB Peb = kDbgUtil::GetProcessPeb(Process);
 		if (Peb != nullptr) {
@@ -316,7 +316,7 @@ Return Value:
 			ExReleaseFastMutex(g_pDbgkpProcessDebugPortMutex);
 			KeUnstackDetachProcess(&ApcState);
 		}
-		
+
 		ExReleaseRundownProtection(kDbgUtil::GetProcessRundownProtect(Process));
 	}
 }
@@ -539,7 +539,7 @@ VOID DbgkSendSystemDllMessages(
 	PETHREAD Thread,
 	PDEBUG_OBJECT DebugObject,
 	PDBGKM_APIMSG ApiMsg
-) 
+)
 {
 	NTSTATUS status;
 	PDBGKM_LOAD_DLL LoadDll;
@@ -558,7 +558,7 @@ VOID DbgkSendSystemDllMessages(
 		Thread = KeGetCurrentThread();
 		Process = kDbgUtil::GetThreadApcState(Thread)->Process;
 	}
-	
+
 	LoadDll = &ApiMsg->u.LoadDll;
 
 	for (int i = 0; i < 2; i++) {
@@ -589,8 +589,8 @@ VOID DbgkSendSystemDllMessages(
 			else {
 				Teb = (PTEB)PsGetCurrentThreadTeb();
 				if (Teb) {
-					RtlStringCbCopyW(Teb->StaticUnicodeBuffer, 
-						sizeof(Teb->StaticUnicodeBuffer), 
+					RtlStringCbCopyW(Teb->StaticUnicodeBuffer,
+						sizeof(Teb->StaticUnicodeBuffer),
 						SystemDllInfo->DllName);
 					PWCHAR* pArbitraryUserPointer = (PWCHAR*)Teb->NtTib.ArbitraryUserPointer;
 					*pArbitraryUserPointer = Teb->StaticUnicodeBuffer;
@@ -842,13 +842,13 @@ DbgkpPostModuleMessages(
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread,
 	_In_ PDEBUG_OBJECT DebugObject)
-/*++
+	/*++
 
-Routine Description:
+	Routine Description:
 
-	This routine posts the module load messages when we debug an active process.
+		This routine posts the module load messages when we debug an active process.
 
---*/
+	--*/
 {
 	PPEB Peb = kDbgUtil::GetProcessPeb(Process);
 	PPEB_LDR_DATA Ldr = nullptr;
@@ -1035,7 +1035,7 @@ VOID NewDbgkMapViewOfSection(
 	_In_ PEPROCESS Process,
 	_In_ PVOID SectionObject,
 	_In_ PVOID BaseAddress
-) 
+)
 /*++
 
 Routine Description:
@@ -1046,7 +1046,7 @@ Routine Description:
 Arguments:
 	SectionObject - Supplies a pointer to the section mapped by the process.
 
-	BaseAddress - Supplies the base address of where the section is 
+	BaseAddress - Supplies the base address of where the section is
 	mapped in the current process address space.
 --*/
 {
@@ -1061,7 +1061,7 @@ Arguments:
 	CurrentProcess = PsGetCurrentProcess();
 	CurrentThread = PsGetCurrentThread();
 
-	if (ExGetPreviousMode() == KernelMode){
+	if (ExGetPreviousMode() == KernelMode) {
 		return;
 	}
 
@@ -1077,7 +1077,7 @@ Arguments:
 	if (!Port) {
 		return;
 	}
-	
+
 	LoadDllArgs = &ApiMsg.u.LoadDll;
 	LoadDllArgs->FileHandle = kDbgUtil::g_pDbgkpSectionToFileHandle(SectionObject);
 	LoadDllArgs->BaseOfDll = BaseAddress;
@@ -1124,7 +1124,7 @@ VOID NewDbgkUnMapViewOfSection(
 	unmpas a view of an image section. If the process has an associated
 	debug port, then an "unmap view of section" message is sent.
 
- --*/ 
+ --*/
 {
 	PVOID Port;
 	DBGKM_APIMSG ApiMsg;
@@ -1177,14 +1177,14 @@ Routine Description:
 	all other threads in the process are suspended.
 
 Arguments:
-	
+
 	Thread - New thread just being started.
 
 Return Value:
 
 	None.
 
- --*/ 
+ --*/
 {
 	PVOID Port;
 	DBGKM_APIMSG m;
@@ -1253,14 +1253,14 @@ Return Value:
 		ImageInfoEx.ImageInfo.ImageSelector = 0;
 		ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
-		
+
 
 		PsReferenceProcessFilePointer((PEPROCESS)Process, &FileObject);
 		status = SeLocateProcessImageName((PEPROCESS)Process, &ImageName);
 		if (!NT_SUCCESS(status)) {
 			ImageName = nullptr;
 		}
-		
+
 		PsCallImageNotifyRoutines(ImageName, PsGetProcessId(Process), &ImageInfoEx, FileObject);
 		if (ImageName) {
 			//因为在SeLocateProcessImageName中为ImageName申请了内存，所以要在此处释放掉
@@ -1302,9 +1302,9 @@ Return Value:
 				ImageInfoEx.ImageInfo.ImageSelector = 0;
 				ImageInfoEx.ImageInfo.ImageSectionNumber = 0;
 
-				
+
 				PPS_SYSTEM_DLL sysDll = CONTAINING_RECORD(info, PS_SYSTEM_DLL, SystemDllInfo);
-				
+
 				SectionObject = kDbgUtil::g_pObFastReferenceObject(&sysDll->SectionObjectFastRef);
 				if (SectionObject == nullptr) {
 					KeEnterCriticalRegion();
@@ -1313,7 +1313,7 @@ Return Value:
 					ExReleasePushLockShared((PEX_PUSH_LOCK_S)&sysDll->PushLock);
 					KeLeaveCriticalRegion();
 				}
-				
+
 				PVOID SectionControlArea = kDbgUtil::g_pMiSectionControlArea(SectionObject);
 				FileObject = kDbgUtil::g_pMiReferenceControlAreaFile(SectionControlArea);
 				if (FileObject != nullptr) {
@@ -1323,7 +1323,7 @@ Return Value:
 					PsGetProcessId(Process),
 					&ImageInfoEx,
 					FileObject);
-				if(FileObject!=nullptr)
+				if (FileObject != nullptr)
 					ObDereferenceObject(FileObject);
 			}
 		}
@@ -1579,7 +1579,7 @@ Return Value:
 			if (PreviousMode != KernelMode) {
 				ProbeForReadSmallStructure(Timeout, sizeof(*Timeout), sizeof(UCHAR));
 			}
-			
+
 			KeQuerySystemTime(&StartTime);
 		}
 		if (PreviousMode != KernelMode) {
@@ -1626,7 +1626,7 @@ Return Value:
 		//
 		// If the object is delete pending then return an error.
 		//
-		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING)==0) {
+		if ((DebugObject->Flags & DEBUG_OBJECT_DELETE_PENDING) == 0) {
 
 			for (Entry = DebugObject->EventList.Flink;
 				Entry != &DebugObject->EventList;
@@ -1738,7 +1738,7 @@ NTSTATUS NewNtDebugContinue(
 	_In_ HANDLE DebugObjectHandle,
 	_In_ PCLIENT_ID AppClientId,
 	_In_ NTSTATUS ContinueStatus
-) 
+)
 /*++
 
 Routine Description:
@@ -1777,14 +1777,14 @@ Return Value:
 
 	switch (ContinueStatus)
 	{
-		case DBG_EXCEPTION_HANDLED:
-		case DBG_CONTINUE:
-		case DBG_TERMINATE_PROCESS:
-		case DBG_TERMINATE_THREAD:
-		case DBG_EXCEPTION_NOT_HANDLED:
-			break;
-		default:
-			return STATUS_INVALID_PARAMETER;
+	case DBG_EXCEPTION_HANDLED:
+	case DBG_CONTINUE:
+	case DBG_TERMINATE_PROCESS:
+	case DBG_TERMINATE_THREAD:
+	case DBG_EXCEPTION_NOT_HANDLED:
+		break;
+	default:
+		return STATUS_INVALID_PARAMETER;
 	}
 
 	status = ObReferenceObjectByHandle(DebugObjectHandle,
@@ -1851,7 +1851,7 @@ Return Value:
 NTSTATUS NewNtRemoveProcessDebug(
 	_In_ HANDLE ProcessHandle,
 	_In_ HANDLE DebugObjectHandle
-) 
+)
 /*++
 Routine Description:
 
@@ -2012,11 +2012,11 @@ ExFastRefAddAdditionalReferenceCounts(
 
 VOID NewDbgkExitThread(
 	NTSTATUS ExitStatus
-) 
+)
 /*++
 Routine Description:
-	
-	This function is called when a new thread terminates. At this 
+
+	This function is called when a new thread terminates. At this
 	point, the thread will no longer execute in user-mode. No other
 	exit processing has occured.
 
@@ -2043,7 +2043,7 @@ Return Value:
 	Process = PsGetCurrentProcess();
 
 	PULONG pCrossThreadFlags = kDbgUtil::GetThreadCrossThreadFlags(CurrentThread);
-	
+
 	if (*pCrossThreadFlags & PS_CROSS_THREAD_FLAGS_HIDEFROMDBG) {
 		Port = nullptr;
 	}
@@ -2082,16 +2082,16 @@ VOID NewDbgkExitProcess(
 Routine Description:
 
 	This function is called when a process terminates. The address
-    space of the process is still intact, but no threads exist in
-    the process.
+	space of the process is still intact, but no threads exist in
+	the process.
 
 Arguments:
 
-    ExitStatus - Supplies the ExitStatus of the exiting process.
+	ExitStatus - Supplies the ExitStatus of the exiting process.
 
 Return Value:
 
-    None.
+	None.
 --*/
 {
 	DBGKM_APIMSG ApiMsg;
@@ -2230,7 +2230,7 @@ Return Value:
 	if (LpcPort) {
 		status = kDbgUtil::g_pDbgkpSendApiMessageLpc(&m, ExceptionPort, DebugException);
 	}
-	else{
+	else {
 		status = DbgkpSendApiMessage(DebugException, &m);
 	}
 
@@ -2241,7 +2241,7 @@ Return Value:
 	//
 
 	if (!NT_SUCCESS(status) ||
-		(DebugException) && 
+		(DebugException) &&
 		(m.ReturnedStatus == DBG_EXCEPTION_NOT_HANDLED || !NT_SUCCESS(m.ReturnedStatus))
 		) {
 		if (SecondChance) {
@@ -2262,16 +2262,16 @@ NTSTATUS NewDbgkClearProcessDebugObject(
 /*++
 
 Routine Description:
-	
+
 	Remove a debug port from a process
 
 Arguments:
-	
+
 	Process - Process to be debugged
 	SourceDebugObject - Debug object to detach
 
 Return Value:
-	
+
 	NTSTATUS - Status of call.
 
 --*/
@@ -2310,7 +2310,7 @@ Return Value:
 		InitializeListHead(&TempList);
 
 		ExAcquireFastMutex(&DebugObject->Mutex);
-		for (Entry = DebugObject->EventList.Flink; 
+		for (Entry = DebugObject->EventList.Flink;
 			Entry != &DebugObject->EventList;
 			) {
 
@@ -2346,7 +2346,7 @@ NTSTATUS NewNtSetInformationDebugObject(
 	_In_ PVOID DebugInformation,
 	_In_ ULONG DebugInformationLength,
 	_Out_opt_ PULONG ReturnLength
-) 
+)
 /*++
 
 Routine Description:
@@ -2370,7 +2370,7 @@ Return Value:
 
 	NTSTATUS - Status of call
 
---*/ 
+--*/
 {
 	KPROCESSOR_MODE PreviousMode;
 	ULONG Flags;
@@ -2393,22 +2393,22 @@ Return Value:
 			*ReturnLength = 0;
 		}
 
-switch (DebugObjectInformationClass) {
-	case DebugObjectFlagsInformation:
-	{
-		if (DebugInformationLength != sizeof(ULONG)) {
-			if (ARGUMENT_PRESENT(ReturnLength)) {
-				*ReturnLength = sizeof(ULONG);
+		switch (DebugObjectInformationClass) {
+		case DebugObjectFlagsInformation:
+		{
+			if (DebugInformationLength != sizeof(ULONG)) {
+				if (ARGUMENT_PRESENT(ReturnLength)) {
+					*ReturnLength = sizeof(ULONG);
+				}
+				return STATUS_INFO_LENGTH_MISMATCH;
 			}
-			return STATUS_INFO_LENGTH_MISMATCH;
-		}
-		Flags = *(PULONG)DebugInformation;
+			Flags = *(PULONG)DebugInformation;
 
-		break;
-	}
-	default:
-		return STATUS_INVALID_PARAMETER;
-}
+			break;
+		}
+		default:
+			return STATUS_INVALID_PARAMETER;
+		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {
 		return GetExceptionCode();
@@ -2416,31 +2416,31 @@ switch (DebugObjectInformationClass) {
 
 	switch (DebugObjectInformationClass)
 	{
-		case DebugObjectFlagsInformation:
-		{
-			if (Flags & ~DEBUG_KILL_ON_CLOSE) {
-				return STATUS_INVALID_PARAMETER;
-			}
-			status = ObReferenceObjectByHandle(DebugObjectHandle,
-				DEBUG_OBJECT_SET_INFORMATION,
-				*DbgkDebugObjectType,
-				PreviousMode,
-				(PVOID*)&DebugObject,
-				nullptr);
-			if (!NT_SUCCESS(status)) {
-				return status;
-			}
-			ExAcquireFastMutex(&DebugObject->Mutex);
-
-			if (Flags & DEBUG_KILL_ON_CLOSE) {
-				DebugObject->Flags |= DEBUG_OBJECT_KILL_ON_CLOSE;
-			}
-			else {
-				DebugObject->Flags &= ~DEBUG_OBJECT_KILL_ON_CLOSE;
-			}
-			ExReleaseFastMutex(&DebugObject->Mutex);
-			ObDereferenceObject(DebugObject);
+	case DebugObjectFlagsInformation:
+	{
+		if (Flags & ~DEBUG_KILL_ON_CLOSE) {
+			return STATUS_INVALID_PARAMETER;
 		}
+		status = ObReferenceObjectByHandle(DebugObjectHandle,
+			DEBUG_OBJECT_SET_INFORMATION,
+			*DbgkDebugObjectType,
+			PreviousMode,
+			(PVOID*)&DebugObject,
+			nullptr);
+		if (!NT_SUCCESS(status)) {
+			return status;
+		}
+		ExAcquireFastMutex(&DebugObject->Mutex);
+
+		if (Flags & DEBUG_KILL_ON_CLOSE) {
+			DebugObject->Flags |= DEBUG_OBJECT_KILL_ON_CLOSE;
+		}
+		else {
+			DebugObject->Flags &= ~DEBUG_OBJECT_KILL_ON_CLOSE;
+		}
+		ExReleaseFastMutex(&DebugObject->Mutex);
+		ObDereferenceObject(DebugObject);
+	}
 	}
 
 	return STATUS_SUCCESS;
@@ -2476,7 +2476,7 @@ Arguments:
 		ExAcquireFastMutex(g_pDbgkpProcessDebugPortMutex);
 		DebugObject = *pSourceDebugPort;
 		PULONG pFlags = kDbgUtil::GetProcessFlags(SourceProcess);
-		if (DebugObject != nullptr && (*pFlags & PS_PROCESS_FLAGS_NO_DEBUG_INHERIT) == 0){
+		if (DebugObject != nullptr && (*pFlags & PS_PROCESS_FLAGS_NO_DEBUG_INHERIT) == 0) {
 			//
 			// We must not propagate a debug port thats got no handles left.
 			//
@@ -2508,11 +2508,11 @@ VOID DbgkpCloseObject(
 /*++
 
 Routine Description:
-	
+
 	Called by the object manager when handle is closed to the object.
 
 Arguments:
-	
+
 	Process - Process doing the close
 	Object - Debug object being deleted
 	GrantedAccess - Access granted for this handle
@@ -2520,7 +2520,7 @@ Arguments:
 	SystemHandleCount - Current handle count for this object
 
 Return Value:
-	
+
 	None.
 
 --*/
@@ -2564,7 +2564,7 @@ Return Value:
 	// 
 	// 枚举系统内的所有进程，如果发现某个进程的DebugObject字段的值与要关闭的对象相同，则将其置为0
 	for (Process = kDbgUtil::g_pPsGetNextProcess(nullptr); Process != nullptr; Process = kDbgUtil::g_pPsGetNextProcess(Process)) {
-		
+
 		PDEBUG_OBJECT* pDebugPort = kDbgUtil::GetProcessDebugPort(Process);
 		if (*pDebugPort == DebugObject) {
 			Deref = FALSE;

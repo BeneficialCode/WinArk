@@ -100,33 +100,33 @@ CIoTimerTable::CIoTimerTable(BarInfo& bars, TableInfo& table)
 int CIoTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<IoTimerInfo>& info, int column) {
 	// DeviceObject,Type,TimerFlag,TimerRoutine, CompanyName, DriverPath
 	switch (static_cast<Column>(column)) {
-		case Column::CompanyName:
-		{
-			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->TimerRoutine);
-			s = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path)).c_str();
-			break;
-		}
+	case Column::CompanyName:
+	{
+		std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->TimerRoutine);
+		s = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path)).c_str();
+		break;
+	}
 
-		case Column::DeviceObject:
-			s.Format(L"0x%p", info->DeviceObject);
-			break;
+	case Column::DeviceObject:
+		s.Format(L"0x%p", info->DeviceObject);
+		break;
 
-		case Column::Type:
-			s.Format(L"%u", info->Type);
-			break;
+	case Column::Type:
+		s.Format(L"%u", info->Type);
+		break;
 
-		case Column::TimerRoutine:
-			s.Format(L"0x%p", info->TimerRoutine);
+	case Column::TimerRoutine:
+		s.Format(L"0x%p", info->TimerRoutine);
 
-			break;
+		break;
 
-		case Column::DriverPath:
-			s = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->TimerRoutine).c_str();
-			break;
+	case Column::DriverPath:
+		s = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->TimerRoutine).c_str();
+		break;
 
-		case Column::TimerFlag:
-			s.Format(L"%u", info->TimerFlag);
-			break;
+	case Column::TimerFlag:
+		s.Format(L"%u", info->TimerFlag);
+		break;
 	}
 	return s.GetLength();
 }
@@ -137,14 +137,14 @@ void CIoTimerTable::Refresh() {
 	m_Table.data.info.clear();
 	IoTimerData data;
 
-	
+
 	PULONG pCount = (PULONG)SymbolHelper::GetKernelSymbolAddressFromName("IopTimerCount");
 	ULONG count = DriverHelper::GetIoTimerCount(&pCount);
 	if (count != 0) {
 		data.pIopTimerLock = (void*)SymbolHelper::GetKernelSymbolAddressFromName("IopTimerLock");
 		data.pIopTimerQueueHead = (void*)SymbolHelper::GetKernelSymbolAddressFromName("IopTimerQueueHead");
 		data.pIopTimerCount = pCount;
-		SIZE_T size = (count+10) * sizeof(IoTimerInfo);
+		SIZE_T size = (count + 10) * sizeof(IoTimerInfo);
 		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
 		IoTimerInfo* p = (IoTimerInfo*)buffer.get();
 		if (p != nullptr) {
@@ -175,14 +175,14 @@ LRESULT CIoTimerTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 bool CIoTimerTable::CompareItems(const std::shared_ptr<IoTimerInfo>& p1, const std::shared_ptr<IoTimerInfo>& p2, int col, bool asc) {
 	switch (static_cast<Column>(col)) {
-		case Column::CompanyName:
-		{
-			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p1->TimerRoutine);
-			std::wstring name1 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
-			path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p2->TimerRoutine);
-			std::wstring name2 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
-			return SortHelper::SortStrings(name1, name2, asc);
-		}
+	case Column::CompanyName:
+	{
+		std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p1->TimerRoutine);
+		std::wstring name1 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+		path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p2->TimerRoutine);
+		std::wstring name2 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+		return SortHelper::SortStrings(name1, name2, asc);
+	}
 	}
 	return false;
 }

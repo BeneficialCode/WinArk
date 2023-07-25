@@ -3,7 +3,7 @@
 #include "AutoLock.h"
 #include "FastMutex.h"
 
-template<typename T,typename TLock = FastMutex>
+template<typename T, typename TLock = FastMutex>
 class LinkedList {
 public:
 	void Init() {

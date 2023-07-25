@@ -29,7 +29,7 @@ LRESULT CKernelRoutineDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	}
 
 	wchar_t* name = reinterpret_cast<wchar_t*>(lParam);
-	
+
 	m_DispatchRoutineTable = new CDispatchRoutinesTable(info, table, name);
 	RECT rect;
 	GetClientRect(&rect);

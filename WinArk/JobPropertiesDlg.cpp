@@ -14,9 +14,9 @@ CString CJobPropertiesDlg::GetColumnText(HWND h, int row, int col) const {
 	CString text;
 	if (h == m_ProcList) {
 		auto& p = m_Processes[row];
-		switch (col){
+		switch (col) {
 		case 0: return p.Name.c_str();
-		case 1: 
+		case 1:
 			text.Format(L"%u (0x%X)", p.Id, p.Id);
 			break;
 		}
@@ -91,7 +91,7 @@ void CJobPropertiesDlg::UpdateJob() {
 			if (flags & JOB_OBJECT_LIMIT_AFFINITY)
 				AddLimit(L"Affinity: ", info.BasicLimitInformation.Affinity);
 			if (flags & JOB_OBJECT_LIMIT_JOB_MEMORY)
-				AddLimit(L"Job Memory", (std::to_wstring(info.JobMemoryLimit>>20)+L" MB").c_str());
+				AddLimit(L"Job Memory", (std::to_wstring(info.JobMemoryLimit >> 20) + L" MB").c_str());
 			if (flags & JOB_OBJECT_LIMIT_PROCESS_MEMORY)
 				AddLimit(L"Process Memory", std::to_wstring(info.ProcessMemoryLimit >> 20) + L" MB");
 			if (flags & JOB_OBJECT_LIMIT_WORKINGSET)

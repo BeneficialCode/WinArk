@@ -4,9 +4,9 @@
 class CGotoKeyDlg :
 	public CDialogImpl<CGotoKeyDlg>,
 	public CDynamicDialogLayout<CGotoKeyDlg>,
-	public CVirtualListView<CGotoKeyDlg>{
+	public CVirtualListView<CGotoKeyDlg> {
 public:
-	enum {IDD= IDD_GOTOKEY};
+	enum { IDD = IDD_GOTOKEY };
 
 	const CString& GetKey() const;
 	void SetKey(const CString& key);
@@ -17,7 +17,7 @@ public:
 	BOOL OnDoubleClickList(HWND, int row, int, const POINT&);
 
 	BEGIN_MSG_MAP(CGotoKeyDlg)
-		NOTIFY_HANDLER(IDC_KEY_LIST,LVN_ITEMCHANGED,OnKeyItemChanged)
+		NOTIFY_HANDLER(IDC_KEY_LIST, LVN_ITEMCHANGED, OnKeyItemChanged)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)

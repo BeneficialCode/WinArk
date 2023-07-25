@@ -99,26 +99,26 @@ int CPiDDBCacheTable::ParseTableEntry(CString& s, char& mask, int& select, PiDDB
 	// Name,LoadStatus,TimeDateStamp
 	switch (column)
 	{
-		case 0:
-			s = info.DriverName.c_str();
-			break;
+	case 0:
+		s = info.DriverName.c_str();
+		break;
 
-		case 1:
-			s = RegHelpers::GetErrorText(info.LoadStatus);
-			break;
+	case 1:
+		s = RegHelpers::GetErrorText(info.LoadStatus);
+		break;
 
-		case 2:
-		{
-			// https://devblogs.microsoft.com/oldnewthing/20180103-00/?p=97705
-			time_t t = (time_t)info.TimeDateStamp;
-			CString time = CTime(t).Format(L"%A, %B %d, %Y");
-			CString stamp;
-			stamp.Format(L"0x%X ", info.TimeDateStamp);
-			s = stamp + time;
-			break;
-		}
-		default:
-			break;
+	case 2:
+	{
+		// https://devblogs.microsoft.com/oldnewthing/20180103-00/?p=97705
+		time_t t = (time_t)info.TimeDateStamp;
+		CString time = CTime(t).Format(L"%A, %B %d, %Y");
+		CString stamp;
+		stamp.Format(L"0x%X ", info.TimeDateStamp);
+		s = stamp + time;
+		break;
+	}
+	default:
+		break;
 	}
 	return s.GetLength();
 }
@@ -126,11 +126,11 @@ int CPiDDBCacheTable::ParseTableEntry(CString& s, char& mask, int& select, PiDDB
 bool CPiDDBCacheTable::CompareItems(const PiDDBCacheInfo& s1, const PiDDBCacheInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
-			return SortHelper::SortStrings(s1.DriverName, s2.DriverName, asc);
-			break;
-		default:
-			break;
+	case 0:
+		return SortHelper::SortStrings(s1.DriverName, s2.DriverName, asc);
+		break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -264,7 +264,7 @@ void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
 			findIndex = index;
 			break;
 		}
-		
+
 		text.Format(L"0x%X ", item.TimeDateStamp);
 		if (ignoreCase)
 			text.MakeLower();
@@ -285,7 +285,7 @@ void CPiDDBCacheTable::DoFind(const CString& text, DWORD flags) {
 	}
 	int rows = (client.bottom - client.top) / g_AvHighFont;
 	if (findIndex >= 0) {
-		m_Table.offset = findIndex - findIndex%rows;
+		m_Table.offset = findIndex - findIndex % rows;
 		m_Table.data.selected = findIndex;
 		InvalidateRect(nullptr);
 	}

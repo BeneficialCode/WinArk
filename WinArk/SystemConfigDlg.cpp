@@ -11,7 +11,7 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
 	m_List.Attach(GetDlgItem(IDC_DEBUGGER_LIST));
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_GRIDLINES);
-	
+
 	m_List.InsertColumn(0, L"Debugger", LVCFMT_LEFT, 80);
 	CRect rect;
 	m_List.GetClientRect(&rect);
@@ -40,7 +40,7 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	SetDlgItemTextA(m_hWnd, IDC_PROCESSOR, brand.c_str());
 
 	GetFirmwareEnvironmentVariable(L"",
-		L"{00000000-0000-0000-0000-000000000000}", 
+		L"{00000000-0000-0000-0000-000000000000}",
 		nullptr, 0);
 	if (GetLastError() == ERROR_INVALID_FUNCTION) {
 		SetDlgItemText(IDC_BOOT_MODE, L"Legacy");

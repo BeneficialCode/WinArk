@@ -25,12 +25,12 @@ public:
 	void AddEvent(std::shared_ptr<EventData> data);
 	void StartMonitoring(TraceManager& tm, bool start);
 	CString GetColumnText(HWND, int row, int col) const;
-	int GetRowImage(HWND,int row) const;
+	int GetRowImage(HWND, int row) const;
 	PCWSTR GetColumnTextPointer(HWND, int row, int col) const;
-	bool OnRightClickList(HWND,int row, int col, POINT& pt);
-	bool OnDoubleClickList(HWND,int row, int col, POINT& pt);
+	bool OnRightClickList(HWND, int row, int col, POINT& pt);
+	bool OnDoubleClickList(HWND, int row, int col, POINT& pt);
 
-	bool IsSortable(HWND,int col) const;
+	bool IsSortable(HWND, int col) const;
 	void DoSort(const SortInfo* si);
 
 	BOOL PreTransalteMessage(MSG* pMsg);
@@ -47,17 +47,17 @@ public:
 
 	BEGIN_MSG_MAP(CEtwView)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
-		MESSAGE_HANDLER(WM_TIMER,OnTimer)
-		MESSAGE_HANDLER(WM_CREATE,OnCreate)
-		COMMAND_ID_HANDLER(ID_EVENT_CALLSTACK,OnCallStack)
-		MESSAGE_HANDLER(WM_CLOSE,OnClose)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		COMMAND_ID_HANDLER(ID_EVENT_CALLSTACK, OnCallStack)
+		MESSAGE_HANDLER(WM_CLOSE, OnClose)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		COMMAND_ID_HANDLER(ID_CONFIGURE_EVENTS,OnConfigureEvents)
-		COMMAND_ID_HANDLER(ID_MONITOR_CLEARALL,OnClear)
-		COMMAND_ID_HANDLER(ID_CONFIGURE_FILTERS,OnConfigFilters)
-		COMMAND_ID_HANDLER(ID_EVENT_PROPERTIES,OnEventProperties)
-		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL,OnAutoScroll)
-		COMMAND_ID_HANDLER(ID_SEARCH_FINDNEXT,OnFindNext)
+		COMMAND_ID_HANDLER(ID_CONFIGURE_EVENTS, OnConfigureEvents)
+		COMMAND_ID_HANDLER(ID_MONITOR_CLEARALL, OnClear)
+		COMMAND_ID_HANDLER(ID_CONFIGURE_FILTERS, OnConfigFilters)
+		COMMAND_ID_HANDLER(ID_EVENT_PROPERTIES, OnEventProperties)
+		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL, OnAutoScroll)
+		COMMAND_ID_HANDLER(ID_SEARCH_FINDNEXT, OnFindNext)
 		CHAIN_MSG_MAP(CVirtualListView<CEtwView>)
 		CHAIN_MSG_MAP(CCustomDraw<CEtwView>)
 		CHAIN_MSG_MAP(CViewBase<CEtwView>)
@@ -87,7 +87,7 @@ private:
 	LRESULT OnConfigFilters(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnFindNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
+
 private:
 	CListViewCtrl m_List;
 	inline static CImageList s_Images;

@@ -30,9 +30,9 @@ public:
 		NumColumns
 	};
 
-	DECLARE_WND_SUPERCLASS(nullptr,CListViewCtrl::GetWndClassName())
+	DECLARE_WND_SUPERCLASS(nullptr, CListViewCtrl::GetWndClassName())
 
-	CBigPoolView(IMainFrame* pFrame):m_pFrame(pFrame){}
+	CBigPoolView(IMainFrame* pFrame) :m_pFrame(pFrame) {}
 
 	void LoadPoolTagText();
 	void UpdateBigPools();

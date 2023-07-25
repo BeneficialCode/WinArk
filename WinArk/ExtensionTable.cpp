@@ -93,7 +93,7 @@ LRESULT CExtensionTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 }
 
 CExtensionTable::CExtensionTable(BarInfo& bars, TableInfo& table, WinExtHostInfo& info)
-	:CTable(bars, table),_info(info){
+	:CTable(bars, table), _info(info) {
 	SetTableWindowInfo(bars.nbar);
 	Refresh();
 }
@@ -101,17 +101,17 @@ CExtensionTable::CExtensionTable(BarInfo& bars, TableInfo& table, WinExtHostInfo
 int CExtensionTable::ParseTableEntry(CString& s, char& mask, int& select, ExtTableInfo& info, int column) {
 	switch (static_cast<Column>(column))
 	{
-		case Column::Address:
-			s.Format(L"0x%p", info.Routine);
-			break;
+	case Column::Address:
+		s.Format(L"0x%p", info.Routine);
+		break;
 
-		case Column::Company:
-			s = info.Company.c_str();
-			break;
+	case Column::Company:
+		s = info.Company.c_str();
+		break;
 
-		case Column::Module:
-			s = info.Module.c_str();
-			break;
+	case Column::Module:
+		s = info.Module.c_str();
+		break;
 	}
 	return s.GetLength();
 }
@@ -119,11 +119,11 @@ int CExtensionTable::ParseTableEntry(CString& s, char& mask, int& select, ExtTab
 bool CExtensionTable::CompareItems(const ExtTableInfo& s1, const ExtTableInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
+	case 0:
 
-			break;
-		default:
-			break;
+		break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -133,7 +133,7 @@ bool CExtensionTable::CompareItems(const ExtTableInfo& s1, const ExtTableInfo& s
 void CExtensionTable::Refresh() {
 	m_Table.data.n = 0;
 	m_Table.data.info.clear();
-	
+
 	ExtHostData data;
 	data.ExpFindHost = (void*)SymbolHelper::GetKernelSymbolAddressFromName("ExpFindHost");
 	data.Id = _info.Id;

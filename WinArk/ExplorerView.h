@@ -2,17 +2,17 @@
 #include "resource.h"
 #include "ShellMgr.h"
 
-class CExplorerView : 
+class CExplorerView :
 	public CWindowImpl<CExplorerView> {
 public:
 
 	DECLARE_WND_CLASS(L"WtlExplorerWndClass")
 	const int ID_DELETE_FILE = 32444;
 	BEGIN_MSG_MAP(CExplorerView)
-		MESSAGE_HANDLER(WM_CREATE,OnCreate)
-		MESSAGE_HANDLER(WM_SIZE,OnSize)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
 
-		NOTIFY_CODE_HANDLER(NM_RCLICK,OnNMRClick)
+		NOTIFY_CODE_HANDLER(NM_RCLICK, OnNMRClick)
 
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTVSelChanged)
 		NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnTVItemExpanding)
@@ -20,13 +20,13 @@ public:
 
 		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnLVGetDispInfo)
 		NOTIFY_CODE_HANDLER(LVN_DELETEITEM, OnLVDeleteItem)
-		COMMAND_ID_HANDLER(ID_DELETE_FILE,OnForceDeleteFile)
+		COMMAND_ID_HANDLER(ID_DELETE_FILE, OnForceDeleteFile)
 		DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	
+
 	LRESULT OnNMRClick(int, LPNMHDR pnmh, BOOL&);
 
 

@@ -13,9 +13,9 @@ CString CWindowsView::GetColumnText(HWND, int row, int col) const {
 	}
 
 	CWindow win(h);
-	
+
 	CString text;
-	
+
 	DataItemType type = GetColumnManager(m_List)->GetColumnTag<DataItemType>(col);
 	switch (type)
 	{
@@ -31,7 +31,7 @@ CString CWindowsView::GetColumnText(HWND, int row, int col) const {
 		break;
 
 	case DataItemType::Style:
-		text.Format(L"0x%08X",win.GetStyle());
+		text.Format(L"0x%08X", win.GetStyle());
 		break;
 
 	case DataItemType::ExtendedStyle:
@@ -62,11 +62,11 @@ CString CWindowsView::GetColumnText(HWND, int row, int col) const {
 
 	case DataItemType::ParentWindow:
 		return FormatHelper::FormatHWndOrNone(::GetAncestor(win, GA_PARENT));
-		
+
 	case DataItemType::FirstChildWindow:
 		return FormatHelper::FormatHWndOrNone(win.GetWindow(GW_CHILD));
 
-		
+
 	case DataItemType::NextWindow:
 		return FormatHelper::FormatHWndOrNone(win.GetWindow(GW_HWNDNEXT));
 
@@ -143,7 +143,7 @@ void CWindowsView::DoSort(const SortInfo* si) {
 		return;
 
 	std::sort(m_Items.begin(), m_Items.end(), [&](const auto& h1, const auto& h2)->bool {
-		switch (GetColumnManager(m_List)->GetColumnTag<DataItemType>(si->SortColumn)){
+		switch (GetColumnManager(m_List)->GetColumnTag<DataItemType>(si->SortColumn)) {
 		case DataItemType::ClassName:
 			return SortHelper::SortStrings(WindowHelper::GetWindowClassName(h1),
 				WindowHelper::GetWindowClassName(h2), si->SortAscending);
@@ -152,7 +152,7 @@ void CWindowsView::DoSort(const SortInfo* si) {
 		});
 }
 
-bool CWindowsView::IsSortable(HWND,int col) const {
+bool CWindowsView::IsSortable(HWND, int col) const {
 	return col == 0;
 }
 
@@ -319,31 +319,31 @@ void CWindowsView::UpdateList() {
 CString CWindowsView::GetDetails(const DataItem& item) const {
 	CString text;
 	switch (item.Type) {
-		case DataItemType::ProcessId:
-		{
-			DWORD pid = 0;
-			::GetWindowThreadProcessId(m_SelectedHwnd, &pid);
-			return ProcessHelper::GetFullProcessName(pid);
-		}
+	case DataItemType::ProcessId:
+	{
+		DWORD pid = 0;
+		::GetWindowThreadProcessId(m_SelectedHwnd, &pid);
+		return ProcessHelper::GetFullProcessName(pid);
+	}
 
-		case DataItemType::Text:
-			text.Format(L"Length: %d", m_SelectedHwnd.GetWindowTextLength());
-			break;
+	case DataItemType::Text:
+		text.Format(L"Length: %d", m_SelectedHwnd.GetWindowTextLength());
+		break;
 
-		case DataItemType::Style: return WindowHelper::WindowStyleToString(m_SelectedHwnd);
-		case DataItemType::ClassStyle: return WindowHelper::ClassStyleToString(m_SelectedHwnd);
-		case DataItemType::ExtendedStyle: return WindowHelper::WindowStyleToString(m_SelectedHwnd);
-		case DataItemType::Rectangle:
-			if (m_SelectedHwnd.IsZoomed())
-				return L"Maximized";
-			if (m_SelectedHwnd.IsIconic())
-				return L"Minimized";
-			break;
-		case DataItemType::NextWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_HWNDNEXT));
-		case DataItemType::PrevWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_HWNDPREV));
-		case DataItemType::OwnerWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_OWNER));
-		case DataItemType::ParentWindow: return GetWindowClassAndTitle(::GetAncestor(m_SelectedHwnd, GA_PARENT));
-		case DataItemType::FirstChildWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_CHILD));
+	case DataItemType::Style: return WindowHelper::WindowStyleToString(m_SelectedHwnd);
+	case DataItemType::ClassStyle: return WindowHelper::ClassStyleToString(m_SelectedHwnd);
+	case DataItemType::ExtendedStyle: return WindowHelper::WindowStyleToString(m_SelectedHwnd);
+	case DataItemType::Rectangle:
+		if (m_SelectedHwnd.IsZoomed())
+			return L"Maximized";
+		if (m_SelectedHwnd.IsIconic())
+			return L"Minimized";
+		break;
+	case DataItemType::NextWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_HWNDNEXT));
+	case DataItemType::PrevWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_HWNDPREV));
+	case DataItemType::OwnerWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_OWNER));
+	case DataItemType::ParentWindow: return GetWindowClassAndTitle(::GetAncestor(m_SelectedHwnd, GA_PARENT));
+	case DataItemType::FirstChildWindow: return GetWindowClassAndTitle(m_SelectedHwnd.GetWindow(GW_CHILD));
 	}
 	return text;
 }
@@ -355,7 +355,7 @@ CString CWindowsView::GetWindowClassAndTitle(HWND hWnd) {
 	WCHAR className[64];
 	CString text;
 	if (::GetClassName(hWnd, className, _countof(className)))
-		text.Format(L"[%s]",className);
+		text.Format(L"[%s]", className);
 	CString title;
 	CWindow(hWnd).GetWindowText(title);
 	if (!title.IsEmpty())
@@ -368,13 +368,13 @@ LRESULT CWindowsView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	m_Splitter.SetSplitterExtendedStyle(SPLIT_FLATBAR | SPLIT_PROPORTIONAL);
 	m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE);
 
-	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
-		WS_CLIPCHILDREN |WS_CLIPSIBLINGS |
+	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
+		WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
 		LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL | LVS_SHAREIMAGELISTS);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE
 		| WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_WINDOW_TREE);
 
-	
+
 
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER);

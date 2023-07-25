@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "ShellMgr.h"
 
-int CShellMgr::GetIconIndex(LPITEMIDLIST lpi, UINT flags){
+int CShellMgr::GetIconIndex(LPITEMIDLIST lpi, UINT flags) {
 	SHFILEINFO sfi = { 0 };
-	DWORD_PTR ret = ::SHGetFileInfo((LPCTSTR)lpi, 0, &sfi, 
+	DWORD_PTR ret = ::SHGetFileInfo((LPCTSTR)lpi, 0, &sfi,
 		sizeof(SHFILEINFO), flags);
 	return (ret != 0) ? sfi.iIcon : -1;
 }
@@ -12,18 +12,18 @@ void CShellMgr::GetNormalAndSelectedIcons(LPITEMIDLIST lpifq, LPTVITEM lptvitem)
 {
 	int ret = lptvitem->iImage = GetIconIndex(lpifq, SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
 	ATLASSERT(ret >= 0);
-	ret = lptvitem->iSelectedImage = GetIconIndex(lpifq, 
+	ret = lptvitem->iSelectedImage = GetIconIndex(lpifq,
 		SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_OPENICON);
 	ATLASSERT(ret >= 0);
 }
 
-LPITEMIDLIST CShellMgr::ConcatPidls(LPCITEMIDLIST pidl1, LPCITEMIDLIST pidl2){
+LPITEMIDLIST CShellMgr::ConcatPidls(LPCITEMIDLIST pidl1, LPCITEMIDLIST pidl2) {
 	UINT cb1 = 0;
 	if (pidl1 != nullptr)
 		cb1 = GetSize(pidl1) - sizeof(pidl1->mkid.cb);
 
 	UINT cb2 = GetSize(pidl2);
-	
+
 	LPITEMIDLIST pidlNew = (LPITEMIDLIST)::CoTaskMemAlloc(cb1 + cb2);
 	if (pidlNew != nullptr) {
 		if (pidl1 != nullptr)
@@ -35,10 +35,10 @@ LPITEMIDLIST CShellMgr::ConcatPidls(LPCITEMIDLIST pidl1, LPCITEMIDLIST pidl2){
 	return pidlNew;
 }
 
-BOOL CShellMgr::GetName(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi, DWORD flags, LPTSTR lpFriendlyName){
+BOOL CShellMgr::GetName(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi, DWORD flags, LPTSTR lpFriendlyName) {
 	BOOL success = TRUE;
 	STRRET str = { STRRET_CSTR };
-	
+
 	if (lpsf->GetDisplayNameOf(lpi, flags, &str) == NOERROR) {
 		// https://blog.csdn.net/allway2/article/details/123548084
 		CComHeapPtr<wchar_t> spszName;
@@ -52,13 +52,13 @@ BOOL CShellMgr::GetName(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi, DWORD flags, LPTST
 	return success;
 }
 
-LPITEMIDLIST CShellMgr::Next(LPCITEMIDLIST pidl){
+LPITEMIDLIST CShellMgr::Next(LPCITEMIDLIST pidl) {
 	LPSTR lpMem = (LPSTR)pidl;
 	lpMem += pidl->mkid.cb;
 	return (LPITEMIDLIST)lpMem;
 }
 
-UINT CShellMgr::GetSize(LPCITEMIDLIST pidl){
+UINT CShellMgr::GetSize(LPCITEMIDLIST pidl) {
 	UINT totalSize = 0;
 	if (pidl != nullptr) {
 		totalSize += sizeof(pidl->mkid.cb); // Null terminator
@@ -71,13 +71,13 @@ UINT CShellMgr::GetSize(LPCITEMIDLIST pidl){
 	return totalSize;
 }
 
-LPITEMIDLIST CShellMgr::CopyITEMID(LPITEMIDLIST lpi){
+LPITEMIDLIST CShellMgr::CopyITEMID(LPITEMIDLIST lpi) {
 	LPITEMIDLIST lpiTemp = (LPITEMIDLIST)::CoTaskMemAlloc(lpi->mkid.cb + sizeof(lpi->mkid.cb));
 	::CopyMemory(lpiTemp, lpi, lpi->mkid.cb + sizeof(lpi->mkid.cb));
 	return lpiTemp;
 }
 
-LPITEMIDLIST CShellMgr::GetFullyQualPidl(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi){
+LPITEMIDLIST CShellMgr::GetFullyQualPidl(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi) {
 	WCHAR szBuff[MAX_PATH] = { 0 };
 
 	if (!GetName(lpsf, lpi, SHGDN_FORPARSING, szBuff))
@@ -97,7 +97,7 @@ LPITEMIDLIST CShellMgr::GetFullyQualPidl(LPSHELLFOLDER lpsf, LPITEMIDLIST lpi){
 	return lpifq;
 }
 
-BOOL CShellMgr::DoContextMenu(HWND hWnd, LPSHELLFOLDER lpsfParent, LPITEMIDLIST lpi, POINT point){
+BOOL CShellMgr::DoContextMenu(HWND hWnd, LPSHELLFOLDER lpsfParent, LPITEMIDLIST lpi, POINT point) {
 	CComPtr<IContextMenu> spContextMenu;
 	HRESULT hr = lpsfParent->GetUIObjectOf(hWnd, 1,
 		(const struct _ITEMIDLIST**)&lpi, IID_IContextMenu, 0,

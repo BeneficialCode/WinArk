@@ -67,7 +67,7 @@ struct HCNOTIFY {
 class CHexControl :
 	public CBufferedPaintWindowImpl<CHexControl> {
 public:
-	DECLARE_WND_CLASS_EX(L"WTLHexControl",CS_OWNDC|CS_DBLCLKS|CS_HREDRAW|CS_VREDRAW,NULL)
+	DECLARE_WND_CLASS_EX(L"WTLHexControl", CS_OWNDC | CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW, NULL)
 
 	HWND GetHwnd() const;
 	void SetBufferManager(IBufferManager* mgr);
@@ -142,7 +142,7 @@ private:
 	LRESULT SendNotify(HCNOTIFY* notify);
 
 	void UpdateCaret();
-	void RedrawWindow(RECT* rc= nullptr);
+	void RedrawWindow(RECT* rc = nullptr);
 	void ClearSelection();
 	void CommitValue(int64_t offset, uint64_t value);
 	void ResetInput();

@@ -38,7 +38,7 @@ enum class UdtKind {
 	Unknown = 99
 };
 
-enum class SymbolTag{
+enum class SymbolTag {
 	Null,
 	Exe,
 	Compiland,
@@ -178,29 +178,29 @@ private:
 	IMAGEHLP_SYMBOL* m_Symbol;
 };
 
-class SymbolHandler final{
+class SymbolHandler final {
 public:
-	SymbolHandler(HANDLE hProcess = ::GetCurrentProcess(), PCSTR searchPath = nullptr,DWORD symOptions = 
-		SYMOPT_UNDNAME | SYMOPT_CASE_INSENSITIVE | 
-		SYMOPT_AUTO_PUBLICS | SYMOPT_INCLUDE_32BIT_MODULES | 
+	SymbolHandler(HANDLE hProcess = ::GetCurrentProcess(), PCSTR searchPath = nullptr, DWORD symOptions =
+		SYMOPT_UNDNAME | SYMOPT_CASE_INSENSITIVE |
+		SYMOPT_AUTO_PUBLICS | SYMOPT_INCLUDE_32BIT_MODULES |
 		SYMOPT_OMAP_FIND_NEAREST | SYMOPT_DEFERRED_LOADS);
 	~SymbolHandler();
 
 	HANDLE GetHandle() const;
 	ULONG64 LoadSymbolsForModule(PCSTR moduleName, DWORD64 baseAddress = 0, DWORD dllSize = 0);
-	
+
 	ULONG_PTR GetSymbolAddressFromName(PCSTR name);
 
 	std::unique_ptr<SymbolInfo> GetSymbolFromName(PCSTR name);
 	std::unique_ptr<SymbolInfo> GetSymbolFromAddress(DWORD64 address, PDWORD64 offset = nullptr);
-	
+
 	static std::unique_ptr<SymbolHandler> CreateForProcess(DWORD pid, PCSTR searchPath = nullptr);
 	/*void EnumSymbols(std::string mask = "*!*");
 	void EnumTypes(std::string mask = "*");*/
 
 	IMAGEHLP_MODULE GetModuleInfo(DWORD64 address);
 
-	DWORD GetStructMemberOffset(std::string name,std::string memberName);
+	DWORD GetStructMemberOffset(std::string name, std::string memberName);
 	DWORD GetStructMemberSize(std::string name, std::string memberName);
 	DWORD64 LoadKernelModule(DWORD64 address);
 

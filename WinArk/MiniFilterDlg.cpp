@@ -33,7 +33,7 @@ LRESULT CMiniFilterDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lP
 	}
 
 
-	m_OperationTable = new COperationTable(info, table,m_Name);
+	m_OperationTable = new COperationTable(info, table, m_Name);
 	SetWindowText(m_Name.c_str());
 	RECT rect;
 	GetClientRect(&rect);

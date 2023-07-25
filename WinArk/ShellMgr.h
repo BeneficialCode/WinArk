@@ -67,16 +67,16 @@ typedef struct _LVItemData {
 	CComPtr<IShellFolder> spParentFolder;
 	CShellItemIDList lpi;
 	ULONG Attribs;
-}LVITEMDATA,*LPLVITEMDATA;
+}LVITEMDATA, * LPLVITEMDATA;
 
 typedef struct _TVItemData {
-	_TVItemData(){}
+	_TVItemData() {}
 
 	CComPtr<IShellFolder> spParentFolder;
 
 	CShellItemIDList lpi;
 	CShellItemIDList lpifq;
-}TVITEMDATA,*LPTVITEMDATA;
+}TVITEMDATA, * LPTVITEMDATA;
 
 class CShellMgr {
 public:

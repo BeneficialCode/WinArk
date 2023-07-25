@@ -4,21 +4,21 @@
 
 
 
-class CScyllaDlg 
+class CScyllaDlg
 	:public CDialogImpl<CScyllaDlg>,
 	public CWinDataExchange<CScyllaDlg>,
-	public CMessageFilter{
+	public CMessageFilter {
 public:
-	enum {IDD = IDD_SCYLLA};
+	enum { IDD = IDD_SCYLLA };
 
 	// Dialog Data eXchange, attaches/subclasses child controls to wrappers
 	// DDX_CONTROL : subclass
 	// DDX_CONTROL_HANDLE : attach
 	BEGIN_DDX_MAP(CScyllaDlg)
-		DDX_CONTROL_HANDLE(IDC_LIST_LOG,m_ListLog)
-		DDX_CONTROL(IDC_OEP_ADDRESS,_oepAddress)
-		DDX_CONTROL(IDC_IAT_ADDRESS,_iatAddress)
-		DDX_CONTROL(IDC_IAT_SIZE,_iatSize)
+		DDX_CONTROL_HANDLE(IDC_LIST_LOG, m_ListLog)
+		DDX_CONTROL(IDC_OEP_ADDRESS, _oepAddress)
+		DDX_CONTROL(IDC_IAT_ADDRESS, _iatAddress)
+		DDX_CONTROL(IDC_IAT_SIZE, _iatSize)
 	END_DDX_MAP()
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -31,7 +31,7 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-	END_MSG_MAP()
+		END_MSG_MAP()
 
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -64,7 +64,7 @@ private:
 	ProcessInfoEx& m_px;
 	const WinSys::ProcessManager& m_pm;
 	CStatusBarCtrl m_StatusBar;
-	
+
 	CListBox m_ListLog;
 	CAccelerator m_Accelerators;
 	CHexEdit _oepAddress;

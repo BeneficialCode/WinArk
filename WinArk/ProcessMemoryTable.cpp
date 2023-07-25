@@ -10,7 +10,7 @@
 #include "Helpers.h"
 
 LRESULT CProcessMemoryTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION|PROCESS_VM_READ);
+	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
 	if (m_hProcess == nullptr)
 		return -1;
 
@@ -221,7 +221,7 @@ CString CProcessMemoryTable::ProtectionToString(DWORD protection) {
 		wsprintf(buffer, L"0x%x", protection);
 		std::wstring msg = L"Failed to get the prot: ";
 		msg += buffer;
-		AtlMessageBox(nullptr, msg.c_str() , IDS_TITLE, MB_ICONERROR);
+		AtlMessageBox(nullptr, msg.c_str(), IDS_TITLE, MB_ICONERROR);
 	}
 
 	static const struct {
@@ -266,14 +266,14 @@ CProcessMemoryTable::ItemDetails CProcessMemoryTable::GetDetails(const std::shar
 	}
 
 	ItemDetails details;
-		details.Usage = MemoryUsage::Unknown;
-		if (mi->State == MEM_FREE) {
-			if (mi->RegionSize < (1 << 16)) {
-				details.Usage = MemoryUsage::Unusable;
-			}
-			m_Details.insert({ mi->BaseAddress, details });
-				return details;
+	details.Usage = MemoryUsage::Unknown;
+	if (mi->State == MEM_FREE) {
+		if (mi->RegionSize < (1 << 16)) {
+			details.Usage = MemoryUsage::Unusable;
 		}
+		m_Details.insert({ mi->BaseAddress, details });
+		return details;
+	}
 
 	if (mi->State == MEM_COMMIT) {
 		if (mi->Type == MEM_IMAGE || mi->Type == MEM_MAPPED) {
@@ -347,7 +347,7 @@ LRESULT CProcessMemoryTable::OnMemoryDump(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	int selected = m_Table.data.selected;
 	ATLASSERT(selected >= 0);
 	auto& info = m_Table.data.info[selected];
-	
+
 	std::unique_ptr<byte[]> data = std::make_unique<byte[]>(info->RegionSize);
 	SIZE_T dummy;
 	bool success = ::ReadProcessMemory(m_hProcess, info->BaseAddress, data.get(), info->RegionSize, &dummy);

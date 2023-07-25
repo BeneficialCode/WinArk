@@ -7,7 +7,7 @@ class CProcessPropertiesDlg :
 	public CDialogImpl<CProcessPropertiesDlg>,
 	public CDynamicDialogLayout<CProcessPropertiesDlg> {
 public:
-	enum {IDD = IDD_PROCESS_PROPERTIES};
+	enum { IDD = IDD_PROCESS_PROPERTIES };
 
 	CProcessPropertiesDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm{ pm }, m_px{ px }{}
 	void SetModal(bool modal) {
@@ -17,16 +17,16 @@ public:
 	void OnFinalMessage(HWND) override;
 
 	BEGIN_MSG_MAP(CProcessPropertiesDlg)
-		MESSAGE_HANDLER(WM_GETMINMAXINFO,OnGetMinMaxInfo)
-		MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
-		COMMAND_ID_HANDLER(IDCANCEL,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDOK,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_JOB,OnShowJob)
-		COMMAND_ID_HANDLER(IDC_TOKEN,OnShowToken)
-		COMMAND_ID_HANDLER(IDC_ENV,OnShowEnvironment)
-		COMMAND_ID_HANDLER(IDC_EXPLORE,OnExplore)
-		COMMAND_ID_HANDLER(IDC_EXPLORE_DIR,OnExploreDirectory)
-		COMMAND_ID_HANDLER(IDC_COPY,OnCopy)
+		MESSAGE_HANDLER(WM_GETMINMAXINFO, OnGetMinMaxInfo)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_JOB, OnShowJob)
+		COMMAND_ID_HANDLER(IDC_TOKEN, OnShowToken)
+		COMMAND_ID_HANDLER(IDC_ENV, OnShowEnvironment)
+		COMMAND_ID_HANDLER(IDC_EXPLORE, OnExplore)
+		COMMAND_ID_HANDLER(IDC_EXPLORE_DIR, OnExploreDirectory)
+		COMMAND_ID_HANDLER(IDC_COPY, OnCopy)
 	END_MSG_MAP()
 private:
 	void InitProcess();

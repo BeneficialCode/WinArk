@@ -43,77 +43,77 @@ typedef struct _SECTION_IMAGE_INFORMATION {
 
 typedef struct _PS_SYSTEM_DLL_INFO {
 
-    //
-    // Flags.
-    // Initialized statically.
-    // 
+	//
+	// Flags.
+	// Initialized statically.
+	// 
 
-    USHORT        Flags;
+	USHORT        Flags;
 
-    //
-    // Machine type of this WoW64 NTDLL.
-    // Initialized statically.
-    // Examples:
-    //   - IMAGE_FILE_MACHINE_I386
-    //   - IMAGE_FILE_MACHINE_ARMNT
-    //
+	//
+	// Machine type of this WoW64 NTDLL.
+	// Initialized statically.
+	// Examples:
+	//   - IMAGE_FILE_MACHINE_I386
+	//   - IMAGE_FILE_MACHINE_ARMNT
+	//
 
-    USHORT        MachineType;
+	USHORT        MachineType;
 
-    //
-    // Unused, always 0.
-    //
+	//
+	// Unused, always 0.
+	//
 
-    ULONG         Reserved1;
+	ULONG         Reserved1;
 
-    //
-    // Path to the WoW64 NTDLL.
-    // Initialized statically.
-    // Examples:
-    //   - "\\SystemRoot\\SysWOW64\\ntdll.dll"
-    //   - "\\SystemRoot\\SysArm32\\ntdll.dll"
-    //
+	//
+	// Path to the WoW64 NTDLL.
+	// Initialized statically.
+	// Examples:
+	//   - "\\SystemRoot\\SysWOW64\\ntdll.dll"
+	//   - "\\SystemRoot\\SysArm32\\ntdll.dll"
+	//
 
-    UNICODE_STRING Ntdll32Path;
+	UNICODE_STRING Ntdll32Path;
 
-    //
-    // Image base of the DLL.
-    // Initialized at runtime by PspMapSystemDll.
-    // Equivalent of:
-    //      RtlImageNtHeader(BaseAddress)->
-    //          OptionalHeader.ImageBase;
-    //
+	//
+	// Image base of the DLL.
+	// Initialized at runtime by PspMapSystemDll.
+	// Equivalent of:
+	//      RtlImageNtHeader(BaseAddress)->
+	//          OptionalHeader.ImageBase;
+	//
 
-    PVOID         ImageBase;
+	PVOID         ImageBase;
 
-    //
-    // Contains DLL name (such as "ntdll.dll" or
-    // "ntdll32.dll") before runtime initialization.
-    // Initialized at runtime by MmMapViewOfSectionEx,
-    // called from PspMapSystemDll.
-    //
+	//
+	// Contains DLL name (such as "ntdll.dll" or
+	// "ntdll32.dll") before runtime initialization.
+	// Initialized at runtime by MmMapViewOfSectionEx,
+	// called from PspMapSystemDll.
+	//
 
-    union {
-        PVOID       BaseAddress;
-        PWCHAR      DllName;
-    };
+	union {
+		PVOID       BaseAddress;
+		PWCHAR      DllName;
+	};
 
-    //
-    // Unused, always 0.
-    //
+	//
+	// Unused, always 0.
+	//
 
-    PVOID         Reserved2;
+	PVOID         Reserved2;
 
-    //
-    // Section relocation information.
-    //
+	//
+	// Section relocation information.
+	//
 
-    PVOID         SectionRelocationInformation;
+	PVOID         SectionRelocationInformation;
 
-    //
-    // Unused, always 0.
-    //
+	//
+	// Unused, always 0.
+	//
 
-    PVOID         Reserved3;
+	PVOID         Reserved3;
 
 } PS_SYSTEM_DLL_INFO, * PPS_SYSTEM_DLL_INFO;

@@ -22,7 +22,7 @@ struct RegistryKey {
 	~RegistryKey() {
 		Close();
 	}
-	
+
 	HANDLE Detach();
 	void Attach(HANDLE hKey, bool own = true);
 
@@ -43,17 +43,17 @@ struct RegistryKey {
 	}
 
 	NTSTATUS Close();
-	NTSTATUS Create(HANDLE hKeyParent,PUNICODE_STRING keyName, RegistryAccessMask accessMask = RegistryAccessMask::Write | RegistryAccessMask::Read,
+	NTSTATUS Create(HANDLE hKeyParent, PUNICODE_STRING keyName, RegistryAccessMask accessMask = RegistryAccessMask::Write | RegistryAccessMask::Read,
 		ULONG opts = REG_OPTION_NON_VOLATILE);
 	NTSTATUS Open(HANDLE hKeyParent, PUNICODE_STRING keyName, RegistryAccessMask accessMask = RegistryAccessMask::Write | RegistryAccessMask::Read);
 
-	NTSTATUS SetValue(PUNICODE_STRING name, ULONG type, PVOID pValue,ULONG bytes);
+	NTSTATUS SetValue(PUNICODE_STRING name, ULONG type, PVOID pValue, ULONG bytes);
 	NTSTATUS SetBinaryValue(PUNICODE_STRING name, PVOID pValue, ULONG bytes);
 	NTSTATUS SetDWORDValue(PUNICODE_STRING name, const ULONG value);
 	NTSTATUS SetQWORDValue(PUNICODE_STRING name, const ULONGLONG value);
 	NTSTATUS SetMultiStringValue(PUNICODE_STRING name, PCWSTR pValue);
 	NTSTATUS SetStringValue(PUNICODE_STRING name, PCWSTR pValue, DWORD type = REG_SZ);
-	
+
 	NTSTATUS QueryDWORDValue(PUNICODE_STRING name, ULONG value);
 
 	NTSTATUS DeleteKey();

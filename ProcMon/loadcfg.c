@@ -7,10 +7,10 @@ uintptr_t __security_cookie;            // /GS security cookie
 
 void __fastcall __security_check_cookie(__in uintptr_t _StackCookie)
 {
-    if (__security_cookie != _StackCookie)
-    {
-        __debugbreak();
-    }
+	if (__security_cookie != _StackCookie)
+	{
+		__debugbreak();
+	}
 }
 
 
@@ -33,7 +33,7 @@ extern const volatile PVOID __guard_dispatch_icall_fptr = _guard_dispatch_icall_
 
 extern PVOID __safe_se_handler_table[]; /* base of safe handler entry table */
 extern BYTE  __safe_se_handler_count;   /* absolute symbol whose address is
-                                           the count of table entries */
+										   the count of table entries */
 #endif
 
 extern PVOID __guard_fids_table[];
@@ -57,52 +57,52 @@ extern
 const
 IMAGE_LOAD_CONFIG_DIRECTORY
 _load_config_used = {
-    sizeof(_load_config_used),
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    (SIZE_T)&__security_cookie,
+	sizeof(_load_config_used),
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	(SIZE_T)&__security_cookie,
 
 #if defined(_M_IX86) || defined(_X86_)
 
-    (SIZE_T)__safe_se_handler_table,
-    (SIZE_T)&__safe_se_handler_count,
+	(SIZE_T)__safe_se_handler_table,
+	(SIZE_T)&__safe_se_handler_count,
 
 #else
 
-    0,
-    0,
+	0,
+	0,
 
 #endif
 
-    (SIZE_T)&__guard_check_icall_fptr,
+	(SIZE_T)&__guard_check_icall_fptr,
 
 #if defined(_AMD64_)
 
-    (SIZE_T)&__guard_dispatch_icall_fptr,
+	(SIZE_T)&__guard_dispatch_icall_fptr,
 
 #else
 
-    0,
+	0,
 
 #endif
 
-    (SIZE_T)&__guard_fids_table,
-    (SIZE_T)&__guard_fids_count,
+	(SIZE_T)&__guard_fids_table,
+	(SIZE_T)&__guard_fids_count,
 
-    (ULONG)(SIZE_T)&__guard_flags,
+	(ULONG)(SIZE_T)&__guard_flags,
 
 };

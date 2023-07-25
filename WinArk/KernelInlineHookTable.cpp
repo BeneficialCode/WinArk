@@ -38,7 +38,7 @@ int CKernelInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select,
 	{
 		s.Format(L"0x%p  ", info.Address);
 		DWORD64 offset = 0;
-		auto symbol = SymbolHelper::GetSymbolFromAddress(info.Address,&offset);
+		auto symbol = SymbolHelper::GetSymbolFromAddress(info.Address, &offset);
 		if (symbol) {
 			std::string name = symbol->GetSymbolInfo()->Name;
 			s += Helpers::StringToWstring(name).c_str();
@@ -47,7 +47,7 @@ int CKernelInlineHookTable::ParseTableEntry(CString& s, char& mask, int& select,
 				temp.Format(L"+ 0x%x", offset);
 				s += temp;
 			}
-			
+
 		}
 		break;
 	}
@@ -80,7 +80,7 @@ LRESULT CKernelInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 
 LRESULT CKernelInlineHookTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL&) {
-	
+
 	return 0;
 }
 
@@ -175,7 +175,7 @@ void CKernelInlineHookTable::Refresh() {
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size,
 		MEM_COMMIT, PAGE_READWRITE));
 	KernelInlineHookData* pData = (KernelInlineHookData*)buffer.get();
-	bool success = DriverHelper::DetectInlineHook(count,pData, size);
+	bool success = DriverHelper::DetectInlineHook(count, pData, size);
 	if (success) {
 		KernelInlineHookInfo info;
 		for (ULONG i = 0; i < count; i++) {

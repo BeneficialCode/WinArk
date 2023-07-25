@@ -171,28 +171,28 @@ CString CMiniFilterTable::AltitudeToGroupName(int altitude) {
 }
 
 int CMiniFilterTable::ParseTableEntry(CString& s, char& mask, int& select, MiniFilterInfo& info, int column) {
-	
+
 	switch (static_cast<TableColumn>(column))
 	{
-		case TableColumn::Altitude:
-		{
-			s = info.Altitude.c_str();
-			int altitude = _wtoi(info.Altitude.c_str());
-			s += " " + AltitudeToGroupName(altitude);
-			break;
-		}
+	case TableColumn::Altitude:
+	{
+		s = info.Altitude.c_str();
+		int altitude = _wtoi(info.Altitude.c_str());
+		s += " " + AltitudeToGroupName(altitude);
+		break;
+	}
 
-		case TableColumn::FilterName:
-			s = info.FilterName.c_str();
-			break;
+	case TableColumn::FilterName:
+		s = info.FilterName.c_str();
+		break;
 
-		case TableColumn::FrameID:
-			s.Format(L"%lu", info.FrameID);
-			break;
+	case TableColumn::FrameID:
+		s.Format(L"%lu", info.FrameID);
+		break;
 
-		case TableColumn::NumberOfInstance:
-			s.Format(L"%lu", info.NumberOfInstance);
-			break;
+	case TableColumn::NumberOfInstance:
+		s.Format(L"%lu", info.NumberOfInstance);
+		break;
 	}
 	return s.GetLength();
 }
@@ -200,11 +200,11 @@ int CMiniFilterTable::ParseTableEntry(CString& s, char& mask, int& select, MiniF
 bool CMiniFilterTable::CompareItems(const MiniFilterInfo& s1, const MiniFilterInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
-			
-			break;
-		default:
-			break;
+	case 0:
+
+		break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -283,7 +283,7 @@ std::wstring CMiniFilterTable::GetSingleMiniFilterInfo(MiniFilterInfo& info) {
 	CString text;
 	CString s;
 
-	
+
 
 	text += L"\r\n";
 

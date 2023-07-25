@@ -7,7 +7,7 @@
 class CFiltersDlg :
 	public CDialogImpl<CFiltersDlg> {
 public:
-	enum {IDD= IDD_FILTERS};
+	enum { IDD = IDD_FILTERS };
 
 	CFiltersDlg(FilterConfiguration& fc);
 

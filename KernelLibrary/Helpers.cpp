@@ -6,11 +6,11 @@
 #include "khook.h"
 
 // AntiRootkit!khook::GetSystemServiceTable
-ULONG_PTR Helpers::SearchSignature(ULONG_PTR address, PUCHAR signature, ULONG size,ULONG memSize) {
+ULONG_PTR Helpers::SearchSignature(ULONG_PTR address, PUCHAR signature, ULONG size, ULONG memSize) {
 	int i = memSize;
-    ULONG_PTR maxAddress = address + memSize - size;
-    
-	while (i--&&address < maxAddress) {
+	ULONG_PTR maxAddress = address + memSize - size;
+
+	while (i-- && address < maxAddress) {
 		if (memcmp(signature, (void*)address, size) == 0) {
 			return address;
 		}
@@ -33,7 +33,7 @@ ULONG_PTR Helpers::KiDecodePointer(_In_ ULONG_PTR pointer, _In_ ULONG_PTR salt) 
 
 #ifdef _WIN64
 	value = RotateLeft64(value ^ KiWaitNever, KiWaitNever & 0xFF);
-	value = RtlUlonglongByteSwap(value ^ salt)^ KiWaitAlways;
+	value = RtlUlonglongByteSwap(value ^ salt) ^ KiWaitAlways;
 #else
 	value = RotateLeft32(value ^ (ULONG)KiWaitNever, KiWaitNever & 0xFF);
 	value = RtlUlongByteSwap(value ^ salt) ^ (ULONG)KiWaitAlways;
@@ -94,7 +94,7 @@ bool Helpers::IsMappedByLdrLoadDll(PCUNICODE_STRING shortName) {
 }
 
 // Checks if process with pid is a specific process by its file name
-bool Helpers::IsSpecificProcess(HANDLE pid,const WCHAR* imageName,bool isDebugged) {
+bool Helpers::IsSpecificProcess(HANDLE pid, const WCHAR* imageName, bool isDebugged) {
 	ASSERT(imageName);
 	bool result = false;
 
@@ -106,7 +106,7 @@ bool Helpers::IsSpecificProcess(HANDLE pid,const WCHAR* imageName,bool isDebugge
 			PsIsProcessBeingDebugged(Process)) {
 			// Get process handle
 			HANDLE hProcess;
-			status = ObOpenObjectByPointer(Process, OBJ_KERNEL_HANDLE, nullptr, 
+			status = ObOpenObjectByPointer(Process, OBJ_KERNEL_HANDLE, nullptr,
 				PROCESS_ALL_ACCESS, *PsProcessType, KernelMode, &hProcess);
 			if (NT_SUCCESS(status)) {
 				// Get process name
@@ -175,7 +175,7 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 
 	uintptr_t imageBase = (uintptr_t)pData->ImageBase;
 	ULONG size = pData->ImageSize;
-	for (uintptr_t p = imageBase,index = 0; p < imageBase + size; p += PAGE_SIZE,index += PAGE_SIZE) {
+	for (uintptr_t p = imageBase, index = 0; p < imageBase + size; p += PAGE_SIZE, index += PAGE_SIZE) {
 		PVOID pSrc = (PVOID)p;
 		PVOID pDst = (PVOID)((uintptr_t)pBuf + index);
 		if (!MmIsAddressValid(pSrc)) {
@@ -206,7 +206,7 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 	UNICODE_STRING dumpDir{ 0 };
 	do
 	{
-		
+
 		HANDLE hProcess;
 		status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
 		if (NT_SUCCESS(status)) {
@@ -233,7 +233,7 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 		}
 
 		FileManager mgr;
-		
+
 		IO_STATUS_BLOCK ioStatus;
 
 
@@ -303,7 +303,7 @@ NTSTATUS Helpers::DumpSysModule(DumpSysData* pData) {
 		info.EndOfFile = saveSize;
 		NT_VERIFY(NT_SUCCESS(mgr.SetInformationFile(&ioStatus, &info, sizeof(info), FileEndOfFileInformation)));
 
-		
+
 	} while (false);
 
 	if (dumpDir.Buffer)

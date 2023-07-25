@@ -62,7 +62,7 @@ public:
 	void Refresh();
 
 	enum class Column {
-		DeviceObject,Type,TimerFlag,TimerRoutine, CompanyName, DriverPath
+		DeviceObject, Type, TimerFlag, TimerRoutine, CompanyName, DriverPath
 	};
 private:
 

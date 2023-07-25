@@ -105,51 +105,51 @@ CKernelModuleTable::CKernelModuleTable(BarInfo& bars, TableInfo& table)
 
 int CKernelModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::KernelModuleInfo>& info, int column) {
 	switch (column) {
-		case 0:
-			s = info->Name.c_str();
-			break;
-		case 1:
-			s.Format(L"0x%p", info->ImageBase);
-			break;
-		case 2:
-			s.Format(L"0x%X", info->ImageSize);
-			break;
-		case 3:
-			s.Format(L"%u", info->LoadOrderIndex);
-			break;
-		case 4:
-		{
-			std::wstring path = Helpers::StringToWstring(info->FullPath);
-			s = GetCompanyName(path).c_str();
-			if (s.Find(L"Microsoft") == -1 && s.Find(L"YuanOS") == -1) {
-				select |= DRAW_HILITE;
-			}
-			break;
+	case 0:
+		s = info->Name.c_str();
+		break;
+	case 1:
+		s.Format(L"0x%p", info->ImageBase);
+		break;
+	case 2:
+		s.Format(L"0x%X", info->ImageSize);
+		break;
+	case 3:
+		s.Format(L"%u", info->LoadOrderIndex);
+		break;
+	case 4:
+	{
+		std::wstring path = Helpers::StringToWstring(info->FullPath);
+		s = GetCompanyName(path).c_str();
+		if (s.Find(L"Microsoft") == -1 && s.Find(L"YuanOS") == -1) {
+			select |= DRAW_HILITE;
 		}
-		case 5:
-			s = info->FullPath.c_str();
-			break;
-		default:
-			break;
+		break;
+	}
+	case 5:
+		s = info->FullPath.c_str();
+		break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }
 
 bool CKernelModuleTable::CompareItems(const std::shared_ptr<WinSys::KernelModuleInfo>& p1, const std::shared_ptr<WinSys::KernelModuleInfo>& p2, int col, bool asc) {
 	switch (static_cast<KernelModuleColumn>(col)) {
-		case KernelModuleColumn::Name: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
-		case KernelModuleColumn::ImageBase:return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
-		case KernelModuleColumn::ImageSize:return SortHelper::SortNumbers(p1->ImageSize, p2->ImageSize, asc);
-		case KernelModuleColumn::LoadOrderIndex: return SortHelper::SortNumbers(p1->LoadOrderIndex, p2->LoadOrderIndex, asc);
-		case KernelModuleColumn::FullPath: return SortHelper::SortStrings(p1->FullPath, p2->FullPath, asc);
-		case KernelModuleColumn::CommpanyName: 
-		{
-			std::wstring path = Helpers::StringToWstring(p1->FullPath);
-			std::wstring name1 = GetCompanyName(path);
-			path = Helpers::StringToWstring(p2->FullPath);
-			std::wstring name2 = GetCompanyName(path);
-			return SortHelper::SortStrings(name1, name2, asc);
-		}
+	case KernelModuleColumn::Name: return SortHelper::SortStrings(p1->Name, p2->Name, asc);
+	case KernelModuleColumn::ImageBase:return SortHelper::SortNumbers(p1->ImageBase, p2->ImageBase, asc);
+	case KernelModuleColumn::ImageSize:return SortHelper::SortNumbers(p1->ImageSize, p2->ImageSize, asc);
+	case KernelModuleColumn::LoadOrderIndex: return SortHelper::SortNumbers(p1->LoadOrderIndex, p2->LoadOrderIndex, asc);
+	case KernelModuleColumn::FullPath: return SortHelper::SortStrings(p1->FullPath, p2->FullPath, asc);
+	case KernelModuleColumn::CommpanyName:
+	{
+		std::wstring path = Helpers::StringToWstring(p1->FullPath);
+		std::wstring name1 = GetCompanyName(path);
+		path = Helpers::StringToWstring(p2->FullPath);
+		std::wstring name2 = GetCompanyName(path);
+		return SortHelper::SortStrings(name1, name2, asc);
+	}
 	}
 	return false;
 }

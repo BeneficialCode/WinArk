@@ -1,7 +1,7 @@
 #pragma once
 
 namespace WinSys {
-	
+
 	struct AdapterInfo :IP_ADAPTER_ADDRESSES_LH {
 		std::string Name;
 		std::wstring DnsSuffix;
@@ -13,7 +13,7 @@ namespace WinSys {
 		using IP_ADAPTER_ADDRESSES_LH::AdapterName;
 		using IP_ADAPTER_ADDRESSES_LH::Next;
 	};
-	
+
 	struct InterfaceInfo :MIB_IF_ROW2 {
 	};
 

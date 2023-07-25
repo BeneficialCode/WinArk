@@ -33,9 +33,9 @@ LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		info.bar[i].mode = bars[i].mode;
 		info.bar[i].name = bars[i].name;
 	}
-	
+
 	DWORD pid = static_cast<DWORD>(lParam);
-	m_ProcModuleTable = new CProcessModuleTable(info, table,pid,m_hWnd);
+	m_ProcModuleTable = new CProcessModuleTable(info, table, pid, m_hWnd);
 	WCHAR proc[25];
 	_itow_s(pid, proc, 10);
 	std::wstring text;
@@ -44,7 +44,7 @@ LRESULT CModuleDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	GetWindowText(text.data(), 256);
 	std::wstring title = L" Process: pid = ";
 	title += proc;
-	text += title; 
+	text += title;
 	SetWindowText(text.c_str());
 	RECT rect;
 	GetClientRect(&rect);

@@ -101,52 +101,52 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 	// 回调函数地址 回调类型 所在模块 文件厂商
 	switch (column)
 	{
-		case 0:
-			s.Format(L"0x%p", info.Routine);
-			break;
-		case 1:
+	case 0:
+		s.Format(L"0x%p", info.Routine);
+		break;
+	case 1:
+	{
+		switch (info.Type)
 		{
-			switch (info.Type)
-			{
-				case CallbackType::CreateProcessNotify:
-					s = L"CreateProcess";
-					break;
-				case CallbackType::CreateThreadNotify:
-					s = L"CreateThread";
-					break;
+		case CallbackType::CreateProcessNotify:
+			s = L"CreateProcess";
+			break;
+		case CallbackType::CreateThreadNotify:
+			s = L"CreateThread";
+			break;
 
-				case CallbackType::LoadImageNotify:
-					s = L"LoadImage";
-					break;
+		case CallbackType::LoadImageNotify:
+			s = L"LoadImage";
+			break;
 
-				case CallbackType::ProcessObPostOperationNotify:
-					s = L"Process ObPostOperation";
-					break;
+		case CallbackType::ProcessObPostOperationNotify:
+			s = L"Process ObPostOperation";
+			break;
 
-				case CallbackType::ProcessObPreOperationNotify:
-					s = L"Process ObPreOperation";
-					break;
+		case CallbackType::ProcessObPreOperationNotify:
+			s = L"Process ObPreOperation";
+			break;
 
-				case CallbackType::ThreadObPostOperationNotify:
-					s = L"Thread ObPostOperation";
-					break;
+		case CallbackType::ThreadObPostOperationNotify:
+			s = L"Thread ObPostOperation";
+			break;
 
-				case CallbackType::ThreadObPreOperationNotify:
-					s = L"Thread ObPreOperation";
-					break;
+		case CallbackType::ThreadObPreOperationNotify:
+			s = L"Thread ObPreOperation";
+			break;
 
-				case CallbackType::RegistryNotify:
-					s = L"Registry Notify";
-					break;
-			}
+		case CallbackType::RegistryNotify:
+			s = L"Registry Notify";
 			break;
 		}
-		case 2:
-			s = info.Company.c_str();
-			break;
-		case 3:
-			s = Helpers::StringToWstring(info.Module).c_str();
-			break;
+		break;
+	}
+	case 2:
+		s = info.Company.c_str();
+		break;
+	case 3:
+		s = Helpers::StringToWstring(info.Module).c_str();
+		break;
 	}
 
 	return s.GetLength();
@@ -155,10 +155,10 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 bool CKernelNotifyTable::CompareItems(const CallbackInfo& s1, const CallbackInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 2:
-			return SortHelper::SortStrings(s1.Company, s2.Company, asc);
-		default:
-			break;
+	case 2:
+		return SortHelper::SortStrings(s1.Company, s2.Company, asc);
+	default:
+		break;
 	}
 	return false;
 }
@@ -396,45 +396,45 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 	switch (p.Type)
 	{
-		case CallbackType::CreateProcessNotify:
-			data.Type = NotifyType::CreateProcessNotify;
-			break;
+	case CallbackType::CreateProcessNotify:
+		data.Type = NotifyType::CreateProcessNotify;
+		break;
 
-		case CallbackType::CreateThreadNotify:
-			data.Type = NotifyType::CreateThreadNotify;
-			break;
+	case CallbackType::CreateThreadNotify:
+		data.Type = NotifyType::CreateThreadNotify;
+		break;
 
-		case CallbackType::LoadImageNotify:
-			data.Type = NotifyType::LoadImageNotify;
-			break;
+	case CallbackType::LoadImageNotify:
+		data.Type = NotifyType::LoadImageNotify;
+		break;
 
-		case CallbackType::ProcessObPostOperationNotify:
-		case CallbackType::ProcessObPreOperationNotify:
-			data.Type = NotifyType::ProcessObjectNotify;
-			data.Address = p.Address;
-			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-			if (data.Offset == -1) {
-				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
-				return 0;
-			}
-			break;
-		case CallbackType::ThreadObPostOperationNotify:
-		case CallbackType::ThreadObPreOperationNotify:
-			data.Type = NotifyType::ThreadObjectNotify;
-			data.Address = p.Address;
-			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-			if (data.Offset == -1) {
-				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
-				return 0;
-			}
-			break;
+	case CallbackType::ProcessObPostOperationNotify:
+	case CallbackType::ProcessObPreOperationNotify:
+		data.Type = NotifyType::ProcessObjectNotify;
+		data.Address = p.Address;
+		data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+		if (data.Offset == -1) {
+			AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+			return 0;
+		}
+		break;
+	case CallbackType::ThreadObPostOperationNotify:
+	case CallbackType::ThreadObPreOperationNotify:
+		data.Type = NotifyType::ThreadObjectNotify;
+		data.Address = p.Address;
+		data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+		if (data.Offset == -1) {
+			AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
+			return 0;
+		}
+		break;
 
-		case CallbackType::RegistryNotify:
-			data.Type = NotifyType::RegistryNotify;
-			data.Cookie = p.Cookie;
-			break;
-		default:
-			break;
+	case CallbackType::RegistryNotify:
+		data.Type = NotifyType::RegistryNotify;
+		data.Cookie = p.Cookie;
+		break;
+	default:
+		break;
 	}
 
 
@@ -466,37 +466,37 @@ LRESULT CKernelNotifyTable::OnRemoveByCompanyName(WORD /*wNotifyCode*/, WORD /*w
 
 		switch (p.Type)
 		{
-			case CallbackType::CreateProcessNotify:
-				data.Type = NotifyType::CreateProcessNotify;
-				break;
+		case CallbackType::CreateProcessNotify:
+			data.Type = NotifyType::CreateProcessNotify;
+			break;
 
-			case CallbackType::CreateThreadNotify:
-				data.Type = NotifyType::CreateThreadNotify;
-				break;
+		case CallbackType::CreateThreadNotify:
+			data.Type = NotifyType::CreateThreadNotify;
+			break;
 
-			case CallbackType::LoadImageNotify:
-				data.Type = NotifyType::LoadImageNotify;
-				break;
+		case CallbackType::LoadImageNotify:
+			data.Type = NotifyType::LoadImageNotify;
+			break;
 
-			case CallbackType::ProcessObPostOperationNotify:
-			case CallbackType::ProcessObPreOperationNotify:
-				data.Type = NotifyType::ProcessObjectNotify;
-				data.Address = p.Address;
-				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-				break;
-			case CallbackType::ThreadObPostOperationNotify:
-			case CallbackType::ThreadObPreOperationNotify:
-				data.Type = NotifyType::ThreadObjectNotify;
-				data.Address = p.Address;
-				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-				break;
+		case CallbackType::ProcessObPostOperationNotify:
+		case CallbackType::ProcessObPreOperationNotify:
+			data.Type = NotifyType::ProcessObjectNotify;
+			data.Address = p.Address;
+			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+			break;
+		case CallbackType::ThreadObPostOperationNotify:
+		case CallbackType::ThreadObPreOperationNotify:
+			data.Type = NotifyType::ThreadObjectNotify;
+			data.Address = p.Address;
+			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
+			break;
 
-			case CallbackType::RegistryNotify:
-				data.Type = NotifyType::RegistryNotify;
-				data.Cookie = p.Cookie;
-				break;
-			default:
-				break;
+		case CallbackType::RegistryNotify:
+			data.Type = NotifyType::RegistryNotify;
+			data.Cookie = p.Cookie;
+			break;
+		default:
+			break;
 		}
 
 
@@ -524,36 +524,36 @@ std::wstring CKernelNotifyTable::GetSingleNotifyInfo(CallbackInfo& info) {
 
 	switch (info.Type)
 	{
-		case CallbackType::CreateProcessNotify:
-			s = L"CreateProcess";
-			break;
-		case CallbackType::CreateThreadNotify:
-			s = L"CreateThread";
-			break;
+	case CallbackType::CreateProcessNotify:
+		s = L"CreateProcess";
+		break;
+	case CallbackType::CreateThreadNotify:
+		s = L"CreateThread";
+		break;
 
-		case CallbackType::LoadImageNotify:
-			s = L"LoadImage";
-			break;
+	case CallbackType::LoadImageNotify:
+		s = L"LoadImage";
+		break;
 
-		case CallbackType::ProcessObPostOperationNotify:
-			s = L"Process ObPostOperation";
-			break;
+	case CallbackType::ProcessObPostOperationNotify:
+		s = L"Process ObPostOperation";
+		break;
 
-		case CallbackType::ProcessObPreOperationNotify:
-			s = L"Process ObPreOperation";
-			break;
+	case CallbackType::ProcessObPreOperationNotify:
+		s = L"Process ObPreOperation";
+		break;
 
-		case CallbackType::ThreadObPostOperationNotify:
-			s = L"Thread ObPostOperation";
-			break;
+	case CallbackType::ThreadObPostOperationNotify:
+		s = L"Thread ObPostOperation";
+		break;
 
-		case CallbackType::ThreadObPreOperationNotify:
-			s = L"Thread ObPreOperation";
-			break;
+	case CallbackType::ThreadObPreOperationNotify:
+		s = L"Thread ObPreOperation";
+		break;
 
-		case CallbackType::RegistryNotify:
-			s = L"Registry Notify";
-			break;
+	case CallbackType::RegistryNotify:
+		s = L"Registry Notify";
+		break;
 	}
 	s += L"\t";
 	text += s;

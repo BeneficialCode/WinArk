@@ -178,4 +178,3 @@ protected:
 	std::map<std::wstring, Setting, LessNoCase> _settings;
 	std::wstring _path;
 };
-	

@@ -2,8 +2,8 @@
 #include "EventNameFilter.h"
 #include "EventData.h"
 
-EventNameFilter::EventNameFilter(std::wstring name, CompareType type, FilterAction action) 
-	:StringCompareFilterBase(L"Event Name",name,type,action){
+EventNameFilter::EventNameFilter(std::wstring name, CompareType type, FilterAction action)
+	:StringCompareFilterBase(L"Event Name", name, type, action) {
 }
 
 FilterAction EventNameFilter::Eval(FilterContext& context) const {

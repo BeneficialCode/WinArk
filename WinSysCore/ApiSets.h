@@ -21,7 +21,7 @@ public:
 	bool IsFileExists(const wchar_t* name) const;
 	void Build(HANDLE hProcess);
 
-	
+
 
 private:
 	struct LessNoCase {

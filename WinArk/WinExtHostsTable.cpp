@@ -95,70 +95,70 @@ CWinExtHostsTable::CWinExtHostsTable(BarInfo& bars, TableInfo& table) :CTable(ba
 }
 
 int CWinExtHostsTable::ParseTableEntry(CString& s, char& mask, int& select, WinExtHostInfo& info, int column) {
-	switch (static_cast<TableColumn>(column)) 
+	switch (static_cast<TableColumn>(column))
 	{
-		case TableColumn::Flags:
-		{
-			s.Format(L"0x%X", info.Flags);
-			break;
-		}
-		case TableColumn::ExHost:
-		{
-			s.Format(L"0x%p", info.ExHost);
-			break;
-		}
-		
-		case TableColumn::Id:
-		{
-			s.Format(L"%d", info.Id);
-			break;
-		}
+	case TableColumn::Flags:
+	{
+		s.Format(L"0x%X", info.Flags);
+		break;
+	}
+	case TableColumn::ExHost:
+	{
+		s.Format(L"0x%p", info.ExHost);
+		break;
+	}
 
-		case TableColumn::Version:
-		{
-			s.Format(L"%d", info.Version);
-			break;
-		}
+	case TableColumn::Id:
+	{
+		s.Format(L"%d", info.Id);
+		break;
+	}
 
-		case TableColumn::BindNotification:
-		{
-			s.Format(L"0x%p", info.BindNotification);
-			break;
-		}
+	case TableColumn::Version:
+	{
+		s.Format(L"%d", info.Version);
+		break;
+	}
 
-		case TableColumn::BindNotificationContext:
-		{
-			s.Format(L"0x%p", info.BindNotificationContext);
-			break;
-		}
+	case TableColumn::BindNotification:
+	{
+		s.Format(L"0x%p", info.BindNotification);
+		break;
+	}
 
-		case TableColumn::ExtensionTable:
-		{
-			s.Format(L"0x%p", info.ExtensionTable);
-			break;
-		}
+	case TableColumn::BindNotificationContext:
+	{
+		s.Format(L"0x%p", info.BindNotificationContext);
+		break;
+	}
 
-		case TableColumn::FunctionCount:
-		{
-			s.Format(L"%d", info.FunctionCount);
-			break;
-		}
+	case TableColumn::ExtensionTable:
+	{
+		s.Format(L"0x%p", info.ExtensionTable);
+		break;
+	}
 
-		case TableColumn::HostTable:
-		{
-			if (info.HostTable == nullptr) {
-				s = L"None";
-				break;
-			}
-			s.Format(L"0x%p ", info.HostTable);
-			DWORD64 offset = 0;
-			auto symbol = SymbolHelper::GetSymbolFromAddress((DWORD64)info.HostTable);
-			if (symbol) {
-				std::string name = symbol->GetSymbolInfo()->Name;
-				s += Helpers::StringToWstring(name).c_str();
-			}
+	case TableColumn::FunctionCount:
+	{
+		s.Format(L"%d", info.FunctionCount);
+		break;
+	}
+
+	case TableColumn::HostTable:
+	{
+		if (info.HostTable == nullptr) {
+			s = L"None";
 			break;
 		}
+		s.Format(L"0x%p ", info.HostTable);
+		DWORD64 offset = 0;
+		auto symbol = SymbolHelper::GetSymbolFromAddress((DWORD64)info.HostTable);
+		if (symbol) {
+			std::string name = symbol->GetSymbolInfo()->Name;
+			s += Helpers::StringToWstring(name).c_str();
+		}
+		break;
+	}
 	}
 	return s.GetLength();
 }
@@ -166,11 +166,11 @@ int CWinExtHostsTable::ParseTableEntry(CString& s, char& mask, int& select, WinE
 bool CWinExtHostsTable::CompareItems(const WinExtHostInfo& s1, const WinExtHostInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
+	case 0:
 
-			break;
-		default:
-			break;
+		break;
+	default:
+		break;
 	}
 	return false;
 }

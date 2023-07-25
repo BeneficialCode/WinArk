@@ -5,5 +5,5 @@ DeviceObjectType::DeviceObjectType(int index, PCWSTR name) : ObjectType(index, n
 }
 
 CString DeviceObjectType::GetDetails(HANDLE hObject) {
-    return L"";
+	return L"";
 }

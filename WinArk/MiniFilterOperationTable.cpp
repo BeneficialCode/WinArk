@@ -188,8 +188,8 @@ LRESULT COperationTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-COperationTable::COperationTable(BarInfo& bars, TableInfo& table,std::wstring filterName) 
-	:CTable(bars, table),m_Name(filterName) {
+COperationTable::COperationTable(BarInfo& bars, TableInfo& table, std::wstring filterName)
+	:CTable(bars, table), m_Name(filterName) {
 	SetTableWindowInfo(bars.nbar);
 	Refresh();
 }
@@ -198,47 +198,47 @@ int COperationTable::ParseTableEntry(CString& s, char& mask, int& select, Operat
 	// FilterHandle,MajorCode,OperationType,Flag,Address,CallbackType,Company,Module
 	switch (static_cast<Column>(column))
 	{
-		case Column::Address:
-			s.Format(L"0x%p", info.Routine);
-			break;
+	case Column::Address:
+		s.Format(L"0x%p", info.Routine);
+		break;
 
-		case Column::FilterHandle:
-			s.Format(L"0x%p", info.FilterHandle);
-			break;
+	case Column::FilterHandle:
+		s.Format(L"0x%p", info.FilterHandle);
+		break;
 
-		case Column::CallbackType:
+	case Column::CallbackType:
+	{
+		switch (info.Type)
 		{
-			switch (info.Type)
-			{
-				case FilterType::PostOperation:
-					s = L"PostOperation";
-					break;
+		case FilterType::PostOperation:
+			s = L"PostOperation";
+			break;
 
-				case FilterType::PreOperation:
-					s = L"PreOperation";
-					break;
-			}
+		case FilterType::PreOperation:
+			s = L"PreOperation";
 			break;
 		}
-		case Column::OperationType:
-			s = OperationTypeToString(info.MajorCode);
-			break;
+		break;
+	}
+	case Column::OperationType:
+		s = OperationTypeToString(info.MajorCode);
+		break;
 
-		case Column::Flag:
-			s = FlagToString(info.Flags);
-			break;
+	case Column::Flag:
+		s = FlagToString(info.Flags);
+		break;
 
-		case Column::Company:
-			s = info.Company.c_str();
-			break;
+	case Column::Company:
+		s = info.Company.c_str();
+		break;
 
-		case Column::Module:
-			s = Helpers::StringToWstring(info.Module).c_str();
-			break;
+	case Column::Module:
+		s = Helpers::StringToWstring(info.Module).c_str();
+		break;
 
-		case Column::MajorCode:
-			s.Format(L"%d <0x%02x>", info.MajorCode, info.MajorCode);
-			break;
+	case Column::MajorCode:
+		s.Format(L"%d <0x%02x>", info.MajorCode, info.MajorCode);
+		break;
 	}
 	return s.GetLength();
 }
@@ -246,11 +246,11 @@ int COperationTable::ParseTableEntry(CString& s, char& mask, int& select, Operat
 bool COperationTable::CompareItems(const OperationCallbackInfo& s1, const OperationCallbackInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
+	case 0:
 
-			break;
-		default:
-			break;
+		break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -284,8 +284,8 @@ void COperationTable::Refresh() {
 
 	if (p != nullptr) {
 		memset(p, 0, size);
-		DriverHelper::EnumMiniFilterOperations(data, dataSize,p, size);
-		for (int i = 0; (p->MajorFunction != IRP_MJ_OPERATION_END&& i<maxCount); i++) {
+		DriverHelper::EnumMiniFilterOperations(data, dataSize, p, size);
+		for (int i = 0; (p->MajorFunction != IRP_MJ_OPERATION_END && i < maxCount); i++) {
 			OperationCallbackInfo info;
 			info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)p->PostOperation);
 			std::wstring path = Helpers::StringToWstring(info.Module);
@@ -334,54 +334,54 @@ LRESULT COperationTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 PCWSTR COperationTable::OperationTypeToString(UCHAR type) {
 	switch (type)
 	{
-		case IRP_MJ_CREATE:  return L"Create";
-		case IRP_MJ_CREATE_NAMED_PIPE: return L"CreatePipe";
-		case IRP_MJ_CREATE_MAILSLOT: return L"CreateMailsolt";
-		case IRP_MJ_READ: return L"Read";
-		case IRP_MJ_WRITE: return L"Write";
-		case IRP_MJ_QUERY_INFORMATION: return L"QueryFileInformation";
-		case IRP_MJ_SET_INFORMATION: return L"SetFileInformation";
-		case IRP_MJ_QUERY_EA: return L"QueryEa";
-		case IRP_MJ_SET_EA: return L"SetEa";
-		case IRP_MJ_QUERY_VOLUME_INFORMATION: return L"QueryVolumeInformation";
-		case IRP_MJ_SET_VOLUME_INFORMATION: return L"SetVolumeInformation";
-		case IRP_MJ_DIRECTORY_CONTROL: return L"DirectoryControl";
-		case IRP_MJ_FILE_SYSTEM_CONTROL: return L"FileSystemControl";
-		case IRP_MJ_INTERNAL_DEVICE_CONTROL: return L"DeviceInternalIoControl";
-		case IRP_MJ_DEVICE_CONTROL: return L"DeviceIoControl";
-		case IRP_MJ_LOCK_CONTROL: return L"LockControl";
-		case IRP_MJ_QUERY_SECURITY: return L"QuerySecurity";
-		case IRP_MJ_SET_SECURITY: return L"SetSecurity";
-		case IRP_MJ_QUERY_QUOTA: return L"QueryQuota";
-		case IRP_MJ_SET_QUOTA: return L"SetQuota";
-		case IRP_MJ_PNP: return L"Pnp";
-		case IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION: return L"AcquireForSectionSynchronization";
-		case IRP_MJ_ACQUIRE_FOR_MOD_WRITE: return L"AcquireForModifiedPageWriter";
-		case IRP_MJ_RELEASE_FOR_MOD_WRITE: return L"ReleaseForModifiedPageWriter";
-		case IRP_MJ_QUERY_OPEN: return L"QueryOpen";
-		case IRP_MJ_FAST_IO_CHECK_IF_POSSIBLE: return L"FastIoCheckIfPossible";
-		case IRP_MJ_NETWORK_QUERY_OPEN: return L"NetworkQueryOpen";
-		case IRP_MJ_MDL_READ: return L"MdlRead";
-		case IRP_MJ_MDL_READ_COMPLETE: return L"MdlReadComplete";
-		case IRP_MJ_PREPARE_MDL_WRITE: return L"PrepareMdlWrite";
-		case IRP_MJ_MDL_WRITE_COMPLETE: return L"MdlWriteComplete";
-		case IRP_MJ_VOLUME_MOUNT: return L"MountVolume";
-		case IRP_MJ_ACQUIRE_FOR_CC_FLUSH: return L"AcquireForCacheFlash";
-		case IRP_MJ_CLEANUP: return L"Cleanup";
-		case IRP_MJ_CLOSE: return L"Close";
-		case IRP_MJ_FLUSH_BUFFERS: return L"FlushBuffers";
-		case IRP_MJ_RELEASE_FOR_CC_FLUSH: return L"ReleaseForCacheFlush";
-		case IRP_MJ_RELEASE_FOR_SECTION_SYNCHRONIZATION: return L"ReleaseForSectionSynchronization";
-		case IRP_MJ_SHUTDOWN: return L"Shutdown";
-		case IRP_MJ_VOLUME_DISMOUNT: return L"DismountVolume";
-		case IRP_MJ_POWER: return L"Power";
-		case IRP_MJ_SYSTEM_CONTROL: return L"SystemControl";
-		case IRP_MJ_DEVICE_CHANGE: return L"DeviceChange";
-		case (UCHAR)-8: return L"Reserved-8";
-		case (UCHAR)-9: return L"Reserved-9";
-		case (UCHAR)-10: return L"Reserved-10";
-		case (UCHAR)-11: return L"Reserved-11";
-		case (UCHAR)-12: return L"Reserved-12";
+	case IRP_MJ_CREATE:  return L"Create";
+	case IRP_MJ_CREATE_NAMED_PIPE: return L"CreatePipe";
+	case IRP_MJ_CREATE_MAILSLOT: return L"CreateMailsolt";
+	case IRP_MJ_READ: return L"Read";
+	case IRP_MJ_WRITE: return L"Write";
+	case IRP_MJ_QUERY_INFORMATION: return L"QueryFileInformation";
+	case IRP_MJ_SET_INFORMATION: return L"SetFileInformation";
+	case IRP_MJ_QUERY_EA: return L"QueryEa";
+	case IRP_MJ_SET_EA: return L"SetEa";
+	case IRP_MJ_QUERY_VOLUME_INFORMATION: return L"QueryVolumeInformation";
+	case IRP_MJ_SET_VOLUME_INFORMATION: return L"SetVolumeInformation";
+	case IRP_MJ_DIRECTORY_CONTROL: return L"DirectoryControl";
+	case IRP_MJ_FILE_SYSTEM_CONTROL: return L"FileSystemControl";
+	case IRP_MJ_INTERNAL_DEVICE_CONTROL: return L"DeviceInternalIoControl";
+	case IRP_MJ_DEVICE_CONTROL: return L"DeviceIoControl";
+	case IRP_MJ_LOCK_CONTROL: return L"LockControl";
+	case IRP_MJ_QUERY_SECURITY: return L"QuerySecurity";
+	case IRP_MJ_SET_SECURITY: return L"SetSecurity";
+	case IRP_MJ_QUERY_QUOTA: return L"QueryQuota";
+	case IRP_MJ_SET_QUOTA: return L"SetQuota";
+	case IRP_MJ_PNP: return L"Pnp";
+	case IRP_MJ_ACQUIRE_FOR_SECTION_SYNCHRONIZATION: return L"AcquireForSectionSynchronization";
+	case IRP_MJ_ACQUIRE_FOR_MOD_WRITE: return L"AcquireForModifiedPageWriter";
+	case IRP_MJ_RELEASE_FOR_MOD_WRITE: return L"ReleaseForModifiedPageWriter";
+	case IRP_MJ_QUERY_OPEN: return L"QueryOpen";
+	case IRP_MJ_FAST_IO_CHECK_IF_POSSIBLE: return L"FastIoCheckIfPossible";
+	case IRP_MJ_NETWORK_QUERY_OPEN: return L"NetworkQueryOpen";
+	case IRP_MJ_MDL_READ: return L"MdlRead";
+	case IRP_MJ_MDL_READ_COMPLETE: return L"MdlReadComplete";
+	case IRP_MJ_PREPARE_MDL_WRITE: return L"PrepareMdlWrite";
+	case IRP_MJ_MDL_WRITE_COMPLETE: return L"MdlWriteComplete";
+	case IRP_MJ_VOLUME_MOUNT: return L"MountVolume";
+	case IRP_MJ_ACQUIRE_FOR_CC_FLUSH: return L"AcquireForCacheFlash";
+	case IRP_MJ_CLEANUP: return L"Cleanup";
+	case IRP_MJ_CLOSE: return L"Close";
+	case IRP_MJ_FLUSH_BUFFERS: return L"FlushBuffers";
+	case IRP_MJ_RELEASE_FOR_CC_FLUSH: return L"ReleaseForCacheFlush";
+	case IRP_MJ_RELEASE_FOR_SECTION_SYNCHRONIZATION: return L"ReleaseForSectionSynchronization";
+	case IRP_MJ_SHUTDOWN: return L"Shutdown";
+	case IRP_MJ_VOLUME_DISMOUNT: return L"DismountVolume";
+	case IRP_MJ_POWER: return L"Power";
+	case IRP_MJ_SYSTEM_CONTROL: return L"SystemControl";
+	case IRP_MJ_DEVICE_CHANGE: return L"DeviceChange";
+	case (UCHAR)-8: return L"Reserved-8";
+	case (UCHAR)-9: return L"Reserved-9";
+	case (UCHAR)-10: return L"Reserved-10";
+	case (UCHAR)-11: return L"Reserved-11";
+	case (UCHAR)-12: return L"Reserved-12";
 	}
 	return L"";
 }

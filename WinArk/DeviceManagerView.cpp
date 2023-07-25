@@ -6,7 +6,7 @@
 
 using namespace WinSys;
 
-bool CDeviceManagerView::IsSortable(HWND,int col) const {
+bool CDeviceManagerView::IsSortable(HWND, int col) const {
 	return col == 0;
 }
 
@@ -16,7 +16,7 @@ LRESULT CDeviceManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	::GetClientRect(hWnd, &rect);
 	rect.bottom -= 50;
 
-	m_Splitter.Create(m_hWnd, rect, nullptr, WS_CHILD|WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
+	m_Splitter.Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
 
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL);
@@ -177,24 +177,24 @@ CString CDeviceManagerView::GetDeviceProperty(DeviceInfo& di, int index) const {
 	CString result;
 	auto& prop = m_Items[index];
 	switch (prop.Type) {
-		case ItemType::String:
-			result = m_DevMgr->GetDeviceRegistryPropertyString(di, prop.PropertyType).c_str();
-			break;
+	case ItemType::String:
+		result = m_DevMgr->GetDeviceRegistryPropertyString(di, prop.PropertyType).c_str();
+		break;
 
-		case ItemType::MultiString:
-			for (auto& str : m_DevMgr->GetDeviceRegistryPropertyMultiString(di, prop.PropertyType))
-				result += str.c_str() + CString(L", ");
-			if (!result.IsEmpty())
-				result = result.Left(result.GetLength() - 2);
-			break;
+	case ItemType::MultiString:
+		for (auto& str : m_DevMgr->GetDeviceRegistryPropertyMultiString(di, prop.PropertyType))
+			result += str.c_str() + CString(L", ");
+		if (!result.IsEmpty())
+			result = result.Left(result.GetLength() - 2);
+		break;
 
-		case ItemType::Dword:
-			result.Format(L"%08X", m_DevMgr->GetDeviceRegistryProperty<DWORD>(di, prop.PropertyType));
-			break;
+	case ItemType::Dword:
+		result.Format(L"%08X", m_DevMgr->GetDeviceRegistryProperty<DWORD>(di, prop.PropertyType));
+		break;
 
-		case ItemType::Boolean:
-			result = m_DevMgr->GetDeviceRegistryProperty<DWORD>(di, prop.PropertyType) ? L"Yes" : L"No";
-			break;
+	case ItemType::Boolean:
+		result = m_DevMgr->GetDeviceRegistryProperty<DWORD>(di, prop.PropertyType) ? L"Yes" : L"No";
+		break;
 
 	}
 
@@ -216,7 +216,7 @@ void CDeviceManagerView::DoSort(const SortInfo* si) {
 	else {
 		std::sort(m_ClassItems.begin(), m_ClassItems.end(), [&](const auto& i1, const auto& i2) {
 			return CompareItems(i1.Name, i2.Name, si->SortAscending);
-		});
+			});
 	}
 }
 
@@ -232,13 +232,13 @@ LRESULT CDeviceManagerView::GetDeviceClassInfo(LVITEM& item) const {
 	if (item.mask & LVIF_TEXT) {
 		auto index = item.iItem;
 		switch (item.iSubItem) {
-			case 0:
-				item.pszText = (PWSTR)m_ClassItems[index].Name;
-				break;
+		case 0:
+			item.pszText = (PWSTR)m_ClassItems[index].Name;
+			break;
 
-			case 1:
-				::StringCchCopy(item.pszText, item.cchTextMax, GetDeviceClassProperty(m_SelectedClass, index));
-				break;
+		case 1:
+			::StringCchCopy(item.pszText, item.cchTextMax, GetDeviceClassProperty(m_SelectedClass, index));
+			break;
 		}
 	}
 	return 0;
@@ -249,13 +249,13 @@ LRESULT CDeviceManagerView::GetDeviceInfo(LVITEM& item) const {
 	if (item.mask & LVIF_TEXT) {	// The pszText member or the lpszItem parameter is the address of a null-terminated string
 		auto index = item.iItem;
 		switch (item.iSubItem) {	// 子项的索引值(可以视为列号)从0开始
-			case 0:
-				item.pszText = (PWSTR)m_Items[index].Name;
-				break;
+		case 0:
+			item.pszText = (PWSTR)m_Items[index].Name;
+			break;
 
-			case 1:
-				::StringCchCopy(item.pszText, item.cchTextMax, m_Items[index].Value);
-				break;
+		case 1:
+			::StringCchCopy(item.pszText, item.cchTextMax, m_Items[index].Value);
+			break;
 		}
 	}
 	return 0;
@@ -267,28 +267,28 @@ CString CDeviceManagerView::GetDeviceClassProperty(const GUID* guid, int index) 
 	CString result;
 	auto& prop = m_ClassItems[index];
 	switch (prop.Type) {
-		case ItemType::Guid: // GUID
-			::StringFromGUID2(*guid, result.GetBufferSetLength(64), 64);
-			break;
+	case ItemType::Guid: // GUID
+		::StringFromGUID2(*guid, result.GetBufferSetLength(64), 64);
+		break;
 
-		case ItemType::MultiString:
-			for (auto& str : DeviceManager::GetDeviceClassRegistryPropertyMultiString(guid, prop.PropertyType))
-				result += str.c_str() + CString(L", ");
-			if (!result.IsEmpty())
-				result = result.Left(result.GetLength() - 2);
-			break;
+	case ItemType::MultiString:
+		for (auto& str : DeviceManager::GetDeviceClassRegistryPropertyMultiString(guid, prop.PropertyType))
+			result += str.c_str() + CString(L", ");
+		if (!result.IsEmpty())
+			result = result.Left(result.GetLength() - 2);
+		break;
 
-		case ItemType::Dword:
-			result.Format(L"0x%08X", DeviceManager::GetDeviceClassRegistryProperty<DWORD>(guid, prop.PropertyType));
-			break;
+	case ItemType::Dword:
+		result.Format(L"0x%08X", DeviceManager::GetDeviceClassRegistryProperty<DWORD>(guid, prop.PropertyType));
+		break;
 
-		case ItemType::Boolean:
-			result = DeviceManager::GetDeviceClassRegistryProperty<DWORD>(guid, prop.PropertyType) ? L"Yes" : L"No";
-			break;
+	case ItemType::Boolean:
+		result = DeviceManager::GetDeviceClassRegistryProperty<DWORD>(guid, prop.PropertyType) ? L"Yes" : L"No";
+		break;
 
-		case ItemType::String:
-			result = DeviceManager::GetDeviceClassRegistryPropertyString(guid, prop.PropertyType).c_str();
-			break;
+	case ItemType::String:
+		result = DeviceManager::GetDeviceClassRegistryPropertyString(guid, prop.PropertyType).c_str();
+		break;
 	}
 
 	return result;

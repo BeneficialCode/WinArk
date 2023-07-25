@@ -21,7 +21,7 @@ public:
 
 	CString GetColumnText(HWND, int row, int col) const;
 	void DoSort(const SortInfo* si);
-	bool IsSortable(HWND,int col) const;
+	bool IsSortable(HWND, int col) const;
 	bool IsUpdating() const;
 
 	static PCWSTR LogonTypeToString(WinSys::SecurityLogonType type);

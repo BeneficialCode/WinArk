@@ -80,7 +80,7 @@ public:
 	std::vector<ULONG_PTR> GetExportedProcAddr(std::wstring libName, std::string name, bool isPe64);
 
 	std::string GetForwardName(std::wstring libName, std::string name, bool isPe64);
-	
+
 	std::vector<std::wstring> GetApiSetHostName(std::wstring apiset);
 
 	struct Library {

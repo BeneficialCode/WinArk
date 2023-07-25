@@ -8,7 +8,7 @@ class CJobPropertiesDlg :
 	public CDialogImpl<CJobPropertiesDlg>,
 	public CVirtualListView<CJobPropertiesDlg> {
 public:
-	enum {IDD=IDD_JOB};
+	enum { IDD = IDD_JOB };
 
 	CJobPropertiesDlg(const WinSys::ProcessManager& pm, HANDLE hJob, PCWSTR name) : m_pm(pm), m_hJob(hJob), m_Name(name) {}
 
@@ -16,11 +16,11 @@ public:
 	void DoSort(const SortInfo* si);
 
 	BEGIN_MSG_MAP(CJobPropertiesDlg)
-		MESSAGE_HANDLER(WM_TIMER,OnTimer)
-		MESSAGE_HANDLER(WM_PAINT,OnPaint)
-		MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
-		COMMAND_ID_HANDLER(IDCANCEL,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_TERM,OnTerminate)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
+		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_TERM, OnTerminate)
 		CHAIN_MSG_MAP(CVirtualListView<CJobPropertiesDlg>)
 	END_MSG_MAP()
 

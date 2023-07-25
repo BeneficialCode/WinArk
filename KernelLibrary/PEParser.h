@@ -42,7 +42,7 @@ public:
 
 private:
 	FileManager _file;
-	PUCHAR _address = nullptr;	
+	PUCHAR _address = nullptr;
 	IMAGE_DOS_HEADER* _dosHeader;
 	IMAGE_NT_HEADERS64* _ntHeader;
 	IMAGE_FILE_HEADER* _fileHeader;

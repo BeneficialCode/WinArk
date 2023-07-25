@@ -6,7 +6,7 @@ void SpinLock::Init() {
 }
 
 void SpinLock::Lock() {
-	KeAcquireSpinLock(&_lock,&_oldIrql);
+	KeAcquireSpinLock(&_lock, &_oldIrql);
 }
 
 void SpinLock::Unlock() {

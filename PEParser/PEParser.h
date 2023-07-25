@@ -222,7 +222,7 @@ private:
 	HANDLE _hMemMap{ nullptr };
 	HANDLE _hFile{ INVALID_HANDLE_VALUE };
 	IMAGE_DOS_HEADER* _dosHeader = nullptr;
-	IMAGE_NT_HEADERS64* _ntHeader=nullptr;
+	IMAGE_NT_HEADERS64* _ntHeader = nullptr;
 	IMAGE_FILE_HEADER* _fileHeader = nullptr;
 	IMAGE_SECTION_HEADER* _sections = nullptr;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };

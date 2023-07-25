@@ -165,7 +165,7 @@ PVOID Helpers::GetKernelModuleBase(std::string moduleName) {
 			break;
 		std::string name;
 		name = std::string((PCSTR)((BYTE*)entry->FullPathName + entry->OffsetToFileName));
-		if (!_stricmp(name.c_str(),moduleName.c_str())) {
+		if (!_stricmp(name.c_str(), moduleName.c_str())) {
 			return entry->ImageBase;
 		}
 		entry += 1;
@@ -240,7 +240,7 @@ std::string Helpers::GetKernelModuleNameByAddress(ULONG_PTR address) {
 
 std::wstring Helpers::GetUserModuleByAddress(ULONG_PTR address, ULONG pid) {
 	std::wstring moduleName = L"";
-	if (pid == 0||pid==4) {
+	if (pid == 0 || pid == 4) {
 		return StringToWstring(GetKernelModuleByAddress(address));
 	}
 	WinSys::ProcessModuleTracker m_Tracker(pid);
@@ -332,7 +332,7 @@ std::wstring Helpers::GetDriverDirFromObjectManager(std::wstring serviceName) {
 bool Helpers::WriteString(HANDLE hFile, std::wstring const& text) {
 	DWORD bytes;
 	std::string txt = WstringToString(text);
-	return ::WriteFile(hFile, txt.data(), txt.length(),&bytes,nullptr);
+	return ::WriteFile(hFile, txt.data(), txt.length(), &bytes, nullptr);
 }
 
 

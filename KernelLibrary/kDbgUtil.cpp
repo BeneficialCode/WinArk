@@ -112,7 +112,7 @@ bool kDbgUtil::HookDbgSys() {
 		if (!NT_SUCCESS(status))
 			return false;
 	}
-	
+
 	if (g_pDbgkCreateThread) {
 		NTSTATUS status = DetourAttach((PVOID*)&g_pDbgkCreateThread, NewDbgkCreateThread);
 		if (!NT_SUCCESS(status))
@@ -395,7 +395,7 @@ bool kDbgUtil::InitDbgSys(DbgSysCoreInfo* info) {
 		g_pMiReferenceControlAreaFile = (PMiReferenceControlAreaFile)info->MiReferenceControlAreaFile;
 		_first = false;
 	}
-	
+
 	return HookDbgSys();
 }
 

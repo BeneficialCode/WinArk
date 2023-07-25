@@ -97,23 +97,23 @@ CUnloadedDriverTable::CUnloadedDriverTable(BarInfo& bars, TableInfo& table) :CTa
 int CUnloadedDriverTable::ParseTableEntry(CString& s, char& mask, int& select, UnloadedDriverInfo& info, int column) {
 	switch (column)
 	{
-		case 0: // Name
-			s = info.DriverName.c_str();
-			break;
+	case 0: // Name
+		s = info.DriverName.c_str();
+		break;
 
-		case 1: // StartAddress
-			s.Format(L"0x%p", info.StartAddress);
-			break;
+	case 1: // StartAddress
+		s.Format(L"0x%p", info.StartAddress);
+		break;
 
-		case 2: // EndAddress
-			s.Format(L"0x%p", info.EndAddress);
-			break;
+	case 2: // EndAddress
+		s.Format(L"0x%p", info.EndAddress);
+		break;
 
-		case 3: // CurrentTime
-			s = FormatHelper::TimeToString(info.CurrentTime.QuadPart);
-			break;
-		default:
-			break;
+	case 3: // CurrentTime
+		s = FormatHelper::TimeToString(info.CurrentTime.QuadPart);
+		break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }
@@ -155,7 +155,7 @@ void CUnloadedDriverTable::Refresh() {
 				break;
 		}
 	}
-	
+
 	m_Table.data.n = m_Table.data.info.size();
 }
 

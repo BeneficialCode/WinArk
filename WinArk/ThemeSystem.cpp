@@ -120,7 +120,7 @@ void InitBrushSys() {
 	g_myBrush[12] = CreateSolidBrush(g_myColor[12]);
 	g_myBrush[13] = CreateSolidBrush(g_myColor[13]);
 	g_myBrush[14] = CreateSolidBrush(g_myColor[14]);
-	g_myBrush[15] =  CreateSolidBrush(g_myColor[15]);
+	g_myBrush[15] = CreateSolidBrush(g_myColor[15]);
 	g_myBrush[16] = CreateSolidBrush(g_myColor[16]);
 	g_myBrush[17] = CreateSolidBrush(g_myColor[17]);
 	g_myBrush[18] = CreateSolidBrush(g_myColor[18]);

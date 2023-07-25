@@ -12,7 +12,7 @@ namespace WinSys {
 
 		ProcessInfo();
 
-		const std::wstring& GetImageName() const { 
+		const std::wstring& GetImageName() const {
 			return _processName;
 		};
 		const std::wstring& GetPackageFullName() const {

@@ -8,83 +8,83 @@
 #pragma comment(lib,"onecore.lib")
 
 CProcessATHookTable::CProcessATHookTable(BarInfo& bars, TableInfo& table, DWORD pid, bool x64)
-	:CTable(bars, table),m_ModuleTracker(pid),m_Pid(pid){
+	:CTable(bars, table), m_ModuleTracker(pid), m_Pid(pid) {
 	SetTableWindowInfo(bars.nbar);
 }
 
 CString CProcessATHookTable::TypeToString(ATHookType type) {
 	switch (type)
 	{
-		case ATHookType::IAT:
-			return L"IAT";
-		case ATHookType::EAT:
-			return L"EAT";
-		default:
-			return L"Unknown Type";
+	case ATHookType::IAT:
+		return L"IAT";
+	case ATHookType::EAT:
+		return L"EAT";
+	default:
+		return L"Unknown Type";
 	}
 }
 
 int CProcessATHookTable::ParseTableEntry(CString& s, char& mask, int& select, EATHookInfo& info, int column) {
 	switch (static_cast<Column>(column))
 	{
-		case Column::HookObject:
-			s = info.Name.c_str();
-			break;
+	case Column::HookObject:
+		s = info.Name.c_str();
+		break;
 
-		case Column::HookType:
-			s = TypeToString(info.Type);
-			break;
+	case Column::HookType:
+		s = TypeToString(info.Type);
+		break;
 
-		case Column::Address:
-		{
-			auto& symbols = SymbolManager::Get();
-			DWORD64 offset = 0;
-			auto symbol = symbols.GetSymbolFromAddress(m_Pid, info.Address, &offset);
-			CStringA text;
-			if (symbol) {
-				auto sym = symbol->GetSymbolInfo();
-				if (offset != 0) {
-					text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
-				}
-				else
-					text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
-				std::string details = text.GetString();
-				std::wstring wdetails = Helpers::StringToWstring(details);
-				s.Format(L"0x%p (%s)", info.Address, wdetails.c_str());
+	case Column::Address:
+	{
+		auto& symbols = SymbolManager::Get();
+		DWORD64 offset = 0;
+		auto symbol = symbols.GetSymbolFromAddress(m_Pid, info.Address, &offset);
+		CStringA text;
+		if (symbol) {
+			auto sym = symbol->GetSymbolInfo();
+			if (offset != 0) {
+				text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
 			}
 			else
-				s.Format(L"0x%p", info.Address);
-			break;
+				text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
+			std::string details = text.GetString();
+			std::wstring wdetails = Helpers::StringToWstring(details);
+			s.Format(L"0x%p (%s)", info.Address, wdetails.c_str());
 		}
+		else
+			s.Format(L"0x%p", info.Address);
+		break;
+	}
 
-		case Column::Module:
-			s = info.TargetModule.c_str();
-			break;
+	case Column::Module:
+		s = info.TargetModule.c_str();
+		break;
 
-		case Column::TargetAddress:
-		{
-			auto& symbols = SymbolManager::Get();
-			DWORD64 offset = 0;
-			auto symbol = symbols.GetSymbolFromAddress(m_Pid, info.TargetAddress, &offset);
-			CStringA text;
-			if (symbol) {
-				auto sym = symbol->GetSymbolInfo();
-				if (offset != 0) {
-					text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
-				}
-				else
-					text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
-				std::string details = text.GetString();
-				std::wstring wdetails = Helpers::StringToWstring(details);
-				s.Format(L"0x%p (%s)", info.TargetAddress, wdetails.c_str());
+	case Column::TargetAddress:
+	{
+		auto& symbols = SymbolManager::Get();
+		DWORD64 offset = 0;
+		auto symbol = symbols.GetSymbolFromAddress(m_Pid, info.TargetAddress, &offset);
+		CStringA text;
+		if (symbol) {
+			auto sym = symbol->GetSymbolInfo();
+			if (offset != 0) {
+				text.Format("%s!%s+0x%X", symbol->ModuleInfo.ModuleName, sym->Name, (DWORD)offset);
 			}
 			else
-				s.Format(L"0x%p", info.TargetAddress);
-			break;
+				text.Format("%s!%s", symbol->ModuleInfo.ModuleName, sym->Name);
+			std::string details = text.GetString();
+			std::wstring wdetails = Helpers::StringToWstring(details);
+			s.Format(L"0x%p (%s)", info.TargetAddress, wdetails.c_str());
 		}
+		else
+			s.Format(L"0x%p", info.TargetAddress);
+		break;
+	}
 
-		default:
-			break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }
@@ -92,10 +92,10 @@ int CProcessATHookTable::ParseTableEntry(CString& s, char& mask, int& select, EA
 bool CProcessATHookTable::CompareItems(const EATHookInfo& s1, const EATHookInfo& s2, int col, bool asc) {
 	switch (static_cast<Column>(col))
 	{
-		case Column::HookType:
-			return SortHelper::SortStrings(TypeToString(s1.Type), TypeToString(s2.Type), asc);
-		default:
-			break;
+	case Column::HookType:
+		return SortHelper::SortStrings(TypeToString(s1.Type), TypeToString(s2.Type), asc);
+	default:
+		break;
 	}
 	return false;
 }
@@ -269,7 +269,7 @@ std::string CProcessATHookTable::GetForwardName(std::wstring libName, std::strin
 	return forwardName;
 }
 
-std::vector<ULONG_PTR> CProcessATHookTable::GetExportedProcAddr(std::wstring libName,std::string name,bool isPe64) {
+std::vector<ULONG_PTR> CProcessATHookTable::GetExportedProcAddr(std::wstring libName, std::string name, bool isPe64) {
 	std::vector<ULONG_PTR> addresses;
 	for (const auto& lib : _libraries) {
 		if (lib.isPe64 != isPe64) {
@@ -321,7 +321,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 	if (isSystemFile)
 		return;
 
-	SubsystemType type  = parser.GetSubsystemType();
+	SubsystemType type = parser.GetSubsystemType();
 	if (type == SubsystemType::Native) {
 		return;
 	}
@@ -351,7 +351,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 					address = *((PULONG)buffer + index);
 					inc = 4;
 				}
-				
+
 				auto& symbols = SymbolManager::Get();
 				DWORD64 offset = 0;
 				auto symbol = symbols.GetSymbolFromAddress(m_Pid, address, &offset);
@@ -365,7 +365,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 					if (hosts.size() > 0) {
 						for (const auto& host : hosts) {
 							orgAddresses = GetExportedProcAddr(host, item.Name, isPe64);
-							if (orgAddresses.size() > 0 ) {
+							if (orgAddresses.size() > 0) {
 								break;
 							}
 						}
@@ -374,13 +374,13 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 						orgAddresses = GetExportedProcAddr(wlibName, item.Name, isPe64);
 
 					auto it = wlibName.find(L"api-ms-win-core");
-					if (it != std::wstring::npos && hosts.size()<=0) {
+					if (it != std::wstring::npos && hosts.size() <= 0) {
 						index++;
 						continue;
 					}
 
 					bool isSame = false;
-					
+
 					for (auto orgAddress : orgAddresses) {
 						if (orgAddress == address) {
 							isSame = true;
@@ -393,7 +393,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 						continue;
 					}
 
-					
+
 
 					if (symName != item.Name) {
 						std::string forwardName = GetForwardName(wlibName, item.Name, isPe64);
@@ -403,10 +403,10 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 							continue;
 						}
 
-						
+
 
 						std::string moduleName = symbol->ModuleInfo.ModuleName;
-						moduleName+= ".dll";
+						moduleName += ".dll";
 						if (lib.Name == moduleName) {
 							index++;
 							continue;
@@ -428,7 +428,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 							if (it != std::wstring::npos && hosts.size() > 0) {
 								for (const auto& lib : hosts) {
 									std::wstring whost = Helpers::StringToWstring(host);
-									if (_wcsicmp(whost.c_str(),lib.c_str()) == 0) {
+									if (_wcsicmp(whost.c_str(), lib.c_str()) == 0) {
 										idx = j;
 										orgLib = orgSymbol->ModuleInfo.ImageName;
 										orgFuncName = orgSymName;
@@ -436,7 +436,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 									}
 								}
 							}
-							else if(_stricmp(host.c_str(), lib.Name.c_str()) == 0) {
+							else if (_stricmp(host.c_str(), lib.Name.c_str()) == 0) {
 								idx = j;
 								orgLib = orgSymbol->ModuleInfo.ImageName;
 								orgFuncName = orgSymName;
@@ -464,7 +464,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 							if (symbol.ForwardName.length() > 0) {
 								if (symbol.Name == orgFuncName) {
 									pos = symbol.ForwardName.find(symName);
-									if (pos!=std::string::npos) {
+									if (pos != std::string::npos) {
 										isForward = true;
 									}
 								}
@@ -483,7 +483,7 @@ void CProcessATHookTable::CheckIATHook(const std::shared_ptr<WinSys::ModuleInfo>
 						info.Name = m->Name + L"_";
 						CString text;
 						ULONG_PTR iatAddress = (ULONG_PTR)iat + index * inc;
-						
+
 						wlibName += L"_";
 						text.Format(L"0x%p", iatAddress);
 						std::wstring waddr = text.GetString();

@@ -43,7 +43,7 @@ int64_t ObjectManager::_totalObjects;
 int ObjectManager::EnumTypes() {
 	const ULONG len = 1 << 14;
 	BYTE buffer[len];
-	if (!NT_SUCCESS(::NtQueryObject(nullptr, ObjectTypesInformation, buffer, len,nullptr)))
+	if (!NT_SUCCESS(::NtQueryObject(nullptr, ObjectTypesInformation, buffer, len, nullptr)))
 		return 0;
 
 	auto p = reinterpret_cast<OBJECT_TYPES_INFORMATION*>(buffer);
@@ -154,8 +154,8 @@ bool ObjectManager::EnumHandlesAndObjects(PCWSTR type, DWORD pid, PCWSTR prefix,
 
 		auto name = GetObjectName((HANDLE)handle.HandleValue, (ULONG)handle.UniqueProcessId, handle.ObjectTypeIndex);
 		if (prefix) {
-			if (name.empty() || 
-				_wcsicmp(name.c_str(),sprefix.c_str())!=0)
+			if (name.empty() ||
+				_wcsicmp(name.c_str(), sprefix.c_str()) != 0)
 				//name.Left(sprefix.GetLength()).CompareNoCase(sprefix) != 0)
 				continue;
 		}

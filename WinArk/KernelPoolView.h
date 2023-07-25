@@ -19,7 +19,7 @@ class CKernelPoolView :
 	public CWindowImpl<CKernelPoolView, CListViewCtrl>,
 	public CCustomDraw<CKernelPoolView>,
 	public CIdleHandler,
-	public IView{
+	public IView {
 public:
 	enum ColumnType {
 		TagName,
@@ -37,10 +37,10 @@ public:
 		SourceDescription,
 		NumColumns
 	};
-	
-	DECLARE_WND_SUPERCLASS(nullptr,CListViewCtrl::GetWndClassName())
 
-	CKernelPoolView(IMainFrame* pFrame):m_pFrame(pFrame){}
+	DECLARE_WND_SUPERCLASS(nullptr, CListViewCtrl::GetWndClassName())
+
+	CKernelPoolView(IMainFrame* pFrame) :m_pFrame(pFrame) {}
 
 	void LoadPoolTagText();
 	void UpdatePoolTags();
@@ -83,13 +83,13 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		MESSAGE_HANDLER(WM_RBUTTONDOWN,OnRBtnDown)
-		CHAIN_MSG_MAP_ALT(CCustomDraw<CKernelPoolView>,1)
+		MESSAGE_HANDLER(WM_RBUTTONDOWN, OnRBtnDown)
+		CHAIN_MSG_MAP_ALT(CCustomDraw<CKernelPoolView>, 1)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDisplayInfo)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK, OnColumnClick)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
-		COMMAND_ID_HANDLER(ID_POOLTAG_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_POOLTAG_REFRESH, OnRefresh)
 		DEFAULT_REFLECTION_HANDLER()
 	END_MSG_MAP()
 

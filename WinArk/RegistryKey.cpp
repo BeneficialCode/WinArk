@@ -9,7 +9,7 @@ RegistryKey::RegistryKey(HKEY hKey, bool own) noexcept :_hKey(hKey), _own(own) {
 
 RegistryKey::RegistryKey(RegistryKey&& other) noexcept {
 	_hKey = other._hKey;
-	_own = other._own;	
+	_own = other._own;
 	CheckPredefinedKey();
 	ATLASSERT(IsValid());
 	other._hKey = nullptr;
@@ -84,7 +84,7 @@ LSTATUS RegistryKey::SetMultiStringValue(LPCTSTR pszValueName, LPCTSTR pszValue)
 		nLength = static_cast<ULONG>(_tcslen(pszTemp)) + 1;
 		pszTemp += nLength;
 		nBytes += nLength * sizeof(TCHAR);
-	} while (nLength!=1);
+	} while (nLength != 1);
 
 	return ::RegSetValueEx(_hKey, pszValue, 0, REG_MULTI_SZ,
 		reinterpret_cast<const BYTE*>(pszValue), nBytes);
@@ -99,19 +99,19 @@ LSTATUS RegistryKey::SetValue(LPCTSTR pszValueName, DWORD dwType, const void* pV
 _Use_decl_annotations_
 LSTATUS RegistryKey::SetBinaryValue(LPCTSTR pszValueName, const void* pData, ULONG nBytes) noexcept {
 	ATLASSUME(_hKey);
-	return ::RegSetValueEx(_hKey, pszValueName, 0, REG_BINARY, 
+	return ::RegSetValueEx(_hKey, pszValueName, 0, REG_BINARY,
 		reinterpret_cast<const BYTE*>(pData), nBytes);
 }
 
 _Use_decl_annotations_
-LSTATUS RegistryKey::SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue) noexcept{
+LSTATUS RegistryKey::SetDWORDValue(LPCTSTR pszValueName, DWORD dwValue) noexcept {
 	ATLASSUME(_hKey);
 	return ::RegSetValueEx(_hKey, pszValueName, 0, REG_DWORD,
 		reinterpret_cast<const BYTE*>(&dwValue), sizeof(DWORD));
 }
 
 _Use_decl_annotations_
-LSTATUS RegistryKey::SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue) noexcept{
+LSTATUS RegistryKey::SetQWORDValue(LPCTSTR pszValueName, ULONGLONG qwValue) noexcept {
 	ATLASSUME(_hKey);
 	return ::RegSetValueEx(_hKey, pszValueName, 0, REG_QWORD,
 		reinterpret_cast<const BYTE*>(&qwValue), sizeof(ULONGLONG));

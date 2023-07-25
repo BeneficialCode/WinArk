@@ -10,7 +10,7 @@ WorkerFactoryObjectType::WorkerFactoryObjectType(ProcessManager& pm, int index, 
 
 CString WorkerFactoryObjectType::GetDetails(HANDLE hObject) {
 	WORKER_FACTORY_BASIC_INFORMATION info;
-	if(!NT_SUCCESS(::NtQueryInformationWorkerFactory(hObject, WorkerFactoryBasicInformation, &info, sizeof(info), nullptr)))
+	if (!NT_SUCCESS(::NtQueryInformationWorkerFactory(hObject, WorkerFactoryBasicInformation, &info, sizeof(info), nullptr)))
 		return L"";
 
 	CString text;

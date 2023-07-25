@@ -41,7 +41,7 @@ public:
 		_indices.erase(_indices.begin() + index);
 	}
 
-	typename std::vector<T>::const_iterator begin() const{
+	typename std::vector<T>::const_iterator begin() const {
 		return _items.begin();
 	}
 

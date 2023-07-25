@@ -7,7 +7,7 @@ RegistryKey::RegistryKey(HANDLE hKey, bool own) :_hKey(hKey), _own(own) {
 	CheckPredefinedKey();
 }
 
-RegistryKey::RegistryKey(RegistryKey&& other){
+RegistryKey::RegistryKey(RegistryKey&& other) {
 	_hKey = other._hKey;
 	_own = other._own;
 	CheckPredefinedKey();
@@ -74,7 +74,7 @@ NTSTATUS RegistryKey::Close() {
 	return status;
 }
 
-NTSTATUS RegistryKey::SetValue(PUNICODE_STRING name, ULONG type, PVOID pValue,ULONG bytes) {
+NTSTATUS RegistryKey::SetValue(PUNICODE_STRING name, ULONG type, PVOID pValue, ULONG bytes) {
 	return ZwSetValueKey(_hKey, name, 0, type, pValue, bytes);
 }
 
@@ -112,7 +112,7 @@ NTSTATUS RegistryKey::SetMultiStringValue(PUNICODE_STRING name, PCWSTR pValue) {
 		length = static_cast<ULONG>(wcslen(pValue)) + 1;
 		pTemp += length;
 		bytes += length * sizeof(WCHAR);
-	} while (length!=1);
+	} while (length != 1);
 
 	return ZwSetValueKey(_hKey, name, 0, REG_MULTI_SZ, (PVOID)pValue, bytes);
 }

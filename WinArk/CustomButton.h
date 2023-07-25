@@ -27,7 +27,7 @@ public:
 			return CDRF_DODEFAULT;
 		}
 		CDCHandle dc(cd->hdc);
-		
+
 
 		return CDRF_DODEFAULT;
 	}

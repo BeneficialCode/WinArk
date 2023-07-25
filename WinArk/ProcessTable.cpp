@@ -25,8 +25,8 @@ NtSuspendProcess(
 	_In_ HANDLE ProcessHandle
 );
 
-CProcessTable::CProcessTable(BarInfo& bars,TableInfo& table)
-	:CTable(bars,table){
+CProcessTable::CProcessTable(BarInfo& bars, TableInfo& table)
+	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 }
 
@@ -34,56 +34,56 @@ int CProcessTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 	// Name,Id,Session,Priority,Threads,Handles,Attributes,CreateTime,CompanyName,Description,ExePath,CmdLines
 	auto& px = GetProcessInfoEx(info.get());
 	switch (static_cast<ProcessColumn>(column)) {
-		case ProcessColumn::Name:
-			s = info->GetImageName().c_str();
-			break;
-		case ProcessColumn::Id:
-			s.Format(L"%6u (0x%05X)", info->Id,info->Id);
-			break;
-		case ProcessColumn::Session:
-			s.Format(L"%2d ", info->SessionId);
-			break;
-		case ProcessColumn::UserName:
-			s = px.UserName().c_str();
-			break;
-		case ProcessColumn::Priority:
-			s = FormatHelper::PriorityClassToString(px.GetPriorityClass());
-			break;
-		case ProcessColumn::Threads:
-			s.Format(L"%u", info->ThreadCount);
-			break;
-		case ProcessColumn::Handles:
-			s.Format(L"%u  ", info->HandleCount);
-			break;
-		case ProcessColumn::Attributes:
-			s = FormatHelper::ProcessAttributesToString(px.GetAttributes(m_ProcMgr));
-			break;
-		case ProcessColumn::CreateTime:
-			s = FormatHelper::TimeToString(info->CreateTime);
-			break;
-		case ProcessColumn::Description:
-			s = px.GetDescription().c_str();
-			break;
-		case ProcessColumn::CompanyName:
-			s = px.GetCompanyName().c_str();
-			break;
-		case ProcessColumn::Version:
-			s = px.GetVersion().c_str();
-			break;
-		case ProcessColumn::ExePath:
-			s = px.GetExecutablePath().c_str();
-			break;
-		case ProcessColumn::CmdLine:
-			s = px.GetCommandLine().c_str();
-			if (s.GetLength() > MAX_PATH) {
-				select = DRAW_HILITE;
-			}
-			break;
-		case ProcessColumn::Eprocess:
-			s.Format(L"0x%p", info->EProcess);
-			break;
-		default:
-			break;
+	case ProcessColumn::Name:
+		s = info->GetImageName().c_str();
+		break;
+	case ProcessColumn::Id:
+		s.Format(L"%6u (0x%05X)", info->Id, info->Id);
+		break;
+	case ProcessColumn::Session:
+		s.Format(L"%2d ", info->SessionId);
+		break;
+	case ProcessColumn::UserName:
+		s = px.UserName().c_str();
+		break;
+	case ProcessColumn::Priority:
+		s = FormatHelper::PriorityClassToString(px.GetPriorityClass());
+		break;
+	case ProcessColumn::Threads:
+		s.Format(L"%u", info->ThreadCount);
+		break;
+	case ProcessColumn::Handles:
+		s.Format(L"%u  ", info->HandleCount);
+		break;
+	case ProcessColumn::Attributes:
+		s = FormatHelper::ProcessAttributesToString(px.GetAttributes(m_ProcMgr));
+		break;
+	case ProcessColumn::CreateTime:
+		s = FormatHelper::TimeToString(info->CreateTime);
+		break;
+	case ProcessColumn::Description:
+		s = px.GetDescription().c_str();
+		break;
+	case ProcessColumn::CompanyName:
+		s = px.GetCompanyName().c_str();
+		break;
+	case ProcessColumn::Version:
+		s = px.GetVersion().c_str();
+		break;
+	case ProcessColumn::ExePath:
+		s = px.GetExecutablePath().c_str();
+		break;
+	case ProcessColumn::CmdLine:
+		s = px.GetCommandLine().c_str();
+		if (s.GetLength() > MAX_PATH) {
+			select = DRAW_HILITE;
+		}
+		break;
+	case ProcessColumn::Eprocess:
+		s.Format(L"0x%p", info->EProcess);
+		break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }
@@ -139,16 +139,16 @@ LRESULT CProcessTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-bool CProcessTable::CompareItems(const std::shared_ptr<WinSys::ProcessInfo>& p1, const std::shared_ptr<WinSys::ProcessInfo>& p2, int col,bool asc) {
+bool CProcessTable::CompareItems(const std::shared_ptr<WinSys::ProcessInfo>& p1, const std::shared_ptr<WinSys::ProcessInfo>& p2, int col, bool asc) {
 	switch (static_cast<ProcessColumn>(col)) {
-		case ProcessColumn::Name: return SortHelper::SortStrings(p1->GetImageName(), p2->GetImageName(), asc);
-		case ProcessColumn::Id: return SortHelper::SortNumbers(p1->Id, p2->Id, asc);
-		case ProcessColumn::CompanyName: 
-		{
-			auto& px1 = GetProcessInfoEx(p1.get());
-			auto& px2 = GetProcessInfoEx(p2.get());
-			return SortHelper::SortStrings(px1.GetCompanyName(), px2.GetCompanyName(), asc);
-		}
+	case ProcessColumn::Name: return SortHelper::SortStrings(p1->GetImageName(), p2->GetImageName(), asc);
+	case ProcessColumn::Id: return SortHelper::SortNumbers(p1->Id, p2->Id, asc);
+	case ProcessColumn::CompanyName:
+	{
+		auto& px1 = GetProcessInfoEx(p1.get());
+		auto& px2 = GetProcessInfoEx(p2.get());
+		return SortHelper::SortStrings(px1.GetCompanyName(), px2.GetCompanyName(), asc);
+	}
 	}
 	return false;
 }
@@ -239,14 +239,14 @@ LRESULT CProcessTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	hSubMenu = menu.GetSubMenu(0);
 	POINT pt;
 	::GetCursorPos(&pt);
-	bool show  = Tablefunction(m_hWnd, uMsg, wParam, lParam);
+	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
 		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
 		if (id) {
 			PostMessage(WM_COMMAND, id);
 		}
 	}
-	
+
 	if (m_UpdateInterval)
 		SetTimer(1, m_UpdateInterval, nullptr);
 	return 0;
@@ -330,7 +330,7 @@ LRESULT CProcessTable::OnProcessModules(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto& p = m_Table.data.info[selected];
 
 	CModuleDlg dlg;
-	dlg.DoModal(m_hWnd,(LPARAM)p->Id);
+	dlg.DoModal(m_hWnd, (LPARAM)p->Id);
 
 	return 0;
 }
@@ -399,12 +399,12 @@ LRESULT CProcessTable::OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*
 	auto& process = m_Table.data.info[selected];
 
 	auto& px = GetProcessInfoEx(process.get());
-	if (process->Id==0 || process->Id==4) {
+	if (process->Id == 0 || process->Id == 4) {
 		AtlMessageBox(*this, L"Only support user mode process now :)", IDS_TITLE, MB_ICONINFORMATION);
 		return 0;
 	}
 
-	CInlineHookDlg dlg(m_ProcMgr,px);
+	CInlineHookDlg dlg(m_ProcMgr, px);
 	dlg.DoModal(m_hWnd, (LPARAM)process->Id);
 
 	return 0;
@@ -444,13 +444,13 @@ bool CProcessTable::InitVadSymbols(VadData* pData) {
 	pData->EprocessOffsets.VadCount = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "VadCount");
 	pData->EprocessOffsets.NumberOfVads = SymbolHelper::GetKernelStructMemberOffset("_EPROCESS", "NumberOfVads");
 
-	if (pData->TableOffsets.NumberGenericTableElements!=-1) {
+	if (pData->TableOffsets.NumberGenericTableElements != -1) {
 		pData->VadCountPos = VadCountPos::NumberGenericTableElements;
 	}
-	else if (pData->EprocessOffsets.NumberOfVads!=-1) {
+	else if (pData->EprocessOffsets.NumberOfVads != -1) {
 		pData->VadCountPos = VadCountPos::NumberOfVads;
 	}
-	else if(pData->EprocessOffsets.VadCount!=-1){
+	else if (pData->EprocessOffsets.VadCount != -1) {
 		pData->VadCountPos = VadCountPos::VadCount;
 	}
 

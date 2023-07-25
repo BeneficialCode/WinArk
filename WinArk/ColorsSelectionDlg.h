@@ -4,9 +4,9 @@
 #include "ThemeColor.h"
 
 class CColorsSelectionDlg :
-	public CDialogImpl<CColorsSelectionDlg>{
+	public CDialogImpl<CColorsSelectionDlg> {
 public:
-	enum {IDD = IDD_COLORS};
+	enum { IDD = IDD_COLORS };
 
 	CColorsSelectionDlg(ThemeColor* colors, int count);
 
@@ -14,11 +14,11 @@ public:
 
 	BEGIN_MSG_MAP(CColorsSelectionDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		MESSAGE_HANDLER(WM_HSCROLL,OnHScroll)
+		MESSAGE_HANDLER(WM_HSCROLL, OnHScroll)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_LOAD,OnLoad)
-		COMMAND_ID_HANDLER(IDC_SAVE,OnSave)
+		COMMAND_ID_HANDLER(IDC_LOAD, OnLoad)
+		COMMAND_ID_HANDLER(IDC_SAVE, OnSave)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);

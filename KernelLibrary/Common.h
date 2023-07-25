@@ -38,7 +38,7 @@ enum class IrpMajorCode :unsigned char {
 };
 
 enum class IrpMinorCode :unsigned char {
-	None =0,
+	None = 0,
 
 	// PNP
 

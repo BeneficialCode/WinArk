@@ -38,7 +38,7 @@ int WinSys::ActiveConnectionTracker::EnumConnections() {
 		if (error == NOERROR) {
 			auto table = (PMIB_TCPTABLE_OWNER_MODULE)buffer;
 			AddTcp4Connections(table, map, local, first);
-			::VirtualFree(buffer,0,MEM_RELEASE);
+			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
 	}
 	if ((_trackedConnections & ConnectionType::TcpV6) == ConnectionType::TcpV6) {
@@ -101,7 +101,7 @@ int WinSys::ActiveConnectionTracker::EnumConnections() {
 	if (!first) {
 		_connections = std::move(local);
 	}
-	
+
 	return static_cast<int>(_connections.size());
 }
 
@@ -134,7 +134,7 @@ void ActiveConnectionTracker::AddTcp4Connections(PMIB_TCPTABLE_OWNER_MODULE tabl
 		std::shared_ptr<Connection> conn;
 		if (first) {
 			conn = std::make_shared<Connection>();
-			InitTcp4Connection(conn.get(),item);
+			InitTcp4Connection(conn.get(), item);
 			_connections.push_back(conn);
 			_connectionMap.insert({ *conn,conn });
 		}

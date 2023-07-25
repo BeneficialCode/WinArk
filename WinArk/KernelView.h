@@ -14,18 +14,18 @@ public:
 	DECLARE_WND_CLASS(nullptr);
 
 	const UINT TabId = 0x1236;
-	CKernelView(IMainFrame* pFrame) :m_TabCtrl(this),m_pFrame(pFrame) {
+	CKernelView(IMainFrame* pFrame) :m_TabCtrl(this), m_pFrame(pFrame) {
 	}
 
 	BEGIN_MSG_MAP(CKernelView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		NOTIFY_HANDLER(TabId, TCN_SELCHANGE, OnTcnSelChange)
-		if(m_KernelPoolView!=nullptr)
+		if (m_KernelPoolView != nullptr)
 			CHAIN_MSG_MAP_MEMBER((*m_KernelPoolView))
-		if(m_BigPoolView!=nullptr)
-			CHAIN_MSG_MAP_MEMBER((*m_BigPoolView))
-		REFLECT_NOTIFICATIONS()
+			if (m_BigPoolView != nullptr)
+				CHAIN_MSG_MAP_MEMBER((*m_BigPoolView))
+				REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -35,7 +35,7 @@ public:
 	IView* GetCurView();
 
 	enum class TabColumn : int {
-		PiDDBCacheTable,UnloadedDriverTable,KernelPoolTable,BigPoolTable,DpcTimer,IoTimer,WinExtHosts
+		PiDDBCacheTable, UnloadedDriverTable, KernelPoolTable, BigPoolTable, DpcTimer, IoTimer, WinExtHosts
 	};
 
 	void InitPiDDBCacheTable();
@@ -50,7 +50,7 @@ private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
 
 	CPiDDBCacheTable* m_PiDDBCacheTable{ nullptr };
-	CUnloadedDriverTable* m_UnloadedDriverTable{nullptr};
+	CUnloadedDriverTable* m_UnloadedDriverTable{ nullptr };
 	CKernelPoolView* m_KernelPoolView{ nullptr };
 	CBigPoolView* m_BigPoolView{ nullptr };
 	CDpcTimerTable* m_DpcTimerTable{ nullptr };

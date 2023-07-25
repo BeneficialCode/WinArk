@@ -134,8 +134,8 @@ RegistryKey Registry::OpenKey(const CString& path, DWORD access, bool* root) {
 			keyname = path.Left(bs);
 		}
 		// c++11 std::begin
-		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) { 
-			return _wcsicmp(k.text, keyname) == 0 || _wcsicmp(k.stext, keyname) == 0; 
+		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) {
+			return _wcsicmp(k.text, keyname) == 0 || _wcsicmp(k.stext, keyname) == 0;
 			});
 		ATLASSERT(pair != std::end(Keys));
 		if (bs >= 0) {
@@ -164,8 +164,8 @@ CRegKey Registry::CreateKey(const CString& path, DWORD access) {
 			ATLASSERT(bs >= 0);
 			keyname = path.Left(bs);
 		}
-		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) { 
-			return wcscmp(k.text, keyname) == 0; 
+		auto pair = std::find_if(std::begin(Keys), std::end(Keys), [&](auto& k) {
+			return wcscmp(k.text, keyname) == 0;
 			});
 
 		ATLASSERT(pair != std::end(Keys));
@@ -257,18 +257,18 @@ bool Registry::Disconnect(PCWSTR computerName) {
 PCWSTR Registry::GetRegTypeAsString(DWORD type) {
 	switch (type)
 	{
-		case REG_KEY: return L"Key";
-		case REG_SZ: return L"REG_SZ";
-		case REG_DWORD: return L"REG_DWORD";
-		case REG_MULTI_SZ: return L"REG_MULTI_SZ";
-		case REG_QWORD: return L"REG_QDWORD";
-		case REG_EXPAND_SZ: return L"REG_EXPAND_SZ";
-		case REG_NONE: return L"REG_NONE";
-		case REG_LINK: return L"REG_LINK";
-		case REG_BINARY: return L"REG_BINARY";
-		case REG_RESOURCE_REQUIREMENTS_LIST: return L"REG_RESOURCE_REQUIREMENTS_LIST";
-		case REG_RESOURCE_LIST: return L"REG_RESOURCE_LIST";
-		case REG_FULL_RESOURCE_DESCRIPTOR: return L"REG_FULL_RESOURCE_DESCRIPTOR";
+	case REG_KEY: return L"Key";
+	case REG_SZ: return L"REG_SZ";
+	case REG_DWORD: return L"REG_DWORD";
+	case REG_MULTI_SZ: return L"REG_MULTI_SZ";
+	case REG_QWORD: return L"REG_QDWORD";
+	case REG_EXPAND_SZ: return L"REG_EXPAND_SZ";
+	case REG_NONE: return L"REG_NONE";
+	case REG_LINK: return L"REG_LINK";
+	case REG_BINARY: return L"REG_BINARY";
+	case REG_RESOURCE_REQUIREMENTS_LIST: return L"REG_RESOURCE_REQUIREMENTS_LIST";
+	case REG_RESOURCE_LIST: return L"REG_RESOURCE_LIST";
+	case REG_FULL_RESOURCE_DESCRIPTOR: return L"REG_FULL_RESOURCE_DESCRIPTOR";
 	}
 	return L"";
 }
@@ -282,62 +282,62 @@ CString Registry::GetDataAsString(RegistryKey& key, const RegistryItem& item) {
 
 	switch (item.Type)
 	{
-		case REG_SZ:
-		case REG_EXPAND_SZ:
-			text = QueryStringValue(key, item.Name).Left(size);
-			break;
+	case REG_SZ:
+	case REG_EXPAND_SZ:
+		text = QueryStringValue(key, item.Name).Left(size);
+		break;
 
-		case REG_LINK:
+	case REG_LINK:
 
-			break;
+		break;
 
-		case REG_MULTI_SZ:
-			size *= 2;
-			status = ::RegQueryValueEx(key.Get(), item.Name, nullptr, &type, (PBYTE)text.GetBufferSetLength(size / 2), &size);
-			if (status == ERROR_SUCCESS) {
-				auto p = text.GetBuffer();
-				while (*p) {
-					p += ::wcslen(p);
-					*p = L' ';
-					p++;
-				}
+	case REG_MULTI_SZ:
+		size *= 2;
+		status = ::RegQueryValueEx(key.Get(), item.Name, nullptr, &type, (PBYTE)text.GetBufferSetLength(size / 2), &size);
+		if (status == ERROR_SUCCESS) {
+			auto p = text.GetBuffer();
+			while (*p) {
+				p += ::wcslen(p);
+				*p = L' ';
+				p++;
 			}
-			break;
-
-		case REG_DWORD:
-		{
-			DWORD value;
-			if (ERROR_SUCCESS == key.QueryDWORDValue(item.Name, value)) {
-				text.Format(L"0x%08X (%u)", value, value);
-			}
-			break;
 		}
+		break;
 
-		case REG_QWORD:
-		{
-			ULONGLONG value;
-			if (ERROR_SUCCESS == key.QueryQWORDValue(item.Name, value)) {
-				auto fmt = value < (1LL << 32) ? L"0x%08llX (%llu)" : L"0x%016llX (%llu)";
-				text.Format(fmt, value, value);
-			}
-			break;
+	case REG_DWORD:
+	{
+		DWORD value;
+		if (ERROR_SUCCESS == key.QueryDWORDValue(item.Name, value)) {
+			text.Format(L"0x%08X (%u)", value, value);
 		}
+		break;
+	}
 
-		case REG_BINARY:
-			CString digit;
-			auto buffer = std::make_unique<BYTE[]>(item.Size);
-			if (buffer == nullptr)
-				break;
+	case REG_QWORD:
+	{
+		ULONGLONG value;
+		if (ERROR_SUCCESS == key.QueryQWORDValue(item.Name, value)) {
+			auto fmt = value < (1LL << 32) ? L"0x%08llX (%llu)" : L"0x%016llX (%llu)";
+			text.Format(fmt, value, value);
+		}
+		break;
+	}
 
-			ULONG bytes = item.Size;
-			auto status = key.QueryBinaryValue(item.Name, buffer.get(), &bytes);
-			if (status == ERROR_SUCCESS) {
-				for (DWORD i = 0; i < std::min<ULONG>(bytes, 64); i++) {
-					digit.Format(L"%02X ", buffer[i]);
-					text += digit;
-				}
-			}
+	case REG_BINARY:
+		CString digit;
+		auto buffer = std::make_unique<BYTE[]>(item.Size);
+		if (buffer == nullptr)
 			break;
+
+		ULONG bytes = item.Size;
+		auto status = key.QueryBinaryValue(item.Name, buffer.get(), &bytes);
+		if (status == ERROR_SUCCESS) {
+			for (DWORD i = 0; i < std::min<ULONG>(bytes, 64); i++) {
+				digit.Format(L"%02X ", buffer[i]);
+				text += digit;
+			}
+		}
+		break;
 
 	}
 

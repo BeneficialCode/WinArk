@@ -94,43 +94,43 @@ LRESULT CDpcTimerTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 CDpcTimerTable::CDpcTimerTable(BarInfo& bars, TableInfo& table)
 	: CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
-	
+
 }
 
 int CDpcTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<DpcTimerInfo>& info, int column) {
 	// Timer,DPC,Routine,DueTime,Period,CompanyName,DriverPath
 	switch (static_cast<Column>(column)) {
-		case Column::CompanyName:
-		{
-			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine);
-			s = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path)).c_str();
-			break;
-		}
+	case Column::CompanyName:
+	{
+		std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine);
+		s = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path)).c_str();
+		break;
+	}
 
-		case Column::DPC:
-			s.Format(L"0x%p", info->KDpc);
-			break;
+	case Column::DPC:
+		s.Format(L"0x%p", info->KDpc);
+		break;
 
-		case Column::Period:
-			s.Format(L"%u", info->Period);
-			break;
+	case Column::Period:
+		s.Format(L"%u", info->Period);
+		break;
 
-		case Column::Timer:
-			s.Format(L"0x%p", info->KTimer);
+	case Column::Timer:
+		s.Format(L"0x%p", info->KTimer);
 
-			break;
+		break;
 
-		case Column::DriverPath:
-			s = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine).c_str();
-			break;
+	case Column::DriverPath:
+		s = Helpers::GetKernelModuleByAddress((ULONG_PTR)info->Routine).c_str();
+		break;
 
-		case Column::Routine:
-			s.Format(L"0x%p", info->Routine);
-			break;
+	case Column::Routine:
+		s.Format(L"0x%p", info->Routine);
+		break;
 
-		case Column::DueTime:
-			s.Format(L"0x%x", info->DueTime);
-			break;
+	case Column::DueTime:
+		s.Format(L"0x%x", info->DueTime);
+		break;
 	}
 	return s.GetLength();
 }
@@ -142,7 +142,7 @@ void CDpcTimerTable::Refresh() {
 	ULONG size = SymbolHelper::GetKernelStructSize("_KTIMER_TABLE_ENTRY");
 	KernelTimerData data;
 	if (size != 0) {
-		
+
 		ULONG entryCount = memberSize / size;
 		data.entriesOffset = SymbolHelper::GetKernelStructMemberOffset("_KTIMER_TABLE", "TimerEntries");
 		data.maxEntryCount = entryCount;
@@ -174,7 +174,7 @@ void CDpcTimerTable::Refresh() {
 			}
 		}
 	}
-	
+
 	auto count = static_cast<int>(m_Table.data.info.size());
 	m_Table.data.n = count;
 
@@ -189,14 +189,14 @@ LRESULT CDpcTimerTable::OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 bool CDpcTimerTable::CompareItems(const std::shared_ptr<DpcTimerInfo>& p1, const std::shared_ptr<DpcTimerInfo>& p2, int col, bool asc) {
 	switch (static_cast<Column>(col)) {
-		case Column::CompanyName:
-		{
-			std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p1->Routine);
-			std::wstring name1 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
-			path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p2->Routine);
-			std::wstring name2 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
-			return SortHelper::SortStrings(name1, name2, asc);
-		}
+	case Column::CompanyName:
+	{
+		std::string path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p1->Routine);
+		std::wstring name1 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+		path = Helpers::GetKernelModuleByAddress((ULONG_PTR)p2->Routine);
+		std::wstring name2 = FileVersionInfoHelpers::GetCompanyName(Helpers::StringToWstring(path));
+		return SortHelper::SortStrings(name1, name2, asc);
+	}
 	}
 	return false;
 }

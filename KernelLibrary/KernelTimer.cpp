@@ -12,7 +12,7 @@ bool KernelTimer::SetOneShot(LARGE_INTEGER interval, PKDPC Dpc) {
 	return KeSetTimer(&_Timer, interval, Dpc);
 }
 
-bool KernelTimer::SetPeriod(LARGE_INTEGER interval,ULONG period, PKDPC Dpc) {
+bool KernelTimer::SetPeriod(LARGE_INTEGER interval, ULONG period, PKDPC Dpc) {
 	return KeSetTimerEx(&_Timer, interval, period, Dpc);
 }
 
@@ -52,7 +52,7 @@ void KernelTimer::EnumKernelTimer(KernelTimerData* pData, DpcTimerInfo* pInfo) {
 				PKDPC pKDpc = (PKDPC)Helpers::KiDecodePointer((ULONG_PTR)pTimer->Dpc, salt);
 				if (!MmIsAddressValid(pKDpc))
 					continue;
-				LogInfo("KTIMER: 0x%p \t KDPC: 0x%p \t函数入口: 0x%p\t\n", pTimer, pKDpc,pKDpc->DeferredRoutine);
+				LogInfo("KTIMER: 0x%p \t KDPC: 0x%p \t函数入口: 0x%p\t\n", pTimer, pKDpc, pKDpc->DeferredRoutine);
 				pInfo[k].DueTime = pTimer->DueTime;
 				pInfo[k].KDpc = pKDpc;
 				pInfo[k].KTimer = pTimer;

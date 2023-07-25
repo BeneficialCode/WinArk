@@ -3,7 +3,7 @@
 class CExportDlg :
 	public CDialogImpl<CExportDlg> {
 public:
-	enum {IDD = IDD_EXPORT};
+	enum { IDD = IDD_EXPORT };
 
 	void SetKeyPath(PCWSTR path);
 
@@ -11,11 +11,11 @@ public:
 	const CString& GetFileName() const;
 
 	BEGIN_MSG_MAP(CExportDlg)
-		COMMAND_HANDLER(IDC_PATH,EN_CHANGE,OnPathTextChanged)
-		MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
-		COMMAND_ID_HANDLER(IDOK,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDCANCEL,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_BROWSE,OnBrowse)
+		COMMAND_HANDLER(IDC_PATH, EN_CHANGE, OnPathTextChanged)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_BROWSE, OnBrowse)
 		REFLECT_NOTIFICATIONS_EX()
 	END_MSG_MAP()
 

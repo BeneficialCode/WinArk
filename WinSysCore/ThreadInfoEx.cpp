@@ -18,10 +18,10 @@ int ThreadInfoEx::GetMemoryPriority() const {
 
 WinSys::IoPriority ThreadInfoEx::GetIoPriority() const {
 	auto t = OpenThread();
-	return t ? t->GetIoPriority():WinSys::IoPriority::Unknown;
+	return t ? t->GetIoPriority() : WinSys::IoPriority::Unknown;
 }
 
-WinSys::Thread* ThreadInfoEx::OpenThread() const{
+WinSys::Thread* ThreadInfoEx::OpenThread() const {
 	if (_thread == nullptr) {
 		auto hThread = DriverHelper::OpenThread(Info->Id, THREAD_QUERY_INFORMATION);
 		if (hThread)

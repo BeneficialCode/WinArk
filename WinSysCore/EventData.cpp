@@ -174,7 +174,7 @@ std::wstring EventData::FormatProperty(const EventProperty& property) const {
 		(_headerFlags & EVENT_HEADER_FLAG_32_BIT_HEADER) ? 4 : 8,
 		prop.nonStructType.InType, prop.nonStructType.OutType, len,
 		(USHORT)property.GetLength(), (PBYTE)property.GetData(),
-		&size,buffer,&consumed);
+		&size, buffer, &consumed);
 	if (status == STATUS_SUCCESS)
 		return std::wstring(buffer);
 

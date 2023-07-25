@@ -2,7 +2,7 @@
 #include "CreateValueCommand.h"
 #include "Registry.h"
 
-CreateValueCommand::CreateValueCommand(PCWSTR path, PCWSTR name, DWORD type, 
+CreateValueCommand::CreateValueCommand(PCWSTR path, PCWSTR name, DWORD type,
 	AppCommandCallback<CreateValueCommand> cb)
 	:RegAppCommandBase(L"Create Value " + CString(name), path, name, cb), _type(type) {
 }
@@ -15,16 +15,16 @@ bool CreateValueCommand::Execute() {
 	DWORD size = 0;
 	switch (GetType())
 	{
-		case REG_DWORD: size = 4; break;
-		case REG_QWORD: size = 8; break;
-		case REG_SZ: 
-		case REG_EXPAND_SZ:
-			size = 2;
-			break;
+	case REG_DWORD: size = 4; break;
+	case REG_QWORD: size = 8; break;
+	case REG_SZ:
+	case REG_EXPAND_SZ:
+		size = 2;
+		break;
 
-		case REG_MULTI_SZ:
-			size = 4;
-			break;
+	case REG_MULTI_SZ:
+		size = 4;
+		break;
 	}
 	BYTE dummy[8] = { 0 };
 	auto error = key.SetValue(GetName(), GetType(), dummy, _size = size);

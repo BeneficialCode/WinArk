@@ -12,7 +12,7 @@ struct MiniFilterInfo {
 
 class CMiniFilterTable :
 	public CTable<MiniFilterInfo>,
-	public CWindowImpl<CMiniFilterTable>{
+	public CWindowImpl<CMiniFilterTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
@@ -39,8 +39,8 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_MINIFILTER_REFRESH, OnRefresh)
-		COMMAND_ID_HANDLER(ID_MINIFILTER_CALLBACK,OnCallback)
-		COMMAND_ID_HANDLER(ID_MINIFILTER_REMOVE,OnRemove)
+		COMMAND_ID_HANDLER(ID_MINIFILTER_CALLBACK, OnCallback)
+		COMMAND_ID_HANDLER(ID_MINIFILTER_REMOVE, OnRemove)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -73,7 +73,7 @@ public:
 
 private:
 	enum class TableColumn {
-		FilterName, NumberOfInstance, Altitude,FrameID
+		FilterName, NumberOfInstance, Altitude, FrameID
 	};
 
 	void Refresh();

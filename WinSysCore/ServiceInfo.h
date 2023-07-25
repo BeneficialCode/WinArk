@@ -17,7 +17,7 @@ namespace WinSys {
 	enum class ServiceEnumState {
 		Active = SERVICE_ACTIVE,// Running
 		Inactive = SERVICE_INACTIVE,// Stopped
-		All = Active|Inactive
+		All = Active | Inactive
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(ServiceEnumState);
 
@@ -91,7 +91,7 @@ namespace WinSys {
 			return _name;
 		}
 
-		const std::wstring & GetDisplayName() const {
+		const std::wstring& GetDisplayName() const {
 			return _displayName;
 		}
 

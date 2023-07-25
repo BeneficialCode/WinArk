@@ -157,7 +157,7 @@ void CBigPoolView::AddTag(const SYSTEM_BIGPOOL_ENTRY& info, int index) {
 	item->Index = index;
 	item->BigPoolInfo = info;
 
-	if(auto it = m_TagSource.find(item->Tag); it != m_TagSource.end()) {
+	if (auto it = m_TagSource.find(item->Tag); it != m_TagSource.end()) {
 		item->SourceName = it->second.first;
 		item->SourceDesc = it->second.second;
 	}
@@ -215,7 +215,7 @@ LRESULT CBigPoolView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*
 
 	InsertColumn(ColumnType::TagName, L"Tag", LVCFMT_CENTER, 80);
 	InsertColumn(ColumnType::VirtualAddress, L"Virtual Address", LVCFMT_RIGHT, 150);
-	InsertColumn(ColumnType::NonPaged, L"NonPaged", LVCFMT_RIGHT,80);
+	InsertColumn(ColumnType::NonPaged, L"NonPaged", LVCFMT_RIGHT, 80);
 	InsertColumn(ColumnType::Size, L"Size", LVCFMT_RIGHT, 80);
 	InsertColumn(ColumnType::SourceName, L"Source", LVCFMT_LEFT, 150);
 	InsertColumn(ColumnType::SourceDescription, L"Source Description", LVCFMT_LEFT, 350);
@@ -258,35 +258,35 @@ LRESULT CBigPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 	if (disp->item.mask & LVIF_TEXT) {
 		switch (disp->item.iSubItem)
 		{
-			case ColumnType::TagName:
-				StringCchCopy(item.pszText, item.cchTextMax, CString(info.Tag));
-				break;
+		case ColumnType::TagName:
+			StringCchCopy(item.pszText, item.cchTextMax, CString(info.Tag));
+			break;
 
-			case ColumnType::VirtualAddress:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"0x%p", info.BigPoolInfo.VirtualAddress);
-				break;
-			
-			case ColumnType::Size:
-			{
-				auto value = info.BigPoolInfo.SizeInBytes;
-				if (value < 1 << 12)
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
-				else
-					StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
-				break;
-			}
+		case ColumnType::VirtualAddress:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"0x%p", info.BigPoolInfo.VirtualAddress);
+			break;
 
-			case ColumnType::NonPaged:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.BigPoolInfo.NonPaged);
-				break;
+		case ColumnType::Size:
+		{
+			auto value = info.BigPoolInfo.SizeInBytes;
+			if (value < 1 << 12)
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld B", value);
+			else
+				StringCchPrintf(item.pszText, item.cchTextMax, L"%ld KB", value >> 10);
+			break;
+		}
 
-			case ColumnType::SourceName:
-				item.pszText = (PWSTR)info.SourceName;
-				break;
+		case ColumnType::NonPaged:
+			StringCchPrintf(item.pszText, item.cchTextMax, L"%u", info.BigPoolInfo.NonPaged);
+			break;
 
-			case ColumnType::SourceDescription:
-				item.pszText = (PWSTR)info.SourceDesc;
-				break;
+		case ColumnType::SourceName:
+			item.pszText = (PWSTR)info.SourceName;
+			break;
+
+		case ColumnType::SourceDescription:
+			item.pszText = (PWSTR)info.SourceDesc;
+			break;
 		}
 	}
 
@@ -350,33 +350,33 @@ bool CBigPoolView::CompareItems(const BigPoolItem& item1, const BigPoolItem& ite
 	int result;
 	switch (m_SortColumn)
 	{
-		case ColumnType::TagName:
-			result = item2.Tag.CompareNoCase(item1.Tag);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::TagName:
+		result = item2.Tag.CompareNoCase(item1.Tag);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::SourceName:
-			result = ::_wcsicmp(item2.SourceName, item1.SourceName);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::SourceName:
+		result = ::_wcsicmp(item2.SourceName, item1.SourceName);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::SourceDescription:
-			result = ::_wcsicmp(item2.SourceDesc, item1.SourceDesc);
-			return m_Ascending ? (result > 0) : (result < 0);
+	case ColumnType::SourceDescription:
+		result = ::_wcsicmp(item2.SourceDesc, item1.SourceDesc);
+		return m_Ascending ? (result > 0) : (result < 0);
 
-		case ColumnType::NonPaged:
-			if (m_Ascending)
-				return item1.BigPoolInfo.NonPaged < item2.BigPoolInfo.NonPaged;
-			else
-				return item1.BigPoolInfo.NonPaged > item2.BigPoolInfo.NonPaged;
-		case ColumnType::VirtualAddress:
-			if (m_Ascending)
-				return item1.BigPoolInfo.VirtualAddress < item2.BigPoolInfo.VirtualAddress;
-			else
-				return item1.BigPoolInfo.VirtualAddress > item2.BigPoolInfo.VirtualAddress;
-		case ColumnType::Size:
-			if (m_Ascending)
-				return item1.BigPoolInfo.SizeInBytes < item2.BigPoolInfo.SizeInBytes;
-			else
-				return item1.BigPoolInfo.SizeInBytes > item2.BigPoolInfo.SizeInBytes;
+	case ColumnType::NonPaged:
+		if (m_Ascending)
+			return item1.BigPoolInfo.NonPaged < item2.BigPoolInfo.NonPaged;
+		else
+			return item1.BigPoolInfo.NonPaged > item2.BigPoolInfo.NonPaged;
+	case ColumnType::VirtualAddress:
+		if (m_Ascending)
+			return item1.BigPoolInfo.VirtualAddress < item2.BigPoolInfo.VirtualAddress;
+		else
+			return item1.BigPoolInfo.VirtualAddress > item2.BigPoolInfo.VirtualAddress;
+	case ColumnType::Size:
+		if (m_Ascending)
+			return item1.BigPoolInfo.SizeInBytes < item2.BigPoolInfo.SizeInBytes;
+		else
+			return item1.BigPoolInfo.SizeInBytes > item2.BigPoolInfo.SizeInBytes;
 	}
 	ATLASSERT(false);
 	return false;
@@ -411,12 +411,12 @@ int CBigPoolView::GetChange(const SYSTEM_BIGPOOL_ENTRY& info, const SYSTEM_BIGPO
 
 	switch (type)
 	{
-		case ColumnType::VirtualAddress:
-			return compare(info.VirtualAddress, info.VirtualAddress);
-		case ColumnType::Size:
-			return compare(info.SizeInBytes, info.SizeInBytes);
-		case ColumnType::NonPaged:
-			return compare(info.NonPaged, info.NonPaged);
+	case ColumnType::VirtualAddress:
+		return compare(info.VirtualAddress, info.VirtualAddress);
+	case ColumnType::Size:
+		return compare(info.SizeInBytes, info.SizeInBytes);
+	case ColumnType::NonPaged:
+		return compare(info.NonPaged, info.NonPaged);
 	}
 	return 0;
 }

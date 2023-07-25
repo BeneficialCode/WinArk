@@ -17,7 +17,7 @@ CString CTokenPropertiesDlg::GetColumnText(HWND h, int row, int col) const {
 	}
 	else if (h == m_PrivList) {
 		auto& p = m_Privileges[row];
-		switch (col){
+		switch (col) {
 		case 0: return p.Name.c_str();
 		case 1: return FormatHelper::PrivilegeAttributesToString(p.Attributes);
 		}
@@ -69,15 +69,15 @@ void CTokenPropertiesDlg::InitToken() {
 	if (logonSessionID == 0x3e7) {
 		text += L" (System)";
 	}
-	else if( logonSessionID == 0x3e5 ) {
+	else if (logonSessionID == 0x3e5) {
 		text += L" (Local Service)";
 	}
-	else if(logonSessionID == 0x3e4){
+	else if (logonSessionID == 0x3e4) {
 		text += L" (Network Service)";
 	}
 
 
-	
+
 	SetDlgItemText(IDC_LOGONSESSION, text);
 	SetDlgItemText(IDC_ELEVATED, m_Token.IsElevated() ? L"Yes" : L"No");
 

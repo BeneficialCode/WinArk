@@ -15,17 +15,17 @@
 
 
 enum class NodeType {
-	None=0,
-	Key=1,
-	Predefined=2,
-	RegistryRoot=0x10,
-	StandardRoot=0x20,
-	Hive=0x40,
-	Link=0x80,
-	Loaded=0x100,
-	Machine=0x200,
-	AccessDenied=0x400,
-	RemoteRegistry=0x800,
+	None = 0,
+	Key = 1,
+	Predefined = 2,
+	RegistryRoot = 0x10,
+	StandardRoot = 0x20,
+	Hive = 0x40,
+	Link = 0x80,
+	Loaded = 0x100,
+	Machine = 0x200,
+	AccessDenied = 0x400,
+	RemoteRegistry = 0x800,
 };
 DEFINE_ENUM_FLAG_OPERATORS(NodeType);
 
@@ -43,8 +43,8 @@ class CRegistryManagerView :
 	public IRegView {
 public:
 	DECLARE_WND_CLASS(L"RegExpWndClass")
-	
-	CRegistryManagerView():m_AddressBar(this,2){}
+
+	CRegistryManagerView() :m_AddressBar(this, 2) {}
 
 	const UINT WM_BUILD_TREE = WM_APP + 11;
 	const UINT WM_FIND_UPDATE = WM_APP + 12;
@@ -56,7 +56,7 @@ public:
 	void SetStartKey(const CString& key);
 
 	void RunOnUiThread(std::function<void()> f);
-	
+
 	// IMainFrame
 	HWND GetHwnd() const override;
 	void OnFindNext(PCWSTR path, PCWSTR name, PCWSTR data) override;
@@ -93,44 +93,44 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_RUN, OnRunOnUIThread)
-		NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING,OnTreeItemExpanding)
-		NOTIFY_CODE_HANDLER(TVN_SELCHANGED,OnTreeSelChanged)
-		NOTIFY_CODE_HANDLER(TVN_ENDLABELEDIT,OnTreeEndEdit)
-		NOTIFY_CODE_HANDLER(TVN_BEGINLABELEDIT,OnTreeBeginEdit)
-		NOTIFY_CODE_HANDLER(TVN_KEYDOWN,OnTreeKeyDown)
+		NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnTreeItemExpanding)
+		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelChanged)
+		NOTIFY_CODE_HANDLER(TVN_ENDLABELEDIT, OnTreeEndEdit)
+		NOTIFY_CODE_HANDLER(TVN_BEGINLABELEDIT, OnTreeBeginEdit)
+		NOTIFY_CODE_HANDLER(TVN_KEYDOWN, OnTreeKeyDown)
 		NOTIFY_HANDLER(TreeId, NM_RCLICK, OnTreeContextMenu)
-		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED,OnListItemChanged)
-		NOTIFY_CODE_HANDLER(LVN_ENDLABELEDIT,OnListEndEdit)
-		NOTIFY_CODE_HANDLER(LVN_BEGINLABELEDIT,OnListBeginEdit)
-		NOTIFY_CODE_HANDLER(LVN_KEYDOWN,OnListKeyDown)
+		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnListItemChanged)
+		NOTIFY_CODE_HANDLER(LVN_ENDLABELEDIT, OnListEndEdit)
+		NOTIFY_CODE_HANDLER(LVN_BEGINLABELEDIT, OnListBeginEdit)
+		NOTIFY_CODE_HANDLER(LVN_KEYDOWN, OnListKeyDown)
 		//MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
-		COMMAND_ID_HANDLER(ID_VIEW_REFRESH,OnViewRefresh)
-		COMMAND_ID_HANDLER(ID_NEW_KEY,OnNewKey)
-		COMMAND_ID_HANDLER(ID_TREE_REFRESH,OnTreeRefresh)
+		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
+		COMMAND_ID_HANDLER(ID_NEW_KEY, OnNewKey)
+		COMMAND_ID_HANDLER(ID_TREE_REFRESH, OnTreeRefresh)
 		COMMAND_ID_HANDLER(ID_NEW_DWORDVALUE, OnNewValue)
 		COMMAND_ID_HANDLER(ID_NEW_QWORDVALUE, OnNewValue)
 		COMMAND_ID_HANDLER(ID_NEW_MULTIPLESTRINGVALUE, OnNewValue)
 		COMMAND_ID_HANDLER(ID_NEW_BINARYVALUE, OnNewValue)
-		COMMAND_ID_HANDLER(ID_NEW_STRINGVALUE,OnNewValue)
-		COMMAND_ID_HANDLER(ID_NEW_EXPANDSTRINGVALUE,OnNewValue)
-		COMMAND_ID_HANDLER(ID_EDIT_COPY,OnEditCopy)
-		COMMAND_ID_HANDLER(ID_EDIT_CUT,OnEditCut)
-		COMMAND_ID_HANDLER(ID_EDIT_PASTE,OnEditPaste)
-		COMMAND_ID_HANDLER(ID_EDIT_RENAME,OnEditRename)
-		COMMAND_ID_HANDLER(ID_EDIT_DELETE,OnEditDelete)
-		COMMAND_ID_HANDLER(ID_COPY_FULLNAME,OnCopyFullKeyName)
-		COMMAND_ID_HANDLER(ID_COPY_NAME,OnCopyKeyName)
-		COMMAND_ID_HANDLER(ID_KEY_PERMISSIONS,OnKeyPermissions)
+		COMMAND_ID_HANDLER(ID_NEW_STRINGVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_NEW_EXPANDSTRINGVALUE, OnNewValue)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_EDIT_CUT, OnEditCut)
+		COMMAND_ID_HANDLER(ID_EDIT_PASTE, OnEditPaste)
+		COMMAND_ID_HANDLER(ID_EDIT_RENAME, OnEditRename)
+		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnEditDelete)
+		COMMAND_ID_HANDLER(ID_COPY_FULLNAME, OnCopyFullKeyName)
+		COMMAND_ID_HANDLER(ID_COPY_NAME, OnCopyKeyName)
+		COMMAND_ID_HANDLER(ID_KEY_PERMISSIONS, OnKeyPermissions)
 		COMMAND_ID_HANDLER(ID_KEY_PROPERTIES, OnProperties)
-		COMMAND_ID_HANDLER(ID_FILE_IMPORT,OnImport)
-		COMMAND_ID_HANDLER(ID_FILE_EXPORT,OnExport)
-		COMMAND_ID_HANDLER(ID_KEY_GOTO,OnGotoKey)
-		COMMAND_ID_HANDLER(ID_EXPORT_BIN,OnExportBin)
+		COMMAND_ID_HANDLER(ID_FILE_IMPORT, OnImport)
+		COMMAND_ID_HANDLER(ID_FILE_EXPORT, OnExport)
+		COMMAND_ID_HANDLER(ID_KEY_GOTO, OnGotoKey)
+		COMMAND_ID_HANDLER(ID_EXPORT_BIN, OnExportBin)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CRegistryManagerView>)
 		CHAIN_MSG_MAP(CVirtualListView<CRegistryManagerView>)
 		REFLECT_NOTIFICATIONS_EX()
-	ALT_MSG_MAP(2)
-		MESSAGE_HANDLER(WM_KEYDOWN,OnEditKeyDown)
+		ALT_MSG_MAP(2)
+		MESSAGE_HANDLER(WM_KEYDOWN, OnEditKeyDown)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -237,7 +237,7 @@ private:
 		RenameValue,
 	};
 	enum class ClipboardOperation {
-		Copy,Cut
+		Copy, Cut
 	};
 
 	struct ClipboardItem {
@@ -271,7 +271,7 @@ private:
 	CFont m_Font;
 	bool m_ReadOnly{ false };
 	bool m_UpdateNoDelay{ false };
-	
+
 public:
 	CSplitterWindow m_MainSplitter;
 	CContainedWindowT<CEdit> m_AddressBar;

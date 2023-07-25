@@ -78,7 +78,7 @@ void ColumnManager::UpdateColumns() {
 			if (IsVisible(i)) {
 				auto& info = GetColumn(i);
 				// make visible - add column
-				int c = m_ListView.InsertColumn(header.GetItemCount(), info.Name, info.Format, 
+				int c = m_ListView.InsertColumn(header.GetItemCount(), info.Name, info.Format,
 					info.DefaultWidth);
 				hdi.lParam = i;
 				header.SetItem(c, &hdi);
@@ -105,7 +105,7 @@ const std::vector<CString>& ColumnManager::GetCategories() const {
 	return m_Categories;
 }
 
-void ColumnManager::SetColumn(int i, const ColumnInfo& info) {
+void ColumnManager::SetColumn(int i, const ColumnInfo & info) {
 	ATLASSERT(i >= 0 && i < GetCount());
 	if ((info.Flags & ColumnFlags::Visible) != (m_Columns[i].Flags & ColumnFlags::Visible)) {
 		SetVisible(i, (info.Flags & ColumnFlags::Visible) == ColumnFlags::Visible);

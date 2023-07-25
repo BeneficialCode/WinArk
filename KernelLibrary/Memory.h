@@ -21,7 +21,7 @@ void _cdecl operator delete[](void* p, size_t);
 
 template<typename T = void>
 struct kunique_ptr {
-	explicit kunique_ptr(T* p = nullptr):_p(p) {}
+	explicit kunique_ptr(T* p = nullptr) :_p(p) {}
 
 	// remove copy ctor and copy = (single owner)
 	kunique_ptr(const kunique_ptr&) = delete;

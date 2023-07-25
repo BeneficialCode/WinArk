@@ -7,18 +7,18 @@
 CString CLogonSessionsView::GetColumnText(HWND, int row, int col) const {
 	const auto& item = m_Sessions[row];
 
-	switch (col){
-		case 0: return std::format(L"{:2d}", item.Index).c_str();
-		case 1: return std::format(L"{:#08x}`{:08X}", item.LogonId.HighPart, item.LogonId.LowPart).c_str();
-		case 2: return item.UserName.empty() ? L"" : (item.LogonDomain + L"\\" + item.UserName).c_str();
-		case 3: return item.LogonTime.QuadPart == 0 ? CString()
-			: CTime(*(FILETIME*)&item.LogonTime.QuadPart).Format(L"%D %X");
-		case 4: return std::format(L"{:d}", item.Session).c_str();
-		case 5: return LogonTypeToString(item.LogonType);
-		case 6: return item.AuthenticationPackage.c_str();
-		case 7: return item.Sid[0] == 0 ? L"" : CSid((const SID*)item.Sid).Sid();
-		default:
-			break;
+	switch (col) {
+	case 0: return std::format(L"{:2d}", item.Index).c_str();
+	case 1: return std::format(L"{:#08x}`{:08X}", item.LogonId.HighPart, item.LogonId.LowPart).c_str();
+	case 2: return item.UserName.empty() ? L"" : (item.LogonDomain + L"\\" + item.UserName).c_str();
+	case 3: return item.LogonTime.QuadPart == 0 ? CString()
+		: CTime(*(FILETIME*)&item.LogonTime.QuadPart).Format(L"%D %X");
+	case 4: return std::format(L"{:d}", item.Session).c_str();
+	case 5: return LogonTypeToString(item.LogonType);
+	case 6: return item.AuthenticationPackage.c_str();
+	case 7: return item.Sid[0] == 0 ? L"" : CSid((const SID*)item.Sid).Sid();
+	default:
+		break;
 	}
 
 	return L"";
@@ -30,19 +30,19 @@ void CLogonSessionsView::DoSort(const SortInfo* si) {
 
 	std::sort(m_Sessions.begin(), m_Sessions.end(), [=](const auto& s1, const auto& s2) {
 		switch (si->SortColumn) {
-			case 0: return SortHelper::SortNumbers(s1.Index, s2.Index, si->SortAscending);
-			case 1: return SortHelper::SortNumbers(*(long long*)&s1.LogonId, *(long long*)&s2.LogonId, si->SortAscending);
-			case 2: return SortHelper::SortStrings(s1.LogonDomain + L"\\" + s1.UserName, s2.LogonDomain + L"\\" + s2.UserName, si->SortAscending);
-			case 3: return SortHelper::SortNumbers(s1.LogonTime.QuadPart, s2.LogonTime.QuadPart, si->SortAscending);
-			case 4: return SortHelper::SortNumbers(s1.Session, s2.Session, si->SortAscending);
-			case 5: return SortHelper::SortStrings(LogonTypeToString(s1.LogonType), LogonTypeToString(s2.LogonType), si->SortAscending);
-			case 6: return SortHelper::SortStrings(s1.AuthenticationPackage, s2.AuthenticationPackage, si->SortAscending);
+		case 0: return SortHelper::SortNumbers(s1.Index, s2.Index, si->SortAscending);
+		case 1: return SortHelper::SortNumbers(*(long long*)&s1.LogonId, *(long long*)&s2.LogonId, si->SortAscending);
+		case 2: return SortHelper::SortStrings(s1.LogonDomain + L"\\" + s1.UserName, s2.LogonDomain + L"\\" + s2.UserName, si->SortAscending);
+		case 3: return SortHelper::SortNumbers(s1.LogonTime.QuadPart, s2.LogonTime.QuadPart, si->SortAscending);
+		case 4: return SortHelper::SortNumbers(s1.Session, s2.Session, si->SortAscending);
+		case 5: return SortHelper::SortStrings(LogonTypeToString(s1.LogonType), LogonTypeToString(s2.LogonType), si->SortAscending);
+		case 6: return SortHelper::SortStrings(s1.AuthenticationPackage, s2.AuthenticationPackage, si->SortAscending);
 		}
 		return false;
 		});
 }
 
-bool CLogonSessionsView::IsSortable(HWND,int col) const {
+bool CLogonSessionsView::IsSortable(HWND, int col) const {
 	return col != 7;
 }
 
@@ -54,19 +54,19 @@ PCWSTR CLogonSessionsView::LogonTypeToString(WinSys::SecurityLogonType type) {
 	using namespace WinSys;
 
 	switch (type) {
-		case SecurityLogonType::Batch: return L"Batch";
-		case SecurityLogonType::CachedInteractive: return L"Cached Interactive";
-		case SecurityLogonType::CachedRemoteInteractive: return L"Cached Remote Interactive";
-		case SecurityLogonType::CachedUnlock: return L"Cached Unlock";
-		case SecurityLogonType::Interactive: return L"Interactive";
-		case SecurityLogonType::Network: return L"Network";
-		case SecurityLogonType::NetworkCleartext: return L"Network Cleartext";
-		case SecurityLogonType::NewCredentials: return L"New Credentials";
-		case SecurityLogonType::Proxy: return L"Proxy";
-		case SecurityLogonType::RemoteInteractive: return L"Remote Interactive";
-		case SecurityLogonType::Service: return L"Service";
-		case SecurityLogonType::UndefinedLogonType: return L"Undefined";
-		case SecurityLogonType::Unlock: return L"Unlock";
+	case SecurityLogonType::Batch: return L"Batch";
+	case SecurityLogonType::CachedInteractive: return L"Cached Interactive";
+	case SecurityLogonType::CachedRemoteInteractive: return L"Cached Remote Interactive";
+	case SecurityLogonType::CachedUnlock: return L"Cached Unlock";
+	case SecurityLogonType::Interactive: return L"Interactive";
+	case SecurityLogonType::Network: return L"Network";
+	case SecurityLogonType::NetworkCleartext: return L"Network Cleartext";
+	case SecurityLogonType::NewCredentials: return L"New Credentials";
+	case SecurityLogonType::Proxy: return L"Proxy";
+	case SecurityLogonType::RemoteInteractive: return L"Remote Interactive";
+	case SecurityLogonType::Service: return L"Service";
+	case SecurityLogonType::UndefinedLogonType: return L"Undefined";
+	case SecurityLogonType::Unlock: return L"Unlock";
 	}
 	ATLASSERT(false);
 	return L"(Unknown)";

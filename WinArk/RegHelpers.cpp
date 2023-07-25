@@ -38,7 +38,7 @@ CString RegHelpers::GetObjectName(HANDLE hObeject, DWORD pid) {
 	auto h = SecurityHelper::DupHandle(hObeject, pid, KEY_QUERY_VALUE);
 	if (h) {
 		BYTE buffer[2048];
-		auto status = NtQueryObject(h, 
+		auto status = NtQueryObject(h,
 			static_cast<OBJECT_INFORMATION_CLASS>(ObjectNameInformation),
 			buffer, sizeof(buffer), nullptr);
 		::CloseHandle(h);

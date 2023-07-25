@@ -18,7 +18,7 @@ class CDispatchRoutinesTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CDispatchRoutinesTable(BarInfo& bars, TableInfo& table,std::wstring name);
+	CDispatchRoutinesTable(BarInfo& bars, TableInfo& table, std::wstring name);
 	int ParseTableEntry(CString& s, char& mask, int& select, DispatchRoutineInfo& info, int column);
 	bool CompareItems(const DispatchRoutineInfo& s1, const DispatchRoutineInfo& s2, int col, bool asc);
 
@@ -63,6 +63,6 @@ public:
 
 private:
 	enum class Column {
-		Code,MajorCodeName,Address,TargetModule
+		Code, MajorCodeName, Address, TargetModule
 	};
 };

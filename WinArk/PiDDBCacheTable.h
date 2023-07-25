@@ -12,9 +12,9 @@ struct PiDDBCacheInfo {
 class CPiDDBCacheTable :
 	public CTable<PiDDBCacheInfo>,
 	public CWindowImpl<CPiDDBCacheTable>,
-	public IView{
+	public IView {
 public:
-	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW,COLOR_WINDOW);
+	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
 	CPiDDBCacheTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, PiDDBCacheInfo& info, int column);
@@ -44,9 +44,9 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_PIDDBCACHE_COPY,OnPiDDBCacheCopy)
+		COMMAND_ID_HANDLER(ID_PIDDBCACHE_COPY, OnPiDDBCacheCopy)
 		COMMAND_ID_HANDLER(ID_PIDDBCACHE_EXPORT, OnPiDDBCacheExport)
-		COMMAND_ID_HANDLER(ID_PIDDBCACHE_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_PIDDBCACHE_REFRESH, OnRefresh)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);

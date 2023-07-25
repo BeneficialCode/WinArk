@@ -16,7 +16,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 
 	CString temp = _pdbFile + L"/" + _pdbSignature + L"/" + _pdbFile;
 	std::wstring symbolUrl = temp.GetBuffer();
-	url+= std::string(symbolUrl.begin(), symbolUrl.end());
+	url += std::string(symbolUrl.begin(), symbolUrl.end());
 	std::wstring oldFileName = _pdbFile.GetBuffer();
 	std::string deleteFile(oldFileName.begin(), oldFileName.end());
 	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
@@ -41,7 +41,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 				return true;
 		}
 	}
-	
+
 	for (auto& iter : std::filesystem::directory_iterator(localPath)) {
 		auto filename = iter.path().filename().string();
 		if (filename.find(deleteFile.c_str()) != std::string::npos) {
@@ -58,25 +58,25 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		return 0;
 		}, this, 0, nullptr));
 
-	auto result = Download(url, fileName, "WinArk", 1000, 
-		[](void* userdata,unsigned long long readBytes,unsigned long long totalBytes) {
+	auto result = Download(url, fileName, "WinArk", 1000,
+		[](void* userdata, unsigned long long readBytes, unsigned long long totalBytes) {
 			CProgressDlg* pDlg = (CProgressDlg*)userdata;
 			if (totalBytes) {
 				pDlg->UpdateProgress(static_cast<int>(readBytes));
 			}
 			return true;
-		}, 
+		},
 		(void*)&_dlg);
 	_dlg.EndDialog(IDCANCEL);
 	return result == downslib_error::ok ? true : false;
 }
 
-bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry) {
+bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase, PIMAGE_DEBUG_DIRECTORY entry) {
 	if (entry->SizeOfData < sizeof(CV_INFO_PDB20))
 		return false;
 
 	ULONG_PTR offset = 0;
-	
+
 	offset = entry->PointerToRawData;
 	auto cvData = (unsigned char*)(imageBase + offset);
 	auto signature = *(DWORD*)cvData;
@@ -106,33 +106,33 @@ bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY 
 }
 
 downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, std::string userAgent,
-	unsigned int timeout,downslib_cb cb, void* userdata){
+	unsigned int timeout, downslib_cb cb, void* userdata) {
 	HINTERNET hInternet = nullptr;
 	HINTERNET hUrl = nullptr;
 	HANDLE hFile = nullptr;
 	HINTERNET hConnect = nullptr;
 
 	Cleanup cleanup([&]()
-	{
-		DWORD lastError = ::GetLastError();
-		if (hFile != INVALID_HANDLE_VALUE) {
-			bool doDelete = false;
-			LARGE_INTEGER fileSize;
-			if (lastError != ERROR_SUCCESS || (::GetFileSizeEx(hFile, &fileSize) && fileSize.QuadPart == 0)) {
-				doDelete = true;
+		{
+			DWORD lastError = ::GetLastError();
+			if (hFile != INVALID_HANDLE_VALUE) {
+				bool doDelete = false;
+				LARGE_INTEGER fileSize;
+				if (lastError != ERROR_SUCCESS || (::GetFileSizeEx(hFile, &fileSize) && fileSize.QuadPart == 0)) {
+					doDelete = true;
+				}
+				::CloseHandle(hFile);
+				if (doDelete)
+					DeleteFile(fileName.c_str());
 			}
-			::CloseHandle(hFile);
-			if (doDelete)
-				DeleteFile(fileName.c_str());
-		}
-		if (hUrl != nullptr)
-			::InternetCloseHandle(hUrl);
-		if (hInternet != nullptr)
-			::InternetCloseHandle(hInternet);
-		if (hConnect != nullptr)
-			::InternetCloseHandle(hConnect);
-		::SetLastError(lastError);
-	});
+			if (hUrl != nullptr)
+				::InternetCloseHandle(hUrl);
+			if (hInternet != nullptr)
+				::InternetCloseHandle(hInternet);
+			if (hConnect != nullptr)
+				::InternetCloseHandle(hConnect);
+			::SetLastError(lastError);
+		});
 
 	hFile = ::CreateFile(fileName.c_str(), GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -140,14 +140,14 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 
 	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
 		nullptr, nullptr, 0);
-	
+
 
 	if (!hInternet)
 		return downslib_error::inetopen;
 
 	DWORD flags;
 	DWORD len = sizeof(flags);
-	
+
 	::InternetSetOptionA(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
 	flags = INTERNET_FLAG_RELOAD;
 	if (strncmp(url.c_str(), "https://", 8) == 0)
@@ -165,7 +165,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		std::string objName(url.begin() + pos, url.end());
 		hUrl = HttpOpenRequestA(hConnect, "GET",
 			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
-		
+
 		HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
 		error = ::GetLastError();
 		if (error == ERROR_INTERNET_INVALID_CA) {
@@ -186,7 +186,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		return downslib_error::openurl;
 
 	// Get HTTP content length
-	char buffer[1<<11];
+	char buffer[1 << 11];
 	memset(buffer, 0, sizeof(buffer));
 	len = sizeof(buffer);
 	unsigned long long totalBytes = 0;
@@ -208,7 +208,7 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 			return downslib_error::statuscode;
 		}
 	}
-	
+
 	DWORD read = 0;
 	DWORD written = 0;
 	unsigned long long readBytes = 0;
@@ -248,16 +248,16 @@ unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring file
 	HINTERNET hConnect = nullptr;
 
 	Cleanup cleanup([&]()
-	{
-		DWORD lastError = ::GetLastError();
-		if (hUrl != nullptr)
-			::InternetCloseHandle(hUrl);
-		if (hInternet != nullptr)
-			::InternetCloseHandle(hInternet);
-		if (hConnect != nullptr)
-			::InternetCloseHandle(hConnect);
-		::SetLastError(lastError);
-	});
+		{
+			DWORD lastError = ::GetLastError();
+			if (hUrl != nullptr)
+				::InternetCloseHandle(hUrl);
+			if (hInternet != nullptr)
+				::InternetCloseHandle(hInternet);
+			if (hConnect != nullptr)
+				::InternetCloseHandle(hConnect);
+			::SetLastError(lastError);
+		});
 
 	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
 		nullptr, nullptr, 0);

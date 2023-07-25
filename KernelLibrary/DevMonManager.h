@@ -8,7 +8,7 @@ const int MaxMonitoredDevices = 32;
 const int MaxMonitoredDrivers = 16;
 const int MaxDataSize = 1 << 13;
 
-extern "C" POBJECT_TYPE* IoDriverObjectType;
+extern "C" POBJECT_TYPE * IoDriverObjectType;
 
 extern "C"
 NTSYSAPI
@@ -47,7 +47,7 @@ struct DeviceExtension {
 class DevMonManager {
 public:
 	void Init(PDRIVER_OBJECT DriverObject);
-	
+
 	NTSTATUS AddDevice(PCWSTR name);
 	int FindDevice(PCWSTR name);
 	int FindDevice(PDEVICE_OBJECT DeviceObject);

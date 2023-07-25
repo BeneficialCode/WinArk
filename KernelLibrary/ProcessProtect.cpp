@@ -42,7 +42,7 @@ OnPreOpenProcess(PVOID, POB_PRE_OPERATION_INFORMATION Info) {
 			Info->Parameters->DuplicateHandleInformation.DesiredAccess &=
 				~PROCESS_VM_WRITE;
 		}
-		
+
 	}
 
 

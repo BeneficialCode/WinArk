@@ -2,7 +2,7 @@
 
 #include "ObjectType.h"
 
-class TokenObjectType :	public ObjectType {
+class TokenObjectType : public ObjectType {
 public:
 	TokenObjectType(int index, PCWSTR name);
 

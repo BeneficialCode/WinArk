@@ -96,7 +96,7 @@ struct ProcessManager::Impl {
 uint32_t ProcessManager::Impl::_totalProcessors;
 bool ProcessManager::Impl::_isElevated;
 
-ProcessManager::ProcessManager() :_impl(std::make_unique<Impl>()){ }
+ProcessManager::ProcessManager() :_impl(std::make_unique<Impl>()) { }
 ProcessManager::~ProcessManager() = default;
 
 std::shared_ptr<ProcessInfo> ProcessManager::GetProcessInfo(int index) const {
@@ -107,7 +107,7 @@ std::shared_ptr<ProcessInfo> ProcessManager::GetProcessById(uint32_t pid) const 
 	return _impl->GetProcessById(pid);
 }
 
-std::shared_ptr<ProcessInfo> ProcessManager::GetProcessByKey(const ProcessOrThreadKey& key) const {
+std::shared_ptr<ProcessInfo> ProcessManager::GetProcessByKey(const ProcessOrThreadKey & key) const {
 	return _impl->GetProcessByKey(key);
 }
 
@@ -142,7 +142,7 @@ std::shared_ptr<ThreadInfo> ProcessManager::GetThreadInfo(int index) const {
 	return _impl->GetThreadInfo(index);
 }
 
-std::shared_ptr<ThreadInfo> ProcessManager::GetThreadByKey(const ProcessOrThreadKey& key) const {
+std::shared_ptr<ThreadInfo> ProcessManager::GetThreadByKey(const ProcessOrThreadKey & key) const {
 	return _impl->GetThreadByKey(key);
 }
 
@@ -166,7 +166,7 @@ std::wstring ProcessManager::GetProcessNameById(uint32_t pid) const {
 	if (pid == 0)
 		return L"";
 	auto pi = GetProcessById(pid);
-	return pi ? pi->GetImageName(): L"";
+	return pi ? pi->GetImageName() : L"";
 }
 
 size_t ProcessManager::EnumProcessAndThreads(uint32_t pid) {
@@ -201,7 +201,7 @@ size_t ProcessManager::Impl::EnumProcesses(bool includeThreads, uint32_t pid) {
 	ULONG len;
 
 	// get timing info as close as possible to the API call
-	
+
 	LARGE_INTEGER ticks;
 	::QueryPerformanceCounter(&ticks);
 	auto delta = ticks.QuadPart - _prevTicks.QuadPart;	// Δ用来表示增量符号
@@ -299,7 +299,7 @@ std::shared_ptr<ProcessInfo> ProcessManager::Impl::GetProcessInfo(int index) con
 	return _processes[index];
 }
 
-std::shared_ptr<ProcessInfo> ProcessManager::Impl::GetProcessByKey(const ProcessOrThreadKey& key) const {
+std::shared_ptr<ProcessInfo> ProcessManager::Impl::GetProcessByKey(const ProcessOrThreadKey & key) const {
 	auto it = _processesByKey.find(key);
 	return it == _processesByKey.end() ? nullptr : it->second;
 }
@@ -313,7 +313,7 @@ const std::vector<std::shared_ptr<ProcessInfo>>& ProcessManager::Impl::GetNewPro
 }
 
 std::shared_ptr<ProcessInfo> ProcessManager::Impl::BuildProcessInfo(
-	const SYSTEM_PROCESS_INFORMATION* info, bool includeThreads, ThreadMap& threadsByKey, int64_t delta,
+	const SYSTEM_PROCESS_INFORMATION * info, bool includeThreads, ThreadMap & threadsByKey, int64_t delta,
 	std::shared_ptr<ProcessInfo> pi, bool extended) {
 	if (pi == nullptr) {
 		pi = std::make_shared<ProcessInfo>();

@@ -21,7 +21,7 @@ int CEventPropertiesDlg::InsertItem(PCWSTR name, PCWSTR value) {
 LRESULT CEventPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.Attach(GetDlgItem(IDC_LIST));
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_LABELTIP | LVS_EX_INFOTIP);
-	
+
 	GetDlgItem(IDC_STACK).EnableWindow(m_pData->GetStackEventData() != nullptr);
 
 	DlgResize_Init(true);

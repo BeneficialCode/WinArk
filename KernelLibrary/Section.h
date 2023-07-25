@@ -1,9 +1,9 @@
 #pragma once
 
 enum class SectionType {
-    None,
-    Native, // Native section - meaning: 64bit on a 64 bit OS, or 32-bit on a 32-bit OS
-    Wow,    // Wow64 section - meaning 32-bit on a 64-bit OS
+	None,
+	Native, // Native section - meaning: 64bit on a 64 bit OS, or 32-bit on a 32-bit OS
+	Wow,    // Wow64 section - meaning 32-bit on a 64-bit OS
 };
 
 #ifndef SEC_IMAGE
@@ -11,35 +11,35 @@ enum class SectionType {
 #endif
 
 struct DllStats {
-    SectionType Type;
-    PVOID Section{ nullptr };   // Section Object
+	SectionType Type;
+	PVOID Section{ nullptr };   // Section Object
 	ULONG ShellCodeRVA = 0;
 	ULONG DllNameRVA{};
 	PVOID PreferredAddress{};
 	ULONG SizeOfImage{};
 
-    bool IsVaid() {
+	bool IsVaid() {
 		return Section != nullptr &&
 			ShellCodeRVA != 0 &&
 			DllNameRVA != 0 &&
 			PreferredAddress != nullptr &&
 			SizeOfImage != 0;
-    }
+	}
 };
 
 struct Section {
-    SectionType _type;
-    RTL_RUN_ONCE _sectionSingletonState;
+	SectionType _type;
+	RTL_RUN_ONCE _sectionSingletonState;
 
-    NTSTATUS Initialize(SectionType type);
-    NTSTATUS GetSection(DllStats** ppSectionInfo = nullptr);
-    NTSTATUS FreeSection();
-    NTSTATUS InjectDLL(DllStats* pDllStats);
+	NTSTATUS Initialize(SectionType type);
+	NTSTATUS GetSection(DllStats** ppSectionInfo = nullptr);
+	NTSTATUS FreeSection();
+	NTSTATUS InjectDLL(DllStats* pDllStats);
 	static NTSTATUS MapSectionForShellCode(DllStats* pDllStats,
 		PVOID* pBaseAddr = nullptr);
 
 private:
-    NTSTATUS CreateKnownDllSection(DllStats& pDllState);
+	NTSTATUS CreateKnownDllSection(DllStats& pDllState);
 };
 
 extern "C" {
@@ -86,16 +86,16 @@ extern "C" {
 	typedef KRUNDOWN_ROUTINE* PKRUNDOWN_ROUTINE;
 
 
-    __declspec(dllimport) void KeInitializeApc(
-        _In_ PKAPC Apc,
-        _In_ PKTHREAD Thread,
-        _In_ KAPC_ENVIRONMENT ApcIndex,
-        _In_ PKKERNEL_ROUTINE KernelRoutine,
-        _In_ PKRUNDOWN_ROUTINE RundownRoutine,
-        _In_ PKNORMAL_ROUTINE NormalRoutine,
-        _In_ ULONG ApcMode,
-        _In_ PVOID NormalContext
-    );
+	__declspec(dllimport) void KeInitializeApc(
+		_In_ PKAPC Apc,
+		_In_ PKTHREAD Thread,
+		_In_ KAPC_ENVIRONMENT ApcIndex,
+		_In_ PKKERNEL_ROUTINE KernelRoutine,
+		_In_ PKRUNDOWN_ROUTINE RundownRoutine,
+		_In_ PKNORMAL_ROUTINE NormalRoutine,
+		_In_ ULONG ApcMode,
+		_In_ PVOID NormalContext
+	);
 
 	__declspec(dllimport) BOOLEAN KeInsertQueueApc(
 		_In_ PKAPC Apc,

@@ -29,11 +29,11 @@ public:
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
 	END_MSG_MAP()
 
-	CProcessModuleTable(BarInfo& bars, TableInfo& table,DWORD pid,HWND hwnd);
+	CProcessModuleTable(BarInfo& bars, TableInfo& table, DWORD pid, HWND hwnd);
 	CProcessModuleTable(BarInfo& bars, TableInfo& table, HANDLE hProcess);
 
 	int ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ModuleInfo>& info, int column);
-	bool CompareItems(const std::shared_ptr<WinSys::ModuleInfo>& p1, const std::shared_ptr<WinSys::ModuleInfo>& p2,int col, bool asc);
+	bool CompareItems(const std::shared_ptr<WinSys::ModuleInfo>& p1, const std::shared_ptr<WinSys::ModuleInfo>& p2, int col, bool asc);
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);
@@ -67,7 +67,7 @@ public:
 	std::wstring GetFileDescription(std::wstring path);
 
 	enum class ModuleColumn {
-		ModuleName,Type,Bit,FileDescription, ModuleSize,Base, ImageBase, Characteristics,Path
+		ModuleName, Type, Bit, FileDescription, ModuleSize, Base, ImageBase, Characteristics, Path
 	};
 private:
 	std::unordered_map<WinSys::ModuleInfo*, ModuleInfoEx> m_ModulesEx;

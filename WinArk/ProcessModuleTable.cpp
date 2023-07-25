@@ -123,55 +123,55 @@ CString CProcessModuleTable::CharacteristicsToString(WinSys::DllCharacteristics 
 
 int CProcessModuleTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ModuleInfo>& info, int column) {
 	switch (static_cast<ModuleColumn>(column)) {
-		case ModuleColumn::ModuleName:
-			s = info->Name.empty() ? L"<Pagefile Backed>" : info->Name.c_str();
-			break;
+	case ModuleColumn::ModuleName:
+		s = info->Name.empty() ? L"<Pagefile Backed>" : info->Name.c_str();
+		break;
 
-		case ModuleColumn::Type:
-			s = info->Type == WinSys::MapType::Image ? L"Image" : L"Data";
-			break;
+	case ModuleColumn::Type:
+		s = info->Type == WinSys::MapType::Image ? L"Image" : L"Data";
+		break;
 
-		case ModuleColumn::Bit:
-			if (info->Type == WinSys::MapType::Image) {
-				PEParser parser(info->Path.c_str());
-				s = parser.IsPe64() ? L"x64" : L"x86";
-				
-				bool isExecutable = parser.IsExecutable();
-				parser.GetImports();
-			}
-			else {
-				s = L"N/A";
-			}
-			break;
+	case ModuleColumn::Bit:
+		if (info->Type == WinSys::MapType::Image) {
+			PEParser parser(info->Path.c_str());
+			s = parser.IsPe64() ? L"x64" : L"x86";
 
-		case ModuleColumn::ModuleSize:
-			s.Format(L"0x%08X", info->ModuleSize);
-			break;
+			bool isExecutable = parser.IsExecutable();
+			parser.GetImports();
+		}
+		else {
+			s = L"N/A";
+		}
+		break;
 
-		case ModuleColumn::Base:
-			s.Format(L"0x%p", info->Base);
-			break;
+	case ModuleColumn::ModuleSize:
+		s.Format(L"0x%08X", info->ModuleSize);
+		break;
 
-		case ModuleColumn::ImageBase:
-			if (info->Type == WinSys::MapType::Image)
-				s.Format(L"0x%p", info->ImageBase);
-			else
-				s = L"N/A";
-			break;
+	case ModuleColumn::Base:
+		s.Format(L"0x%p", info->Base);
+		break;
 
-		case ModuleColumn::Characteristics:
-			s = info->Type == WinSys::MapType::Image ? CharacteristicsToString(info->Characteristics) : CString();
-			break;
+	case ModuleColumn::ImageBase:
+		if (info->Type == WinSys::MapType::Image)
+			s.Format(L"0x%p", info->ImageBase);
+		else
+			s = L"N/A";
+		break;
 
-		case ModuleColumn::Path:
-			s = info->Path.c_str();
-			break;
+	case ModuleColumn::Characteristics:
+		s = info->Type == WinSys::MapType::Image ? CharacteristicsToString(info->Characteristics) : CString();
+		break;
 
-		case ModuleColumn::FileDescription:
-			if (info->Type == WinSys::MapType::Image) {
-				s = GetFileDescription(info->Path).c_str();
-			}
-			break;
+	case ModuleColumn::Path:
+		s = info->Path.c_str();
+		break;
+
+	case ModuleColumn::FileDescription:
+		if (info->Type == WinSys::MapType::Image) {
+			s = GetFileDescription(info->Path).c_str();
+		}
+		break;
 	}
 	return s.GetLength();
 }

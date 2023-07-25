@@ -4,9 +4,9 @@
 #include "VirtualListView.h"
 #include <Token.h>
 
-class CTokenPropertiesDlg:
+class CTokenPropertiesDlg :
 	public CDialogImpl<CTokenPropertiesDlg>,
-	public CVirtualListView<CTokenPropertiesDlg>{
+	public CVirtualListView<CTokenPropertiesDlg> {
 public:
 	enum { IDD = IDD_TOKEN };
 
@@ -18,10 +18,10 @@ public:
 
 	BEGIN_MSG_MAP(CTokenPropertiesDlg)
 		NOTIFY_HANDLER(IDC_PRIVILEGES, LVN_ITEMCHANGED, OnPrivItemChanged)
-		MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
-		COMMAND_ID_HANDLER(IDCANCEL,OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_ENABLE,OnEnablePrivilege)
-		COMMAND_ID_HANDLER(IDC_DISABLE,OnDisablePrivilege)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_ENABLE, OnEnablePrivilege)
+		COMMAND_ID_HANDLER(IDC_DISABLE, OnDisablePrivilege)
 		CHAIN_MSG_MAP(CVirtualListView<CTokenPropertiesDlg>)
 	END_MSG_MAP()
 

@@ -2,7 +2,7 @@
 
 #include "ObjectType.h"
 
-class TimerObjectType :	public ObjectType {
+class TimerObjectType : public ObjectType {
 public:
 	TimerObjectType(int index, PCWSTR name);
 

@@ -101,33 +101,33 @@ CWFPFilterTable::CWFPFilterTable(BarInfo& bars, TableInfo& table) :CTable(bars, 
 int CWFPFilterTable::ParseTableEntry(CString& s, char& mask, int& select, WFPFilterInfo& info, int column) {
 	switch (static_cast<TableColumn>(column))
 	{
-		case TableColumn::Name:
-			s = info.Name.c_str();
-			break;
+	case TableColumn::Name:
+		s = info.Name.c_str();
+		break;
 
-		case TableColumn::FilterId:
-			s.Format(L"%lu", info.FilterId);
-			break;
+	case TableColumn::FilterId:
+		s.Format(L"%lu", info.FilterId);
+		break;
 
-		case TableColumn::Description:
-			s = info.Description.c_str();
-			break;
+	case TableColumn::Description:
+		s = info.Description.c_str();
+		break;
 
-		case TableColumn::Flags:
-			s = FlagToString(info.Flags);
-			break;
+	case TableColumn::Flags:
+		s = FlagToString(info.Flags);
+		break;
 
-		case TableColumn::Mode:
-			info.IsUserMode ? s = L"User Mode" : s = L"Kernel Mode";
-			break;
+	case TableColumn::Mode:
+		info.IsUserMode ? s = L"User Mode" : s = L"Kernel Mode";
+		break;
 
-		case TableColumn::LayerName:
-			s = info.LayerName.c_str();
-			break;
+	case TableColumn::LayerName:
+		s = info.LayerName.c_str();
+		break;
 
-		case TableColumn::ActionType:
-			s = ActionTypeToString(info.ActionType);
-			break;
+	case TableColumn::ActionType:
+		s = ActionTypeToString(info.ActionType);
+		break;
 	}
 	return s.GetLength();
 }
@@ -135,11 +135,11 @@ int CWFPFilterTable::ParseTableEntry(CString& s, char& mask, int& select, WFPFil
 bool CWFPFilterTable::CompareItems(const WFPFilterInfo& s1, const WFPFilterInfo& s2, int col, bool asc) {
 	switch (col)
 	{
-		case 0:
-			return SortHelper::SortNumbers(s1.FilterId, s2.FilterId, asc);
-			break;
-		default:
-			break;
+	case 0:
+		return SortHelper::SortNumbers(s1.FilterId, s2.FilterId, asc);
+		break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -148,7 +148,7 @@ void CWFPFilterTable::Refresh() {
 	m_Table.data.info.clear();
 
 	UINT32 status = NO_ERROR;
-	
+
 	HANDLE engineHandle = nullptr;
 	HANDLE enumHandle = nullptr;
 	FWPM_FILTER** ppFilters = nullptr;
@@ -208,7 +208,7 @@ void CWFPFilterTable::Refresh() {
 		//
 		WFPHelpers::HlprFwpmFilterDestroyEnumHandle(engineHandle, &enumHandle);
 	} while (false);
-	
+
 	if (engineHandle) {
 		//
 		// close engine handle
@@ -284,7 +284,7 @@ LRESULT CWFPFilterTable::OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if (status == ERROR_SUCCESS)
 			ok = true;
 	} while (false);
-	
+
 	if (engineHandle)
 		WFPHelpers::HlprFwpmEngineClose(&engineHandle);
 
@@ -301,11 +301,11 @@ LRESULT CWFPFilterTable::OnDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 CString CWFPFilterTable::ActionTypeToString(UINT32 type) {
 	switch (type) {
-		case FWP_ACTION_BLOCK: return L"Block";
-		case FWP_ACTION_PERMIT: return L"Permit";
-		case FWP_ACTION_CALLOUT_TERMINATING: return L"Callout Terminating";
-		case FWP_ACTION_CALLOUT_INSPECTION: return L"Callout Inspection";
-		case FWP_ACTION_CALLOUT_UNKNOWN: return L"Callout Unknown";
+	case FWP_ACTION_BLOCK: return L"Block";
+	case FWP_ACTION_PERMIT: return L"Permit";
+	case FWP_ACTION_CALLOUT_TERMINATING: return L"Callout Terminating";
+	case FWP_ACTION_CALLOUT_INSPECTION: return L"Callout Inspection";
+	case FWP_ACTION_CALLOUT_UNKNOWN: return L"Callout Unknown";
 	}
 	return L"";
 }

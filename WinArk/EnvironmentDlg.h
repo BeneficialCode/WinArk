@@ -8,17 +8,17 @@ class CEnvironmentDlg :
 	public CDynamicDialogLayout<CEnvironmentDlg>,
 	public CVirtualListView<CEnvironmentDlg> {
 public:
-	enum {IDD=IDD_ENVVARS};
+	enum { IDD = IDD_ENVVARS };
 
 	CString GetColumnText(HWND, int row, int col) const;
 	void DoSort(const SortInfo* si);
-	CEnvironmentDlg(HANDLE hProcess):m_hProcess(hProcess){}
+	CEnvironmentDlg(HANDLE hProcess) :m_hProcess(hProcess) {}
 
 	BEGIN_MSG_MAP(CEnvironmentDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_COPY,OnCopy)
-		COMMAND_ID_HANDLER(IDC_COPYALL,OnCopyAll)
+		COMMAND_ID_HANDLER(IDC_COPY, OnCopy)
+		COMMAND_ID_HANDLER(IDC_COPYALL, OnCopyAll)
 		CHAIN_MSG_MAP(CDynamicDialogLayout<CEnvironmentDlg>)
 		CHAIN_MSG_MAP(CVirtualListView<CEnvironmentDlg>)
 	END_MSG_MAP()

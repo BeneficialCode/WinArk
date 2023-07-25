@@ -46,7 +46,7 @@ LRESULT CExportDlg::OnBrowse(WORD, WORD wID, HWND, BOOL&) {
 
 LRESULT CExportDlg::OnPathTextChanged(WORD, WORD wID, HWND, BOOL&) {
 	GetDlgItem(IDOK).EnableWindow(GetDlgItem(IDC_PATH).GetWindowTextLength() > 0
-		&& (IsDlgButtonChecked(IDC_EXPORT_REAL) == BST_CHECKED || 
+		&& (IsDlgButtonChecked(IDC_EXPORT_REAL) == BST_CHECKED ||
 			GetDlgItem(IDC_KEY).GetWindowTextLength() > 0));
 
 	return 0;

@@ -75,7 +75,7 @@ private:
 	CString m_HandleType;
 	int m_ColumnCount;
 	int m_Pid;
-	std::unordered_map<WinSys::HandleInfo*,CString> m_DetailsCache;
+	std::unordered_map<WinSys::HandleInfo*, CString> m_DetailsCache;
 	DWORD64 m_TargetUpdateTime = 0;
 	std::vector<Change> m_Changes;
 	wil::unique_handle m_hProcess;

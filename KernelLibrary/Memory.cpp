@@ -27,7 +27,7 @@ void _cdecl operator delete(void* p) {
 		ExFreePool(p);
 }
 
-void __cdecl operator delete(void* p,size_t) {
+void __cdecl operator delete(void* p, size_t) {
 	if (p) {
 		ExFreePool(p);
 		p = nullptr;

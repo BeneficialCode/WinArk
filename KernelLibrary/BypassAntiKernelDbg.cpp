@@ -14,8 +14,8 @@ NTSTATUS NTAPI HookNtQuerySystemInformation(
 	_In_ ULONG SystemInformationLength,
 	_Out_opt_ PULONG ReturnLength
 ) {
-	NTSTATUS status = BypassAntiKernelDbg::g_pNtQuerySystemInformation(SystemInformationClass, 
-		SystemInformation, 
+	NTSTATUS status = BypassAntiKernelDbg::g_pNtQuerySystemInformation(SystemInformationClass,
+		SystemInformation,
 		SystemInformationLength,
 		ReturnLength);
 	if (NT_SUCCESS(status) && SystemInformation) {

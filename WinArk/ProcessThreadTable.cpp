@@ -83,7 +83,7 @@ LRESULT CProcessThreadTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 
 int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, std::shared_ptr<WinSys::ThreadInfo>& info, int column) {
 	const auto& tx = GetThreadInfoEx(info.get());
-	
+
 	switch (static_cast<ThreadColumn>(column))
 	{
 	case ThreadColumn::State:
@@ -161,14 +161,14 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		if (mp >= 0)
 			s.Format(L"%d", mp);
 	}
-		break;
+	break;
 	case ThreadColumn::ComFlags:
 	{
 		auto flags = tx.GetComFlags();
 		if (flags != WinSys::ComFlags::Error && flags != WinSys::ComFlags::None)
 			s.Format(L"0x%08X (%s)", flags, FormatHelper::ComFlagsToString(flags));
 	}
-		break;
+	break;
 	case ThreadColumn::ComApartment:
 		s = FormatHelper::ComApartmentToString(tx.GetComFlags());
 		break;
@@ -177,7 +177,7 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		break;
 
 	case ThreadColumn::Module:
-		s = Helpers::GetUserModuleByAddress((ULONG_PTR)info->StartAddress,info->ProcessId).c_str();
+		s = Helpers::GetUserModuleByAddress((ULONG_PTR)info->StartAddress, info->ProcessId).c_str();
 		break;
 	default:
 		break;
@@ -186,7 +186,7 @@ int CProcessThreadTable::ParseTableEntry(CString& s, char& mask, int& select, st
 }
 
 CProcessThreadTable::CProcessThreadTable(BarInfo& bars, TableInfo& table, DWORD pid)
-	: CTable(bars, table),m_Pid(pid) {
+	: CTable(bars, table), m_Pid(pid) {
 	SetTableWindowInfo(bars.nbar);
 	m_Table.data.info.clear();
 	Refresh();

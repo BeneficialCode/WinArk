@@ -79,20 +79,20 @@ bool Settings::LoadFromFile(PCWSTR path) {
 	PCWSTR section = L"General";
 	for (auto& [name, setting] : _settings) {
 		switch (setting.Type) {
-			case SettingType::String:
-				setting.SetString(file.ReadString(section, name.c_str()));
-				break;
+		case SettingType::String:
+			setting.SetString(file.ReadString(section, name.c_str()));
+			break;
 
-			case SettingType::Int32:
-				setting.Set<int>(file.ReadInt(section, name.c_str()));
-				break;
+		case SettingType::Int32:
+			setting.Set<int>(file.ReadInt(section, name.c_str()));
+			break;
 
-			default:
-				unsigned size;
-				auto data = file.ReadBinary(section, name.c_str(), size);
-				if (data && size > 0)
-					setting.Set(data.get(), size);
-				break;
+		default:
+			unsigned size;
+			auto data = file.ReadBinary(section, name.c_str(), size);
+			if (data && size > 0)
+				setting.Set(data.get(), size);
+			break;
 		}
 	}
 
@@ -111,17 +111,17 @@ bool Settings::SaveToFile(PCWSTR path) const {
 	PCWSTR section = L"General";
 	for (auto& [name, setting] : _settings) {
 		switch (setting.Type) {
-			case SettingType::String:
-				file.WriteString(section, name.c_str(), (PCWSTR)setting.Buffer.get());
-				break;
+		case SettingType::String:
+			file.WriteString(section, name.c_str(), (PCWSTR)setting.Buffer.get());
+			break;
 
-			case SettingType::Int32:
-				file.WriteInt(section, name.c_str(), *(DWORD*)setting.Buffer.get());
-				break;
+		case SettingType::Int32:
+			file.WriteInt(section, name.c_str(), *(DWORD*)setting.Buffer.get());
+			break;
 
-			default:
-				file.WriteBinary(section, name.c_str(), setting.Buffer.get(), setting.Size);
-				break;
+		default:
+			file.WriteBinary(section, name.c_str(), setting.Buffer.get(), setting.Size);
+			break;
 		}
 	}
 	return true;

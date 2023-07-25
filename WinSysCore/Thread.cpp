@@ -6,7 +6,7 @@
 
 using namespace WinSys;
 
-Thread::Thread(HANDLE handle,bool own):_handle(handle),_own(own){ }
+Thread::Thread(HANDLE handle, bool own) :_handle(handle), _own(own) { }
 
 WinSys::Thread::Thread(uint32_t tid, ThreadAccessMask accessMask) : _own(true) {
 	_handle = ::OpenThread(static_cast<ACCESS_MASK>(accessMask), FALSE, tid);
@@ -53,13 +53,13 @@ size_t WinSys::Thread::GetSubProcessTag() const {
 	}
 	else {
 		auto teb = (TEB*)tbi.TebBaseAddress;
-		::ReadProcessMemory(process->GetHandle(), (BYTE*)teb + offsetof(TEB, SubProcessTag), &tag,sizeof(tag), nullptr);
+		::ReadProcessMemory(process->GetHandle(), (BYTE*)teb + offsetof(TEB, SubProcessTag), &tag, sizeof(tag), nullptr);
 	}
 	return tag;
 }
 
 std::wstring Thread::GetServiceNameByTag(uint32_t pid) {
-	static auto QueryTagInformation = (PQUERY_TAG_INFORMATION)::GetProcAddress(::GetModuleHandle(L"advapi32"),"I_QueryTagInformation");
+	static auto QueryTagInformation = (PQUERY_TAG_INFORMATION)::GetProcAddress(::GetModuleHandle(L"advapi32"), "I_QueryTagInformation");
 	if (QueryTagInformation == nullptr)
 		return L"";
 	auto tag = GetSubProcessTag();
@@ -119,13 +119,13 @@ CpuNumber Thread::GetIdealProcessor() const {
 	PROCESSOR_NUMBER cpu;
 	ULONG len;
 	CpuNumber number;
-	if (NT_SUCCESS(::NtQueryInformationThread(_handle, ThreadIdealProcessorEx, &cpu, sizeof(cpu), &len))){
+	if (NT_SUCCESS(::NtQueryInformationThread(_handle, ThreadIdealProcessorEx, &cpu, sizeof(cpu), &len))) {
 		number.Group = cpu.Group;
 		number.Number = cpu.Number;
 	}
 	else {
-		number.Group=-1;
-		number.Number=-1;
+		number.Group = -1;
+		number.Number = -1;
 	}
 	return number;
 }

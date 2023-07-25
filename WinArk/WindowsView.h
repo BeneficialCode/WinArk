@@ -16,7 +16,7 @@ public:
 
 	void OnActivate(bool activate);
 	void DoSort(const SortInfo* si);
-	bool IsSortable(HWND,int col) const;
+	bool IsSortable(HWND, int col) const;
 
 	//DWORD OnPrePaint(int, LPNMCUSTOMDRAW cd);
 	//DWORD OnItemPrePaint(int, LPNMCUSTOMDRAW cd);
@@ -27,7 +27,7 @@ public:
 	BEGIN_MSG_MAP(CWindowsView)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		MESSAGE_HANDLER(WM_SIZE,OnSize)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnNodeExpanding)
 		NOTIFY_CODE_HANDLER(TVN_DELETEITEM, OnNodeDeleted)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnNodeSelected)
@@ -73,7 +73,7 @@ private:
 	CTreeItem AddNode(HWND hWnd, HTREEITEM hParent);
 	BOOL AddChildNode(HWND hWnd);
 	void AddChildWindows(std::vector<HWND>& v, HWND hParent, bool directOnly = false);
-	
+
 	void UpdateList();
 	CString GetDetails(const DataItem& item) const;
 	static CString GetWindowClassAndTitle(HWND);
@@ -82,7 +82,7 @@ private:
 	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
-	
+
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -95,7 +95,7 @@ private:
 	LRESULT OnWindowMinimize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowMaximize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowRestore(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
+
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	//LRESULT OnToggleHiddenWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	//LRESULT OnToggleEmptyTitleWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

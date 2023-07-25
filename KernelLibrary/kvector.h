@@ -13,7 +13,7 @@ namespace ktl {
 	template<typename T, POOL_TYPE PoolType = PagedPool, ULONG Tag = DRIVER_TAG>
 	struct kvector {
 		struct Iterator {
-			Iterator(kvector& v,ULONG const index):m_vector(v),m_index(index){}
+			Iterator(kvector& v, ULONG const index) :m_vector(v), m_index(index) {}
 			Iterator& operator++() {
 				++m_index;
 				return *this;
@@ -48,7 +48,7 @@ namespace ktl {
 			m_Capacity = capacity;
 			m_Size = 0;
 			if (capacity) {
-				m_pData = static_cast<T*>(ExAllocatePoolWithTag(PoolType, 
+				m_pData = static_cast<T*>(ExAllocatePoolWithTag(PoolType,
 					sizeof(T) * capacity, Tag));
 				if (!m_pData)
 					::ExRaiseStatus(STATUS_NO_MEMORY);

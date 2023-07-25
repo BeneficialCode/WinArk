@@ -106,7 +106,7 @@ namespace WinSys {
 
 	private:
 		DeviceManager(const wchar_t* computerName = nullptr, const GUID* classGuid = nullptr,
-			const wchar_t* enumerator = nullptr, 
+			const wchar_t* enumerator = nullptr,
 			InfoSetOptions options = InfoSetOptions::Present | InfoSetOptions::AllClasses);
 	private:
 		wil::unique_hinfoset _hInfoSet;

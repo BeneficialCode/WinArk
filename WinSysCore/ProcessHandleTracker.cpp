@@ -40,7 +40,7 @@ private:
 	std::unordered_set<HandleEntryInfo> _handles;
 };
 
-ProcessHandleTracker::Impl::Impl(uint32_t pid):
+ProcessHandleTracker::Impl::Impl(uint32_t pid) :
 	Impl::Impl(::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, pid)) {
 }
 
@@ -93,7 +93,7 @@ uint32_t ProcessHandleTracker::Impl::EnumHandles(bool clearHistory) {
 		_newHandles.reserve(1024);
 		_closedHandles.reserve(32);
 	}
-	
+
 	if (_handles.empty()) {
 		_handles.reserve(info->NumberOfHandles);
 		for (ULONG i = 0; i < info->NumberOfHandles; i++) {
@@ -134,7 +134,7 @@ ProcessHandleTracker::ProcessHandleTracker(HANDLE hProcess) : _impl(new Impl(hPr
 
 ProcessHandleTracker::~ProcessHandleTracker() = default;
 
-bool WinSys::ProcessHandleTracker::IsValid() const{
+bool WinSys::ProcessHandleTracker::IsValid() const {
 	return _impl->IsValid();
 }
 

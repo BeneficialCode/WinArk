@@ -3,7 +3,7 @@
 #include "ObjectType.h"
 #include <ProcessManager.h>
 
-class WorkerFactoryObjectType :	public ObjectType {
+class WorkerFactoryObjectType : public ObjectType {
 public:
 	WorkerFactoryObjectType(WinSys::ProcessManager& pm, int index, PCWSTR name);
 

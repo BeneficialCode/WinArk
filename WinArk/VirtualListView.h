@@ -12,14 +12,14 @@ enum class ListViewRowCheck {
 template<typename T>
 struct CVirtualListView {
 	BEGIN_MSG_MAP(CVirtualListView)
-		NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK,OnColumnClick)
-		NOTIFY_CODE_HANDLER(LVN_ODFINDITEM,OnFindItem)
-		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnGetDispInfo) // 更新列表控件
-		NOTIFY_CODE_HANDLER(NM_RCLICK,OnRightClick)
-		NOTIFY_CODE_HANDLER(NM_DBLCLK,OnDoubleClick)
+		NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK, OnColumnClick)
+		NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
+		NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDispInfo) // 更新列表控件
+		NOTIFY_CODE_HANDLER(NM_RCLICK, OnRightClick)
+		NOTIFY_CODE_HANDLER(NM_DBLCLK, OnDoubleClick)
 		ALT_MSG_MAP(1)
-		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO,OnGetDispInfo)
-		REFLECTED_NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK,OnColumnClick)
+		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDispInfo)
+		REFLECTED_NOTIFY_CODE_HANDLER(LVN_COLUMNCLICK, OnColumnClick)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
 		NOTIFY_CODE_HANDLER(NM_RCLICK, OnRightClick)
 		NOTIFY_CODE_HANDLER(NM_DBLCLK, OnDoubleClick)
@@ -111,7 +111,7 @@ struct CVirtualListView {
 			LVHITTESTINFO info{};
 			info.pt = pt;
 			lv.SubItemHitTest(&info);
-			handled = pT->OnRightClickList(hdr->hwndFrom,info.iItem, info.iSubItem, pt2);
+			handled = pT->OnRightClickList(hdr->hwndFrom, info.iItem, info.iSubItem, pt2);
 		}
 		return 0;
 	}
@@ -216,7 +216,7 @@ protected:
 		auto col = GetRealColumn(hdr->hwndFrom, lv->iSubItem);
 
 		auto p = static_cast<T*>(this);
-		if (!p->IsSortable(hdr->hwndFrom,col))
+		if (!p->IsSortable(hdr->hwndFrom, col))
 			return 0;
 
 		auto si = FindById(hdr->idFrom);
@@ -281,7 +281,7 @@ protected:
 	CString GetColumnText(HWND hWnd, int row, int column) const {
 		return L"";
 	}
-	
+
 	PCWSTR GetColumnTextPointer(HWND, int row, int col) const {
 		return nullptr;
 	}
@@ -315,7 +315,7 @@ protected:
 	ListViewRowCheck IsRowChecked(int row) const {
 		return ListViewRowCheck::None;
 	}
-	
+
 private:
 	SortInfo* FindById(UINT_PTR id) const {
 		if (id == 0)

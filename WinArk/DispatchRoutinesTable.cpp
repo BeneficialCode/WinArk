@@ -111,7 +111,7 @@ LRESULT CDispatchRoutinesTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lP
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
 
-CDispatchRoutinesTable::CDispatchRoutinesTable(BarInfo& bars, TableInfo& table,std::wstring name)
+CDispatchRoutinesTable::CDispatchRoutinesTable(BarInfo& bars, TableInfo& table, std::wstring name)
 	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	// \driver \filesystem
@@ -122,23 +122,23 @@ int CDispatchRoutinesTable::ParseTableEntry(CString& s, char& mask, int& select,
 	// Code,MajorCodeName,Address,TargetModule
 	switch (column)
 	{
-		case 0:
-			s.Format(L"%d <0x%02x>", info.Code, info.Code);
-			break;
+	case 0:
+		s.Format(L"%d <0x%02x>", info.Code, info.Code);
+		break;
 
-		case 1:
-			s = info.MajorCodeName.c_str();
-			break;
+	case 1:
+		s = info.MajorCodeName.c_str();
+		break;
 
-		case 2:
-			s.Format(L"%p", info.Routine);
-			break;
+	case 2:
+		s.Format(L"%p", info.Routine);
+		break;
 
-		case 3:
-			s = Helpers::StringToWstring(info.TargetModule).c_str();
-			break;
-		default:
-			break;
+	case 3:
+		s = Helpers::StringToWstring(info.TargetModule).c_str();
+		break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }

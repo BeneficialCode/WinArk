@@ -82,7 +82,7 @@ IntegrityLevel Token::GetIntegrityLevel() const {
 		return IntegrityLevel::Error;
 
 	auto p = (TOKEN_MANDATORY_LABEL*)buffer;
-	return (IntegrityLevel)*GetSidSubAuthority(p->Label.Sid, *GetSidSubAuthorityCount(p->Label.Sid)-1);
+	return (IntegrityLevel)*GetSidSubAuthority(p->Label.Sid, *GetSidSubAuthorityCount(p->Label.Sid) - 1);
 }
 
 DWORD Token::GetSessionId() const {

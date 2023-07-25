@@ -184,36 +184,36 @@ CString CRegistryManagerView::GetColumnText(HWND h, int row, int col) const {
 	CString text;
 	switch (static_cast<ColumnType>(GetColumnManager(h)->GetColumnTag(col)))
 	{
-		case ColumnType::Name:
-			return item.Name.IsEmpty() ? CString(RegHelpers::DefaultValueName) : item.Name;
+	case ColumnType::Name:
+		return item.Name.IsEmpty() ? CString(RegHelpers::DefaultValueName) : item.Name;
 
-		case ColumnType::Type:
-			return Registry::GetRegTypeAsString(item.Type);
+	case ColumnType::Type:
+		return Registry::GetRegTypeAsString(item.Type);
 
-		case ColumnType::Value:
-			if (!item.Key) {
-				if (item.Value.IsEmpty())
-					item.Value = Registry::GetDataAsString(m_CurrentKey, item);
-				return item.Value;
-			}
-			break;
+	case ColumnType::Value:
+		if (!item.Key) {
+			if (item.Value.IsEmpty())
+				item.Value = Registry::GetDataAsString(m_CurrentKey, item);
+			return item.Value;
+		}
+		break;
 
-		case ColumnType::Size:
-			if (!item.Key) {
-				// recalculate
-				item.Size;
-				m_CurrentKey.QueryValue(item.Name, nullptr, nullptr, &item.Size);
-			}
-			text.Format(L"%u", item.Size);
-			break;
+	case ColumnType::Size:
+		if (!item.Key) {
+			// recalculate
+			item.Size;
+			m_CurrentKey.QueryValue(item.Name, nullptr, nullptr, &item.Size);
+		}
+		text.Format(L"%u", item.Size);
+		break;
 
-		case ColumnType::TimeStamp:
-			if (item.TimeStamp.dwHighDateTime + item.TimeStamp.dwLowDateTime)
-				return CTime(item.TimeStamp).Format(L"%x %X");
-			break;
+	case ColumnType::TimeStamp:
+		if (item.TimeStamp.dwHighDateTime + item.TimeStamp.dwLowDateTime)
+			return CTime(item.TimeStamp).Format(L"%x %X");
+		break;
 
-		case ColumnType::Details:
-			return item.Key ? GetKeyDetails(item) : GetValueDetails(item);
+	case ColumnType::Details:
+		return item.Key ? GetKeyDetails(item) : GetValueDetails(item);
 	}
 	return text;
 }
@@ -227,14 +227,14 @@ void CRegistryManagerView::DoSort(const SortInfo* si) {
 	auto compare = [&](auto& d1, auto& d2) {
 		switch (col)
 		{
-			case ColumnType::Name:
-				return SortHelper::SortStrings(d1.Name, d2.Name, asc);
-			case ColumnType::Type:
-				return SortHelper::SortNumbers(d1.Type, d2.Type, asc);
-			case ColumnType::Size:
-				return SortHelper::SortNumbers(d1.Size, d2.Size, asc);
-			case ColumnType::TimeStamp:
-				return SortHelper::SortNumbers(*(ULONGLONG*)&d1.TimeStamp, *(ULONGLONG*)&d2.TimeStamp, asc);
+		case ColumnType::Name:
+			return SortHelper::SortStrings(d1.Name, d2.Name, asc);
+		case ColumnType::Type:
+			return SortHelper::SortNumbers(d1.Type, d2.Type, asc);
+		case ColumnType::Size:
+			return SortHelper::SortNumbers(d1.Size, d2.Size, asc);
+		case ColumnType::TimeStamp:
+			return SortHelper::SortNumbers(*(ULONGLONG*)&d1.TimeStamp, *(ULONGLONG*)&d2.TimeStamp, asc);
 		}
 		return false;
 	};
@@ -485,28 +485,28 @@ CString CRegistryManagerView::GetValueDetails(const RegistryItem& item) const {
 		item.Value = Registry::GetDataAsString(m_CurrentKey, item);
 	switch (item.Type)
 	{
-		case REG_EXPAND_SZ:
-			if (item.Value.Find(L"%") >= 0) {
-				text = Registry::ExpandStrings(item.Value);
-			}
-			break;
+	case REG_EXPAND_SZ:
+		if (item.Value.Find(L"%") >= 0) {
+			text = Registry::ExpandStrings(item.Value);
+		}
+		break;
 
-		case REG_SZ:
-			if (item.Value[0] == L'@') {
-				static const CString paths[] = {
-					L"",
-					RegHelpers::GetSystemDir(),
-					RegHelpers::GetSystemDir() + CString(L"\\Drivers"),
-					RegHelpers::GetWindowsDir(),
-				};
-				for (auto& path : paths) {
-					if (ERROR_FILE_NOT_FOUND != ::RegLoadMUIString(m_CurrentKey.Get(),
-						item.Name, text.GetBufferSetLength(512), 512,
-						nullptr, REG_MUI_STRING_TRUNCATE, path.IsEmpty() ? nullptr : (PCWSTR)path))
-						break;
-				}
+	case REG_SZ:
+		if (item.Value[0] == L'@') {
+			static const CString paths[] = {
+				L"",
+				RegHelpers::GetSystemDir(),
+				RegHelpers::GetSystemDir() + CString(L"\\Drivers"),
+				RegHelpers::GetWindowsDir(),
+			};
+			for (auto& path : paths) {
+				if (ERROR_FILE_NOT_FOUND != ::RegLoadMUIString(m_CurrentKey.Get(),
+					item.Name, text.GetBufferSetLength(512), 512,
+					nullptr, REG_MUI_STRING_TRUNCATE, path.IsEmpty() ? nullptr : (PCWSTR)path))
+					break;
 			}
-			break;
+		}
+		break;
 	}
 	return text;
 }
@@ -740,57 +740,57 @@ LRESULT CRegistryManagerView::OnTreeEndEdit(int /*idCtrl*/, LPNMHDR hdr, BOOL& /
 
 	switch (m_CurrentOperation)
 	{
-		case CRegistryManagerView::Operation::RenameKey:
-		{
-			CString name;
-			m_Tree.GetItemText(item.hItem, name);
-			auto cb = [this](auto& cmd, bool) {
+	case CRegistryManagerView::Operation::RenameKey:
+	{
+		CString name;
+		m_Tree.GetItemText(item.hItem, name);
+		auto cb = [this](auto& cmd, bool) {
+			auto hParent = FindItemByPath(cmd.GetPath());
+			ATLASSERT(hParent);
+			TreeHelper th(m_Tree);
+			auto hItem = th.FindChild(hParent, cmd.GetName());
+			ATLASSERT(hItem);
+			m_Tree.SetItemText(hItem, cmd.GetNewName());
+			return true;
+		};
+		auto hParent = m_Tree.GetParentItem(item.hItem);
+		auto cmd = std::make_shared<RenameKeyCommand>(GetFullNodePath(hParent), name, item.pszText);
+		if (!m_CmdMgr.AddCommand(cmd)) {
+			DisplayError(L"Failed to rename key");
+			return FALSE;
+		}
+		cmd->SetCallback(cb);
+		return TRUE;
+	}
+	case CRegistryManagerView::Operation::CreateKey:
+	{
+		auto hItem = item.hItem;
+		auto hParent = m_Tree.GetParentItem(hItem);
+		auto cmd = std::make_shared<CreateKeyCommand>(GetFullNodePath(hParent), item.pszText);
+		if (!m_CmdMgr.AddCommand(cmd)) {
+			m_Tree.DeleteItem(hItem);
+			DisplayError(L"Failed to create key");
+			return FALSE;
+		}
+		auto cb = [this](auto& cmd, bool execute) {
+			if (execute) {
 				auto hParent = FindItemByPath(cmd.GetPath());
 				ATLASSERT(hParent);
-				TreeHelper th(m_Tree);
-				auto hItem = th.FindChild(hParent, cmd.GetName());
+				auto hItem = InsertKeyItem(hParent, cmd.GetName());
+				m_Tree.EnsureVisible(hItem);
+			}
+			else {
+				auto hItem = FindItemByPath(cmd.GetPath() + L"\\" + cmd.GetName());
 				ATLASSERT(hItem);
-				m_Tree.SetItemText(hItem, cmd.GetNewName());
-				return true;
-			};
-			auto hParent = m_Tree.GetParentItem(item.hItem);
-			auto cmd = std::make_shared<RenameKeyCommand>(GetFullNodePath(hParent), name, item.pszText);
-			if (!m_CmdMgr.AddCommand(cmd)) {
-				DisplayError(L"Failed to rename key");
-				return FALSE;
-			}
-			cmd->SetCallback(cb);
-			return TRUE;
-		}
-		case CRegistryManagerView::Operation::CreateKey:
-		{
-			auto hItem = item.hItem;
-			auto hParent = m_Tree.GetParentItem(hItem);
-			auto cmd = std::make_shared<CreateKeyCommand>(GetFullNodePath(hParent), item.pszText);
-			if (!m_CmdMgr.AddCommand(cmd)) {
 				m_Tree.DeleteItem(hItem);
-				DisplayError(L"Failed to create key");
-				return FALSE;
 			}
-			auto cb = [this](auto& cmd, bool execute) {
-				if (execute) {
-					auto hParent = FindItemByPath(cmd.GetPath());
-					ATLASSERT(hParent);
-					auto hItem = InsertKeyItem(hParent, cmd.GetName());
-					m_Tree.EnsureVisible(hItem);
-				}
-				else {
-					auto hItem = FindItemByPath(cmd.GetPath() + L"\\" + cmd.GetName());
-					ATLASSERT(hItem);
-					m_Tree.DeleteItem(hItem);
-				}
-				return true;
-			};
-			cmd->SetCallback(cb);
-			if (AppSettings::Get().ShowKeysInList())
-				UpdateList();
-			return TRUE;
-		}
+			return true;
+		};
+		cmd->SetCallback(cb);
+		if (AppSettings::Get().ShowKeysInList())
+			UpdateList();
+		return TRUE;
+	}
 	}
 	return FALSE;
 }
@@ -826,33 +826,33 @@ LRESULT CRegistryManagerView::OnListEndEdit(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 	auto path = GetFullNodePath(hItem);
 	switch (m_CurrentOperation)
 	{
-		case Operation::RenameKey:
-			cmd = std::make_shared<RenameKeyCommand>(path, item.Name, lv->item.pszText);
-			break;
+	case Operation::RenameKey:
+		cmd = std::make_shared<RenameKeyCommand>(path, item.Name, lv->item.pszText);
+		break;
 
-		case Operation::CreateKey:
-			cmd = std::make_shared<CreateKeyCommand>(path, lv->item.pszText);
-			break;
+	case Operation::CreateKey:
+		cmd = std::make_shared<CreateKeyCommand>(path, lv->item.pszText);
+		break;
 
-		case Operation::CreateValue:
-		{
-			CString text(lv->item.pszText);
-			if (text.IsEmpty()) {
-				// default value
-			}
-			auto cb = [this](auto cmd, auto) {
-				if (m_CurrentOperation == Operation::None && cmd.GetPath() == GetFullNodePath(m_Tree.GetSelectedItem())) {
-					UpdateList(true);
-				}
-				return true;
-			};
-			cmd = std::make_shared<CreateValueCommand>(path, text, item.Type, cb);
-			break;
+	case Operation::CreateValue:
+	{
+		CString text(lv->item.pszText);
+		if (text.IsEmpty()) {
+			// default value
 		}
+		auto cb = [this](auto cmd, auto) {
+			if (m_CurrentOperation == Operation::None && cmd.GetPath() == GetFullNodePath(m_Tree.GetSelectedItem())) {
+				UpdateList(true);
+			}
+			return true;
+		};
+		cmd = std::make_shared<CreateValueCommand>(path, text, item.Type, cb);
+		break;
+	}
 
-		case Operation::RenameValue:
-			cmd = std::make_shared<RenameValueCommand>(GetFullNodePath(hItem), item.Name, lv->item.pszText);
-			break;
+	case Operation::RenameValue:
+		cmd = std::make_shared<RenameValueCommand>(GetFullNodePath(hItem), item.Name, lv->item.pszText);
+		break;
 	}
 	LRESULT rv = FALSE;
 	ATLASSERT(cmd);
@@ -864,15 +864,15 @@ LRESULT CRegistryManagerView::OnListEndEdit(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 		}
 		else {
 			switch (op) {
-				case Operation::CreateValue:
-					// 智能指针之间的转换
-					item.Size = std::static_pointer_cast<CreateValueCommand>(cmd)->GetSize();
-					break;
+			case Operation::CreateValue:
+				// 智能指针之间的转换
+				item.Size = std::static_pointer_cast<CreateValueCommand>(cmd)->GetSize();
+				break;
 
-				case Operation::RenameKey:
-				case Operation::RenameValue:
-					item.Name = lv->item.pszText;
-					break;
+			case Operation::RenameKey:
+			case Operation::RenameValue:
+				item.Name = lv->item.pszText;
+				break;
 			}
 
 			m_List.RedrawItems(index, index);
@@ -909,19 +909,19 @@ LRESULT CRegistryManagerView::OnTreeKeyDown(int, LPNMHDR hdr, BOOL&) {
 	auto tv = (NMTVKEYDOWN*)hdr;
 	switch (tv->wVKey)
 	{
-		case VK_TAB:
-			m_List.SetFocus();
-			if (m_List.GetSelectedCount() == 0)
-				m_List.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
-			return TRUE;
+	case VK_TAB:
+		m_List.SetFocus();
+		if (m_List.GetSelectedCount() == 0)
+			m_List.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
+		return TRUE;
 
-		case VK_APPS:
-			CRect rc;
-			if (m_Tree.GetItemRect(m_Tree.GetSelectedItem(), &rc, TRUE)) {
-				InvokeTreeContextMenu(rc.CenterPoint());
-				return TRUE;
-			}
-			break;
+	case VK_APPS:
+		CRect rc;
+		if (m_Tree.GetItemRect(m_Tree.GetSelectedItem(), &rc, TRUE)) {
+			InvokeTreeContextMenu(rc.CenterPoint());
+			return TRUE;
+		}
+		break;
 	}
 	return 0;
 }
@@ -972,13 +972,13 @@ LRESULT CRegistryManagerView::OnListKeyDown(int /*idCtrl*/, LPNMHDR hdr, BOOL& /
 	auto lv = (NMLVKEYDOWN*)hdr;
 	switch (lv->wVKey)
 	{
-		case VK_TAB:
-			m_Tree.SetFocus();
-			break;
+	case VK_TAB:
+		m_Tree.SetFocus();
+		break;
 
-		case VK_RETURN:
-			OnDoubleClickList(m_List, m_List.GetSelectionMark(), 0, POINT());
-			break;
+	case VK_RETURN:
+		OnDoubleClickList(m_List, m_List.GetSelectionMark(), 0, POINT());
+		break;
 	}
 	return 0;
 }
@@ -1112,29 +1112,29 @@ LRESULT CRegistryManagerView::OnNewValue(WORD /*wNotifyCode*/, WORD id, HWND /*h
 	DWORD type = REG_NONE;
 	switch (id)
 	{
-		case ID_NEW_BINARYVALUE:
-			type = REG_BINARY;
-			break;
+	case ID_NEW_BINARYVALUE:
+		type = REG_BINARY;
+		break;
 
-		case ID_NEW_DWORDVALUE:
-			type = REG_DWORD;
-			break;
+	case ID_NEW_DWORDVALUE:
+		type = REG_DWORD;
+		break;
 
-		case ID_NEW_QWORDVALUE:
-			type = REG_QWORD;
-			break;
+	case ID_NEW_QWORDVALUE:
+		type = REG_QWORD;
+		break;
 
-		case ID_NEW_STRINGVALUE:
-			type = REG_SZ;
-			break;
+	case ID_NEW_STRINGVALUE:
+		type = REG_SZ;
+		break;
 
-		case ID_NEW_MULTIPLESTRINGVALUE:
-			type = REG_MULTI_SZ;
-			break;
+	case ID_NEW_MULTIPLESTRINGVALUE:
+		type = REG_MULTI_SZ;
+		break;
 
-		case ID_NEW_EXPANDSTRINGVALUE:
-			type = REG_EXPAND_SZ;
-			break;
+	case ID_NEW_EXPANDSTRINGVALUE:
+		type = REG_EXPAND_SZ;
+		break;
 	}
 
 	RegistryItem item;
@@ -1148,7 +1148,7 @@ LRESULT CRegistryManagerView::OnNewValue(WORD /*wNotifyCode*/, WORD id, HWND /*h
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 	if (::GetFocus() == m_Tree) {
 		ClipboardItem item;
 		item.Key = true;
@@ -1211,7 +1211,7 @@ AppCommandCallback<DeleteKeyCommand> CRegistryManagerView::GetDeleteKeyCommandCa
 	return cb;
 }
 
-LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&) {
 	if (m_Clipboard.Items.empty()) {
 		return 0;
 	}
@@ -1248,7 +1248,7 @@ LRESULT CRegistryManagerView::OnEditPaste(WORD, WORD, HWND, BOOL&){
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnEditRename(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnEditRename(WORD, WORD, HWND, BOOL&) {
 	if (::GetFocus() == m_Tree) {
 		m_CurrentOperation = Operation::RenameKey;
 		m_Tree.EditLabel(m_Tree.GetSelectedItem());
@@ -1260,11 +1260,11 @@ LRESULT CRegistryManagerView::OnEditRename(WORD, WORD, HWND, BOOL&){
 			m_List.EditLabel(index);
 		}
 	}
-	
+
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnEditDelete(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnEditDelete(WORD, WORD, HWND, BOOL&) {
 	if (::GetFocus() == m_Tree) {
 		auto hItem = m_Tree.GetSelectedItem();
 		auto path = GetFullParentNodePath(hItem);
@@ -1319,19 +1319,19 @@ LRESULT CRegistryManagerView::OnEditDelete(WORD, WORD, HWND, BOOL&){
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnCopyFullKeyName(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnCopyFullKeyName(WORD, WORD, HWND, BOOL&) {
 	ClipboardHelper::CopyText(m_hWnd, GetFullNodePath(m_Tree.GetSelectedItem()));
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnCopyKeyName(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnCopyKeyName(WORD, WORD, HWND, BOOL&) {
 	CString text;
 	m_Tree.GetItemText(m_Tree.GetSelectedItem(), text);
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnKeyPermissions(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnKeyPermissions(WORD, WORD, HWND, BOOL&) {
 	auto path = GetFullNodePath(m_Tree.GetSelectedItem());
 	SecurityHelper::EnablePrivilege(SE_TAKE_OWNERSHIP_NAME, true);
 	if (::GetFocus() == m_List) {
@@ -1359,7 +1359,7 @@ LRESULT CRegistryManagerView::OnKeyPermissions(WORD, WORD, HWND, BOOL&){
 	return 0;
 }
 
-LRESULT CRegistryManagerView::OnProperties(WORD, WORD, HWND, BOOL&){
+LRESULT CRegistryManagerView::OnProperties(WORD, WORD, HWND, BOOL&) {
 	if (::GetFocus() == m_List) {
 		auto index = m_List.GetSelectionMark();
 		if (index >= 0 && !m_Items[index].Key)
@@ -1386,97 +1386,97 @@ INT_PTR CRegistryManagerView::ShowValueProperties(RegistryItem& item, int index)
 	bool result = false;
 	switch (item.Type)
 	{
-		case REG_LINK:
-			AtlMessageBox(m_hWnd, L"No special properties available for a symbolic link", IDS_TITLE, MB_ICONINFORMATION);
-			return 0;
+	case REG_LINK:
+		AtlMessageBox(m_hWnd, L"No special properties available for a symbolic link", IDS_TITLE, MB_ICONINFORMATION);
+		return 0;
 
-		case REG_SZ:
-		case REG_EXPAND_SZ:
-		{
-			CStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
-			result = dlg.DoModal() == IDOK && dlg.IsModified();
-			if (result) {
-				auto hItem = m_Tree.GetSelectedItem();
-				DWORD type = dlg.GetType();
-				CString value = dlg.GetValue();
-				LONG size = (1 + value.GetLength()) * sizeof(WCHAR);
-				auto cmd = std::make_shared<ChangeValueCommand>(GetFullNodePath(hItem), 
-					item.Name, type, (PVOID)(PCWSTR)value,size);
-				success = m_CmdMgr.AddCommand(cmd);
-				if (success) {
-					cmd->SetCallback(cb);
-					item.Value.Empty();
-					item.Size -= 1;
-					m_List.RedrawItems(index, index);
-				}
+	case REG_SZ:
+	case REG_EXPAND_SZ:
+	{
+		CStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
+		result = dlg.DoModal() == IDOK && dlg.IsModified();
+		if (result) {
+			auto hItem = m_Tree.GetSelectedItem();
+			DWORD type = dlg.GetType();
+			CString value = dlg.GetValue();
+			LONG size = (1 + value.GetLength()) * sizeof(WCHAR);
+			auto cmd = std::make_shared<ChangeValueCommand>(GetFullNodePath(hItem),
+				item.Name, type, (PVOID)(PCWSTR)value, size);
+			success = m_CmdMgr.AddCommand(cmd);
+			if (success) {
+				cmd->SetCallback(cb);
+				item.Value.Empty();
+				item.Size -= 1;
+				m_List.RedrawItems(index, index);
 			}
-			break;
 		}
+		break;
+	}
 
-		case REG_MULTI_SZ:
-		{
-			CMultiStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
-			result = dlg.DoModal() == IDOK && dlg.IsModified();
-			if (result) {
-				auto hItem = m_Tree.GetSelectedItem();
-				auto value = dlg.GetValue();
-				// 清除的目标字符集合中的任一字符，直到遇到第一个不属于目标字符串子集的字符为止
-				value.TrimRight(L"\r\n");
-				value.Replace(L"\r\n", L"\n");
-				auto len = value.GetLength();
-				for (int i = 0; i < len; i++) {
-					if (value[i] == L'\n')
-						value.SetAt(i, 0);
-				}
+	case REG_MULTI_SZ:
+	{
+		CMultiStringValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly);
+		result = dlg.DoModal() == IDOK && dlg.IsModified();
+		if (result) {
+			auto hItem = m_Tree.GetSelectedItem();
+			auto value = dlg.GetValue();
+			// 清除的目标字符集合中的任一字符，直到遇到第一个不属于目标字符串子集的字符为止
+			value.TrimRight(L"\r\n");
+			value.Replace(L"\r\n", L"\n");
+			auto len = value.GetLength();
+			for (int i = 0; i < len; i++) {
+				if (value[i] == L'\n')
+					value.SetAt(i, 0);
+			}
 
-				auto cmd = std::make_shared<ChangeValueCommand>(
-					GetFullNodePath(hItem),item.Name,REG_MULTI_SZ,
-					(PVOID)(PCWSTR)value,
-					(1+len)*(LONG)sizeof(WCHAR));
+			auto cmd = std::make_shared<ChangeValueCommand>(
+				GetFullNodePath(hItem), item.Name, REG_MULTI_SZ,
+				(PVOID)(PCWSTR)value,
+				(1 + len) * (LONG)sizeof(WCHAR));
 
-				success = m_CmdMgr.AddCommand(cmd);
-				if (success)
-					cmd->SetCallback(cb);
-			}
-			break;
+			success = m_CmdMgr.AddCommand(cmd);
+			if (success)
+				cmd->SetCallback(cb);
 		}
-		case REG_DWORD:
-		case REG_QWORD:
-		{
-			CNumberValueDlg dlg(m_CurrentKey, item.Name, item.Type, m_ReadOnly);
-			result = dlg.DoModal() == IDOK && dlg.IsModified();
-			if (result) {
-				auto hItem = m_Tree.GetSelectedItem();
-				auto value = dlg.GetValue();
-				auto cmd = std::make_shared<ChangeValueCommand>(
-					GetFullNodePath(hItem), item.Name, item.Type, &value,
-					dlg.GetType() == REG_DWORD ? 4 : 8);
-				success = m_CmdMgr.AddCommand(cmd);
-				if (success)
-					cmd->SetCallback(cb);
-			}
-			break;
+		break;
+	}
+	case REG_DWORD:
+	case REG_QWORD:
+	{
+		CNumberValueDlg dlg(m_CurrentKey, item.Name, item.Type, m_ReadOnly);
+		result = dlg.DoModal() == IDOK && dlg.IsModified();
+		if (result) {
+			auto hItem = m_Tree.GetSelectedItem();
+			auto value = dlg.GetValue();
+			auto cmd = std::make_shared<ChangeValueCommand>(
+				GetFullNodePath(hItem), item.Name, item.Type, &value,
+				dlg.GetType() == REG_DWORD ? 4 : 8);
+			success = m_CmdMgr.AddCommand(cmd);
+			if (success)
+				cmd->SetCallback(cb);
 		}
-		case REG_BINARY:
-		case REG_FULL_RESOURCE_DESCRIPTOR:
-		case REG_RESOURCE_REQUIREMENTS_LIST:
-		case REG_RESOURCE_LIST:
-		{
-			CBinaryValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly, this);
-			result = dlg.DoModal() == IDOK && dlg.IsModified();
-			if (result) {
-				auto hItem = m_Tree.GetSelectedItem();
-				auto cmd = std::make_shared<ChangeValueCommand>(
-					GetFullNodePath(hItem), item.Name, item.Type, (const PVOID)dlg.GetValue().data(),
-					(LONG)dlg.GetValue().size());
-				success = m_CmdMgr.AddCommand(cmd);
-				if (success) {
-					cmd->SetCallback(cb);
-					item.Size = (DWORD)dlg.GetValue().size();
-				}
+		break;
+	}
+	case REG_BINARY:
+	case REG_FULL_RESOURCE_DESCRIPTOR:
+	case REG_RESOURCE_REQUIREMENTS_LIST:
+	case REG_RESOURCE_LIST:
+	{
+		CBinaryValueDlg dlg(m_CurrentKey, item.Name, m_ReadOnly, this);
+		result = dlg.DoModal() == IDOK && dlg.IsModified();
+		if (result) {
+			auto hItem = m_Tree.GetSelectedItem();
+			auto cmd = std::make_shared<ChangeValueCommand>(
+				GetFullNodePath(hItem), item.Name, item.Type, (const PVOID)dlg.GetValue().data(),
+				(LONG)dlg.GetValue().size());
+			success = m_CmdMgr.AddCommand(cmd);
+			if (success) {
+				cmd->SetCallback(cb);
+				item.Size = (DWORD)dlg.GetValue().size();
 			}
-			break;
 		}
+		break;
+	}
 	}
 	if (!result)
 		return 0;
@@ -1574,7 +1574,7 @@ LRESULT CRegistryManagerView::OnGotoKey(WORD, WORD, HWND, BOOL&) {
 	if (dlg.DoModal() == IDOK) {
 		CWaitCursor wait;
 		auto hItem = GotoKey(dlg.GetKey());
-		if(!hItem)
+		if (!hItem)
 			AtlMessageBox(m_hWnd, L"Failed to locate key", IDS_TITLE, MB_ICONERROR);
 	}
 	return 0;
@@ -1590,7 +1590,7 @@ LRESULT CRegistryManagerView::OnExportBin(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			return -1;
 
 		int row = m_List.GetSelectionMark();
-		
+
 		CString path = GetFullNodePath(m_Tree.GetSelectedItem());
 
 		auto key = Registry::OpenKey(path, KEY_READ);
@@ -1599,7 +1599,7 @@ LRESULT CRegistryManagerView::OnExportBin(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 		Registry::EnumKeyValues(key, [&](auto type, auto name, auto size) {
 			CString sname(name);
-			
+
 			auto data = std::make_unique<BYTE[]>(size + 3);
 			auto count{ size };
 			if (ERROR_SUCCESS != key.QueryValue(name, nullptr, data.get(), &count))

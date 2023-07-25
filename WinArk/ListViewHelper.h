@@ -48,7 +48,7 @@ struct SelectedItemsView :std::ranges::view_interface<SelectedItemsView> {
 	};
 
 	SelectedItemsView() = default;
-	explicit SelectedItemsView(CListViewCtrl& lv):_lv(lv),_count(lv.GetSelectedCount()){}
+	explicit SelectedItemsView(CListViewCtrl& lv) :_lv(lv), _count(lv.GetSelectedCount()) {}
 
 	Iterator begin() {
 		return Iterator(*this);

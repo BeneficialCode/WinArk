@@ -29,7 +29,7 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
-		COMMAND_ID_HANDLER(ID_THREAD_COPY,OnThreadCopy)
+		COMMAND_ID_HANDLER(ID_THREAD_COPY, OnThreadCopy)
 		COMMAND_ID_HANDLER(ID_THREAD_EXPORT, OnThreadExport)
 	END_MSG_MAP()
 
@@ -59,7 +59,7 @@ public:
 	LRESULT OnThreadCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnThreadExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	
+
 	enum class ThreadColumn {
 		State, Id, ProcessId, ProcessName, CPUTime, CreateTime, Priority, BasePriority, Teb,
 		WaitReason, StartAddress, Win32StartAddress, StackBase, StackLimit, ContextSwitches,

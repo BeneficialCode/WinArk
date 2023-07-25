@@ -17,7 +17,7 @@ PEParser::PEParser(const wchar_t* path) {
 		_address = (PUCHAR)ExAllocatePool(NonPagedPool, fileSize.QuadPart); // Œ¥ Õ∑≈…Í«Îµƒƒ⁄¥Ê
 		status = _file.ReadFile(_address, fileSize.LowPart, &ioStatus, nullptr);
 		if (!NT_SUCCESS(status)) {
-			if(_address)
+			if (_address)
 				ExFreePool(_address);
 		}
 		_file.Close();
@@ -86,7 +86,7 @@ bool PEParser::HasExports() const {
 
 
 const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
-	if (_opt64 == nullptr||_opt32 == nullptr)
+	if (_opt64 == nullptr || _opt32 == nullptr)
 		return nullptr;
 	if (!IsValid() || index < 0 || index>15)
 		return nullptr;
@@ -139,7 +139,7 @@ ULONG PEParser::GetExportByName(PCSTR exportName) {
 			}
 		}
 	}
-	
+
 	return offset;
 }
 

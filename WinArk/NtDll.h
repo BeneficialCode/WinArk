@@ -714,7 +714,7 @@ struct SYSTEM_BIGPOOL_ENTRY {
 		ULONG_PTR NonPaged : 1;
 	};
 	SIZE_T SizeInBytes;
-	union{
+	union {
 		UCHAR Tag[4];
 		ULONG TagUlong;
 	};

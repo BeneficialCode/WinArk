@@ -11,7 +11,7 @@
 extern PDRIVER_OBJECT g_DriverObject;
 
 
-NTSTATUS Section::Initialize(SectionType type){
+NTSTATUS Section::Initialize(SectionType type) {
 	// Initialize this object
 	_type = type;
 
@@ -29,7 +29,7 @@ NTSTATUS Section::GetSection(DllStats** ppSectionInfo) {
 	ASSERT(_type == SectionType::Native || _type == SectionType::Wow);
 	// Use the single approach 
 	PVOID Context = nullptr;
-	
+
 	status = RtlRunOnceBeginInitialize(&_sectionSingletonState, 0, &Context);
 	if (!NT_SUCCESS(status)) {
 		LogError("RtlRunOnceBeginInitialize failed 0x%x", status);
@@ -368,7 +368,7 @@ NTSTATUS Section::CreateKnownDllSection(DllStats& dllStats) {
 
 			status = ZwUnmapViewOfSection(NtCurrentProcess(), base);
 		} while (false);
-		
+
 
 	}
 
@@ -402,7 +402,7 @@ NTSTATUS Section::InjectDLL(DllStats* pDllStats) {
 		KernelMode,
 		pApc, );*/
 
-	//Prevent our driver from unloading be incrementing its reference count
+		//Prevent our driver from unloading be incrementing its reference count
 	ObReferenceObject(g_DriverObject);
 
 	return status;

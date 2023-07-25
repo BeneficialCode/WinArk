@@ -35,7 +35,7 @@ NTSTATUS DevMonManager::AddDevice(PCWSTR name) {
 			WCHAR* buffer = nullptr;
 
 			// 生成设备，然后绑定之
-			do 
+			do
 			{
 				// A name is not needed,because the target device is named and is the real target for IRPs.
 				status = IoCreateDevice(DriverObject, sizeof(DeviceExtension), nullptr,
@@ -53,7 +53,7 @@ NTSTATUS DevMonManager::AddDevice(PCWSTR name) {
 
 				// 最大锁定的分钟数 为 0 表示无限制
 				// 最大为解决请求数 为 0 表示无限制
-				IoInitializeRemoveLock(&ext->RemoveLock, 'kcol',0,0);
+				IoInitializeRemoveLock(&ext->RemoveLock, 'kcol', 0, 0);
 				// 拷贝重要标准位
 				// We must prepare our new device object fully before actually attaching.
 				DeviceObject->Flags |= LowerDeviceObject->Flags & (DO_BUFFERED_IO | DO_DIRECT_IO);
@@ -75,7 +75,7 @@ NTSTATUS DevMonManager::AddDevice(PCWSTR name) {
 
 				Devices[i].LowerDeviceObject = ext->LowerDeviceObject;
 				// hardware based devices require this
-				
+
 				// we remove the DO_DEVICE_INITIALIZING flag (set by the I/O system initially) to
 				// indicate to the Plug&Play manager that the device is ready for work.
 				// 设置这个设备已经启动
@@ -196,11 +196,11 @@ NTSTATUS DevMonManager::AddDriver(PCWSTR driverName, PVOID* driverObject) {
 	::wcscpy_s(globals.Drivers[index].DriverName, driverName);
 
 	for (int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++) {
-		globals.Drivers[i].MajorFunction[i] = 
+		globals.Drivers[i].MajorFunction[i] =
 			static_cast<PDRIVER_DISPATCH>(InterlockedExchangePointer((PVOID*)&driver->MajorFunction[i], DriverMonGenericDispatch));
 	}
 
-	globals.Drivers[index].DriverUnload = 
+	globals.Drivers[index].DriverUnload =
 		static_cast<PDRIVER_UNLOAD>(InterlockedExchangePointer((PVOID*)&driver->DriverUnload, GenericDriverUnload));
 	globals.Drivers[index].DriverObject = driver;
 	++globals.Count;
@@ -226,61 +226,61 @@ NTSTATUS DevMonManager::RemoveDriver(int index) {
 NTSTATUS GetDataFromIrp(PDEVICE_OBJECT DeviceObject, PIRP Irp, PIO_STACK_LOCATION stack, IrpMajorCode code, PVOID buffer, ULONG size, bool output) {
 	__try {
 		switch (code) {
-			case IrpMajorCode::READ:
-			case IrpMajorCode::WRITE:
-				if (Irp->MdlAddress) {
-					auto p = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-					if (p) {
-						::memcpy(buffer, p, size);
-						return STATUS_SUCCESS;
-					}
-					return STATUS_INSUFFICIENT_RESOURCES;
+		case IrpMajorCode::READ:
+		case IrpMajorCode::WRITE:
+			if (Irp->MdlAddress) {
+				auto p = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+				if (p) {
+					::memcpy(buffer, p, size);
+					return STATUS_SUCCESS;
 				}
-				if (DeviceObject->Flags & DO_BUFFERED_IO) {
+				return STATUS_INSUFFICIENT_RESOURCES;
+			}
+			if (DeviceObject->Flags & DO_BUFFERED_IO) {
+				if (!Irp->AssociatedIrp.SystemBuffer) {
+					return STATUS_INVALID_PARAMETER;
+				}
+				::memcpy(buffer, Irp->AssociatedIrp.SystemBuffer, size);
+				return STATUS_SUCCESS;
+			}
+			if (!Irp->UserBuffer) {
+				return STATUS_INVALID_PARAMETER;
+			}
+			::memcpy(buffer, Irp->UserBuffer, size);
+			return STATUS_SUCCESS;
+
+		case IrpMajorCode::DEVICE_CONTROL:
+		case IrpMajorCode::INTERNAL_DEVICE_CONTROL:
+			auto controlCode = stack->Parameters.DeviceIoControl.IoControlCode;
+			if (METHOD_FROM_CTL_CODE(controlCode) == METHOD_NEITHER) {
+				if (stack->Parameters.DeviceIoControl.Type3InputBuffer < (PVOID)(1 << 16)) {
+					::memcpy(buffer, stack->Parameters.DeviceIoControl.Type3InputBuffer, size);
+				}
+				else {
+					return STATUS_UNSUCCESSFUL;
+				}
+			}
+			else {
+				if (!output || METHOD_FROM_CTL_CODE(controlCode) == METHOD_BUFFERED) {
 					if (!Irp->AssociatedIrp.SystemBuffer) {
 						return STATUS_INVALID_PARAMETER;
 					}
 					::memcpy(buffer, Irp->AssociatedIrp.SystemBuffer, size);
-					return STATUS_SUCCESS;
 				}
-				if (!Irp->UserBuffer) {
-					return STATUS_INVALID_PARAMETER;
-				}
-				::memcpy(buffer, Irp->UserBuffer, size);
-				return STATUS_SUCCESS;
-
-			case IrpMajorCode::DEVICE_CONTROL:
-			case IrpMajorCode::INTERNAL_DEVICE_CONTROL:
-				auto controlCode = stack->Parameters.DeviceIoControl.IoControlCode;
-				if (METHOD_FROM_CTL_CODE(controlCode) == METHOD_NEITHER) {
-					if (stack->Parameters.DeviceIoControl.Type3InputBuffer < (PVOID)(1 << 16)) {
-						::memcpy(buffer, stack->Parameters.DeviceIoControl.Type3InputBuffer, size);
+				else {
+					if (!Irp->MdlAddress) {
+						return STATUS_INVALID_PARAMETER;
+					}
+					auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+					if (data) {
+						::memcpy(buffer, data, size);
 					}
 					else {
 						return STATUS_UNSUCCESSFUL;
 					}
 				}
-				else {
-					if (!output || METHOD_FROM_CTL_CODE(controlCode) == METHOD_BUFFERED) {
-						if (!Irp->AssociatedIrp.SystemBuffer) {
-							return STATUS_INVALID_PARAMETER;
-						}
-						::memcpy(buffer, Irp->AssociatedIrp.SystemBuffer, size);
-					}
-					else {
-						if (!Irp->MdlAddress) {
-							return STATUS_INVALID_PARAMETER;
-						}
-						auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-						if (data) {
-							::memcpy(buffer, data, size);
-						}
-						else {
-							return STATUS_UNSUCCESSFUL;
-						}
-					}
-				}
-				return STATUS_SUCCESS;
+			}
+			return STATUS_SUCCESS;
 		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {
@@ -321,31 +321,31 @@ NTSTATUS DriverMonGenericDispatch(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 				info->DataSize = 0;
 
 				switch (info->MajorFunction) {
-					case IrpMajorCode::WRITE:
-						info->Write.Length = stack->Parameters.Write.Length;
-						info->Write.Offset = stack->Parameters.Write.ByteOffset.QuadPart;
-						if(info->Write.Length>0){ 
-							auto dataSize = min(MaxDataSize, info->Write.Length);
-							if (NT_SUCCESS(GetDataFromIrp(DeviceObject, Irp, stack, info->MajorFunction, (PUCHAR)info + sizeof(IrpArrivedInfo), dataSize))) {
-								info->DataSize = dataSize;
-								info->Size += (USHORT)dataSize;
-							}
+				case IrpMajorCode::WRITE:
+					info->Write.Length = stack->Parameters.Write.Length;
+					info->Write.Offset = stack->Parameters.Write.ByteOffset.QuadPart;
+					if (info->Write.Length > 0) {
+						auto dataSize = min(MaxDataSize, info->Write.Length);
+						if (NT_SUCCESS(GetDataFromIrp(DeviceObject, Irp, stack, info->MajorFunction, (PUCHAR)info + sizeof(IrpArrivedInfo), dataSize))) {
+							info->DataSize = dataSize;
+							info->Size += (USHORT)dataSize;
 						}
-						break;
+					}
+					break;
 
-					case IrpMajorCode::DEVICE_CONTROL:
-					case IrpMajorCode::INTERNAL_DEVICE_CONTROL:
-						info->DeviceIoControl.IoControlCode = stack->Parameters.DeviceIoControl.IoControlCode;
-						info->DeviceIoControl.InputBufferLength = stack->Parameters.DeviceIoControl.InputBufferLength;
-						info->DeviceIoControl.OutputBufferLength = stack->Parameters.DeviceIoControl.OutputBufferLength;
-						if (info->DeviceIoControl.InputBufferLength > 0) {
-							auto dataSize = min(MaxDataSize, info->DeviceIoControl.InputBufferLength);
-							if (NT_SUCCESS(GetDataFromIrp(DeviceObject, Irp, stack, info->MajorFunction, (PUCHAR)info + sizeof(IrpArrivedInfo), dataSize))) {
-								info->DataSize = dataSize;
-								info->Size += (USHORT)dataSize;
-							}
+				case IrpMajorCode::DEVICE_CONTROL:
+				case IrpMajorCode::INTERNAL_DEVICE_CONTROL:
+					info->DeviceIoControl.IoControlCode = stack->Parameters.DeviceIoControl.IoControlCode;
+					info->DeviceIoControl.InputBufferLength = stack->Parameters.DeviceIoControl.InputBufferLength;
+					info->DeviceIoControl.OutputBufferLength = stack->Parameters.DeviceIoControl.OutputBufferLength;
+					if (info->DeviceIoControl.InputBufferLength > 0) {
+						auto dataSize = min(MaxDataSize, info->DeviceIoControl.InputBufferLength);
+						if (NT_SUCCESS(GetDataFromIrp(DeviceObject, Irp, stack, info->MajorFunction, (PUCHAR)info + sizeof(IrpArrivedInfo), dataSize))) {
+							info->DataSize = dataSize;
+							info->Size += (USHORT)dataSize;
 						}
-						break;
+					}
+					break;
 				}
 
 				globals.DataBuffer->Write(info, info->Size);

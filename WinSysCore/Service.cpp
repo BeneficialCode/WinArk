@@ -3,14 +3,14 @@
 
 using namespace WinSys;
 
-Service::Service(wil::unique_schandle handle) noexcept:_handle(std::move(handle)){ }
+Service::Service(wil::unique_schandle handle) noexcept :_handle(std::move(handle)) { }
 
 bool Service::Start() {
 	return Start(std::vector<const wchar_t*>());
 }
 
 bool Service::Start(const std::vector<const wchar_t*>& args) {
-	return ::StartService(_handle.get(), static_cast<DWORD>(args.size()), 
+	return ::StartService(_handle.get(), static_cast<DWORD>(args.size()),
 		const_cast<PCWSTR*>(args.data())) ? true : false;
 }
 
@@ -29,10 +29,10 @@ bool Service::Continue() {
 	return ::ControlService(_handle.get(), SERVICE_CONTROL_CONTINUE, &status) ? true : false;
 }
 
-ServiceStatusProcess Service::GetStatus() const{
+ServiceStatusProcess Service::GetStatus() const {
 	ServiceStatusProcess status{};
 	DWORD len;
-	::QueryServiceStatusEx(_handle.get(), 
+	::QueryServiceStatusEx(_handle.get(),
 		SC_STATUS_PROCESS_INFO, // the only value currently supported
 		(BYTE*)&status, sizeof(status), &len);
 	return status;
@@ -41,7 +41,7 @@ ServiceStatusProcess Service::GetStatus() const{
 std::vector<ServiceTrigger> Service::GetTriggers() const {
 	std::vector<ServiceTrigger> triggers;
 	DWORD needed;
-	::QueryServiceConfig2(_handle.get(), 
+	::QueryServiceConfig2(_handle.get(),
 		SERVICE_CONFIG_TRIGGER_INFO, // Trigger(s) to start/stop the service
 		nullptr, 0, &needed);
 	if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER)
@@ -76,8 +76,8 @@ std::vector<std::wstring>Service::GetRequiredPrivileges() const {
 		return privileges;
 
 	auto buffer = std::make_unique<BYTE[]>(needed);
-	if (!::QueryServiceConfig2(_handle.get(), 
-		SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO, 
+	if (!::QueryServiceConfig2(_handle.get(),
+		SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO,
 		buffer.get(), needed, &needed))
 		return privileges;
 
@@ -93,7 +93,7 @@ std::vector<std::wstring>Service::GetRequiredPrivileges() const {
 ServiceSidType WinSys::Service::GetSidType() const {
 	ServiceSidType type;
 	DWORD len;
-	if (::QueryServiceConfig2(_handle.get(), 
+	if (::QueryServiceConfig2(_handle.get(),
 		SERVICE_CONFIG_SERVICE_SID_INFO, // Service SID Type
 		(BYTE*)&type, sizeof(type), &len))
 		return type;
@@ -110,6 +110,6 @@ std::unique_ptr<WinSys::Service> Service::Open(const std::wstring& name, Service
 
 bool Service::Refresh(ServiceInfo& info) {
 	DWORD bytes;
-	return ::QueryServiceStatusEx(_handle.get(), SC_STATUS_PROCESS_INFO, 
-		(BYTE*)&info._status,sizeof(SERVICE_STATUS_PROCESS),&bytes);
+	return ::QueryServiceStatusEx(_handle.get(), SC_STATUS_PROCESS_INFO,
+		(BYTE*)&info._status, sizeof(SERVICE_STATUS_PROCESS), &bytes);
 }

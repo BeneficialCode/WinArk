@@ -11,10 +11,10 @@ struct UnloadedDriverInfo {
 
 class CUnloadedDriverTable :
 	public CTable<UnloadedDriverInfo>,
-	public CWindowImpl<CUnloadedDriverTable>{
+	public CWindowImpl<CUnloadedDriverTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
-	
+
 	CUnloadedDriverTable(BarInfo& bars, TableInfo& table);
 	int ParseTableEntry(CString& s, char& mask, int& select, UnloadedDriverInfo& info, int column);
 	bool CompareItems(const UnloadedDriverInfo& s1, const UnloadedDriverInfo& s2, int col, bool asc);
@@ -37,9 +37,9 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_COPY,OnUnloadedDriverCopy)
+		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_COPY, OnUnloadedDriverCopy)
 		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_EXPORT, OnUnloadedDriverExport)
-		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_UNLOADEDDRIVERS_REFRESH, OnRefresh)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -67,7 +67,7 @@ public:
 
 private:
 	enum class TableColumn {
-		Name,StartAddress,EndAddress,CurrentTime
+		Name, StartAddress, EndAddress, CurrentTime
 	};
 
 	void Refresh();

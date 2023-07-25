@@ -48,26 +48,26 @@ bool RegExportImport::ExportKey(HKEY hKey, HANDLE hFile, PCWSTR section) const {
 
 		switch (type)
 		{
-			case REG_DWORD:
-				// c++20 https://www.modernescpp.com/index.php/std-format-in-c-20
-				WriteString(hFile, sname + (L"=dword:" + std::format(L"{:08x}\n", *(DWORD*)data.get())).c_str());
-				break;
+		case REG_DWORD:
+			// c++20 https://www.modernescpp.com/index.php/std-format-in-c-20
+			WriteString(hFile, sname + (L"=dword:" + std::format(L"{:08x}\n", *(DWORD*)data.get())).c_str());
+			break;
 
-			case REG_SZ: {
-				CString text(data.get());
-				text.Replace(L"\"", L"\\\"");
-				WriteString(hFile, sname + L"=\"" + text + L"\"\n");
-				break;
-			}
+		case REG_SZ: {
+			CString text(data.get());
+			text.Replace(L"\"", L"\\\"");
+			WriteString(hFile, sname + L"=\"" + text + L"\"\n");
+			break;
+		}
 
-			case REG_BINARY:
-				WriteString(hFile, sname + L"=hex:" + BytesToString(data.get(), count) + L"\n");
-				break;
+		case REG_BINARY:
+			WriteString(hFile, sname + L"=hex:" + BytesToString(data.get(), count) + L"\n");
+			break;
 
-			default:
-				WriteString(hFile, sname + std::format(L"=hex({:x}):", type).c_str() +
-					BytesToString(data.get(), count) + L"\n");
-				break;
+		default:
+			WriteString(hFile, sname + std::format(L"=hex({:x}):", type).c_str() +
+				BytesToString(data.get(), count) + L"\n");
+			break;
 		}
 
 		return true;

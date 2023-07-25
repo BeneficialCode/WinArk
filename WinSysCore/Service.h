@@ -24,8 +24,8 @@ namespace WinSys {
 	};
 
 	enum class ServiceTriggerAction {
-		Start=1,
-		Stop=2
+		Start = 1,
+		Stop = 2
 	};
 
 	struct ServiceTrigger {

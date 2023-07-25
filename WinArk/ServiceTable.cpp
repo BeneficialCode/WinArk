@@ -82,7 +82,7 @@ LRESULT CServiceTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	auto& state = pdata.CurrentState;
 	bool enable = state == ServiceState::Stopped &&
 		GetServiceInfoEx(svc.GetName()).GetConfiguration()->StartType != ServiceStartType::Disabled;
-	if(!enable)
+	if (!enable)
 		EnableMenuItem(hSubMenu, ID_SERVICE_START, MF_DISABLED);
 	enable = state == ServiceState::Running;
 	if (!enable) {
@@ -91,9 +91,9 @@ LRESULT CServiceTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 		EnableMenuItem(hSubMenu, ID_SERVICE_STOP, MF_DISABLED);
 	}
 	enable = state == ServiceState::Paused;
-	if(!enable)
+	if (!enable)
 		EnableMenuItem(hSubMenu, ID_SERVICE_CONTINUE, MF_DISABLED);
-	
+
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
 		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
@@ -133,59 +133,59 @@ int CServiceTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::
 	auto& svcex = GetServiceInfoEx(info.GetName());
 	auto config = svcex.GetConfiguration();
 	switch (column) {
-		case 0:
-			s = info.GetName().c_str();
-			break;
-		case 1:
-			s = info.GetDisplayName().c_str();
-			break;
-		case 2:
-			s = ServiceStateToString(pdata.CurrentState);
-			break;
-		case 3:
-			s = ServiceTypeToString(pdata.Type);
-			break;
-		case 4:
-			if (pdata.ProcessId > 0) {
-				s.Format(L"%u (0x%X)", pdata.ProcessId, pdata.ProcessId);
-			}
-			break;
-		case 5:
-			s = pdata.ProcessId > 0 ? m_ProcMgr.GetProcessNameById(pdata.ProcessId).c_str() : L"";
-			break;
-		case 6:
-			s = config ? ServiceStartTypeToString(*config) : AccessDenied;
-			break;
-		case 7:
-			s = config ? CString(config->BinaryPathName.c_str()) : AccessDenied;
-			break;
-		case 8:
-			s = config ? CString(config->AccountName.c_str()) : AccessDenied;
-			break;
-		case 9:
-			s = config ? ErrorControlToString(config->ErrorControl) : AccessDenied;
-			break;
-		case 10:
-			s = svcex.GetDescription();
-			break;
-		case 11:
-			s = svcex.GetPrivileges();
-			break;
-		case 12:
-			s = svcex.GetTriggers();
-			break;
-		case 13:
-			s = config ? svcex.GetDependencies() : AccessDenied;
-			break;
-		case 14:
-			s = ServiceControlsAcceptedToString(pdata.ControlsAccepted);
-			break;
-		case 15:
-			s = svcex.GetSID();
-			break;
-		case 16:
-			s = ServiceSidTypeToString(svcex.GetSidType());
-			break;
+	case 0:
+		s = info.GetName().c_str();
+		break;
+	case 1:
+		s = info.GetDisplayName().c_str();
+		break;
+	case 2:
+		s = ServiceStateToString(pdata.CurrentState);
+		break;
+	case 3:
+		s = ServiceTypeToString(pdata.Type);
+		break;
+	case 4:
+		if (pdata.ProcessId > 0) {
+			s.Format(L"%u (0x%X)", pdata.ProcessId, pdata.ProcessId);
+		}
+		break;
+	case 5:
+		s = pdata.ProcessId > 0 ? m_ProcMgr.GetProcessNameById(pdata.ProcessId).c_str() : L"";
+		break;
+	case 6:
+		s = config ? ServiceStartTypeToString(*config) : AccessDenied;
+		break;
+	case 7:
+		s = config ? CString(config->BinaryPathName.c_str()) : AccessDenied;
+		break;
+	case 8:
+		s = config ? CString(config->AccountName.c_str()) : AccessDenied;
+		break;
+	case 9:
+		s = config ? ErrorControlToString(config->ErrorControl) : AccessDenied;
+		break;
+	case 10:
+		s = svcex.GetDescription();
+		break;
+	case 11:
+		s = svcex.GetPrivileges();
+		break;
+	case 12:
+		s = svcex.GetTriggers();
+		break;
+	case 13:
+		s = config ? svcex.GetDependencies() : AccessDenied;
+		break;
+	case 14:
+		s = ServiceControlsAcceptedToString(pdata.ControlsAccepted);
+		break;
+	case 15:
+		s = svcex.GetSID();
+		break;
+	case 16:
+		s = ServiceSidTypeToString(svcex.GetSidType());
+		break;
 	}
 
 	return s.GetLength();
@@ -193,12 +193,12 @@ int CServiceTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::
 
 PCWSTR CServiceTable::ServiceStateToString(WinSys::ServiceState state) {
 	switch (state) {
-		case ServiceState::Running:return L"Running";
-		case ServiceState::Stopped:return L"Stopped";
-		case ServiceState::Paused:return L"Paused";
-		case ServiceState::StartPending:return L"Start Pending";
-		case ServiceState::StopPending:return L"Stop Pending";
-		case ServiceState::PausePending:return L"Pause Pending";
+	case ServiceState::Running:return L"Running";
+	case ServiceState::Stopped:return L"Stopped";
+	case ServiceState::Paused:return L"Paused";
+	case ServiceState::StartPending:return L"Start Pending";
+	case ServiceState::StopPending:return L"Stop Pending";
+	case ServiceState::PausePending:return L"Pause Pending";
 	}
 	return L"Unknown";
 }
@@ -230,15 +230,15 @@ CString CServiceTable::ServiceTypeToString(WinSys::ServiceType type) {
 PCWSTR CServiceTable::TriggerToText(const WinSys::ServiceTrigger& trigger) {
 	using namespace WinSys;
 	switch (trigger.Type) {
-		case ServiceTriggerType::Custom:return L"Custom";
-		case ServiceTriggerType::DeviceInterfaceArrival:return L"Device Arrival";
-		case ServiceTriggerType::DomainJoin:return L"Domain Join";
-		case ServiceTriggerType::FirewallPortEvent:return L"Firewall Port Event";
-		case ServiceTriggerType::GroupPolicy:return L"Group Policy";
-		case ServiceTriggerType::IpAddressAvailability: return L"IP Address Availability";
-		case ServiceTriggerType::NetworkEndPoint:return L"Network EndPoint";
-		case ServiceTriggerType::SystemStateChanged:return L"System State Changed";
-		case ServiceTriggerType::Aggregate:return L"Aggregate";
+	case ServiceTriggerType::Custom:return L"Custom";
+	case ServiceTriggerType::DeviceInterfaceArrival:return L"Device Arrival";
+	case ServiceTriggerType::DomainJoin:return L"Domain Join";
+	case ServiceTriggerType::FirewallPortEvent:return L"Firewall Port Event";
+	case ServiceTriggerType::GroupPolicy:return L"Group Policy";
+	case ServiceTriggerType::IpAddressAvailability: return L"IP Address Availability";
+	case ServiceTriggerType::NetworkEndPoint:return L"Network EndPoint";
+	case ServiceTriggerType::SystemStateChanged:return L"System State Changed";
+	case ServiceTriggerType::Aggregate:return L"Aggregate";
 	}
 	ATLASSERT(false);
 	return L"";
@@ -255,11 +255,11 @@ CString CServiceTable::ServiceStartTypeToString(const ServiceConfiguration& conf
 	CString type;
 
 	switch (config.StartType) {
-		case ServiceStartType::Boot:type = L"Boot"; break;
-		case ServiceStartType::System:type = L"System"; break;
-		case ServiceStartType::Auto:type = L"Automatic"; break;
-		case ServiceStartType::Demand:type = L"Manual"; break;
-		case ServiceStartType::Disabled:type = L"Disabled"; break;
+	case ServiceStartType::Boot:type = L"Boot"; break;
+	case ServiceStartType::System:type = L"System"; break;
+	case ServiceStartType::Auto:type = L"Automatic"; break;
+	case ServiceStartType::Demand:type = L"Manual"; break;
+	case ServiceStartType::Disabled:type = L"Disabled"; break;
 	}
 
 	if (config.DeleayedAutoStart)
@@ -284,17 +284,17 @@ CString CServiceTable::ErrorControlToString(WinSys::ServiceErrorControl ec) {
 
 	switch (ec)
 	{
-		case Ignore:
-			return L"Ignore (0)";
-			
-		case Normal:
-			return L"Normal (1)";
+	case Ignore:
+		return L"Ignore (0)";
 
-		case Severe:
-			return L"Servere (2)";
+	case Normal:
+		return L"Normal (1)";
 
-		case Critical:
-			return L"Critical (3)";
+	case Severe:
+		return L"Servere (2)";
+
+	case Critical:
+		return L"Critical (3)";
 	}
 
 	ATLASSERT(false);
@@ -341,99 +341,99 @@ CString CServiceTable::ServiceControlsAcceptedToString(ServiceControlsAccepted a
 PCWSTR CServiceTable::ServiceSidTypeToString(WinSys::ServiceSidType type) {
 	switch (type)
 	{
-		case WinSys::ServiceSidType::None:
-			return L"None";
-		case WinSys::ServiceSidType::Unrestricted:
-			return L"Unrestricted";
-		case WinSys::ServiceSidType::Restricted:
-			return L"Restricted";
+	case WinSys::ServiceSidType::None:
+		return L"None";
+	case WinSys::ServiceSidType::Unrestricted:
+		return L"Unrestricted";
+	case WinSys::ServiceSidType::Restricted:
+		return L"Restricted";
 	}
 	return L"(Unknown)";
 }
 
 bool CServiceTable::CompareItems(const WinSys::ServiceInfo& s1, const WinSys::ServiceInfo& s2, int col, bool asc) {
-	
-	switch (static_cast<ServiceColumn>(col))		
+
+	switch (static_cast<ServiceColumn>(col))
 	{
-		case ServiceColumn::Name:
-			return SortHelper::SortStrings(s1.GetName(), s2.GetName(), asc);
-		case ServiceColumn::DisplayName:
-			return SortHelper::SortStrings(s1.GetDisplayName(), s2.GetDisplayName(), asc);
-		case ServiceColumn::State:
-			return SortHelper::SortStrings(
-				ServiceStateToString(s1.GetStatusProcess().CurrentState),
-				ServiceStateToString(s2.GetStatusProcess().CurrentState), 
-				asc);
-		case ServiceColumn::Type:
-			return SortHelper::SortNumbers(s1.GetStatusProcess().Type, s2.GetStatusProcess().Type, asc);
-		case ServiceColumn::PID:
-			return SortHelper::SortNumbers(s1.GetStatusProcess().ProcessId, s2.GetStatusProcess().ProcessId, asc);
-		case ServiceColumn::ProcessName:
-			return SortHelper::SortStrings(
-				m_ProcMgr.GetProcessNameById(s1.GetStatusProcess().ProcessId),
-				m_ProcMgr.GetProcessNameById(s2.GetStatusProcess().ProcessId),
-					asc);
-		case ServiceColumn::StartType:
-			return SortHelper::SortStrings(
-				ServiceStartTypeToString(*GetServiceInfoEx(s1.GetName()).GetConfiguration()),
-				ServiceStartTypeToString(*GetServiceInfoEx(s2.GetName()).GetConfiguration()),
-				asc
-			);
-		case ServiceColumn::BinaryPath:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetConfiguration()->BinaryPathName,
-				GetServiceInfoEx(s2.GetName()).GetConfiguration()->BinaryPathName,
-				asc
-			);
-		case ServiceColumn::AccountName:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetConfiguration()->AccountName,
-				GetServiceInfoEx(s2.GetName()).GetConfiguration()->AccountName,
-				asc
-			);
-		case ServiceColumn::ErrorControl:
-			return SortHelper::SortNumbers(
-				GetServiceInfoEx(s1.GetName()).GetConfiguration()->ErrorControl,
-				GetServiceInfoEx(s2.GetName()).GetConfiguration()->ErrorControl,
-				asc
-			);
-		case ServiceColumn::Description:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetDescription(),
-				GetServiceInfoEx(s2.GetName()).GetDescription(),
-				asc
-			);
-		case ServiceColumn::Privileges:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetPrivileges(),
-				GetServiceInfoEx(s2.GetName()).GetPrivileges(),
-				asc
-			);
-		case ServiceColumn::Triggers:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetTriggers(),
-				GetServiceInfoEx(s2.GetName()).GetTriggers(),
-				asc
-			);
-		case ServiceColumn::Dependencies:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetDependencies(),
-				GetServiceInfoEx(s2.GetName()).GetDependencies(),
-				asc
-			);
-		case ServiceColumn::ControlsAccepted:
-			return SortHelper::SortNumbers(
-				s1.GetStatusProcess().ControlsAccepted, 
-				s2.GetStatusProcess().ControlsAccepted, asc);
-		case ServiceColumn::SID:
-			return SortHelper::SortStrings(
-				GetServiceInfoEx(s1.GetName()).GetSID(), 
-				GetServiceInfoEx(s2.GetName()).GetSID(), asc);
-		case ServiceColumn::SidType:
-			return SortHelper::SortNumbers(GetServiceInfoEx(s1.GetName()).GetSidType(),
-				GetServiceInfoEx(s2.GetName()).GetSidType(), asc);
+	case ServiceColumn::Name:
+		return SortHelper::SortStrings(s1.GetName(), s2.GetName(), asc);
+	case ServiceColumn::DisplayName:
+		return SortHelper::SortStrings(s1.GetDisplayName(), s2.GetDisplayName(), asc);
+	case ServiceColumn::State:
+		return SortHelper::SortStrings(
+			ServiceStateToString(s1.GetStatusProcess().CurrentState),
+			ServiceStateToString(s2.GetStatusProcess().CurrentState),
+			asc);
+	case ServiceColumn::Type:
+		return SortHelper::SortNumbers(s1.GetStatusProcess().Type, s2.GetStatusProcess().Type, asc);
+	case ServiceColumn::PID:
+		return SortHelper::SortNumbers(s1.GetStatusProcess().ProcessId, s2.GetStatusProcess().ProcessId, asc);
+	case ServiceColumn::ProcessName:
+		return SortHelper::SortStrings(
+			m_ProcMgr.GetProcessNameById(s1.GetStatusProcess().ProcessId),
+			m_ProcMgr.GetProcessNameById(s2.GetStatusProcess().ProcessId),
+			asc);
+	case ServiceColumn::StartType:
+		return SortHelper::SortStrings(
+			ServiceStartTypeToString(*GetServiceInfoEx(s1.GetName()).GetConfiguration()),
+			ServiceStartTypeToString(*GetServiceInfoEx(s2.GetName()).GetConfiguration()),
+			asc
+		);
+	case ServiceColumn::BinaryPath:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetConfiguration()->BinaryPathName,
+			GetServiceInfoEx(s2.GetName()).GetConfiguration()->BinaryPathName,
+			asc
+		);
+	case ServiceColumn::AccountName:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetConfiguration()->AccountName,
+			GetServiceInfoEx(s2.GetName()).GetConfiguration()->AccountName,
+			asc
+		);
+	case ServiceColumn::ErrorControl:
+		return SortHelper::SortNumbers(
+			GetServiceInfoEx(s1.GetName()).GetConfiguration()->ErrorControl,
+			GetServiceInfoEx(s2.GetName()).GetConfiguration()->ErrorControl,
+			asc
+		);
+	case ServiceColumn::Description:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetDescription(),
+			GetServiceInfoEx(s2.GetName()).GetDescription(),
+			asc
+		);
+	case ServiceColumn::Privileges:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetPrivileges(),
+			GetServiceInfoEx(s2.GetName()).GetPrivileges(),
+			asc
+		);
+	case ServiceColumn::Triggers:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetTriggers(),
+			GetServiceInfoEx(s2.GetName()).GetTriggers(),
+			asc
+		);
+	case ServiceColumn::Dependencies:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetDependencies(),
+			GetServiceInfoEx(s2.GetName()).GetDependencies(),
+			asc
+		);
+	case ServiceColumn::ControlsAccepted:
+		return SortHelper::SortNumbers(
+			s1.GetStatusProcess().ControlsAccepted,
+			s2.GetStatusProcess().ControlsAccepted, asc);
+	case ServiceColumn::SID:
+		return SortHelper::SortStrings(
+			GetServiceInfoEx(s1.GetName()).GetSID(),
+			GetServiceInfoEx(s2.GetName()).GetSID(), asc);
+	case ServiceColumn::SidType:
+		return SortHelper::SortNumbers(GetServiceInfoEx(s1.GetName()).GetSidType(),
+			GetServiceInfoEx(s2.GetName()).GetSidType(), asc);
 	}
-	
+
 	return false;
 }
 

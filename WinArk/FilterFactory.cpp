@@ -22,25 +22,25 @@ std::shared_ptr<FilterBase> FilterFactory::CreateFilter(PCWSTR name, CompareType
 		if (::wcscmp(name, names[i]) == 0) {
 			switch (i)
 			{
-				case 0:
-					filter = std::make_shared<ProcessNameFilter>(params, type, action);
-					break;
+			case 0:
+				filter = std::make_shared<ProcessNameFilter>(params, type, action);
+				break;
 
-				case 1:
-					filter = std::make_shared<ProcessIdFilter>(_wtoi(params), type, action);
-					break;
+			case 1:
+				filter = std::make_shared<ProcessIdFilter>(_wtoi(params), type, action);
+				break;
 
-				case 2:
-					filter = std::make_shared<EventNameFilter>(params, type, action);
-					break;
+			case 2:
+				filter = std::make_shared<EventNameFilter>(params, type, action);
+				break;
 
-				case 3:
-					filter = std::make_shared<PropertyValueFilter>(params, type, action);
-					break;
+			case 3:
+				filter = std::make_shared<PropertyValueFilter>(params, type, action);
+				break;
 
-				case 4:
-					filter = std::make_shared<PropertyNameFilter>(params, type, action);
-					break;
+			case 4:
+				filter = std::make_shared<PropertyNameFilter>(params, type, action);
+				break;
 			}
 		}
 	}

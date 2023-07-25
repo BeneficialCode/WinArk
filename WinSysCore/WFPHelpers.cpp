@@ -7,7 +7,7 @@
 using namespace WinSys;
 
 _Use_decl_annotations_
-UINT32 WFPHelpers::HlprFwpmEngineOpen(HANDLE* pEngineHandle, const UINT32 sessionFlags){
+UINT32 WFPHelpers::HlprFwpmEngineOpen(HANDLE* pEngineHandle, const UINT32 sessionFlags) {
 	ASSERT(pEngineHandle);
 
 	UINT32 status = NO_ERROR;
@@ -22,7 +22,7 @@ UINT32 WFPHelpers::HlprFwpmEngineOpen(HANDLE* pEngineHandle, const UINT32 sessio
 }
 
 _Use_decl_annotations_
-UINT32 WFPHelpers::HlprFwpmEngineClose(HANDLE* pEngineHandle){
+UINT32 WFPHelpers::HlprFwpmEngineClose(HANDLE* pEngineHandle) {
 	ASSERT(pEngineHandle);
 
 	UINT32 status = NO_ERROR;
@@ -39,8 +39,8 @@ UINT32 WFPHelpers::HlprFwpmEngineClose(HANDLE* pEngineHandle){
 }
 
 _Use_decl_annotations_
-UINT32 WFPHelpers::HlprFwpmFilterEnum(const HANDLE engineHandle, const HANDLE enumHandle, 
-	const UINT32 numEntriesRequested, FWPM_FILTER*** pppEntries, UINT32* pNumEntriesReturned){
+UINT32 WFPHelpers::HlprFwpmFilterEnum(const HANDLE engineHandle, const HANDLE enumHandle,
+	const UINT32 numEntriesRequested, FWPM_FILTER*** pppEntries, UINT32* pNumEntriesReturned) {
 	ASSERT(engineHandle);
 	ASSERT(enumHandle);
 	ASSERT(numEntriesRequested);
@@ -66,8 +66,8 @@ UINT32 WFPHelpers::HlprFwpmFilterEnum(const HANDLE engineHandle, const HANDLE en
 }
 
 _Use_decl_annotations_
-UINT32 WFPHelpers::HlprFwpmFilterCreateEnumHandle(const HANDLE engineHandle, 
-	const FWPM_FILTER_ENUM_TEMPLATE* pEnumTemplate, HANDLE* pEnumHandle){
+UINT32 WFPHelpers::HlprFwpmFilterCreateEnumHandle(const HANDLE engineHandle,
+	const FWPM_FILTER_ENUM_TEMPLATE* pEnumTemplate, HANDLE* pEnumHandle) {
 	ASSERT(engineHandle);
 	ASSERT(pEnumHandle);
 
@@ -85,7 +85,7 @@ UINT32 WFPHelpers::HlprFwpmFilterCreateEnumHandle(const HANDLE engineHandle,
 }
 
 _Use_decl_annotations_
-UINT32 WFPHelpers::HlprFwpmFilterDestroyEnumHandle(const HANDLE engineHandle, const HANDLE enumHandle){
+UINT32 WFPHelpers::HlprFwpmFilterDestroyEnumHandle(const HANDLE engineHandle, const HANDLE enumHandle) {
 	ASSERT(engineHandle);
 	ASSERT(enumHandle);
 
@@ -96,16 +96,16 @@ UINT32 WFPHelpers::HlprFwpmFilterDestroyEnumHandle(const HANDLE engineHandle, co
 }
 
 _Use_decl_annotations_
-UINT32 WinSys::WFPHelpers::HlprFwpmFilterDeleteById(const HANDLE engineHandle, const UINT64 id){
+UINT32 WinSys::WFPHelpers::HlprFwpmFilterDeleteById(const HANDLE engineHandle, const UINT64 id) {
 	ASSERT(engineHandle);
-	
+
 	UINT32 status = NO_ERROR;
 	status = FwpmFilterDeleteById(engineHandle, id);
 	return status;
 }
 
 _Use_decl_annotations_
-BOOLEAN WinSys::WFPHelpers::HlprFwpmLayerIsUserMode(const GUID* pLayerKey){
+BOOLEAN WinSys::WFPHelpers::HlprFwpmLayerIsUserMode(const GUID* pLayerKey) {
 	ASSERT(pLayerKey);
 	BOOLEAN isUserMode = FALSE;
 

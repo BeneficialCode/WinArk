@@ -11,47 +11,47 @@ NTSTATUS VadHelpers::GetVadCount(VadData* pData, PULONG pCount) {
 	if (NT_SUCCESS(status)) {
 		switch (pData->VadCountPos)
 		{
-			case VadCountPos::NumberGenericTableElements: 
-			{
-				PUCHAR pTable = (PUCHAR)Process + pData->EprocessOffsets.VadRoot;
-				PUCHAR pNumberGenericElements = (PUCHAR)pTable + pData->TableOffsets.NumberGenericTableElements;
-				PUCHAR readAddr = pNumberGenericElements;
-				readAddr += (pData->TableOffsets.BitField.Position / 8);
-				ULONG readSz = (pData->TableOffsets.BitField.Position % 8 + pData->TableOffsets.BitField.Size
-					+ 7) / 8;
-				ULONG64 readBits;
-				ULONG64 bitCopy;
+		case VadCountPos::NumberGenericTableElements:
+		{
+			PUCHAR pTable = (PUCHAR)Process + pData->EprocessOffsets.VadRoot;
+			PUCHAR pNumberGenericElements = (PUCHAR)pTable + pData->TableOffsets.NumberGenericTableElements;
+			PUCHAR readAddr = pNumberGenericElements;
+			readAddr += (pData->TableOffsets.BitField.Position / 8);
+			ULONG readSz = (pData->TableOffsets.BitField.Position % 8 + pData->TableOffsets.BitField.Size
+				+ 7) / 8;
+			ULONG64 readBits;
+			ULONG64 bitCopy;
 
-				RtlCopyMemory(&readBits, readAddr, readSz);
+			RtlCopyMemory(&readBits, readAddr, readSz);
 
-				readBits = readBits >> (pData->TableOffsets.BitField.Position % 8);
-				bitCopy = ((ULONG64)1 << pData->TableOffsets.BitField.Size);
-				bitCopy -= (ULONG64)1;
-				readBits &= bitCopy;
+			readBits = readBits >> (pData->TableOffsets.BitField.Position % 8);
+			bitCopy = ((ULONG64)1 << pData->TableOffsets.BitField.Size);
+			bitCopy -= (ULONG64)1;
+			readBits &= bitCopy;
 
-				*pCount = readBits;
-				break;
-			}
-				
+			*pCount = readBits;
+			break;
+		}
 
-			case VadCountPos::NumberOfVads:
-			{
-				PULONG pNumberOfVads = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.NumberOfVads);
-				*pCount = *pNumberOfVads;
-				break;
-			}
-				
 
-			case VadCountPos::VadCount:
-			{
-				PULONG pVadCount = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.VadCount);
-				*pCount = *pVadCount;
-				break;
-			}
-				
-			default:
-				status = STATUS_UNKNOWN_REVISION;
-				break;
+		case VadCountPos::NumberOfVads:
+		{
+			PULONG pNumberOfVads = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.NumberOfVads);
+			*pCount = *pNumberOfVads;
+			break;
+		}
+
+
+		case VadCountPos::VadCount:
+		{
+			PULONG pVadCount = (PULONG)((PUCHAR)Process + pData->EprocessOffsets.VadCount);
+			*pCount = *pVadCount;
+			break;
+		}
+
+		default:
+			status = STATUS_UNKNOWN_REVISION;
+			break;
 		}
 		ObDereferenceObject(Process);
 	}
@@ -100,10 +100,10 @@ NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
 
 			PUCHAR readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.PrivateMemory;
 			VadFlagsPrivateMemory = Helpers::ReadBitField(readAddr, &pData->VadFlagsOffsets.PrivateMemoryBitField);
-			
+
 			readAddr = (PUCHAR)VadToDump + pData->VadFlagsOffsets.NoChange;
 			VadFlagsNoChange = Helpers::ReadBitField(readAddr, &pData->VadFlagsOffsets.NoChangeBitField);
-				
+
 			readAddr = (PUCHAR)VadToDump + pData->VadShortOffsets.StartingVpn;
 			ULONG readSz = pData->VadShortOffsets.VpnSize;
 			StartingVpn = Helpers::ReadFieldValue(readAddr, readSz);
@@ -138,7 +138,7 @@ NTSTATUS VadHelpers::DumpsAllVadsForProcess(VadData* pData, VadInfo* pInfo) {
 			StartingVpn = Helpers::ReadFieldValue(readAddr, readSz);
 
 		} while (false);
-		
+
 		ObDereferenceObject(Process);
 	}
 

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "NewKernelHandler.h"
 
-void NewKernelHandler::InitMaxPhyMask(){
+void NewKernelHandler::InitMaxPhyMask() {
 	INT cpuInfo[4];// eax,ebx,ecx,edx
 	CpuIdEx(cpuInfo, 0x80000008, 0);
 	if (cpuInfo[0] != 0) {
@@ -30,7 +30,7 @@ void NewKernelHandler::InitMaxPhyMask(){
 	}
 }
 
-bool NewKernelHandler::VerifyAddress(ULONG_PTR addr){
+bool NewKernelHandler::VerifyAddress(ULONG_PTR addr) {
 	bool result = false;
 	if ((addr & _MaxLinearAddrTest) > 0) {
 		result = (addr & _MaxLinearAddrMask) == _MaxLinearAddrMask;

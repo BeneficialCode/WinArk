@@ -47,7 +47,7 @@ void CProcessPropertiesDlg::InitProcess() {
 	SetWindowText(text);
 
 	HICON hIcon = nullptr, hIconBig;
-	::ExtractIconEx(m_px.GetExecutablePath().c_str(), 0, &hIconBig, &hIcon,1);
+	::ExtractIconEx(m_px.GetExecutablePath().c_str(), 0, &hIconBig, &hIcon, 1);
 	if (hIcon == nullptr) {
 		hIcon = AtlLoadSysIcon(IDI_APPLICATION);
 		hIconBig = hIcon;

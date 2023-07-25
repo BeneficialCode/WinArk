@@ -2,7 +2,7 @@
 
 #include "FilterBase.h"
 
-class ProcessIdFilter: public FilterBase{
+class ProcessIdFilter : public FilterBase {
 public:
 	ProcessIdFilter(DWORD pid, CompareType type, FilterAction action);
 

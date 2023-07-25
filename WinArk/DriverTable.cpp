@@ -9,7 +9,7 @@ using namespace WinSys;
 const CString AccessDenied(L"<access denied>");
 
 CDriverTable::CDriverTable(BarInfo& bars, TableInfo& table)
-	:CTable(bars,table){
+	:CTable(bars, table) {
 	SetTableWindowInfo(bars.nbar);
 	Refresh();
 }
@@ -114,29 +114,29 @@ int CDriverTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::D
 	auto& svcex = GetServiceInfoEx(info.GetName());
 	auto config = svcex.GetConfiguration();
 	switch (column) {
-		case 0:
-			s = info.GetName().c_str();
-			break;
-		case 1:
-			s = info.GetDisplayName().c_str();
-			break;
-		case 2:
-			s = ServiceStateToString(pdata.CurrentState);
-			break;
-		case 3:
-			s = ServiceTypeToString(pdata.Type);
-			break;
-		case 4:
-			s = config ? ServiceStartTypeToString(*config) : AccessDenied;
-			break;
-		case 5:
-			s = svcex.GetDescription();
-			break;
-		case 6:
-			s = config ? CString(config->BinaryPathName.c_str()) : AccessDenied;
-			break;
-		default:
-			break;
+	case 0:
+		s = info.GetName().c_str();
+		break;
+	case 1:
+		s = info.GetDisplayName().c_str();
+		break;
+	case 2:
+		s = ServiceStateToString(pdata.CurrentState);
+		break;
+	case 3:
+		s = ServiceTypeToString(pdata.Type);
+		break;
+	case 4:
+		s = config ? ServiceStartTypeToString(*config) : AccessDenied;
+		break;
+	case 5:
+		s = svcex.GetDescription();
+		break;
+	case 6:
+		s = config ? CString(config->BinaryPathName.c_str()) : AccessDenied;
+		break;
+	default:
+		break;
 	}
 
 	return s.GetLength();
@@ -144,12 +144,12 @@ int CDriverTable::ParseTableEntry(CString& s, char& mask, int& select, WinSys::D
 
 PCWSTR CDriverTable::ServiceStateToString(WinSys::ServiceState state) {
 	switch (state) {
-		case ServiceState::Running:return L"Running";
-		case ServiceState::Stopped:return L"Stopped";
-		case ServiceState::Paused:return L"Paused";
-		case ServiceState::StartPending:return L"Start Pending";
-		case ServiceState::StopPending:return L"Stop Pending";
-		case ServiceState::PausePending:return L"Pause Pending";
+	case ServiceState::Running:return L"Running";
+	case ServiceState::Stopped:return L"Stopped";
+	case ServiceState::Paused:return L"Paused";
+	case ServiceState::StartPending:return L"Start Pending";
+	case ServiceState::StopPending:return L"Stop Pending";
+	case ServiceState::PausePending:return L"Pause Pending";
 	}
 	return L"Unknown";
 }
@@ -181,15 +181,15 @@ CString CDriverTable::ServiceTypeToString(WinSys::ServiceType type) {
 CString CDriverTable::TriggerToText(const WinSys::ServiceTrigger& trigger) {
 	using namespace WinSys;
 	switch (trigger.Type) {
-		case ServiceTriggerType::Custom:return L"Custom";
-		case ServiceTriggerType::DeviceInterfaceArrival:return L"Device Arrival";
-		case ServiceTriggerType::DomainJoin:return L"Domain Join";
-		case ServiceTriggerType::FirewallPortEvent:return L"Firewall Port Event";
-		case ServiceTriggerType::GroupPolicy:return L"Group Policy";
-		case ServiceTriggerType::IpAddressAvailability: return L"IP Address Availability";
-		case ServiceTriggerType::NetworkEndPoint:return L"Network EndPoint";
-		case ServiceTriggerType::SystemStateChanged:return L"System State Changed";
-		case ServiceTriggerType::Aggregate:return L"Aggregate";
+	case ServiceTriggerType::Custom:return L"Custom";
+	case ServiceTriggerType::DeviceInterfaceArrival:return L"Device Arrival";
+	case ServiceTriggerType::DomainJoin:return L"Domain Join";
+	case ServiceTriggerType::FirewallPortEvent:return L"Firewall Port Event";
+	case ServiceTriggerType::GroupPolicy:return L"Group Policy";
+	case ServiceTriggerType::IpAddressAvailability: return L"IP Address Availability";
+	case ServiceTriggerType::NetworkEndPoint:return L"Network EndPoint";
+	case ServiceTriggerType::SystemStateChanged:return L"System State Changed";
+	case ServiceTriggerType::Aggregate:return L"Aggregate";
 	}
 	ATLASSERT(false);
 	return L"";
@@ -206,11 +206,11 @@ CString CDriverTable::ServiceStartTypeToString(const ServiceConfiguration& confi
 	CString type;
 
 	switch (config.StartType) {
-		case ServiceStartType::Boot:type = L"Boot"; break;
-		case ServiceStartType::System:type = L"System"; break;
-		case ServiceStartType::Auto:type = L"Automatic"; break;
-		case ServiceStartType::Demand:type = L"Manual"; break;
-		case ServiceStartType::Disabled:type = L"Disabled"; break;
+	case ServiceStartType::Boot:type = L"Boot"; break;
+	case ServiceStartType::System:type = L"System"; break;
+	case ServiceStartType::Auto:type = L"Automatic"; break;
+	case ServiceStartType::Demand:type = L"Manual"; break;
+	case ServiceStartType::Disabled:type = L"Disabled"; break;
 	}
 
 	if (config.DeleayedAutoStart)

@@ -104,7 +104,7 @@ void CFiltersDlg::UpdateConfig(FilterConfiguration& config) {
 }
 
 LRESULT CFiltersDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
-	
+
 	SetIcon(AtlLoadIconImage(IDI_FILTER, 0, 16, 16), FALSE);
 	SetIcon(AtlLoadIconImage(IDI_FILTER, 0, 32, 32), TRUE);
 

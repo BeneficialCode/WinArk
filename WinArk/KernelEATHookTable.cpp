@@ -4,7 +4,7 @@
 #include <DriverHelper.h>
 
 CKernelEATHookTable::CKernelEATHookTable(BarInfo& bars, TableInfo& table, std::shared_ptr<WinSys::KernelModuleInfo>& info)
-	:CTable(bars, table),_info(info){
+	:CTable(bars, table), _info(info) {
 	SetTableWindowInfo(bars.nbar);
 }
 
@@ -12,28 +12,28 @@ CKernelEATHookTable::CKernelEATHookTable(BarInfo& bars, TableInfo& table, std::s
 int CKernelEATHookTable::ParseTableEntry(CString& s, char& mask, int& select, KernelEATHookInfo& info, int column) {
 	switch (static_cast<Column>(column))
 	{
-		case Column::HookObject:
-			s = info.Name.c_str();
-			break;
+	case Column::HookObject:
+		s = info.Name.c_str();
+		break;
 
-		case Column::Address:
-		{
-			s.Format(L"0x%p", info.Address);
-			break;
-		}
+	case Column::Address:
+	{
+		s.Format(L"0x%p", info.Address);
+		break;
+	}
 
-		case Column::Module:
-			s = info.TargetModule.c_str();
-			break;
+	case Column::Module:
+		s = info.TargetModule.c_str();
+		break;
 
-		case Column::TargetAddress:
-		{
-			s.Format(L"0x%p", info.TargetAddress);
-			break;
-		}
+	case Column::TargetAddress:
+	{
+		s.Format(L"0x%p", info.TargetAddress);
+		break;
+	}
 
-		default:
-			break;
+	default:
+		break;
 	}
 	return s.GetLength();
 }
@@ -43,8 +43,8 @@ bool CKernelEATHookTable::CompareItems(const KernelEATHookInfo& s1, const Kernel
 	{
 	case Column::Address:
 		return SortHelper::SortNumbers(s1.Address, s2.Address, asc);
-		default:
-			break;
+	default:
+		break;
 	}
 	return false;
 }
@@ -176,7 +176,7 @@ void CKernelEATHookTable::CheckEATHook() {
 
 void CKernelEATHookTable::Refresh() {
 	m_Table.data.info.clear();
-	
+
 	CheckEATHook();
 
 	m_Table.data.n = m_Table.data.info.size();

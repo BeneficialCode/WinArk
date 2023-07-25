@@ -27,7 +27,7 @@
 
 
 // {86F32D72-5D88-49D2-A44D-F632FF240C06}
-TRACELOGGING_DEFINE_PROVIDER(g_Provider, "AntiRootkit",\
+TRACELOGGING_DEFINE_PROVIDER(g_Provider, "AntiRootkit", \
 	(0x86f32d72, 0x5d88, 0x49d2, 0xa4, 0x4d, 0xf6, 0x32, 0xff, 0x24, 0xc, 0x6));
 
 // PiUpdateDriverDBCache RtlInsertElementGenericTableAvl 可以确定该结构体的大小
@@ -165,7 +165,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 	if (!NT_SUCCESS(status))
 		return status;
 
-	
+
 	UNICODE_STRING devName = RTL_CONSTANT_STRING(L"\\Device\\AntiRootkit");
 	// 定义变量时初始化这些变量
 	PDEVICE_OBJECT DeviceObject = nullptr;
@@ -230,7 +230,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		if (!NT_SUCCESS(status)) {
 			break;
 		}
-		
+
 		// 所有的资源申请，请考虑失败的情况下，会引发什么问题
 		g_RegisterPath.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool,
 			RegistryPath->Length, DRIVER_TAG);
@@ -243,7 +243,7 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 		g_RegisterPath.MaximumLength = RegistryPath->Length;
 		RtlCopyUnicodeString(&g_RegisterPath, (PUNICODE_STRING)RegistryPath);
 	} while (false);
-	
+
 	if (!NT_SUCCESS(status)) {
 		g_State.Lock.Delete();
 		if (g_State.Filter)
@@ -342,1281 +342,1282 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	ULONG len = 0;
 
 	switch (dic.IoControlCode) {
-		case IOCTL_ARK_GET_SHADOW_SERVICE_TABLE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(void*)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			void* p = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (!MmIsAddressValid(p))
-				break;
-			SystemServiceTable* pSystemServiceTable = (SystemServiceTable*)p;
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(PULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			pSystemServiceTable += 1;
-			khook::_win32kTable = pSystemServiceTable;
-			*(PULONG*)Irp->AssociatedIrp.SystemBuffer = pSystemServiceTable->ServiceTableBase;
-			len = sizeof(PULONG);
+	case IOCTL_ARK_GET_SHADOW_SERVICE_TABLE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(void*)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		void* p = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (!MmIsAddressValid(p))
+			break;
+		SystemServiceTable* pSystemServiceTable = (SystemServiceTable*)p;
+		// 获得输出缓冲区的长度
+		if (dic.OutputBufferLength < sizeof(PULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		pSystemServiceTable += 1;
+		khook::_win32kTable = pSystemServiceTable;
+		*(PULONG*)Irp->AssociatedIrp.SystemBuffer = pSystemServiceTable->ServiceTableBase;
+		len = sizeof(PULONG);
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_SSDT_API_ADDR:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		// 获得输出缓冲区的长度
+		if (dic.OutputBufferLength < sizeof(void*)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		PVOID address;
+		ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+		bool success = khook::GetApiAddress(number, &address);
+		if (success) {
+			*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
+			len = sizeof(address);
 			status = STATUS_SUCCESS;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_GET_SHADOW_SSDT_API_ADDR:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-
-		case IOCTL_ARK_GET_SSDT_API_ADDR:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(void*)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-
-			PVOID address;
-			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = khook::GetApiAddress(number,&address);
-			if (success) {
-				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
-				len = sizeof(address);
-				status = STATUS_SUCCESS;
-			}
+		if (dic.InputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
-
-		case IOCTL_ARK_GET_SHADOW_SSDT_API_ADDR:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(void*)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			PVOID address;
-			ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = khook::GetShadowApiAddress(number, &address);
-			if (success) {
-				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
-				len = sizeof(address);
-				status = STATUS_SUCCESS;
-			}
+		// 获得输出缓冲区的长度
+		if (dic.OutputBufferLength < sizeof(void*)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
-		
-		case IOCTL_ARK_OPEN_PROCESS:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			// 获取输入和输出缓冲区的长度
-			if (dic.InputBufferLength < sizeof(OpenProcessThreadData) || dic.OutputBufferLength < sizeof(HANDLE)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			// 获得缓冲区
-			auto data = (OpenProcessThreadData*)Irp->AssociatedIrp.SystemBuffer;
-			OBJECT_ATTRIBUTES attr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
-			CLIENT_ID id{};
-			id.UniqueProcess = UlongToHandle(data->Id);
-			// 嵌套陷阱，ZwOpenProcess内部可能会执行第三方的回调函数，
-			// 回调函数调用时，函数处于同一个线程，且共用一个线程栈，这里可能存在“栈溢出”的可能
-			// 1.对于调用存在回调函数的api，尽可能少使用栈空间，大量内存，考虑申请内存
-			// 2.对于自身执行在过滤驱动或回调函数中的代码，尽可能少使用栈空间
-			// 3.自身执行在过滤驱动或回调函数中的代码，如需要调用嵌套的api,考虑另起线程，
-			// 通过线程间通信把系统api调用的结果返回给最初线程。
-			// 4.避免在代码中使用递归，如果非要使用，注意递归深度
-
-			status = ZwOpenProcess((HANDLE*)data, data->AccessMask, &attr, &id);
-			len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
-			break;
-		}
-
-		case IOCTL_ARK_GET_VERSION:
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(USHORT)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			*(USHORT*)Irp->AssociatedIrp.SystemBuffer = DRIVER_CURRENT_VERSION;
-			len = sizeof(USHORT);
+		PVOID address;
+		ULONG number = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+		bool success = khook::GetShadowApiAddress(number, &address);
+		if (success) {
+			*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
+			len = sizeof(address);
 			status = STATUS_SUCCESS;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_OPEN_PROCESS:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
+		}
+		// 获取输入和输出缓冲区的长度
+		if (dic.InputBufferLength < sizeof(OpenProcessThreadData) || dic.OutputBufferLength < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		// 获得缓冲区
+		auto data = (OpenProcessThreadData*)Irp->AssociatedIrp.SystemBuffer;
+		OBJECT_ATTRIBUTES attr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
+		CLIENT_ID id{};
+		id.UniqueProcess = UlongToHandle(data->Id);
+		// 嵌套陷阱，ZwOpenProcess内部可能会执行第三方的回调函数，
+		// 回调函数调用时，函数处于同一个线程，且共用一个线程栈，这里可能存在“栈溢出”的可能
+		// 1.对于调用存在回调函数的api，尽可能少使用栈空间，大量内存，考虑申请内存
+		// 2.对于自身执行在过滤驱动或回调函数中的代码，尽可能少使用栈空间
+		// 3.自身执行在过滤驱动或回调函数中的代码，如需要调用嵌套的api,考虑另起线程，
+		// 通过线程间通信把系统api调用的结果返回给最初线程。
+		// 4.避免在代码中使用递归，如果非要使用，注意递归深度
 
-		case IOCTL_ARK_SET_PRIORITY:
-		{
-			len = dic.InputBufferLength;
-			if (len < sizeof(ThreadData)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			// 获得缓冲区
-			auto data = (ThreadData*)dic.Type3InputBuffer;
-			if (data == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
+		status = ZwOpenProcess((HANDLE*)data, data->AccessMask, &attr, &id);
+		len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
+		break;
+	}
 
-			__try {
-				if (data->Priority < 1 || data->Priority>31) {
-					status = STATUS_INVALID_PARAMETER;
-					break;
-				}
+	case IOCTL_ARK_GET_VERSION:
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		// 获得输出缓冲区的长度
+		if (dic.OutputBufferLength < sizeof(USHORT)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		*(USHORT*)Irp->AssociatedIrp.SystemBuffer = DRIVER_CURRENT_VERSION;
+		len = sizeof(USHORT);
+		status = STATUS_SUCCESS;
+		break;
 
-				PETHREAD Thread;
-				status = PsLookupThreadByThreadId(UlongToHandle(data->ThreadId),&Thread);
-				if (!NT_SUCCESS(status))
-					break;
-
-				KeSetPriorityThread(Thread, data->Priority);
-				ObDereferenceObject(Thread);
-
-				KdPrint(("Thread Priority change for %d to %d succeeded!\n",
-					data->ThreadId, data->Priority));
-			} __except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
-				? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-				status = STATUS_ACCESS_VIOLATION;
-			}
+	case IOCTL_ARK_SET_PRIORITY:
+	{
+		len = dic.InputBufferLength;
+		if (len < sizeof(ThreadData)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		// 获得缓冲区
+		auto data = (ThreadData*)dic.Type3InputBuffer;
+		if (data == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
 
-		case IOCTL_ARK_DUP_HANDLE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+		__try {
+			if (data->Priority < 1 || data->Priority>31) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(DupHandleData)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
 
-			if (dic.OutputBufferLength < sizeof(HANDLE)) {
-				status = STATUS_BUFFER_TOO_SMALL;
+			PETHREAD Thread;
+			status = PsLookupThreadByThreadId(UlongToHandle(data->ThreadId), &Thread);
+			if (!NT_SUCCESS(status))
 				break;
-			}
-			const auto data = static_cast<DupHandleData*>(Irp->AssociatedIrp.SystemBuffer);
-			HANDLE hProcess;
-			OBJECT_ATTRIBUTES procAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, OBJ_KERNEL_HANDLE);
-			CLIENT_ID pid{};
-			pid.UniqueProcess = UlongToHandle(data->SourcePid);
-			status = ZwOpenProcess(&hProcess, PROCESS_DUP_HANDLE, &procAttributes, &pid);
-			if (!NT_SUCCESS(status)) {
-				KdPrint(("Failed to open process %d (0x%08X)\n", data->SourcePid, status));
-				break;
-			}
 
-			HANDLE hTarget;
-			status = ZwDuplicateObject(hProcess, ULongToHandle(data->Handle), NtCurrentProcess(),
-				&hTarget, data->AccessMask, 0, data->Flags);
-			ZwClose(hProcess);
-			if (!NT_SUCCESS(status)) {
-				KdPrint(("Failed to duplicate handle (0x%8X)\n", status));
-				break;
-			}
+			KeSetPriorityThread(Thread, data->Priority);
+			ObDereferenceObject(Thread);
 
-			*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hTarget;
+			KdPrint(("Thread Priority change for %d to %d succeeded!\n",
+				data->ThreadId, data->Priority));
+		}
+		__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
+			? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+			status = STATUS_ACCESS_VIOLATION;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_DUP_HANDLE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(DupHandleData)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		if (dic.OutputBufferLength < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		const auto data = static_cast<DupHandleData*>(Irp->AssociatedIrp.SystemBuffer);
+		HANDLE hProcess;
+		OBJECT_ATTRIBUTES procAttributes = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, OBJ_KERNEL_HANDLE);
+		CLIENT_ID pid{};
+		pid.UniqueProcess = UlongToHandle(data->SourcePid);
+		status = ZwOpenProcess(&hProcess, PROCESS_DUP_HANDLE, &procAttributes, &pid);
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("Failed to open process %d (0x%08X)\n", data->SourcePid, status));
+			break;
+		}
+
+		HANDLE hTarget;
+		status = ZwDuplicateObject(hProcess, ULongToHandle(data->Handle), NtCurrentProcess(),
+			&hTarget, data->AccessMask, 0, data->Flags);
+		ZwClose(hProcess);
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("Failed to duplicate handle (0x%8X)\n", status));
+			break;
+		}
+
+		*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hTarget;
+		len = sizeof(HANDLE);
+		break;
+	}
+
+	case IOCTL_ARK_OPEN_THREAD:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(OpenProcessThreadData) || dic.OutputBufferLength < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto data = (OpenProcessThreadData*)Irp->AssociatedIrp.SystemBuffer;
+		OBJECT_ATTRIBUTES attr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
+		CLIENT_ID id{};
+		id.UniqueThread = UlongToHandle(data->Id);
+		status = ZwOpenThread((HANDLE*)data, data->AccessMask, &attr, &id);
+		len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
+		break;
+	}
+
+	case IOCTL_ARK_OPEN_KEY:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+
+		auto data = static_cast<KeyData*>(Irp->AssociatedIrp.SystemBuffer);
+		if (dic.InputBufferLength < sizeof(KeyData) + ULONG((data->Length - 1) * 2)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		if (dic.OutputBufferLength < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		if (data->Length > 2048) {
+			status = STATUS_BUFFER_OVERFLOW;
+			break;
+		}
+
+		UNICODE_STRING keyName;
+		keyName.Buffer = data->Name;
+		keyName.Length = keyName.MaximumLength = (USHORT)data->Length * sizeof(WCHAR);
+		OBJECT_ATTRIBUTES keyAttr;
+		InitializeObjectAttributes(&keyAttr, &keyName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
+		HANDLE hKey{ nullptr };
+		status = ZwOpenKey(&hKey, data->Access, &keyAttr);
+		if (NT_SUCCESS(status)) {
+			*(HANDLE*)data = hKey;
 			len = sizeof(HANDLE);
+		}
+		break;
+	}
+	case IOCTL_ARK_INIT_NT_SERVICE_TABLE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (!MmIsAddressValid(address))
+			break;
+		SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
+		khook::_ntTable = pServiceTable;
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_SERVICE_LIMIT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
 
-		case IOCTL_ARK_OPEN_THREAD:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(OpenProcessThreadData) || dic.OutputBufferLength < sizeof(HANDLE)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto data = (OpenProcessThreadData*)Irp->AssociatedIrp.SystemBuffer;
-			OBJECT_ATTRIBUTES attr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
-			CLIENT_ID id{};
-			id.UniqueThread = UlongToHandle(data->Id);
-			status = ZwOpenThread((HANDLE*)data, data->AccessMask, &attr, &id);
-			len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
+		void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (!MmIsAddressValid(address))
+			break;
+		SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = pServiceTable->NumberOfServices;
+		len = sizeof(ULONG);
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_PROCESS_NOTIFY_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-
-		case IOCTL_ARK_OPEN_KEY:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-
-			auto data = static_cast<KeyData*>(Irp->AssociatedIrp.SystemBuffer);
-			if (dic.InputBufferLength < sizeof(KeyData) + ULONG((data->Length - 1) * 2)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-
-			if (dic.OutputBufferLength < sizeof(HANDLE)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-
-			if (data->Length > 2048) {
-				status = STATUS_BUFFER_OVERFLOW;
-				break;
-			}
-
-			UNICODE_STRING keyName;
-			keyName.Buffer = data->Name;
-			keyName.Length = keyName.MaximumLength = (USHORT)data->Length * sizeof(WCHAR);
-			OBJECT_ATTRIBUTES keyAttr;
-			InitializeObjectAttributes(&keyAttr, &keyName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
-			HANDLE hKey{ nullptr };
-			status = ZwOpenKey(&hKey, data->Access, &keyAttr);
-			if (NT_SUCCESS(status)) {
-				*(HANDLE*)data = hKey;
-				len = sizeof(HANDLE);
-			}
+		if (dic.InputBufferLength < sizeof(ProcessNotifyCountData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
-		case IOCTL_ARK_INIT_NT_SERVICE_TABLE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (!MmIsAddressValid(address))
-				break;
-			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
-			khook::_ntTable = pServiceTable;
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto info = (ProcessNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = 0;
+		if (info->pCount) {
+			count = *info->pCount;
+		}
+		if (info->pExCount) {
+			count += *info->pExCount;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			status = STATUS_SUCCESS;
+			len = sizeof(count);
+		}
+
+		break;
+	}
+	case IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY:
+	case IOCTL_ARK_ENUM_THREAD_NOTIFY:
+	case IOCTL_ARK_ENUM_PROCESS_NOTIFY:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
 
-		case IOCTL_ARK_GET_SERVICE_LIMIT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			
-			void* address = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (!MmIsAddressValid(address))
-				break;
-			SystemServiceTable* pServiceTable = (SystemServiceTable*)address;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = pServiceTable->NumberOfServices;
-			len = sizeof(ULONG);
+		if (dic.InputBufferLength < sizeof(NotifyInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		auto info = (NotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+		if (dic.OutputBufferLength < sizeof(void*) * info->Count) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+
+		EnumSystemNotify((PEX_CALLBACK)info->pRoutine, info->Count, (KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+
+		status = STATUS_SUCCESS;
+		len = dic.OutputBufferLength;
+		break;
+	}
+
+	case IOCTL_ARK_GET_THREAD_NOTIFY_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ThreadNotifyCountData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto info = (ThreadNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = 0;
+		if (info->pCount) {
+			count = *info->pCount;
+		}
+		if (info->pNonSystemCount) {
+			count += *info->pNonSystemCount;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			status = STATUS_SUCCESS;
+			len = sizeof(count);
+		}
+		break;
+	}
+
+	case IOCTL_ARK_GET_UNLOADED_DRIVERS_COUNT:
+	case IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-
-		case IOCTL_ARK_GET_PROCESS_NOTIFY_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ProcessNotifyCountData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto info = (ProcessNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = 0;
-			if (info->pCount) {
-				count = *info->pCount;
-			}
-			if (info->pExCount) {
-				count += *info->pExCount;
-				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-				status = STATUS_SUCCESS;
-				len = sizeof(count);
-			}
-			
+		if (dic.InputBufferLength < sizeof(PULONG)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
-		case IOCTL_ARK_ENUM_IMAGELOAD_NOTIFY:
-		case IOCTL_ARK_ENUM_THREAD_NOTIFY:
-		case IOCTL_ARK_ENUM_PROCESS_NOTIFY:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-
-			if (dic.InputBufferLength < sizeof(NotifyInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			auto info = (NotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
-			if (dic.OutputBufferLength < sizeof(void*) * info->Count) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			
-			EnumSystemNotify((PEX_CALLBACK)info->pRoutine, info->Count,(KernelCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
-
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = 0;
+		if (pCount) {
+			count = *pCount;
+			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			status = STATUS_SUCCESS;
-			len = dic.OutputBufferLength;
+			len = sizeof(count);
+		}
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_PIDDBCACHE_TABLE:
+	{
+		// RtlLookupElementGenericTableAvl()
+		// RtlDeleteElementGenericTableAvl()
+		// EtwpFreeKeyNameList
+		// PiDDBCacheTable
+		len = dic.InputBufferLength;
+		if (len < sizeof(ULONG_PTR)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
 
-		case IOCTL_ARK_GET_THREAD_NOTIFY_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ThreadNotifyCountData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto info = (ThreadNotifyCountData*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = 0;
-			if (info->pCount) {
-				count = *info->pCount;
-			}
-			if (info->pNonSystemCount) {
-				count += *info->pNonSystemCount;
-				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-				status = STATUS_SUCCESS;
-				len = sizeof(count);
-			}
+		if (dic.Type3InputBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
+		PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
 
-		case IOCTL_ARK_GET_UNLOADED_DRIVERS_COUNT:
-		case IOCTL_ARK_GET_IMAGE_NOTIFY_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+		__try {
+			// 获得输入缓冲区
+			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)dic.Type3InputBuffer;
+			// 获得输出缓冲区
+			auto pData = (PiDDBCacheData*)Irp->UserBuffer;
+			if (pData == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(PULONG)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = 0;
-			if (pCount) {
-				count = *pCount;
-				*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-				status = STATUS_SUCCESS;
-				len = sizeof(count);
-			}
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_PIDDBCACHE_TABLE:
-		{
-			// RtlLookupElementGenericTableAvl()
-			// RtlDeleteElementGenericTableAvl()
-			// EtwpFreeKeyNameList
-			// PiDDBCacheTable
-			len = dic.InputBufferLength;
-			if (len < sizeof(ULONG_PTR)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-
-			if (dic.Type3InputBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
-
-			__try {
-				// 获得输入缓冲区
-				ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)dic.Type3InputBuffer;
-				// 获得输出缓冲区
-				auto pData = (PiDDBCacheData*)Irp->UserBuffer;
-				if (pData == nullptr) {
-					status = STATUS_INVALID_PARAMETER;
-					break;
-				}
-				ULONG size = dic.OutputBufferLength;
-				LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
-				PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-				if (PiDDBCacheTable != nullptr) {
-					for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
-						p != nullptr;
-						) {
-						// Process the element pointed to by p
-						PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
-						LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
-						// 首先得放得下结构体
-						if (size < sizeof(PiDDBCacheData)) {
-							status = STATUS_INFO_LENGTH_MISMATCH;
-							break;
-						}
-						// 减小size part1
-						size -= sizeof(PiDDBCacheData);
-						// 填充信息
-						pData->LoadStatus = entry->LoadStatus;
-						pData->StringLen = entry->DriverName.Length;
-						pData->TimeDateStamp = entry->TimeDateStamp;
-						if (size < entry->DriverName.Length + sizeof(WCHAR)) {
-							status = STATUS_INFO_LENGTH_MISMATCH;
-							break;
-						}
-						// 字符串放在这个结构体后面
-						pData->StringOffset = sizeof(PiDDBCacheData);
-						auto pString = (WCHAR*)((PUCHAR)pData + pData->StringOffset);
-						memcpy(pString, entry->DriverName.Buffer, entry->DriverName.Length);
-						// 减小size part2
-						size -= entry->DriverName.Length;
-						// 减小size part3
-						size -= sizeof(WCHAR);
-						pString[entry->DriverName.Length] = L'\0';
-						// 下一项的位置
-						pData->NextEntryOffset = sizeof(PiDDBCacheData) + pData->StringLen + sizeof(WCHAR);
-
-						p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE);
-						// 更新指针
-						if (p != nullptr)
-							pData = (PiDDBCacheData*)((PUCHAR)pData + pData->NextEntryOffset);
-					};
-
-					pData->NextEntryOffset = 0;
-
-					len = dic.OutputBufferLength;
-					status = STATUS_SUCCESS;
-				}
-			}
-			__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
-				? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-				status = STATUS_ACCESS_VIOLATION;
-			}
-			
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_UNLOADED_DRIVERS:
-		{
-			if (dic.Type3InputBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			__try {
-				// 获得输入缓冲区
-				auto info = (UnloadedDriversInfo*)dic.Type3InputBuffer;
-				// 获得输出缓冲区
-				auto pData = (UnloadedDriverData*)Irp->UserBuffer;
-				if (pData == nullptr) {
-					status = STATUS_INVALID_PARAMETER;
-					break;
-				}
-				ULONG size = dic.OutputBufferLength;
-				// MmUnloadedDrivers MmLastUnloadedDriver
-				PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
-				MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
-				LogInfo("MmUnloadDriversAddress %p\n", MmUnloadDrivers);
-				for (ULONG i = 0; i < info->Count; ) {
-					LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress,
-						MmUnloadDrivers[i].EndAddress,
-						MmUnloadDrivers[i].CurrentTime);
+			ULONG size = dic.OutputBufferLength;
+			LogInfo("PiDDBCacheTableAddress: %p\n", PiDDBCacheTableAddress);
+			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
+			if (PiDDBCacheTable != nullptr) {
+				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
+					p != nullptr;
+					) {
+					// Process the element pointed to by p
+					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
+					LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
 					// 首先得放得下结构体
-					if (size < sizeof(UnloadedDriverData)) {
+					if (size < sizeof(PiDDBCacheData)) {
 						status = STATUS_INFO_LENGTH_MISMATCH;
 						break;
 					}
 					// 减小size part1
-					size -= sizeof(UnloadedDriverData);
-					// 填充数据
-					pData->CurrentTime = MmUnloadDrivers[i].CurrentTime;
-					pData->EndAddress = MmUnloadDrivers[i].EndAddress;
-					pData->StartAddress = MmUnloadDrivers[i].StartAddress;
-					pData->StringLen = MmUnloadDrivers[i].Name.Length;
-					// 检查是否能存放字符串
-					if (size < MmUnloadDrivers[i].Name.Length + sizeof(WCHAR)) {
+					size -= sizeof(PiDDBCacheData);
+					// 填充信息
+					pData->LoadStatus = entry->LoadStatus;
+					pData->StringLen = entry->DriverName.Length;
+					pData->TimeDateStamp = entry->TimeDateStamp;
+					if (size < entry->DriverName.Length + sizeof(WCHAR)) {
 						status = STATUS_INFO_LENGTH_MISMATCH;
 						break;
 					}
-					// 存储字符串
-					pData->StringOffset = sizeof(UnloadedDriverData);
+					// 字符串放在这个结构体后面
+					pData->StringOffset = sizeof(PiDDBCacheData);
 					auto pString = (WCHAR*)((PUCHAR)pData + pData->StringOffset);
-					memcpy(pString, MmUnloadDrivers[i].Name.Buffer, pData->StringLen);
+					memcpy(pString, entry->DriverName.Buffer, entry->DriverName.Length);
 					// 减小size part2
-					size -= pData->StringLen;
+					size -= entry->DriverName.Length;
 					// 减小size part3
 					size -= sizeof(WCHAR);
-					pString[pData->StringLen] = L'\0';
-
+					pString[entry->DriverName.Length] = L'\0';
 					// 下一项的位置
-					pData->NextEntryOffset = sizeof(UnloadedDriverData) + pData->StringLen + sizeof(WCHAR);
+					pData->NextEntryOffset = sizeof(PiDDBCacheData) + pData->StringLen + sizeof(WCHAR);
 
-					i++;
-					// 检查是否需要更新指针
-					if (i < info->Count)
-						pData = (UnloadedDriverData*)((PUCHAR)pData + pData->NextEntryOffset);
-				}
+					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE);
+					// 更新指针
+					if (p != nullptr)
+						pData = (PiDDBCacheData*)((PUCHAR)pData + pData->NextEntryOffset);
+				};
+
 				pData->NextEntryOffset = 0;
 
 				len = dic.OutputBufferLength;
 				status = STATUS_SUCCESS;
 			}
-			__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
-				? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-				status = STATUS_ACCESS_VIOLATION;
-			}
-			
-			break;
+		}
+		__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
+			? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+			status = STATUS_ACCESS_VIOLATION;
 		}
 
-		case IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE: 
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_UNLOADED_DRIVERS:
+	{
+		if (dic.Type3InputBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		__try {
+			// 获得输入缓冲区
+			auto info = (UnloadedDriversInfo*)dic.Type3InputBuffer;
+			// 获得输出缓冲区
+			auto pData = (UnloadedDriverData*)Irp->UserBuffer;
+			if (pData == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			ULONG size = 0;
-			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
-			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
-			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-			//ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
-			if (PiDDBCacheTable != nullptr) {
-				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
-					p != nullptr;
-					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
-					// Process the element pointed to by p
-					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
-					//LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
-					// part1 结构体大小
-					size += sizeof(PiDDBCacheData);
-					// part2 字符串长度+'\0'
-					size += entry->DriverName.Length + sizeof(WCHAR);
-				};
-			}
-
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
-			status = STATUS_SUCCESS;
-			len = sizeof(ULONG);
-			break;
-		}
-
-		case IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE:
-		{
-			ULONG size = 0;
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			auto info = (UnloadedDriversInfo*)Irp->AssociatedIrp.SystemBuffer;
+			ULONG size = dic.OutputBufferLength;
 			// MmUnloadedDrivers MmLastUnloadedDriver
 			PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
 			MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
-			for (ULONG i = 0; i < info->Count; i++) {
-				// part1 结构体大小
-				size += sizeof(UnloadedDriverData);
-				// part2 字符串长度+L'\0'
-				size += MmUnloadDrivers[i].Name.Length + sizeof(WCHAR);
-			}
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
-			status = STATUS_SUCCESS;
-			len = sizeof(ULONG);
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			
-			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
-			POBJECT_TYPE pObjectType = nullptr;
-			switch (pInfo->Type) {
-				case NotifyType::ProcessObjectNotify:
-					pObjectType = *PsProcessType;
+			LogInfo("MmUnloadDriversAddress %p\n", MmUnloadDrivers);
+			for (ULONG i = 0; i < info->Count; ) {
+				LogInfo("%wZ,%p,%p,%X\n", MmUnloadDrivers[i].Name, MmUnloadDrivers[i].StartAddress,
+					MmUnloadDrivers[i].EndAddress,
+					MmUnloadDrivers[i].CurrentTime);
+				// 首先得放得下结构体
+				if (size < sizeof(UnloadedDriverData)) {
+					status = STATUS_INFO_LENGTH_MISMATCH;
 					break;
-
-				case NotifyType::ThreadObjectNotify:
-					pObjectType = *PsThreadType;
-					break;
-			}
-			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
-			if (dic.OutputBufferLength < sizeof(ObCallbackInfo) * count) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			
-			bool success = EnumObCallbackNotify(pObjectType, pInfo->Offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
-			if (success) {
-				len = dic.OutputBufferLength;
-				status = STATUS_SUCCESS;
-			}
-			break;
-		}
-
-		case IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(LONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
-			POBJECT_TYPE pObjectType = nullptr;
-			switch (pInfo->Type) {
-				case NotifyType::ProcessObjectNotify:
-					pObjectType = *PsProcessType;
-					break;
-
-				case NotifyType::ThreadObjectNotify:
-					pObjectType = *PsThreadType;
-					break;
-			}
-			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
-			*(LONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(LONG);
-			status = STATUS_SUCCESS;
-			break;
-		}
-
-		case IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES:
-		{
-			PCWSTR driverName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
-			auto inputLen = dic.InputBufferLength;
-			if (driverName[inputLen / sizeof(WCHAR) - 1] != L'\0') {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			UNICODE_STRING name;
-			RtlInitUnicodeString(&name, driverName);
-			PDRIVER_OBJECT driver;
-			status = ObReferenceObjectByName(&name, OBJ_CASE_INSENSITIVE, nullptr, 0,
-				*IoDriverObjectType, KernelMode, nullptr, (PVOID*)&driver);
-			if (!NT_SUCCESS(status))
-				break;
-			PDRIVER_DISPATCH* pRoutines = (PDRIVER_DISPATCH*)Irp->AssociatedIrp.SystemBuffer;
-			for (int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++) {
-				pRoutines[i] = driver->MajorFunction[i];
-			}
-			ObDereferenceObject(driver);
-			if (NT_SUCCESS(status)) {
-				len = sizeof(PVOID) * IRP_MJ_MAXIMUM_FUNCTION;
-			}
-			break;
-		}
-
-		case IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD:
-		{
-			HANDLE hProcess;
-			status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
-			if (NT_SUCCESS(status)) {
-				UCHAR buffer[280] = { 0 };
-				status = ZwQueryInformationProcess(hProcess, ProcessImageFileName, buffer, sizeof(buffer) - sizeof(WCHAR), nullptr);
-				ZwClose(hProcess);
-				if (NT_SUCCESS(status)) {
-					auto path = (UNICODE_STRING*)buffer;
-					auto bs = wcsrchr(path->Buffer, L'\\');
-					NT_ASSERT(bs);
-					if (bs == nullptr) {
-						status = STATUS_INVALID_PARAMETER;
-						break;
-					}
-					*(bs + 1) = L'\0';
-					g_BackupDir.MaximumLength = path->Length;
-					g_BackupDir.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, g_BackupDir.MaximumLength, 'kuab');
-					if (g_BackupDir.Buffer == nullptr) {
-						status = STATUS_INSUFFICIENT_RESOURCES;
-						break;
-					}
-					RtlAppendUnicodeToString(&g_BackupDir, path->Buffer);
 				}
-			}
-			status = g_sec.Initialize(SectionType::Native);
-			if (!NT_SUCCESS(status)) {
-				LogError("failed to Initialize sec (status=%08X)\n", status);
-				break;
-			}
-#ifdef _WIN64
-			status = g_secWow.Initialize(SectionType::Wow);
-			if (!NT_SUCCESS(status)) {
-				LogError("failed to Initialize g_secWow (status=%08X)\n", status);
-				break;
-			}
-#endif // _WIN64
+				// 减小size part1
+				size -= sizeof(UnloadedDriverData);
+				// 填充数据
+				pData->CurrentTime = MmUnloadDrivers[i].CurrentTime;
+				pData->EndAddress = MmUnloadDrivers[i].EndAddress;
+				pData->StartAddress = MmUnloadDrivers[i].StartAddress;
+				pData->StringLen = MmUnloadDrivers[i].Name.Length;
+				// 检查是否能存放字符串
+				if (size < MmUnloadDrivers[i].Name.Length + sizeof(WCHAR)) {
+					status = STATUS_INFO_LENGTH_MISMATCH;
+					break;
+				}
+				// 存储字符串
+				pData->StringOffset = sizeof(UnloadedDriverData);
+				auto pString = (WCHAR*)((PUCHAR)pData + pData->StringOffset);
+				memcpy(pString, MmUnloadDrivers[i].Name.Buffer, pData->StringLen);
+				// 减小size part2
+				size -= pData->StringLen;
+				// 减小size part3
+				size -= sizeof(WCHAR);
+				pString[pData->StringLen] = L'\0';
 
-			status = PsSetLoadImageNotifyRoutine(OnImageLoadNotify);
-			if (!NT_SUCCESS(status)) {
-				LogError("failed to set image load callbacks (status=%08X)\n", status);
-				break;
-			}
-			break;
-		}
+				// 下一项的位置
+				pData->NextEntryOffset = sizeof(UnloadedDriverData) + pData->StringLen + sizeof(WCHAR);
 
-		case IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD:
-		{
-			HANDLE hThread;
-			status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, RemoveImageNotify, nullptr);
-			if (!NT_SUCCESS(status)) {
-				KdPrint(("PsCreateSystemThread failed!"));
-				break;
+				i++;
+				// 检查是否需要更新指针
+				if (i < info->Count)
+					pData = (UnloadedDriverData*)((PUCHAR)pData + pData->NextEntryOffset);
 			}
-			status = ZwClose(hThread);
-			break;
-		}
+			pData->NextEntryOffset = 0;
 
-		case IOCTL_ARK_REMOVE_KERNEL_NOTIFY:
-		{
-			//ULONG size = 0;
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(NotifyData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			auto pData = (NotifyData*)Irp->AssociatedIrp.SystemBuffer;
-			status = RemoveSystemNotify(pData);
-			if (!NT_SUCCESS(status)) {
-				KdPrint(("Remove kernel notify failed! %x",status));
-				break;
-			}
-			break;
-		}
-
-		case IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (!MmIsAddressValid(pCount)) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			ULONG count = *pCount;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(int);
-			status = STATUS_SUCCESS;
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_CM_CALLBACK_NOTIFY:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = EnumRegistryNotify((PLIST_ENTRY)address,(CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
-			if (success) {
-				len = dic.OutputBufferLength;
-				status = STATUS_SUCCESS;
-			}
-			break;
-		}
-
-		case IOCTL_ARK_ENABLE_DBGSYS:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(DbgSysCoreInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			auto pInfo = (DbgSysCoreInfo*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = kDbgUtil::InitDbgSys(pInfo);
-			if (!success)
-				break;
-			len = 0;
-			status = STATUS_SUCCESS;
-
-			break;
-		}
-
-		case IOCTL_ARK_DISABLE_DBGSYS:
-		{
-			bool success = kDbgUtil::ExitDbgSys();
-			len = 0;
-			if (success)
-				status = STATUS_SUCCESS;
-			else
-				status = STATUS_UNSUCCESSFUL;
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_KERNEL_TIMER:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(KernelTimerData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(DpcTimerInfo)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
-			KernelTimer::EnumKernelTimer(pData,(DpcTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
 			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
+		}
+		__except (GetExceptionCode() == STATUS_ACCESS_VIOLATION
+			? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+			status = STATUS_ACCESS_VIOLATION;
+		}
+
+		break;
+	}
+
+	case IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		ULONG size = 0;
+		PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
+		ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
+		PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
+		//ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
+		if (PiDDBCacheTable != nullptr) {
+			for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
+				p != nullptr;
+				p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
+				// Process the element pointed to by p
+				PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
+				//LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+				// part1 结构体大小
+				size += sizeof(PiDDBCacheData);
+				// part2 字符串长度+'\0'
+				size += entry->DriverName.Length + sizeof(WCHAR);
+			};
+		}
+
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
+		status = STATUS_SUCCESS;
+		len = sizeof(ULONG);
+		break;
+	}
+
+	case IOCTL_ARK_GET_UNLOADED_DRIVERS_DATA_SIZE:
+	{
+		ULONG size = 0;
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(UnloadedDriversInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		auto info = (UnloadedDriversInfo*)Irp->AssociatedIrp.SystemBuffer;
+		// MmUnloadedDrivers MmLastUnloadedDriver
+		PUNLOADED_DRIVER MmUnloadDrivers = nullptr;
+		MmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
+		for (ULONG i = 0; i < info->Count; i++) {
+			// part1 结构体大小
+			size += sizeof(UnloadedDriverData);
+			// part2 字符串长度+L'\0'
+			size += MmUnloadDrivers[i].Name.Length + sizeof(WCHAR);
+		}
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = size;
+		status = STATUS_SUCCESS;
+		len = sizeof(ULONG);
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 
-		case IOCTL_ARK_GET_KERNEL_TIMER_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(KernelTimerData)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = KernelTimer::GetKernelTimerCount(pData);
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(count);
-			status = STATUS_SUCCESS;
+		KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+		POBJECT_TYPE pObjectType = nullptr;
+		switch (pInfo->Type) {
+		case NotifyType::ProcessObjectNotify:
+			pObjectType = *PsProcessType;
+			break;
+
+		case NotifyType::ThreadObjectNotify:
+			pObjectType = *PsThreadType;
+			break;
+		}
+		LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+		if (dic.OutputBufferLength < sizeof(ObCallbackInfo) * count) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
 
-		case IOCTL_ARK_GET_IO_TIMER_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (!MmIsAddressValid(pCount)) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			ULONG count = *pCount;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(count);
-			status = STATUS_SUCCESS;
-			break;
-		}
-
-		case IOCTL_ARK_ENUM_IO_TIMER:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(IoTimerData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(IoTimerInfo)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			IoTimerData* pData = (IoTimerData*)Irp->AssociatedIrp.SystemBuffer;
-			IoTimer::EnumIoTimer(pData, (IoTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
+		bool success = EnumObCallbackNotify(pObjectType, pInfo->Offset, (ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+		if (success) {
 			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
-			break;
 		}
-		case IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(MiniFilterData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(OperationInfo)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
-			status = EnumMiniFilterOperations(pData, (OperationInfo*)Irp->AssociatedIrp.SystemBuffer);
-			len = dic.OutputBufferLength;
-			break;
-		}
+		break;
+	}
 
-		case IOCTL_ARK_BYPASS_DETECT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (flag & BYPASS_KERNEL_DEBUGGER) {
-				status = BypassAntiKernelDbg::Bypass();
-			}
+	case IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-		case IOCTL_ARK_UNBYPASS_DETECT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			if (flag & BYPASS_KERNEL_DEBUGGER) {
-				status = BypassAntiKernelDbg::Unbypass();
-			}
+		if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
+		if (dic.OutputBufferLength < sizeof(LONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
+		POBJECT_TYPE pObjectType = nullptr;
+		switch (pInfo->Type) {
+		case NotifyType::ProcessObjectNotify:
+			pObjectType = *PsProcessType;
+			break;
 
-		case IOCTL_ARK_REMOVE_MINIFILTER:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(MiniFilterData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
-			status = RemoveMiniFilter(pData);
+		case NotifyType::ThreadObjectNotify:
+			pObjectType = *PsThreadType;
 			break;
 		}
+		LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+		*(LONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(LONG);
+		status = STATUS_SUCCESS;
+		break;
+	}
 
-		case IOCTL_ARK_DELPROTECT_SET_EXTENSIONS:
-		{
-			auto ext = (WCHAR*)Irp->AssociatedIrp.SystemBuffer;
-			auto inputLen = dic.InputBufferLength;
-			if (ext == nullptr || inputLen < sizeof(WCHAR) * 2 
-				|| ext[inputLen / sizeof(WCHAR) - 1] != 0) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (g_State.Extentions.MaximumLength < inputLen - sizeof(WCHAR)) {
-				//
-				// allocate a new buffer to hold the extensions
-				//
-				auto buffer = ExAllocatePoolWithTag(PagedPool, inputLen, DRIVER_TAG);
-				if (buffer == nullptr) {
+	case IOCTL_ARK_GET_DRIVER_OBJECT_ROUTINES:
+	{
+		PCWSTR driverName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
+		auto inputLen = dic.InputBufferLength;
+		if (driverName[inputLen / sizeof(WCHAR) - 1] != L'\0') {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		UNICODE_STRING name;
+		RtlInitUnicodeString(&name, driverName);
+		PDRIVER_OBJECT driver;
+		status = ObReferenceObjectByName(&name, OBJ_CASE_INSENSITIVE, nullptr, 0,
+			*IoDriverObjectType, KernelMode, nullptr, (PVOID*)&driver);
+		if (!NT_SUCCESS(status))
+			break;
+		PDRIVER_DISPATCH* pRoutines = (PDRIVER_DISPATCH*)Irp->AssociatedIrp.SystemBuffer;
+		for (int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++) {
+			pRoutines[i] = driver->MajorFunction[i];
+		}
+		ObDereferenceObject(driver);
+		if (NT_SUCCESS(status)) {
+			len = sizeof(PVOID) * IRP_MJ_MAXIMUM_FUNCTION;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_OPEN_INTERCEPT_DRIVER_LOAD:
+	{
+		HANDLE hProcess;
+		status = ObOpenObjectByPointer(PsGetCurrentProcess(), OBJ_KERNEL_HANDLE, nullptr, 0, *PsProcessType, KernelMode, &hProcess);
+		if (NT_SUCCESS(status)) {
+			UCHAR buffer[280] = { 0 };
+			status = ZwQueryInformationProcess(hProcess, ProcessImageFileName, buffer, sizeof(buffer) - sizeof(WCHAR), nullptr);
+			ZwClose(hProcess);
+			if (NT_SUCCESS(status)) {
+				auto path = (UNICODE_STRING*)buffer;
+				auto bs = wcsrchr(path->Buffer, L'\\');
+				NT_ASSERT(bs);
+				if (bs == nullptr) {
+					status = STATUS_INVALID_PARAMETER;
+					break;
+				}
+				*(bs + 1) = L'\0';
+				g_BackupDir.MaximumLength = path->Length;
+				g_BackupDir.Buffer = (WCHAR*)ExAllocatePoolWithTag(PagedPool, g_BackupDir.MaximumLength, 'kuab');
+				if (g_BackupDir.Buffer == nullptr) {
 					status = STATUS_INSUFFICIENT_RESOURCES;
 					break;
 				}
-				g_State.Extentions.MaximumLength = (USHORT)inputLen;
-				//
-				// free the old buffer
-				//
-				ExFreePool(g_State.Extentions.Buffer);
-				g_State.Extentions.Buffer = (PWSTR)buffer;
+				RtlAppendUnicodeToString(&g_BackupDir, path->Buffer);
 			}
-			UNICODE_STRING ustr;
-			RtlInitUnicodeString(&ustr, ext);
-			//
-			// make sure the extensions are uppercase
-			//
-			RtlUpcaseUnicodeString(&ustr, &ustr, FALSE);
-			memcpy(g_State.Extentions.Buffer, ext, len = inputLen);
-			g_State.Extentions.Length = (USHORT)inputLen;
-			status = STATUS_SUCCESS;
+		}
+		status = g_sec.Initialize(SectionType::Native);
+		if (!NT_SUCCESS(status)) {
+			LogError("failed to Initialize sec (status=%08X)\n", status);
 			break;
 		}
-
-		case IOCTL_ARK_GET_PROCESS_VAD_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(VadData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			VadData* pData = (VadData*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = 0;
-			status = VadHelpers::GetVadCount(pData, &count);
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(count);
+#ifdef _WIN64
+		status = g_secWow.Initialize(SectionType::Wow);
+		if (!NT_SUCCESS(status)) {
+			LogError("failed to Initialize g_secWow (status=%08X)\n", status);
 			break;
 		}
-		case IOCTL_ARK_GET_EPROCESS:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(HANDLE)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			// 获得输出缓冲区的长度
-			if (dic.OutputBufferLength < sizeof(PEPROCESS)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
-			PEPROCESS Process;
-			status = PsLookupProcessByProcessId(pid, &Process);
-			if (NT_SUCCESS(status)) {
-				ObDereferenceObject(Process);
-				len = sizeof(PEPROCESS);
-				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = Process;
-			}
+#endif // _WIN64
+
+		status = PsSetLoadImageNotifyRoutine(OnImageLoadNotify);
+		if (!NT_SUCCESS(status)) {
+			LogError("failed to set image load callbacks (status=%08X)\n", status);
 			break;
 		}
-		case IOCTL_ARK_DUMP_SYS_MODULE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
+		break;
+	}
 
-			auto data = static_cast<DumpSysData*>(Irp->AssociatedIrp.SystemBuffer);
-			if (dic.InputBufferLength < sizeof(DumpSysData) + ULONG((data->Length - 1) * 2)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (data->Length > 2048) {
-				status = STATUS_BUFFER_OVERFLOW;
-				break;
-			}
-			status = Helpers::DumpSysModule(data);
+	case IOCTL_ARK_CLOSE_INTERCEPT_DRIVER_LOAD:
+	{
+		HANDLE hThread;
+		status = PsCreateSystemThread(&hThread, 0, NULL, NULL, NULL, RemoveImageNotify, nullptr);
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("PsCreateSystemThread failed!"));
 			break;
 		}
+		status = ZwClose(hThread);
+		break;
+	}
 
-		case IOCTL_ARK_DUMP_KERNEL_MEM:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-
-			auto data = static_cast<DumpMemData*>(Irp->AssociatedIrp.SystemBuffer);
-			if (dic.InputBufferLength < sizeof(DumpMemData)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			if (dic.OutputBufferLength < data->Size) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			
-			status = Helpers::DumpKernelMem(data, Irp->AssociatedIrp.SystemBuffer);
-
-			if (NT_SUCCESS(status)) {
-				len = dic.OutputBufferLength;
-			}
+	case IOCTL_ARK_REMOVE_KERNEL_NOTIFY:
+	{
+		//ULONG size = 0;
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
-
-		case IOCTL_ARK_GET_WIN_EXT_HOSTS_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
-			ULONG count = 0;
-			count = WinExtHosts::GetCount(pList);
-			status = STATUS_SUCCESS;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(count);
+		if (dic.InputBufferLength < sizeof(NotifyData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
-
-		case IOCTL_ARK_ENUM_WIN_EXT_HOSTS:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(WinExtHostInfo)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
-			bool success = WinExtHosts::Enum(pList, (WinExtHostInfo*)Irp->AssociatedIrp.SystemBuffer);
-			if (success) {
-				len = dic.OutputBufferLength;
-				status = STATUS_SUCCESS;
-			}
+		auto pData = (NotifyData*)Irp->AssociatedIrp.SystemBuffer;
+		status = RemoveSystemNotify(pData);
+		if (!NT_SUCCESS(status)) {
+			KdPrint(("Remove kernel notify failed! %x", status));
 			break;
 		}
+		break;
+	}
 
-		case IOCTL_ARK_ENUM_EXT_TABLE:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ExtHostData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			ExtHostData* pData = (ExtHostData*)Irp->AssociatedIrp.SystemBuffer;
-			if (dic.OutputBufferLength < sizeof(void*)*pData->Count) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			bool success = WinExtHosts::EnumExtTable(pData, (PVOID*)Irp->AssociatedIrp.SystemBuffer);
-			if (success) {
-				len = dic.OutputBufferLength;
-				status = STATUS_SUCCESS;
-			}
+	case IOCTL_ARK_GET_CM_CALLBACK_NOTIFY_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
+		if (dic.InputBufferLength < sizeof(PVOID)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (!MmIsAddressValid(pCount)) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		ULONG count = *pCount;
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(int);
+		status = STATUS_SUCCESS;
+		break;
+	}
 
-		case IOCTL_ARK_DETECT_KERNEL_INLINE_HOOK:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.InputBufferLength < sizeof(ULONG)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			ULONG count = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
-			KernelInlineHookData* pData = (KernelInlineHookData*)Irp->AssociatedIrp.SystemBuffer;
-			if (dic.OutputBufferLength < sizeof(KernelInlineHookData)*count) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			khook::DetectInlineHook(count, pData);
+	case IOCTL_ARK_ENUM_CM_CALLBACK_NOTIFY:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PVOID)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		void* address = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
+		bool success = EnumRegistryNotify((PLIST_ENTRY)address, (CmCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+		if (success) {
 			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_ENABLE_DBGSYS:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(DbgSysCoreInfo)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		auto pInfo = (DbgSysCoreInfo*)Irp->AssociatedIrp.SystemBuffer;
+		bool success = kDbgUtil::InitDbgSys(pInfo);
+		if (!success)
+			break;
+		len = 0;
+		status = STATUS_SUCCESS;
+
+		break;
+	}
+
+	case IOCTL_ARK_DISABLE_DBGSYS:
+	{
+		bool success = kDbgUtil::ExitDbgSys();
+		len = 0;
+		if (success)
+			status = STATUS_SUCCESS;
+		else
+			status = STATUS_UNSUCCESSFUL;
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_KERNEL_TIMER:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(KernelTimerData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(DpcTimerInfo)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
+		KernelTimer::EnumKernelTimer(pData, (DpcTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
+		len = dic.OutputBufferLength;
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_KERNEL_TIMER_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(KernelTimerData)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		KernelTimerData* pData = (KernelTimerData*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = KernelTimer::GetKernelTimerCount(pData);
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(count);
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_IO_TIMER_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PVOID)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		auto pCount = *(PULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (!MmIsAddressValid(pCount)) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		ULONG count = *pCount;
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(count);
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_IO_TIMER:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(IoTimerData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(IoTimerInfo)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		IoTimerData* pData = (IoTimerData*)Irp->AssociatedIrp.SystemBuffer;
+		IoTimer::EnumIoTimer(pData, (IoTimerInfo*)Irp->AssociatedIrp.SystemBuffer);
+		len = dic.OutputBufferLength;
+		status = STATUS_SUCCESS;
+		break;
+	}
+	case IOCTL_ARK_ENUM_MINIFILTER_OPERATIONS:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(MiniFilterData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(OperationInfo)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
+		status = EnumMiniFilterOperations(pData, (OperationInfo*)Irp->AssociatedIrp.SystemBuffer);
+		len = dic.OutputBufferLength;
+		break;
+	}
+
+	case IOCTL_ARK_BYPASS_DETECT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (flag & BYPASS_KERNEL_DEBUGGER) {
+			status = BypassAntiKernelDbg::Bypass();
+		}
+		break;
+	}
+	case IOCTL_ARK_UNBYPASS_DETECT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		ULONG flag = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+		if (flag & BYPASS_KERNEL_DEBUGGER) {
+			status = BypassAntiKernelDbg::Unbypass();
+		}
+		break;
+	}
+
+	case IOCTL_ARK_REMOVE_MINIFILTER:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(MiniFilterData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		MiniFilterData* pData = (MiniFilterData*)Irp->AssociatedIrp.SystemBuffer;
+		status = RemoveMiniFilter(pData);
+		break;
+	}
+
+	case IOCTL_ARK_DELPROTECT_SET_EXTENSIONS:
+	{
+		auto ext = (WCHAR*)Irp->AssociatedIrp.SystemBuffer;
+		auto inputLen = dic.InputBufferLength;
+		if (ext == nullptr || inputLen < sizeof(WCHAR) * 2
+			|| ext[inputLen / sizeof(WCHAR) - 1] != 0) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (g_State.Extentions.MaximumLength < inputLen - sizeof(WCHAR)) {
+			//
+			// allocate a new buffer to hold the extensions
+			//
+			auto buffer = ExAllocatePoolWithTag(PagedPool, inputLen, DRIVER_TAG);
+			if (buffer == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				break;
+			}
+			g_State.Extentions.MaximumLength = (USHORT)inputLen;
+			//
+			// free the old buffer
+			//
+			ExFreePool(g_State.Extentions.Buffer);
+			g_State.Extentions.Buffer = (PWSTR)buffer;
+		}
+		UNICODE_STRING ustr;
+		RtlInitUnicodeString(&ustr, ext);
+		//
+		// make sure the extensions are uppercase
+		//
+		RtlUpcaseUnicodeString(&ustr, &ustr, FALSE);
+		memcpy(g_State.Extentions.Buffer, ext, len = inputLen);
+		g_State.Extentions.Length = (USHORT)inputLen;
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_PROCESS_VAD_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(VadData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		VadData* pData = (VadData*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = 0;
+		status = VadHelpers::GetVadCount(pData, &count);
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(count);
+		break;
+	}
+	case IOCTL_ARK_GET_EPROCESS:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		// 获得输出缓冲区的长度
+		if (dic.OutputBufferLength < sizeof(PEPROCESS)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		HANDLE pid = *(HANDLE*)Irp->AssociatedIrp.SystemBuffer;
+		PEPROCESS Process;
+		status = PsLookupProcessByProcessId(pid, &Process);
+		if (NT_SUCCESS(status)) {
+			ObDereferenceObject(Process);
+			len = sizeof(PEPROCESS);
+			*(PVOID*)Irp->AssociatedIrp.SystemBuffer = Process;
+		}
+		break;
+	}
+	case IOCTL_ARK_DUMP_SYS_MODULE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
 			break;
 		}
 
-		case IOCTL_ARK_GET_KERNEL_INLINE_HOOK_COUNT:
-		{
-			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
-				status = STATUS_INVALID_PARAMETER;
-				break;
-			}
-			if (dic.OutputBufferLength < sizeof(ULONG)) {
-				status = STATUS_BUFFER_TOO_SMALL;
-				break;
-			}
-			ULONG count = khook::GetInlineHookCount();
-			status = STATUS_SUCCESS;
-			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
-			len = sizeof(count);
+		auto data = static_cast<DumpSysData*>(Irp->AssociatedIrp.SystemBuffer);
+		if (dic.InputBufferLength < sizeof(DumpSysData) + ULONG((data->Length - 1) * 2)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
+		if (data->Length > 2048) {
+			status = STATUS_BUFFER_OVERFLOW;
+			break;
+		}
+		status = Helpers::DumpSysModule(data);
+		break;
+	}
+
+	case IOCTL_ARK_DUMP_KERNEL_MEM:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+
+		auto data = static_cast<DumpMemData*>(Irp->AssociatedIrp.SystemBuffer);
+		if (dic.InputBufferLength < sizeof(DumpMemData)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		if (dic.OutputBufferLength < data->Size) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		status = Helpers::DumpKernelMem(data, Irp->AssociatedIrp.SystemBuffer);
+
+		if (NT_SUCCESS(status)) {
+			len = dic.OutputBufferLength;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_GET_WIN_EXT_HOSTS_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PVOID)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+		ULONG count = 0;
+		count = WinExtHosts::GetCount(pList);
+		status = STATUS_SUCCESS;
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(count);
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_WIN_EXT_HOSTS:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(PVOID)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(WinExtHostInfo)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		PLIST_ENTRY pList = *(PLIST_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+		bool success = WinExtHosts::Enum(pList, (WinExtHostInfo*)Irp->AssociatedIrp.SystemBuffer);
+		if (success) {
+			len = dic.OutputBufferLength;
+			status = STATUS_SUCCESS;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_ENUM_EXT_TABLE:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ExtHostData)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		ExtHostData* pData = (ExtHostData*)Irp->AssociatedIrp.SystemBuffer;
+		if (dic.OutputBufferLength < sizeof(void*) * pData->Count) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		bool success = WinExtHosts::EnumExtTable(pData, (PVOID*)Irp->AssociatedIrp.SystemBuffer);
+		if (success) {
+			len = dic.OutputBufferLength;
+			status = STATUS_SUCCESS;
+		}
+		break;
+	}
+
+	case IOCTL_ARK_DETECT_KERNEL_INLINE_HOOK:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.InputBufferLength < sizeof(ULONG)) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		ULONG count = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+		KernelInlineHookData* pData = (KernelInlineHookData*)Irp->AssociatedIrp.SystemBuffer;
+		if (dic.OutputBufferLength < sizeof(KernelInlineHookData) * count) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		khook::DetectInlineHook(count, pData);
+		len = dic.OutputBufferLength;
+		status = STATUS_SUCCESS;
+		break;
+	}
+
+	case IOCTL_ARK_GET_KERNEL_INLINE_HOOK_COUNT:
+	{
+		if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+			status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+		if (dic.OutputBufferLength < sizeof(ULONG)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+		ULONG count = khook::GetInlineHookCount();
+		status = STATUS_SUCCESS;
+		*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
+		len = sizeof(count);
+		break;
+	}
 	}
 
 
@@ -1686,7 +1687,7 @@ NTSTATUS AntiRootkitWrite(PDEVICE_OBJECT, PIRP Irp) {
 		__except (EXCEPTION_EXECUTE_HANDLER) {
 			status = STATUS_ACCESS_VIOLATION;
 		}
-		
+
 	} while (false);
 
 	return CompleteIrp(Irp, status, len);

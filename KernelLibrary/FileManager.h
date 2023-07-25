@@ -1,6 +1,6 @@
 #pragma once
 
-enum class FileAccessMask:ULONG {
+enum class FileAccessMask :ULONG {
 	WriteData = FILE_WRITE_DATA,// 写文件内容
 	ReadData = FILE_READ_DATA,	// 读文件内容
 	Delete = DELETE,			// 删除或者给文件改名字
@@ -29,7 +29,7 @@ NTSTATUS ObCreateObject(
 	_In_ ULONG ObjectSize,
 	_In_opt_ ULONG PagedPoolCharge,
 	_In_opt_ ULONG NonPagedPoolCharge,
-	_Out_ PVOID* Object
+	_Out_ PVOID * Object
 );
 
 typedef struct _AUX_ACCESS_DATA {
@@ -38,7 +38,7 @@ typedef struct _AUX_ACCESS_DATA {
 	ACCESS_MASK AccessesToAudit;
 	ACCESS_MASK MaximumAuditMask;
 	ULONG Unknown[256];
-}AUX_ACCESS_DATA,*PAUX_ACCESS_DATA;
+}AUX_ACCESS_DATA, * PAUX_ACCESS_DATA;
 
 
 extern "C"
@@ -65,17 +65,17 @@ public:
 	static NTSTATUS DeleteFile(PUNICODE_STRING fileName);
 	static NTSTATUS ConvertDosNameToNtName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING ntName);
 
-	NTSTATUS GetRootName(_In_ PCWSTR dosName,_Out_ PUNICODE_STRING rootName);
+	NTSTATUS GetRootName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING rootName);
 
 	NTSTATUS OpenFileForRead(PCWSTR path);
 	//NTSTATUS RenameFile();
 	//NTSTATUS EnumurateFile();
 
-	NTSTATUS SetInformationFile(PIO_STATUS_BLOCK ioStatus,PVOID FileInformation,ULONG Length,FILE_INFORMATION_CLASS FileInformationClass);
-	
+	NTSTATUS SetInformationFile(PIO_STATUS_BLOCK ioStatus, PVOID FileInformation, ULONG Length, FILE_INFORMATION_CLASS FileInformationClass);
+
 	// 解锁并释放MDL链
 	static VOID FreeMdl(_In_ PMDL mdl);
-	
+
 	NTSTATUS IrpCreateFile(
 		_Out_ PFILE_OBJECT* pFileObject,
 		_Out_ PDEVICE_OBJECT* pDeviceObject,
@@ -90,7 +90,7 @@ public:
 		_In_reads_bytes_opt_(EaLength) PVOID EaBuffer,
 		_In_ ULONG EaLength
 	);
-	
+
 	NTSTATUS IrpQueryDirectoryFile(
 		_In_ PDEVICE_OBJECT DeviceObject,
 		_In_ PFILE_OBJECT FileObject,

@@ -17,7 +17,7 @@ struct ProcessModuleTracker::Impl {
 	DWORD _pid;
 	wil::unique_handle _handle;
 	BOOL _isWow64;
-	
+
 	explicit Impl(DWORD pid) :_pid(pid) {
 		_handle.reset(DriverHelper::OpenProcess(pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | SYNCHRONIZE));
 		if (_handle)
@@ -76,7 +76,7 @@ struct ProcessModuleTracker::Impl {
 		}
 		mi->Base = mbi.AllocationBase;
 		mi->Type = mbi.Type == MEM_MAPPED ? MapType::Data : MapType::Image;
-		
+
 		return mi;
 	}
 
@@ -139,7 +139,7 @@ struct ProcessModuleTracker::Impl {
 	}
 
 	uint32_t EnumModulesWithToolHelp() {
-		wil::unique_handle hSnapshot(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32,_pid));
+		wil::unique_handle hSnapshot(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, _pid));
 		if (!hSnapshot)
 			return 0;
 
@@ -178,7 +178,7 @@ struct ProcessModuleTracker::Impl {
 					existing.erase(me.szExePath);
 				}
 			}
-		} while (::Module32Next(hSnapshot.get(),&me));
+		} while (::Module32Next(hSnapshot.get(), &me));
 
 		for (auto& [key, mi] : existing)
 			_unloadedModules.push_back(mi);
@@ -211,6 +211,6 @@ const std::vector<std::shared_ptr<ModuleInfo>>& WinSys::ProcessModuleTracker::Ge
 	return _impl->GetUnloadedModules();
 }
 
-bool ProcessModuleTracker::IsRunning() const{
+bool ProcessModuleTracker::IsRunning() const {
 	return ::WaitForSingleObject(_impl->_handle.get(), 0) == WAIT_TIMEOUT;
 }

@@ -388,7 +388,7 @@ PUCHAR DetourGenJmpIndirect(PUCHAR pCode, PUCHAR* ppJmpVal) {
 
 PUCHAR DetourGenBrk(PUCHAR pCode, PUCHAR pLimit) {
 	ULONG count = pLimit - pCode;
-	Brk* pBrk = (Brk*)ExAllocatePoolWithTag(NonPagedPool, sizeof(Brk) + count,'oted');
+	Brk* pBrk = (Brk*)ExAllocatePoolWithTag(NonPagedPool, sizeof(Brk) + count, 'oted');
 	if (pBrk != nullptr) {
 		MapLockedCopyMemory(pCode, pBrk->int3, count);
 		ExFreePool(pBrk);
@@ -736,7 +736,7 @@ NTSTATUS NTAPI DetourTransactionCommitEx() {
 #endif // DETOURS_X86
 
 #ifdef DETOURS_ARM
-			
+
 #endif // DETOURS_ARM
 
 #ifdef DETOURS_ARM64

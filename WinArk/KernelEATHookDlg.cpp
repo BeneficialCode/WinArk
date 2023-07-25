@@ -28,7 +28,7 @@ LRESULT CKernelEATHookDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	}
 
 	m_KernelEATHookTable = new CKernelEATHookTable(info, table, _info);
-	
+
 	RECT rect;
 	GetClientRect(&rect);
 	m_KernelEATHookTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);

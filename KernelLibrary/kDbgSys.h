@@ -24,10 +24,10 @@ extern "C"
 NTSTATUS
 PsReferenceProcessFilePointer(
 	_In_ PEPROCESS Process,
-	_Out_ PFILE_OBJECT* FileObject
+	_Out_ PFILE_OBJECT * FileObject
 );
 
-extern "C"{
+extern "C" {
 	NTSYSAPI NTSTATUS NTAPI ZwFlushInstructionCache(_In_ HANDLE 	ProcessHandle,
 		_In_ PVOID 	BaseAddress,
 		_In_ ULONG 	NumberOfBytesToFlush
@@ -50,26 +50,26 @@ NTSTATUS ObDuplicateObject(
 using PPsGetNextProcessThread = PETHREAD(NTAPI*) (
 	_In_ PEPROCESS Process,
 	_In_ PETHREAD Thread
-);
+	);
 
 using PPsSuspendThread = NTSTATUS(NTAPI*) (
 	_In_ PETHREAD Thread,
 	_Out_opt_ PULONG PreviousSuspendCount
-);
+	);
 
 using PDbgkpSectionToFileHandle = HANDLE(NTAPI*) (
 	_In_ PVOID SectionObject
-);
+	);
 
 using PPsResumeThread = NTSTATUS(NTAPI*) (
 	_In_ PETHREAD Thread,
 	_Out_opt_ PULONG PreviousSuspendCount
-);
+	);
 
 using PMmGetFileNameForAddress = NTSTATUS(NTAPI*) (
 	_In_ PVOID ProcessVa,
 	_Out_ PUNICODE_STRING FileName
-);
+	);
 
 using PDbgkpSuspendProcess = BOOLEAN(NTAPI*)();
 
@@ -77,14 +77,14 @@ using PKeThawAllThreads = VOID(NTAPI*)();
 
 using PDbgkpResumeProcess = VOID(NTAPI*) (
 	_In_ PEPROCESS Process
-);
+	);
 
 using PPsQuerySystemDllInfo = PPS_SYSTEM_DLL_INFO(NTAPI*)(_In_ ULONG Type);
 
 
 using PObFastReferenceObject = PVOID(NTAPI*) (
 	_In_ PEX_FAST_REF FastRef
-);
+	);
 
 using PObFastDereferenceObject = VOID(NTAPI*)(
 	_In_ PEX_FAST_REF FastRef,
@@ -93,7 +93,7 @@ using PObFastDereferenceObject = VOID(NTAPI*)(
 
 using PExfAcquirePushLockShared = PVOID(NTAPI*)(
 	_Inout_ PEX_PUSH_LOCK PushLock
-);
+	);
 
 using PExfReleasePushLockShared = PVOID(NTAPI*)(
 	_Inout_ PEX_PUSH_LOCK PushLock
@@ -103,12 +103,12 @@ using PObFastReferenceObjectLocked = PVOID(NTAPI*)(
 	_In_ PEX_FAST_REF FastRef
 	);
 
-using PPsGetNextProcess = PEPROCESS (NTAPI*)(
+using PPsGetNextProcess = PEPROCESS(NTAPI*)(
 	_In_ PEPROCESS Process
-);
+	);
 
 // 创建调试对象
-NTSTATUS 
+NTSTATUS
 NTAPI
 NewNtCreateDebugObject(
 	_Out_ PHANDLE DebugObjectHandle,
@@ -135,7 +135,7 @@ DbgkpSetProcessDebugObject(
 
 /**
 * Emulation System
-* 
+*
 */
 // 向调试子系统发送虚假的进程创建消息
 NTSTATUS DbgkpPostFakeProcessCreateMessages(

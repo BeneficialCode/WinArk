@@ -3,7 +3,7 @@
 
 #define KTDI_TAG 'NACS'
 
-NTSTATUS tdi_open_transport_address(PUNICODE_STRING devName, ULONG addr, USHORT port, 
+NTSTATUS tdi_open_transport_address(PUNICODE_STRING devName, ULONG addr, USHORT port,
 	BOOLEAN shared, PHANDLE addressHandle, PFILE_OBJECT* addressFileObject) {
 	OBJECT_ATTRIBUTES attr;
 	PFILE_FULL_EA_INFORMATION eaBuffer;
@@ -13,7 +13,7 @@ NTSTATUS tdi_open_transport_address(PUNICODE_STRING devName, ULONG addr, USHORT 
 	NTSTATUS status;
 
 	InitializeObjectAttributes(&attr, devName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, nullptr, nullptr);
-	
+
 	eaSize = FIELD_OFFSET(FILE_FULL_EA_INFORMATION, EaName[1]) +
 		TDI_TRANSPORT_ADDRESS_LENGTH + 1 + sizeof(TA_IP_ADDRESS);
 
@@ -37,7 +37,7 @@ NTSTATUS tdi_open_transport_address(PUNICODE_STRING devName, ULONG addr, USHORT 
 	localAddr->Address[0].Address[0].sin_port = port;
 	localAddr->Address[0].Address[0].in_addr = addr;
 
-	RtlZeroMemory(localAddr->Address[0].Address[0].sin_zero, 
+	RtlZeroMemory(localAddr->Address[0].Address[0].sin_zero,
 		sizeof(localAddr->Address[0].Address[0].sin_zero));
 
 	status = ZwCreateFile(addressHandle,
@@ -69,7 +69,7 @@ NTSTATUS tdi_open_transport_address(PUNICODE_STRING devName, ULONG addr, USHORT 
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS tdi_set_event_handler(PFILE_OBJECT addressFileObject, LONG eventType, PVOID eventHandler, 
+NTSTATUS tdi_set_event_handler(PFILE_OBJECT addressFileObject, LONG eventType, PVOID eventHandler,
 	PVOID eventContext) {
 	PDEVICE_OBJECT devObj;
 	KEVENT event;
@@ -161,7 +161,7 @@ NTSTATUS tdi_disassociate_address(PFILE_OBJECT connectionFileObject) {
 	return status;
 }
 
-NTSTATUS tdi_open_connection_endpoint(PUNICODE_STRING devName, PVOID connectionContext, BOOLEAN shared, 
+NTSTATUS tdi_open_connection_endpoint(PUNICODE_STRING devName, PVOID connectionContext, BOOLEAN shared,
 	PHANDLE connectionHandle, PFILE_OBJECT* connectionFileObject) {
 	OBJECT_ATTRIBUTES attr;
 	PFILE_FULL_EA_INFORMATION eaBuffer;
@@ -219,7 +219,7 @@ NTSTATUS tdi_open_connection_endpoint(PUNICODE_STRING devName, PVOID connectionC
 		return status;
 	}
 
-	
+
 	return STATUS_SUCCESS;
 }
 
@@ -355,7 +355,7 @@ NTSTATUS tdi_query_address(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT 
 		MmProbeAndLockPages(mdl, KernelMode, IoWriteAccess);
 		status = STATUS_SUCCESS;
 	}
-	__except(EXCEPTION_EXECUTE_HANDLER){
+	__except (EXCEPTION_EXECUTE_HANDLER) {
 		IoFreeMdl(mdl);
 		IoFreeIrp(irp);
 		ExFreePool(localInfo);
@@ -457,11 +457,11 @@ NTSTATUS tdi_recv_dgram(PFILE_OBJECT addressFileObject, PULONG addr, PUSHORT por
 		}
 	}
 
-	TdiBuildReceiveDatagram(irp, devObj, addressFileObject, nullptr, nullptr, 
-		len ? mdl : 0, 
+	TdiBuildReceiveDatagram(irp, devObj, addressFileObject, nullptr, nullptr,
+		len ? mdl : 0,
 		len,
-		remoteInfo, 
-		returnInfo, 
+		remoteInfo,
+		returnInfo,
 		flags);
 
 	status = IoCallDriver(devObj, irp);

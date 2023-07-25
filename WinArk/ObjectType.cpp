@@ -7,7 +7,7 @@ int ObjectType::GetTypeIndex() const {
 	return _index;
 }
 
-const CString & ObjectType::GetName() const {
+const CString& ObjectType::GetName() const {
 	return _name;
 }
 

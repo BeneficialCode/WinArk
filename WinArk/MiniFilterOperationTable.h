@@ -25,7 +25,7 @@ class COperationTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	COperationTable(BarInfo& bars, TableInfo& table,std::wstring filterName);
+	COperationTable(BarInfo& bars, TableInfo& table, std::wstring filterName);
 	int ParseTableEntry(CString& s, char& mask, int& select, OperationCallbackInfo& info, int column);
 	bool CompareItems(const OperationCallbackInfo& s1, const OperationCallbackInfo& s2, int col, bool asc);
 
@@ -79,7 +79,7 @@ public:
 	CString FlagToString(DWORD flag);
 private:
 	enum class Column {
-		FilterHandle,MajorCode,OperationType,Flag,Address,CallbackType,Company,Module
+		FilterHandle, MajorCode, OperationType, Flag, Address, CallbackType, Company, Module
 	};
 
 	void Refresh();

@@ -65,62 +65,62 @@ CString CEtwView::GetColumnText(HWND, int row, int col) const {
 	CString text;
 	switch (col)
 	{
-		case 0:// index
-			text.Format(L"%7u", item->GetIndex());
-			if (item->GetStackEventData())
-				text += L" *";
-			break;
+	case 0:// index
+		text.Format(L"%7u", item->GetIndex());
+		if (item->GetStackEventData())
+			text += L" *";
+		break;
 
-		case 1:// Time
-		{
-			auto ts = item->GetTimeStamp();
-			return FormatHelper::FormatTime(ts);
+	case 1:// Time
+	{
+		auto ts = item->GetTimeStamp();
+		return FormatHelper::FormatTime(ts);
+	}
+
+	case 3:// PID
+	{
+		DWORD tid = -1;
+		DWORD pid = -1;
+		if (item->GetEventName() == L"Thread/CSwitch") {
+			tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
+			HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, tid);
+			if (hThread != NULL) {
+				pid = GetProcessIdOfThread(hThread);
+				::CloseHandle(hThread);
+			}
 		}
-
-		case 3:// PID
-		{
-			DWORD tid = -1;
-			DWORD pid = -1;
-			if (item->GetEventName() == L"Thread/CSwitch") {
-				tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
-				HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, tid);
-				if (hThread != NULL) {
-					pid = GetProcessIdOfThread(hThread);
-					::CloseHandle(hThread);
-				}
-			}
-			else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
-				tid = _threadById[item->GetProcessorNumber()];
-				pid = _processById[tid];
-			}
-			else {
-				pid = item->GetProcessId();
-			}
-			if (pid != (DWORD)-1 && pid != 0)
-				text.Format(L"%u (0x%X)", pid, pid);
-			break;
+		else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+			tid = _threadById[item->GetProcessorNumber()];
+			pid = _processById[tid];
 		}
-
-		case 5:// TID
-		{
-			DWORD tid = -1;
-			if (item->GetEventName() == L"Thread/CSwitch") {
-				tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
-			}
-			else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
-				tid = _threadById[item->GetProcessorNumber()];
-			}
-			else {
-				tid = item->GetThreadId();
-			}
-			if (tid != (DWORD)-1 && tid != 0)
-				text.Format(L"%u (0x%X)", tid, tid);
-
-			break;
+		else {
+			pid = item->GetProcessId();
 		}
+		if (pid != (DWORD)-1 && pid != 0)
+			text.Format(L"%u (0x%X)", pid, pid);
+		break;
+	}
 
-		case 6:// Details
-			return GetEventDetails(item).c_str();
+	case 5:// TID
+	{
+		DWORD tid = -1;
+		if (item->GetEventName() == L"Thread/CSwitch") {
+			tid = item->GetProperty(L"NewThreadId")->GetValue<DWORD>();
+		}
+		else if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+			tid = _threadById[item->GetProcessorNumber()];
+		}
+		else {
+			tid = item->GetThreadId();
+		}
+		if (tid != (DWORD)-1 && tid != 0)
+			text.Format(L"%u (0x%X)", tid, tid);
+
+		break;
+	}
+
+	case 6:// Details
+		return GetEventDetails(item).c_str();
 	}
 
 	return text;
@@ -143,14 +143,14 @@ PCWSTR CEtwView::GetColumnTextPointer(HWND, int row, int col) const {
 	auto item = m_Events[row].get();
 	switch (col)
 	{
-		case 2: return item->GetEventName().c_str();
-		case 4: 
-			if (item->GetEventName() == L"PerfInfo/SysClEnter") {
-				DWORD tid = _threadById[item->GetProcessorNumber()];
-				DWORD pid = _processById[tid];
-				return _processNameById[pid].c_str();
-			}
-			return item->GetProcessName().c_str();
+	case 2: return item->GetEventName().c_str();
+	case 4:
+		if (item->GetEventName() == L"PerfInfo/SysClEnter") {
+			DWORD tid = _threadById[item->GetProcessorNumber()];
+			DWORD pid = _processById[tid];
+			return _processNameById[pid].c_str();
+		}
+		return item->GetProcessName().c_str();
 	}
 	return nullptr;
 }
@@ -170,14 +170,14 @@ bool CEtwView::OnDoubleClickList(HWND, int row, int col, POINT& pt) {
 	return true;
 }
 
-DWORD CEtwView::AddNewProcess(DWORD tid) const{
+DWORD CEtwView::AddNewProcess(DWORD tid) const {
 	DWORD pid = -1;
 	HANDLE hThread = ::OpenThread(THREAD_QUERY_INFORMATION, FALSE, tid);
 	if (hThread != NULL) {
 		pid = GetProcessIdOfThread(hThread);
 		::CloseHandle(hThread);
 	}
-	if (pid != -1&&pid!=0) {
+	if (pid != -1 && pid != 0) {
 		std::unique_ptr<WinSys::Process> process;
 		_processById.insert({ tid,pid });
 		auto hProcess = DriverHelper::OpenProcess(pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
@@ -279,13 +279,13 @@ void CEtwView::DoSort(const SortInfo* si) {
 	auto compare = [&](auto& i1, auto& i2) {
 		switch (si->SortColumn)
 		{
-			case 0: return SortHelper::SortNumbers(i1->GetIndex(), i2->GetIndex(), si->SortAscending);
-			case 1: return SortHelper::SortNumbers(i1->GetTimeStamp(), i2->GetTimeStamp(), si->SortAscending);
-			case 2: return SortHelper::SortStrings(i1->GetEventName(), i2->GetEventName(), si->SortAscending);
-			case 3: return SortHelper::SortNumbers(i1->GetProcessId(), i2->GetProcessId(), si->SortAscending);
-			case 4: return SortHelper::SortStrings(i1->GetProcessName(), i2->GetProcessName(), si->SortAscending);
-			case 5: return SortHelper::SortNumbers(i1->GetThreadId(), i2->GetThreadId(), si->SortAscending);
-			case 6: return SortHelper::SortNumbers(i1->GetEventDescriptor().Opcode, i2->GetEventDescriptor().Opcode, si->SortAscending);
+		case 0: return SortHelper::SortNumbers(i1->GetIndex(), i2->GetIndex(), si->SortAscending);
+		case 1: return SortHelper::SortNumbers(i1->GetTimeStamp(), i2->GetTimeStamp(), si->SortAscending);
+		case 2: return SortHelper::SortStrings(i1->GetEventName(), i2->GetEventName(), si->SortAscending);
+		case 3: return SortHelper::SortNumbers(i1->GetProcessId(), i2->GetProcessId(), si->SortAscending);
+		case 4: return SortHelper::SortStrings(i1->GetProcessName(), i2->GetProcessName(), si->SortAscending);
+		case 5: return SortHelper::SortNumbers(i1->GetThreadId(), i2->GetThreadId(), si->SortAscending);
+		case 6: return SortHelper::SortNumbers(i1->GetEventDescriptor().Opcode, i2->GetEventDescriptor().Opcode, si->SortAscending);
 		}
 		return false;
 	};
@@ -629,7 +629,7 @@ LRESULT CEtwView::OnConfigureEvents(WORD, WORD, HWND, BOOL&) {
 			}
 			std::initializer_list<KernelEventTypes> events(types.data(), types.data() + types.size());
 			tm.SetKernelEventTypes(events);
-			tm.SetKernelEventStacks(std::initializer_list<std::wstring>(categories.data(),categories.data() + categories.size()));
+			tm.SetKernelEventStacks(std::initializer_list<std::wstring>(categories.data(), categories.data() + categories.size()));
 			bool isWin8Plus = ::IsWindows8OrGreater();
 
 			if (isWin8Plus) {
@@ -765,8 +765,8 @@ void CEtwView::ApplyFilters(const FilterConfiguration& config) {
 	for (int i = 0; i < config.GetFilterCount(); i++) {
 		auto desc = config.GetFilter(i);
 		ATLASSERT(desc);
-		auto filter = FilterFactory::CreateFilter(desc->Name.c_str(), desc->Compare, 
-			desc->Parameters.c_str(),desc->Action);
+		auto filter = FilterFactory::CreateFilter(desc->Name.c_str(), desc->Compare,
+			desc->Parameters.c_str(), desc->Action);
 		ATLASSERT(filter);
 		if (filter) {
 			filter->Enable(desc->Enabled);

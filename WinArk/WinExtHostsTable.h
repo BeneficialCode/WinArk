@@ -31,7 +31,7 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_EXTHOST_EXTENSION_TABLE,OnExtTable)
+		COMMAND_ID_HANDLER(ID_EXTHOST_EXTENSION_TABLE, OnExtTable)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -57,7 +57,7 @@ public:
 
 private:
 	enum class TableColumn {
-		ExHost,Id,Version,ExtensionTable,FunctionCount,
+		ExHost, Id, Version, ExtensionTable, FunctionCount,
 		Flags,
 		HostTable,
 		BindNotification,

@@ -130,7 +130,7 @@ int CProcessHandleTable::ParseTableEntry(CString& s, char& mask, int& select, st
 		s.Format(L"%d (0x%X)", info->ProcessId, info->ProcessId);
 		break;
 	case 6: // attributes
-		s.Format(L"%s (%d)", (PCWSTR)HandleAttributesToString(info->HandleAttributes),info->HandleAttributes & 0x7fff);
+		s.Format(L"%s (%d)", (PCWSTR)HandleAttributesToString(info->HandleAttributes), info->HandleAttributes & 0x7fff);
 		break;
 
 	case 7: // access mask
@@ -206,13 +206,13 @@ CString CProcessHandleTable::HandleAttributesToString(ULONG attributes) {
 
 bool CProcessHandleTable::CompareItems(const std::shared_ptr<WinSys::HandleInfo>& p1, const std::shared_ptr<WinSys::HandleInfo>& p2, int col, bool asc) {
 	switch (col) {
-		case 0:
-		{
-			return SortHelper::SortStrings(m_ObjMgr.GetType(p1->ObjectTypeIndex)->TypeName, m_ObjMgr.GetType(p2->ObjectTypeIndex)->TypeName, asc);
-		}
-		case 9: {
-			return SortHelper::SortStrings(m_DetailsCache[p1.get()], m_DetailsCache[p2.get()], asc);
-		}
+	case 0:
+	{
+		return SortHelper::SortStrings(m_ObjMgr.GetType(p1->ObjectTypeIndex)->TypeName, m_ObjMgr.GetType(p2->ObjectTypeIndex)->TypeName, asc);
+	}
+	case 9: {
+		return SortHelper::SortStrings(m_DetailsCache[p1.get()], m_DetailsCache[p2.get()], asc);
+	}
 	}
 	return false;
 }

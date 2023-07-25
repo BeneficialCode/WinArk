@@ -15,7 +15,7 @@ void CQuickFindDlg::CheckButton(UINT id, bool check) {
 }
 
 LRESULT CQuickFindDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
-	
+
 	CheckButton(IDC_CASESENSITIVE, m_Options.CaseSensitive);
 	CheckButton(IDC_DOWN, m_Options.SearchDown);
 	CheckButton(IDC_PROCESSES, m_Options.SearchProcesses);

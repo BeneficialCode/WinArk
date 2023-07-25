@@ -60,7 +60,7 @@ static const GUID iconGuid =
 
 bool ShowBalloonTip(PCWSTR title, PCWSTR text, ULONG timeout) {
 	NOTIFYICONDATA notifyIcon = { sizeof(NOTIFYICONDATA) };
-	
+
 
 	notifyIcon.uFlags = NIF_INFO | NIF_GUID;
 	notifyIcon.hWnd = _hMainWnd;
@@ -128,7 +128,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		}, nullptr, 0, nullptr);
 
 	::WaitForSingleObject(hThread, INFINITE);
-	if (!g_hasSymbol||NULL == hThread) {
+	if (!g_hasSymbol || NULL == hThread) {
 		AtlMessageBox(0, L"Failed init symbols,\r\nWinArk will exit...\r\n", L"WinArk", MB_ICONERROR);
 		ClearSymbols();
 		return 0;
@@ -149,7 +149,7 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	/*CString cmdLine(lpstrCmdLine);
 	cmdLine.Trim(L" \"");
 	if(!cmdLine.IsEmpty()&&cmdLine.Right(11).CompareNoCase(L"regedit.exe")!=0)*/
-		
+
 	// CreateEx才会加载 IDR_MAINFRAME相关的资源
 	_hMainWnd = wndMain.CreateEx(NULL);
 	if (_hMainWnd == NULL) {
@@ -188,14 +188,14 @@ bool CheckInstall(PCWSTR cmdLine) {
 		parse = true;
 		success = DriverHelper::LoadDriver();
 		if (!success)
-			if (DriverHelper::InstallDriver(false,pBuffer,size))
+			if (DriverHelper::InstallDriver(false, pBuffer, size))
 				success = DriverHelper::LoadDriver();
 		if (!success)
 			AtlMessageBox(nullptr, L"Failed to install/load kernel driver", IDS_TITLE, MB_ICONERROR);
 	}
 	else if (::wcsstr(cmdLine, L"update")) {
 		parse = true;
-		success = DriverHelper::UpdateDriver(pBuffer,size);
+		success = DriverHelper::UpdateDriver(pBuffer, size);
 		if (!success) {
 			AtlMessageBox(nullptr, L"Failed to update kernel driver", IDS_TITLE, MB_ICONERROR);
 		}
@@ -224,11 +224,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 			}
 		}
 	}
-	HRESULT hRes = ::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED|COINIT_DISABLE_OLE1DDE);
+	HRESULT hRes = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	ATLASSERT(SUCCEEDED(hRes));
 	// add flags to support other controls
 	AtlInitCommonControls(ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES);
-	
+
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 	::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -239,7 +239,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		return 0;
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
-	
+
 	DriverHelper::LoadDriver(false);
 
 	_Module.Term();

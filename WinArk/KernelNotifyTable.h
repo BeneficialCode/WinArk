@@ -3,8 +3,8 @@
 #include "resource.h"
 
 enum class CallbackType {
-	CreateProcessNotify,CreateThreadNotify,LoadImageNotify,
-	ProcessObPostOperationNotify,ThreadObPostOperationNotify,
+	CreateProcessNotify, CreateThreadNotify, LoadImageNotify,
+	ProcessObPostOperationNotify, ThreadObPostOperationNotify,
 	ProcessObPreOperationNotify, ThreadObPreOperationNotify,
 	RegistryNotify
 };
@@ -46,11 +46,11 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_KERNEL_REFRESH,OnRefresh)
-		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE,OnRemove)
-		COMMAND_ID_HANDLER(ID_NOTIFY_COPY,OnNotifyCopy)
+		COMMAND_ID_HANDLER(ID_KERNEL_REFRESH, OnRefresh)
+		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE, OnRemove)
+		COMMAND_ID_HANDLER(ID_NOTIFY_COPY, OnNotifyCopy)
 		COMMAND_ID_HANDLER(ID_NOTIFY_EXPORT, OnNotifyExport)
-		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE_BY_NAME,OnRemoveByCompanyName)
+		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE_BY_NAME, OnRemoveByCompanyName)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);

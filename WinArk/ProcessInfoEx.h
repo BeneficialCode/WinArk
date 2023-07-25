@@ -4,7 +4,7 @@ enum class ProcessAttributes {
 	NotComputed = -1,
 	None = 0,
 	Protected = 1,
-	InJob=2,
+	InJob = 2,
 	Service = 4,
 	Managed = 8,
 	Secure = 0x10,

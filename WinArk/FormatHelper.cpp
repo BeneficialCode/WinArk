@@ -122,12 +122,12 @@ CString FormatHelper::TimeToString(int64_t time, bool includeMS) {
 
 PCWSTR FormatHelper::PriorityClassToString(WinSys::ProcessPriorityClass pc) {
 	switch (pc) {
-		case WinSys::ProcessPriorityClass::Normal: return L"Normal (8)";
-		case WinSys::ProcessPriorityClass::AboveNormal: return L"Above Normal (10)";
-		case WinSys::ProcessPriorityClass::BelowNormal: return L"Below Normal (6)";
-		case WinSys::ProcessPriorityClass::High: return L"High (13)";
-		case WinSys::ProcessPriorityClass::Idle: return L"Idle (4)";
-		case WinSys::ProcessPriorityClass::RealTime: return L"Realtime (24)";
+	case WinSys::ProcessPriorityClass::Normal: return L"Normal (8)";
+	case WinSys::ProcessPriorityClass::AboveNormal: return L"Above Normal (10)";
+	case WinSys::ProcessPriorityClass::BelowNormal: return L"Below Normal (6)";
+	case WinSys::ProcessPriorityClass::High: return L"High (13)";
+	case WinSys::ProcessPriorityClass::Idle: return L"Idle (4)";
+	case WinSys::ProcessPriorityClass::RealTime: return L"Realtime (24)";
 	}
 	return L"";
 }
@@ -361,7 +361,7 @@ PCWSTR FormatHelper::ObjectTypeToString(int type) {
 		auto p = reinterpret_cast<OBJECT_TYPES_INFORMATION*>(buffer);
 		auto count = p->NumberOfTypes;
 		types.reserve(count);
-		
+
 		auto raw = &p->TypeInformation[0];
 		std::wstring typeName;
 		for (ULONG i = 0; i < count; i++) {
@@ -375,7 +375,7 @@ PCWSTR FormatHelper::ObjectTypeToString(int type) {
 	return types.empty() ? L"" : types[type].c_str();
 }
 
-CString FormatHelper::MajorFunctionToString(UCHAR mf){
+CString FormatHelper::MajorFunctionToString(UCHAR mf) {
 	static PCWSTR major[] = {
 		L"CREATE",
 		L"CREATE_NAMED_PIPE",
@@ -440,7 +440,7 @@ CString FormatHelper::MajorFunctionToString(UCHAR mf){
 	return text;
 }
 
-CString FormatHelper::VirtualAllocFlagsToString(DWORD flags, bool withNumeric){
+CString FormatHelper::VirtualAllocFlagsToString(DWORD flags, bool withNumeric) {
 	CString text;
 	if (flags & MEM_COMMIT)
 		text += L"MEM_COMMIT | ";
@@ -473,7 +473,7 @@ uint64_t GetBootTime() {
 	return time;
 }
 
-std::wstring FormatHelper::FormatProperty(const EventData* data, const EventProperty& prop){
+std::wstring FormatHelper::FormatProperty(const EventData* data, const EventProperty& prop) {
 	static const auto statusFunction = [](auto, auto& p) {
 		CString result;
 		ATLASSERT(p.GetLength() == sizeof(DWORD));
@@ -536,8 +536,8 @@ std::wstring FormatHelper::FormatProperty(const EventData* data, const EventProp
 	auto it = functions.find(data->GetEventName() + L";" + prop.Name);
 	if (it == functions.end())
 		it = functions.find(prop.Name);
-		if (it == functions.end())
-			return L"";
+	if (it == functions.end())
+		return L"";
 
 	return (it->second)(data, prop);
 }

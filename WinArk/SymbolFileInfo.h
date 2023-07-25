@@ -35,15 +35,15 @@ enum class downslib_error {
 class Cleanup {
 	std::function<void()> fn;
 public:
-	explicit Cleanup(std::function<void()> fn):fn(std::move(fn)){}
+	explicit Cleanup(std::function<void()> fn) :fn(std::move(fn)) {}
 	~Cleanup() { fn(); }
 };
 
 struct SymbolFileInfo {
 	bool SymDownloadSymbol(std::wstring localFile);
-	bool GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry);
-	downslib_error Download(std::string url, std::wstring fileName, 
-		std::string userAgent, unsigned int timeout,downslib_cb = nullptr, void* userdata = nullptr);
+	bool GetPdbSignature(ULONG_PTR imageBase, PIMAGE_DEBUG_DIRECTORY entry);
+	downslib_error Download(std::string url, std::wstring fileName,
+		std::string userAgent, unsigned int timeout, downslib_cb = nullptr, void* userdata = nullptr);
 
 	unsigned long long GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
 		unsigned int timeout);
