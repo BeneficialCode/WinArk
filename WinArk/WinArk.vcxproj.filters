@@ -498,6 +498,9 @@
     <ClCompile Include="ShellMgr.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="SysInfoView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -985,6 +988,9 @@
     </ClInclude>
     <ClInclude Include="ShellMgr.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SysInfoView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

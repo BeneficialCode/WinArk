@@ -235,6 +235,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
 
+	SecurityHelper::EnablePrivilege(SE_SYSTEM_ENVIRONMENT_NAME, true);
+
 	if (CheckInstall(lpstrCmdLine))
 		return 0;
 

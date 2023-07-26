@@ -398,7 +398,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"Event Trace",
 		L"Logon Sessions",
 		L"Bypass Detect",
-		L"Explorer"
+		L"Explorer",
+		L"System Information"
 	};
 
 	int i = 0;
@@ -423,7 +424,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-	SetLayeredWindowAttributes(m_hWnd, 0xffffff, static_cast<BYTE>(255 * 0.8), LWA_ALPHA);
+	SetLayeredWindowAttributes(m_hWnd, 0xffffff, static_cast<BYTE>(255 * 1.0), LWA_ALPHA);
 	
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -449,6 +450,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitLogonSessionsView();
 	InitBypassDectectView();
 	InitExplorerView();
+	InitSysInfoView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -551,6 +553,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::Explorer:
 			m_ExplorerView.ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::SysInfo:
+			m_SysInfoView->ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -1068,4 +1073,10 @@ void CMainFrame::InitExplorerView() {
 	m_ExplorerView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_ExplorerView.m_WndSplitter.ShowWindow(SW_SHOW);
 	m_hwndArray[static_cast<int>(TabColumn::Explorer)] = m_ExplorerView.m_hWnd;
+}
+
+void CMainFrame::InitSysInfoView() {
+	m_SysInfoView = new CSysInfoView(this);
+	m_SysInfoView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::SysInfo)] = m_SysInfoView->m_hWnd;
 }

@@ -4,6 +4,9 @@ class TraceManager;
 
 struct AppSettings;
 
+const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+LVS_REPORT | LVS_SHOWSELALWAYS | LVS_OWNERDATA | LVS_SINGLESEL | LVS_SHAREIMAGELISTS;
+
 struct IRegView abstract {
 	virtual void OnFindStart() = 0;
 	virtual void OnFindNext(PCWSTR path, PCWSTR name, PCWSTR data) = 0;

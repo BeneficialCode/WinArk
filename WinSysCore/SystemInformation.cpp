@@ -9,6 +9,8 @@ thread_local int LastStatus;
 
 static_assert(sizeof(PerformanceInformation) == sizeof(SYSTEM_PERFORMANCE_INFORMATION));
 
+static_assert(sizeof(CodeIntegrityInformation) == sizeof(SYSTEM_CODEINTEGRITY_INFORMATION));
+
 PerformanceInformation WinSys::SystemInformation::GetPerformanceInformation() {
 	PerformanceInformation info{};
 	ULONG len;
@@ -82,4 +84,30 @@ std::string SystemInformation::GetCpuBrand() {
 	assert(NT_SUCCESS(status));
 	std::string cpuBrand(brand);
 	return cpuBrand;
+}
+
+BOOL SystemInformation::GetCodeIntegrityInformation(PBOOLEAN pbKMCI, PBOOLEAN pbStrictMode,
+	PBOOLEAN pbIUM){
+	CodeIntegrityInformation info;
+	info.Length = sizeof(info);
+	ULONG len;
+	auto status = NtQuerySystemInformation(SystemCodeIntegrityInformation,
+		&info, sizeof(info), &len);
+	assert(NT_SUCCESS(status));
+	if ((info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_ENABLED) &&
+		(info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED)) {
+		if (pbKMCI)
+			*pbKMCI = TRUE;
+
+		if (pbStrictMode) {
+			*pbStrictMode = info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_HVCI_KMCI_STRICTMODE_ENABLED;
+		}
+
+		if (pbIUM) {
+			*pbIUM = (info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_HVCI_IUM_ENABLED) > 0;
+		}
+	}
+
+	
+	return TRUE;
 }

@@ -111,6 +111,11 @@ namespace WinSys {
 		void* MaximumAppAddress;
 	};
 
+	struct CodeIntegrityInformation {
+		ULONG Length;
+		ULONG CodeIntegrityOptions;
+	};
+
 	class SystemInformation {
 	public:
 		static PerformanceInformation GetPerformanceInformation();
@@ -118,5 +123,7 @@ namespace WinSys {
 		static const BasicSystemInfo& GetBasicSystemInfo();
 		static uint64_t GetBootTime();
 		static std::string GetCpuBrand();
+		static BOOL GetCodeIntegrityInformation(PBOOLEAN pbKMCI,PBOOLEAN pbStrictMode,
+			PBOOLEAN pIUM);
 	};
 }

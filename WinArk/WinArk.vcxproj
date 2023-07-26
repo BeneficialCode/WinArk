@@ -377,6 +377,7 @@
     <ClCompile Include="SymbolHelper.cpp" />
     <ClCompile Include="SymbolicLinkObjectType.cpp" />
     <ClCompile Include="SymbolFileInfo.cpp" />
+    <ClCompile Include="SysInfoView.cpp" />
     <ClCompile Include="SystemConfigDlg.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="Theme.cpp" />
@@ -539,6 +540,7 @@
     <ClInclude Include="SymbolHelper.h" />
     <ClInclude Include="SymbolicLinkObjectType.h" />
     <ClInclude Include="SymbolFileInfo.h" />
+    <ClInclude Include="SysInfoView.h" />
     <ClInclude Include="SystemConfigDlg.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="Theme.h" />
