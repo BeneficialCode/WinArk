@@ -44,6 +44,7 @@ namespace WinSys {
 	struct TokenPrivilege {
 		LUID Privilege;
 		std::wstring Name;
+		std::wstring DisplayName;
 		uint32_t Attributes;
 	};
 

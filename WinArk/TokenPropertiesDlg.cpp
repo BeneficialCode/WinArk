@@ -20,6 +20,7 @@ CString CTokenPropertiesDlg::GetColumnText(HWND h, int row, int col) const {
 		switch (col){
 		case 0: return p.Name.c_str();
 		case 1: return FormatHelper::PrivilegeAttributesToString(p.Attributes);
+		case 2: return p.DisplayName.c_str();
 		}
 	}
 	return L"";
@@ -109,8 +110,9 @@ LRESULT CTokenPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
 	m_PrivList.Attach(GetDlgItem(IDC_PRIVILEGES));
 	m_PrivList.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
-	m_PrivList.InsertColumn(0, L"Name", LVCFMT_LEFT, 230);
+	m_PrivList.InsertColumn(0, L"Name", LVCFMT_LEFT, 200);
 	m_PrivList.InsertColumn(1, L"Attributes", LVCFMT_LEFT, 150);
+	m_PrivList.InsertColumn(2, L"Display Name", LVCFMT_LEFT, 260);
 
 	InitToken();
 

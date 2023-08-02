@@ -135,13 +135,19 @@ std::vector<TokenPrivilege> Token::EnumPrivileges() const {
 	privs.reserve(count);
 
 	WCHAR name[64];
+	WCHAR displayName[128];
+	DWORD language;
 	for (ULONG i = 0; i < count; i++) {
 		TokenPrivilege priv;
 		auto& p = data->Privileges[i];
 		priv.Privilege = p.Luid;
 		len = _countof(name);
-		if (::LookupPrivilegeName(nullptr, &p.Luid, name, &len))
+		if(::LookupPrivilegeName(nullptr, &p.Luid, name, &len)) {
 			priv.Name = name;
+			if (::LookupPrivilegeDisplayName(nullptr, priv.Name.c_str(),
+				displayName, &len, &language))
+				priv.DisplayName = displayName;
+		}
 		priv.Attributes = p.Attributes;
 		privs.push_back(std::move(priv));
 	}
