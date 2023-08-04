@@ -43,6 +43,7 @@ public:
 		COMMAND_ID_HANDLER(ID_SERVICE_PROPERTIES, OnServiceProperties)
 		COMMAND_ID_HANDLER(ID_SERVICE_UNINSTALL, OnServiceDelete)
 		COMMAND_ID_HANDLER(ID_SERVICE_START_ALL,OnServiceStartAll)
+		COMMAND_ID_HANDLER(ID_SERVICE_EXPORT_BY_PID,OnExportByPid)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -69,6 +70,9 @@ public:
 	LRESULT OnServiceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnServiceDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnServiceStartAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnExportByPid(WORD, WORD, HWND, BOOL&);
+	std::wstring GetSingleServiceInfo(WinSys::ServiceInfo& info);
+
 
 private:
 	enum class ServiceColumn {

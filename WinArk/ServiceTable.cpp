@@ -93,6 +93,10 @@ LRESULT CServiceTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	enable = state == ServiceState::Paused;
 	if(!enable)
 		EnableMenuItem(hSubMenu, ID_SERVICE_CONTINUE, MF_DISABLED);
+
+	enable = pdata.ProcessId > 0 ? true : false;
+	if (!enable)
+		EnableMenuItem(hSubMenu, ID_SERVICE_EXPORT_BY_PID, MF_DISABLED);
 	
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
@@ -632,4 +636,46 @@ LRESULT CServiceTable::OnServiceStartAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		}
 	}
 	Refresh();
+}
+
+LRESULT CServiceTable::OnExportByPid(WORD, WORD, HWND, BOOL&) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+	auto& pdata = p.GetStatusProcess();
+	DWORD pid = pdata.ProcessId;
+
+	CSimpleFileDialog dlg(FALSE, nullptr, L"*.txt",
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"文本文档 (*.txt)\0*.txt\0所有文件\0*.*\0", m_hWnd);
+	if (dlg.DoModal() == IDOK) {
+		auto hFile = ::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+		for (int i = 0; i < m_Table.data.n; ++i) {
+			auto& info = m_Table.data.info[i];
+			if (pid == info.GetStatusProcess().ProcessId) {
+				std::wstring text = GetSingleServiceInfo(info);
+				Helpers::WriteString(hFile, text);
+			}
+		}
+		::CloseHandle(hFile);
+	}
+	return TRUE;
+}
+
+std::wstring CServiceTable::GetSingleServiceInfo(ServiceInfo& info) {
+	CString text;
+	CString s;
+
+	s = info.GetName().c_str();
+	s += L"\t\t\t";
+	text += s;
+
+	s = info.GetDisplayName().c_str();
+	text += s;
+
+	text += L"\r\n";
+
+	return text.GetString();
 }

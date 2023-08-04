@@ -709,6 +709,7 @@ BEGIN
         MENUITEM "&Properties",                 ID_SERVICE_PROPERTIES
         MENUITEM SEPARATOR
         MENUITEM "Start All",                   ID_SERVICE_START_ALL
+        MENUITEM "Export By Pid",               ID_SERVICE_EXPORT_BY_PID
     END
 END
 
