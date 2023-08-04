@@ -707,6 +707,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Uninstall",                   ID_SERVICE_UNINSTALL
         MENUITEM "&Properties",                 ID_SERVICE_PROPERTIES
+        MENUITEM SEPARATOR
+        MENUITEM "Start All",                   ID_SERVICE_START_ALL
     END
 END
 

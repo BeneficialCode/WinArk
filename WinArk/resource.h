@@ -414,13 +414,15 @@
 #define ID_KERNEL_INLINEHOOK_REFRESH    32982
 #define ID_KERNEL_INLINEHOOK_COPY       32983
 #define ID_KERNEL_INLINEHOOK_EXPORT     32984
+#define ID_SERVICE_STARTALL             32985
+#define ID_SERVICE_START_ALL            32986
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        287
-#define _APS_NEXT_COMMAND_VALUE         32985
+#define _APS_NEXT_COMMAND_VALUE         32987
 #define _APS_NEXT_CONTROL_VALUE         1123
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

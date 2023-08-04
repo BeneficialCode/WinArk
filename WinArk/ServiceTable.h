@@ -42,6 +42,7 @@ public:
 		COMMAND_ID_HANDLER(ID_SERVICE_CONTINUE, OnServiceContinue)
 		COMMAND_ID_HANDLER(ID_SERVICE_PROPERTIES, OnServiceProperties)
 		COMMAND_ID_HANDLER(ID_SERVICE_UNINSTALL, OnServiceDelete)
+		COMMAND_ID_HANDLER(ID_SERVICE_START_ALL,OnServiceStartAll)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -67,6 +68,7 @@ public:
 	LRESULT OnServiceContinue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnServiceProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnServiceDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnServiceStartAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	enum class ServiceColumn {

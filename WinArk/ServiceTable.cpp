@@ -595,3 +595,41 @@ LRESULT CServiceTable::OnServiceDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	}
 	return 0;
 }
+
+LRESULT CServiceTable::OnServiceStartAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& svc = m_Table.data.info[selected];
+
+	for (auto& svc : m_Table.data.info) {
+		if (svc.GetStatusProcess().CurrentState 
+			!= ServiceState::Stopped) {
+			continue;
+		}
+		auto service = Service::Open(svc.GetName(), ServiceAccessMask::Start | ServiceAccessMask::QueryStatus);
+		if (service == nullptr) {
+			continue;
+		}
+
+		if (!service->Start()) {
+			continue;
+		}
+
+		CProgressDlg dlg;
+		dlg.ShowCancelButton(false);
+		dlg.SetMessageText((L"Starting service" + svc.GetName() + L"...").c_str());
+		dlg.SetProgressMarquee(true);
+		auto now = ::GetTickCount64();
+		dlg.SetTimerCallback([&]() {
+			service->Refresh(svc);
+			if (svc.GetStatusProcess().CurrentState == ServiceState::Running)
+				dlg.Close();
+			if (::GetTickCount64() - now > 5000)
+				dlg.Close(IDCANCEL);
+			}, 500);
+		if (dlg.DoModal() == IDCANCEL) {
+			continue;
+		}
+	}
+	Refresh();
+}

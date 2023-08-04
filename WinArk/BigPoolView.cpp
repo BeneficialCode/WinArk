@@ -74,7 +74,9 @@ void CBigPoolView::UpdateBigPools() {
 	ULONG len;
 	auto status = NtQuerySystemInformation(SystemBigPoolInformation, m_BigPools, size, &len);
 	if (status) {
-		AtlMessageBox(m_hWnd, L"Failed in getting pool information", IDR_MAINFRAME, MB_ICONERROR);
+		CString msg;
+		msg.Format(L"Failed in getting pool information. status: 0x%x", status);
+		AtlMessageBox(m_hWnd, msg.GetString(), IDR_MAINFRAME, MB_ICONERROR);
 		return;
 	}
 

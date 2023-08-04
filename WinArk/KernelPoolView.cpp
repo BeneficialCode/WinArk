@@ -78,8 +78,10 @@ ULONG CKernelPoolView::UpdateSystemPoolTags() {
 		size, &len
 	);
 
-	if (status) {
-		AtlMessageBox(m_hWnd, L"Failed in getting pool information", IDR_MAINFRAME, MB_ICONERROR);
+	if (!NT_SUCCESS(status)) {
+		CString msg;
+		msg.Format(L"Failed in getting pool information. status: 0x%x", status);
+		AtlMessageBox(m_hWnd, msg.GetString(), IDR_MAINFRAME, MB_ICONERROR);
 		return 0;
 	}
 
@@ -117,8 +119,13 @@ ULONG CKernelPoolView::UpdateSessionPoolTags(ULONG sessionId) {
 		sizeof(SYSTEM_SESSION_PROCESS_INFORMATION), &len
 	);
 
-	if (status) {
-		AtlMessageBox(m_hWnd, L"Failed in getting pool information", IDR_MAINFRAME, MB_ICONERROR);
+	if (!NT_SUCCESS(status)) {
+		if (status == 0xC0000003) {
+			return 0;
+		}
+		CString msg;
+		msg.Format(L"Failed in getting pool information. status: 0x%x", status);
+		AtlMessageBox(m_hWnd, msg.GetString(), IDR_MAINFRAME, MB_ICONERROR);
 		return 0;
 	}
 
