@@ -636,6 +636,7 @@ LRESULT CServiceTable::OnServiceStartAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		}
 	}
 	Refresh();
+	return 0;
 }
 
 LRESULT CServiceTable::OnExportByPid(WORD, WORD, HWND, BOOL&) {

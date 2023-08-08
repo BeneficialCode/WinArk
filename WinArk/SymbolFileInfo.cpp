@@ -21,7 +21,15 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::string deleteFile(oldFileName.begin(), oldFileName.end());
 	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
 	bool isExist = std::filesystem::is_regular_file(fileName);
+	
 	if (isExist) {
+		// If the symbols pdb download by SDM.exe, we just skip the check.
+		std::wstring sdm = localPath + L"\\sdm.json";
+		isExist = std::filesystem::is_regular_file(sdm);
+		if (isExist) {
+			return true;
+		}
+
 		// How to know the pdb file has downloaded completley since the last time?
 		auto fileSize = std::filesystem::file_size(fileName);
 		if (fileSize) {
@@ -178,9 +186,14 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 		}
 	}
 	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
-		url.insert(4, "s");
-		flags |= INTERNET_FLAG_SECURE;
-		hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+		flags |= INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS;
+		hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+		DWORD error = ::GetLastError();
+		if (error != 0) {
+			url.insert(4, "s");
+			flags |= INTERNET_FLAG_SECURE;
+			hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+		}
 	}
 	if (!hUrl)
 		return downslib_error::openurl;
