@@ -225,9 +225,6 @@
     <ClCompile Include="BinaryValueDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="FileManagerView.cpp">
-      <Filter>Views</Filter>
-    </ClCompile>
     <ClCompile Include="WindowsView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
@@ -697,9 +694,6 @@
     </ClInclude>
     <ClInclude Include="BinaryValueDlg.h">
       <Filter>Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="FileManagerView.h">
-      <Filter>Views</Filter>
     </ClInclude>
     <ClInclude Include="WindowsView.h">
       <Filter>Views</Filter>

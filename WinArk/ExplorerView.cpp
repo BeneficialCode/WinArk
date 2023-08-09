@@ -410,6 +410,10 @@ LRESULT CExplorerView::OnNMRClick(int, LPNMHDR pnmh, BOOL&){
 			{
 				LPLVITEMDATA lptvid = (LPLVITEMDATA)lvi.lParam;
 				if (lptvid != NULL) {
+					WCHAR path[MAX_PATH] = { 0 };
+					LPITEMIDLIST lpifq = m_ShellMgr.GetFullyQualPidl(lptvid->spParentFolder, lptvid->lpi);
+					SHGetPathFromIDList(lpifq, path);
+					CoTaskMemFree(lpifq);
 					m_ShellMgr.DoContextMenu(::GetParent(m_WndListView.m_hWnd), lptvid->spParentFolder, lptvid->lpi, pt);
 					RefreshTreeView();
 				}
@@ -433,6 +437,7 @@ void CExplorerView::RefreshTreeView(){
 }
 
 LRESULT CExplorerView::OnForceDeleteFile(WORD, WORD, HWND, BOOL&){
+
 	AtlMessageBox(0, L"Not yet implemented!", L"WTL Explorer", MB_OK | MB_ICONINFORMATION);
 	return 0;
 }
