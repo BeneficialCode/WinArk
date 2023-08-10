@@ -48,6 +48,8 @@ public:
 
 	void RefreshTreeView();
 
+	void ForceDeleteDir(std::wstring dir);
+	
 
 public:
 	CSplitterWindow m_WndSplitter;
@@ -59,4 +61,5 @@ private:
 	CListViewCtrl m_WndListView;
 
 	CShellMgr m_ShellMgr;
+	WCHAR m_Path[MAX_PATH] = { 0 };
 };

@@ -152,7 +152,9 @@ NTSTATUS FileManager::ConvertDosNameToNtName(_In_ PCWSTR dosName, _Out_ PUNICODE
 }
 
 NTSTATUS FileManager::GetRootName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING rootName) {
-	rootName->Buffer = nullptr;	// in case of failure
+	UNICODE_STRING name;
+	name.Buffer = nullptr;
+	
 	auto dosNameLen = ::wcslen(dosName);
 
 	if (dosNameLen < 3)
@@ -164,7 +166,11 @@ NTSTATUS FileManager::GetRootName(_In_ PCWSTR dosName, _Out_ PUNICODE_STRING roo
 
 	kstring<'rgmf'> symLink(L"\\??\\");
 	symLink.Append(dosName, 3);		// driver letter,colon,backslash
-	symLink.GetUnicodeString(rootName);
+	symLink.GetUnicodeString(&name);
+
+	rootName->Buffer = (WCHAR*)ExAllocatePool(PagedPool, name.Length);
+	RtlCopyUnicodeString(rootName, &name);
+	rootName->MaximumLength = name.Length;
 
 	return STATUS_SUCCESS;
 }
@@ -395,6 +401,9 @@ NTSTATUS FileManager::IrpCreateFile(
 	}
 	if (hRoot != NULL) {
 		ZwClose(hRoot);
+	}
+	if (rootName.Buffer != NULL) {
+		RtlFreeUnicodeString(&rootName);
 	}
 
 	return status;

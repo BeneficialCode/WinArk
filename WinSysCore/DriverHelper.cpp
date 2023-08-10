@@ -686,3 +686,13 @@ ULONG DriverHelper::GetKernelInlineHookCount() {
 		&count, sizeof(ULONG), &bytes, nullptr);
 	return count;
 }
+
+bool DriverHelper::ForceDeleteFile(const wchar_t* fileName) {
+	if (!OpenDevice())
+		return 0;
+	DWORD bytes;
+	bool success = ::DeviceIoControl(_hDevice, IOCTL_ARK_FORCE_DELETE_FILE,
+		(PVOID)fileName, (::wcslen(fileName) + 1) * sizeof(WCHAR),
+		nullptr, 0, &bytes, nullptr);
+	return success;
+}

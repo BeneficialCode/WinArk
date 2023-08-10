@@ -8,6 +8,7 @@
 namespace WinSys {
 	struct ServiceInfo;
 
+	class Service;
 	enum class ServiceAccessMask :uint32_t {
 		None = 0,
 		AllAccess = SERVICE_ALL_ACCESS,

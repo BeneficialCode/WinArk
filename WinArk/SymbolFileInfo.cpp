@@ -39,7 +39,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 				return true;
 			}
 			if (contentSize != fileSize) {
-				int ret = AtlMessageBox(nullptr, L"The pdb size is not equal the content size from symbol server", L"Are you sure to run WinArk>", MB_OKCANCEL);
+				int ret = AtlMessageBox(nullptr, L"The pdb size is not equal the content size from symbol server", L"Are you sure to run WinArk", MB_OKCANCEL);
 				if (ret == IDCANCEL) {
 					return false;
 				}

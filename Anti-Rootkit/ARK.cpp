@@ -18,6 +18,7 @@
 #include "..\KernelLibrary\VadHelpers.h"
 #include "..\KernelLibrary\Helpers.h"
 #include "..\KernelLibrary\WinExtHosts.h"
+#include "..\KernelLibrary\FileManager.h"
 
 
 // SE_IMAGE_SIGNATURE_TYPE
@@ -1621,6 +1622,52 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			status = STATUS_SUCCESS;
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(count);
+			break;
+		}
+
+		case IOCTL_ARK_FORCE_DELETE_FILE:
+		{
+			auto name = (WCHAR*)Irp->AssociatedIrp.SystemBuffer;
+			if (!name) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			auto bufferLen = dic.InputBufferLength;
+			if (bufferLen > 1024) {
+				// just too long for a directory
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+
+			// make sure there is a NULL terminator somewhere
+			name[bufferLen / sizeof(WCHAR) - 1] = L'\0';
+
+			auto dosNameLen = ::wcslen(name);
+			if (dosNameLen < 3) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			UNICODE_STRING ntName;
+			status = FileManager::ConvertDosNameToNtName(name, &ntName);
+			LogInfo("Delete File %ws <=> %wZ\n", name, ntName);
+
+			status = FileManager::DeleteFile(&ntName);
+
+			// An attempt has been made to remove a file or directory that cannot be deleted.
+			if (status == STATUS_CANNOT_DELETE || status == STATUS_SHARING_VIOLATION) {
+				FileManager fileMgr;
+				status = fileMgr.ForceDeleteFile(name);
+				if (!NT_SUCCESS(status)) {
+					LogError("Force delete file failed 0x%x\n", status);
+				}
+			}
+			// A file cannot be opened because the share access flags are incompatible.
+			if (!NT_SUCCESS(status)) {
+				LogError("Force delete file failed 0x%x\n", status);
+			}
+			ExFreePool(ntName.Buffer);
 			break;
 		}
 	}

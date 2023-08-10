@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ExplorerView.h"
-
+#include "DriverHelper.h"
 
 LRESULT CExplorerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&){
 	m_WndSplitter.Create(m_hWnd, rcDefault, nullptr,
@@ -85,7 +85,7 @@ HRESULT CExplorerView::FillTreeView(LPSHELLFOLDER lpsf, LPITEMIDLIST lpifq, HTRE
 		return E_POINTER;
 
 	CComPtr<IEnumIDList> spIDList;
-	HRESULT hr = lpsf->EnumObjects(m_hWnd, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &spIDList);
+	HRESULT hr = lpsf->EnumObjects(m_hWnd, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS| SHCONTF_INCLUDEHIDDEN, &spIDList);
 	if (FAILED(hr))
 		return hr;
 
@@ -210,7 +210,7 @@ BOOL CExplorerView::FillListView(LPTVITEMDATA lptvid, LPSHELLFOLDER pShellFolder
 
 	CComPtr<IEnumIDList> spEnumIDList;
 	HRESULT hr = pShellFolder->EnumObjects(m_WndListView.GetParent(),
-		SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &spEnumIDList);
+		SHCONTF_FOLDERS | SHCONTF_NONFOLDERS| SHCONTF_INCLUDEHIDDEN, &spEnumIDList);
 	if (FAILED(hr))
 		return FALSE;
 
@@ -410,9 +410,8 @@ LRESULT CExplorerView::OnNMRClick(int, LPNMHDR pnmh, BOOL&){
 			{
 				LPLVITEMDATA lptvid = (LPLVITEMDATA)lvi.lParam;
 				if (lptvid != NULL) {
-					WCHAR path[MAX_PATH] = { 0 };
 					LPITEMIDLIST lpifq = m_ShellMgr.GetFullyQualPidl(lptvid->spParentFolder, lptvid->lpi);
-					SHGetPathFromIDList(lpifq, path);
+					SHGetPathFromIDList(lpifq, m_Path);
 					CoTaskMemFree(lpifq);
 					m_ShellMgr.DoContextMenu(::GetParent(m_WndListView.m_hWnd), lptvid->spParentFolder, lptvid->lpi, pt);
 					RefreshTreeView();
@@ -437,7 +436,55 @@ void CExplorerView::RefreshTreeView(){
 }
 
 LRESULT CExplorerView::OnForceDeleteFile(WORD, WORD, HWND, BOOL&){
-
-	AtlMessageBox(0, L"Not yet implemented!", L"WTL Explorer", MB_OK | MB_ICONINFORMATION);
+	DWORD attr = GetFileAttributes(m_Path);
+	if (attr == INVALID_FILE_ATTRIBUTES) {
+		AtlMessageBox(nullptr, L"Invalid file!!!", L"Error", MB_ICONERROR);
+		return 0;
+	}
+	CString msg;
+	msg.Format(L"Are you sure to delete the file: %s ?", m_Path);
+	int ret = AtlMessageBox(nullptr,msg.GetString(), L"Confirm Infomration", MB_OKCANCEL);
+	if (ret == IDCANCEL) {
+		return 0;
+	}
+	if (attr & FILE_ATTRIBUTE_DIRECTORY) {
+		ForceDeleteDir(m_Path);
+	}
+	else
+		DriverHelper::ForceDeleteFile(m_Path);
 	return 0;
+}
+
+void CExplorerView::ForceDeleteDir(std::wstring dir) {
+	WIN32_FIND_DATA ffd;
+	std::wstring fileName;
+	std::wstring wildcards = L"\\*";
+	std::wstring searchDir = dir + wildcards;
+
+	HANDLE hFind = FindFirstFile(searchDir.c_str(), &ffd);
+	if (hFind == INVALID_HANDLE_VALUE) {
+		return;
+	}
+
+	LARGE_INTEGER fileSize;
+	do
+	{
+		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (_wcsicmp(ffd.cFileName, L".") == 0 || _wcsicmp(ffd.cFileName, L"..") == 0)
+				continue;
+			std::wstring subDir = dir + L"\\" + ffd.cFileName;
+			ForceDeleteDir(subDir);
+		}
+		else
+		{
+			fileSize.LowPart = ffd.nFileSizeLow;
+			fileSize.HighPart = ffd.nFileSizeHigh;
+			std::wstring file = dir + L"\\" + ffd.cFileName;
+			DriverHelper::ForceDeleteFile(file.c_str());
+		}
+	} while (FindNextFile(hFind, &ffd));
+
+	FindClose(hFind);
+	DriverHelper::ForceDeleteFile(dir.c_str());
 }

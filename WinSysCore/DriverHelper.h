@@ -66,6 +66,8 @@ struct DriverHelper final {
 
 	static bool DetectInlineHook(ULONG count,KernelInlineHookData* pInfo, ULONG size);
 	static ULONG GetKernelInlineHookCount();
+
+	static bool ForceDeleteFile(const wchar_t* fileName);
 private:
 	static bool OpenDevice();
 
