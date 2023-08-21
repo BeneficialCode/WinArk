@@ -126,7 +126,7 @@ CString CEtwView::GetColumnText(HWND, int row, int col) const {
 	return text;
 }
 
-int CEtwView::GetRowImage(HWND, int row) const {
+int CEtwView::GetRowImage(HWND, int row,int col) const {
 	auto& evt = m_Events[row];
 	if (auto it = s_IconsMap.find(evt->GetEventName()); it != s_IconsMap.end())
 		return it->second;

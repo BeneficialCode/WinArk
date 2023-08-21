@@ -24,6 +24,7 @@
 #include "BypassDlg.h"
 #include "ExplorerView.h"
 #include "SysInfoView.h"
+#include "TaskSchedView.h"
 
 
 // c2061 在一个类还没实现前，就互相交叉使用，前置声明不能解决
@@ -32,7 +33,7 @@ enum class TabColumn :int {
 	Kernel, 
 	KernelHook,
 	Network,Driver,Registry,Device,Windows,Service,Config,Etw,LogonSession,
-	BypassDectect,Explorer,SysInfo,
+	BypassDectect,Explorer,SysInfo,TaskSchedView,
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(TabColumn);
@@ -103,6 +104,7 @@ public:
 	void InitBypassDectectView();
 	void InitExplorerView();
 	void InitSysInfoView();
+	void InitTaskSchedView();
 
 	void LoadSettings(PCWSTR filename = nullptr);
 	void SaveSettings(PCWSTR filename = nullptr);
@@ -200,6 +202,8 @@ private:
 	CQuickFindDlg* m_pQuickFindDlg{ nullptr };
 
 	CLogonSessionsView* m_pLogonSessionView{ nullptr };
+
+	CTaskSchedView m_TaskSchedView;
 
 	CString m_StatusText;
 

@@ -399,7 +399,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"Logon Sessions",
 		L"Bypass Detect",
 		L"Explorer",
-		L"System Information"
+		L"System Information",
+		L"Task Scheduler"
 	};
 
 	int i = 0;
@@ -451,6 +452,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitBypassDectectView();
 	InitExplorerView();
 	InitSysInfoView();
+	InitTaskSchedView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -556,6 +558,9 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::SysInfo:
 			m_SysInfoView->ShowWindow(SW_SHOW);
+			break;
+		case TabColumn::TaskSchedView:
+			m_TaskSchedView.ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -1079,4 +1084,11 @@ void CMainFrame::InitSysInfoView() {
 	m_SysInfoView = new CSysInfoView(this);
 	m_SysInfoView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	m_hwndArray[static_cast<int>(TabColumn::SysInfo)] = m_SysInfoView->m_hWnd;
+}
+
+void CMainFrame::InitTaskSchedView() {
+	m_TaskSchedView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+		| WS_CLIPCHILDREN);
+	m_TaskSchedView.m_MainSplitter.ShowWindow(SW_SHOW);
+	m_hwndArray[static_cast<int>(TabColumn::TaskSchedView)] = m_TaskSchedView.m_hWnd;
 }

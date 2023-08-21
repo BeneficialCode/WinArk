@@ -55,6 +55,7 @@ extern CAppModule _Module;
 
 #include <tdh.h>
 #include <evntcons.h>
+#include <taskschd.h>
 
 #include "ThemeSystem.h"
 #include "WinSysCore.h"

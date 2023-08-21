@@ -92,6 +92,12 @@
 #define IDD_DIALOG1                     282
 #define IDD_SCYLLA                      282
 #define IDR_DBG_CONTEXT                 286
+#define IDR_TASK_CONTEXT                287
+#define IDI_FOLDER                      289
+#define IDI_TASK_ROOT                   290
+#define IDI_TASK                        291
+#define IDI_ACTION                      292
+#define IDI_TIMER                       293
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -418,13 +424,20 @@
 #define ID_SERVICE_START_ALL            32986
 #define ID_SERVICE_EXPORTBYPID          32987
 #define ID_SERVICE_EXPORT_BY_PID        32988
+#define ID_TASK_DISABLE                 32989
+#define ID_TASK_RUN                     32990
+#define ID_TASK_STOP                    32991
+#define ID_TASK_EXPORT                  32992
+#define ID_TASK_DELETE                  32993
+#define ID_TASK_PROPERTIES              32994
+#define ID_TASK_ENABLE                  32995
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        287
-#define _APS_NEXT_COMMAND_VALUE         32989
+#define _APS_NEXT_RESOURCE_VALUE        294
+#define _APS_NEXT_COMMAND_VALUE         32996
 #define _APS_NEXT_CONTROL_VALUE         1123
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

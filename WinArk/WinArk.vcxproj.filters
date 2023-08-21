@@ -498,6 +498,12 @@
     <ClCompile Include="SysInfoView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="TaskHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskSchedView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -986,6 +992,21 @@
     <ClInclude Include="SysInfoView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="TaskHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ComHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskSchedView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomListView.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomSplitterWindow.h">
+      <Filter>Controls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -1132,6 +1153,24 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\goto.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Folder.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\task.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Schedule.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\action.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Timer.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

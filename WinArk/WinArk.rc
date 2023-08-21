@@ -867,6 +867,21 @@ BEGIN
     END
 END
 
+IDR_TASK_CONTEXT MENU
+BEGIN
+    POPUP "task"
+    BEGIN
+        MENUITEM "&Disable",                    ID_TASK_ENABLE
+        MENUITEM "&Run",                        ID_TASK_RUN
+        MENUITEM "&Stop",                       ID_TASK_STOP
+        MENUITEM "E&xport...",                  ID_TASK_EXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Delete",                      ID_TASK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...",              ID_TASK_PROPERTIES
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -894,6 +909,14 @@ IDI_FIND                ICON                    "res\\find.ico"
 IDI_SEARCH              ICON                    "res\\search.ico"
 
 IDI_GOTO                ICON                    "res\\goto.ico"
+
+IDI_FOLDER              ICON                    "res\\Folder.ico"
+
+IDI_TASK                ICON                    "res\\Schedule.ico"
+
+IDI_ACTION              ICON                    "res\\action.ico"
+
+IDI_TIMER               ICON                    "res\\Timer.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1180,6 +1203,8 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\WinArk.ico"
+
+IDI_TASK_ROOT           ICON                    "res\\task.ico"
 
 IDI_WINDOW              ICON                    "res\\window.ico"
 

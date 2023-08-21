@@ -3,6 +3,16 @@
 #include "ColumnManager.h"
 #include <memory>
 
+struct ColumnsState {
+	int Count{ 0 };
+	int SortColumn{ -1 };
+	bool SortAscending{ true };
+	std::unique_ptr<int[]> Order;
+	std::unique_ptr<LVCOLUMN[]> Columns;
+	std::unique_ptr<std::wstring[]> Text;
+	std::unique_ptr<int[]> Tags;
+};
+
 enum class ListViewRowCheck {
 	None,
 	Unchecked,
@@ -179,7 +189,7 @@ protected:
 				::StringCchCopy(item.pszText, item.cchTextMax, p->GetColumnText(hdr->hwndFrom, item.iItem, item.iSubItem));
 		}
 		if (item.mask & LVIF_IMAGE) {
-			item.iImage = p->GetRowImage(hdr->hwndFrom, item.iItem);
+			item.iImage = p->GetRowImage(hdr->hwndFrom, item.iItem, col);
 		}
 		if (item.mask & LVIF_INDENT)
 			item.iIndent = p->GetRowIndent(item.iItem);
@@ -303,7 +313,7 @@ protected:
 		return h == nullptr ? &m_Controls[0] : FindByHwnd(h);
 	}
 
-	int GetRowImage(HWND hWnd, int row) const {
+	int GetRowImage(HWND hWnd, int row,int col) const {
 		return -1;
 	}
 
@@ -314,6 +324,70 @@ protected:
 	// ÐÐ
 	ListViewRowCheck IsRowChecked(int row) const {
 		return ListViewRowCheck::None;
+	}
+
+	bool LoadState(HWND h, ColumnsState const& state) {
+		if (state.Count == 0) {
+			return false;
+		}
+
+		CListViewCtrl lv(h);
+		while (lv.DeleteColumn(0))
+			;
+		auto header = lv.GetHeader();
+		auto empty = header.GetItemCount() == 0;
+		HDITEM hdi;
+		hdi.mask = HDI_LPARAM;
+		for (int i = 0; i < state.Count; i++) {
+
+		}
+		if (state.SortColumn < 0)
+			ClearSort(h);
+		else {
+			auto si = GetSortInfo(h);
+			si->SortAscending = state.SortAscending;
+			si->SortColumn = state.SortColumn;
+		}
+		GetColumnManager(h)->AddFromControl();
+		lv.SetColumnOrderArray(state.Count, state.Order.get());
+		return true;
+	}
+
+	ColumnsState SaveState(HWND h, bool names = true) {
+		CListViewCtrl lv(h);
+		ColumnsState state;
+		auto si = GetSortInfo(h);
+		auto header = lv.GetHeader();
+		auto count = header.GetItemCount();
+		state.Order = std::make_unique<int[]>(count);
+		state.Columns = std::make_unique<LVCOLUMN[]>(count);
+		state.Tags = std::make_unique<int[]>(count);
+		if (names)
+			state.Text = std::make_unique<std::wstring[]>(count);
+		if (si) {
+			state.SortColumn = si->SortColumn;
+			state.SortAscending = si->SortAscending;
+		}
+		lv.GetColumnOrderArray(count, state.Order.get());
+		LVCOLUMN lvc;
+		lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_MINWIDTH | (names ? LVCF_TEXT : 0);
+		state.Count = count;
+		WCHAR text[128];
+		HDITEM hdi;
+		hdi.mask = HDI_LPARAM;
+		for (int i = 0; i < count; i++) {
+			state.Columns[i].mask = lvc.mask;
+			if (names) {
+				state.Columns[i].cchTextMax = _countof(text);
+				state.Columns[i].pszText = text;
+			}
+			lv.GetColumn(i, &state.Columns[i]);
+			if (names)
+				state.Text[i] = state.Columns[i].pszText;
+			header.GetItem(i, &hdi);
+			state.Tags[i] = (int)hdi.lParam;
+		}
+		return state;
 	}
 	
 private:

@@ -379,6 +379,8 @@
     <ClCompile Include="SysInfoView.cpp" />
     <ClCompile Include="SystemConfigDlg.cpp" />
     <ClCompile Include="Table.cpp" />
+    <ClCompile Include="TaskHelper.cpp" />
+    <ClCompile Include="TaskSchedView.cpp" />
     <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ThemeColor.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
@@ -408,6 +410,9 @@
     <ClInclude Include="BinaryValueDlg.h" />
     <ClInclude Include="BypassDlg.h" />
     <ClInclude Include="CallStackDlg.h" />
+    <ClInclude Include="ComHelper.h" />
+    <ClInclude Include="CustomListView.h" />
+    <ClInclude Include="CustomSplitterWindow.h" />
     <ClInclude Include="ExplorerView.h" />
     <ClInclude Include="ExtensionTable.h" />
     <ClInclude Include="ExtensionTableDlg.h" />
@@ -541,6 +546,8 @@
     <ClInclude Include="SysInfoView.h" />
     <ClInclude Include="SystemConfigDlg.h" />
     <ClInclude Include="Table.h" />
+    <ClInclude Include="TaskHelper.h" />
+    <ClInclude Include="TaskSchedView.h" />
     <ClInclude Include="Theme.h" />
     <ClInclude Include="ThemeColor.h" />
     <ClInclude Include="ThemeHelper.h" />
@@ -566,6 +573,7 @@
     <ResourceCompile Include="WinArk.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\action.ico" />
     <Image Include="res\arrow_down_blue.ico" />
     <Image Include="res\arrow_up_blue.ico" />
     <Image Include="res\autoscroll.ico" />
@@ -580,6 +588,7 @@
     <Image Include="res\filter-edit.ico" />
     <Image Include="res\filter.ico" />
     <Image Include="res\find.ico" />
+    <Image Include="res\Folder.ico" />
     <Image Include="res\folder_open.ico" />
     <Image Include="res\gear.ico" />
     <Image Include="res\goto.ico" />
@@ -588,6 +597,7 @@
     <Image Include="res\heap.ico" />
     <Image Include="res\heap2.ico" />
     <Image Include="res\icon1.ico" />
+    <Image Include="res\icon2.ico" />
     <Image Include="res\letter-k.ico" />
     <Image Include="res\letter-u.ico" />
     <Image Include="res\memory.ico" />
@@ -603,13 +613,16 @@
     <Image Include="res\properties.ico" />
     <Image Include="res\refresh.ico" />
     <Image Include="res\registry.ico" />
+    <Image Include="res\Schedule.ico" />
     <Image Include="res\search.ico" />
     <Image Include="res\stack.ico" />
     <Image Include="res\Stop.ico" />
     <Image Include="res\storage.ico" />
+    <Image Include="res\task.ico" />
     <Image Include="res\threads-delete.ico" />
     <Image Include="res\threads-new.ico" />
     <Image Include="res\threads.ico" />
+    <Image Include="res\Timer.ico" />
     <Image Include="res\tools.ico" />
     <Image Include="res\WinArk.ico" />
     <Image Include="res\window.ico" />

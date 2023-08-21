@@ -25,7 +25,7 @@ public:
 	void AddEvent(std::shared_ptr<EventData> data);
 	void StartMonitoring(TraceManager& tm, bool start);
 	CString GetColumnText(HWND, int row, int col) const;
-	int GetRowImage(HWND,int row) const;
+	int GetRowImage(HWND,int row,int col) const;
 	PCWSTR GetColumnTextPointer(HWND, int row, int col) const;
 	bool OnRightClickList(HWND,int row, int col, POINT& pt);
 	bool OnDoubleClickList(HWND,int row, int col, POINT& pt);

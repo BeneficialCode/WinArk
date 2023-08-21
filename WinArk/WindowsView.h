@@ -12,7 +12,7 @@ public:
 	DECLARE_WND_CLASS(nullptr);
 
 	CString GetColumnText(HWND, int row, int col) const;
-	int GetRowImage(HWND, int row) const;
+	int GetRowImage(HWND, int row,int col) const;
 
 	void OnActivate(bool activate);
 	void DoSort(const SortInfo* si);

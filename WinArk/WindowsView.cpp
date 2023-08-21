@@ -115,7 +115,7 @@ CString CWindowsView::GetColumnText(HWND, int row, int col) const {
 	return text;
 }
 
-int CWindowsView::GetRowImage(HWND, int row) const {
+int CWindowsView::GetRowImage(HWND, int row,int col) const {
 	auto h = m_Items[row];
 	if (auto it = s_IconMap.find(h); it != s_IconMap.end()) {
 		return it->second;
