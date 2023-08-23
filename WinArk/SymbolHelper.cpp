@@ -74,9 +74,31 @@ void SymbolHelper::Init() {
 	_fltmgrBase = (DWORD)flgmgrBase;
 #endif
 
+	void* ciBase = Helpers::GetKernelModuleBase("ci.dll");
+	size = Helpers::GetKernelModuleImageSize("ci.dll");
+	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
+		auto filename = iter.path().filename().string();
+		if (filename.find("ci") != std::string::npos) {
+			name = filename;
+			break;
+		}
+	}
+	pdbFile = pdbPath + "\\" + name;
+	_ciSize = size;
+	_ciPdb = pdbFile;
+	_ciModule = std::string(name, 0, name.find("."));
+#ifdef _WIN64
+	_ciBase = (DWORD64)ciBase;
+#else
+	_ciBase = (DWORD)ciBase;
+#endif
+
 	_win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
 	_kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
 	_fltmgr.LoadSymbolsForModule(_fltmgrPdb.c_str(), _fltmgrBase, _fltmgrSize);
+	_ci.LoadSymbolsForModule(_ciPdb.c_str(), _ciBase, _ciSize);
+
+
 }
 
 std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
@@ -117,4 +139,9 @@ DWORD SymbolHelper::GetKernelStructSize(std::string name) {
 
 DWORD SymbolHelper::GetKernelBitFieldPos(std::string name, std::string fieldName) {
 	return _kernel.GetBitFieldPos(name, fieldName);
+}
+
+ULONG64 SymbolHelper::GetCiSymbolAddressFromName(PCSTR name) {
+	std::string symbolName = _ciModule + "!" + name;
+	return _ci.GetSymbolAddressFromName(symbolName.c_str());
 }

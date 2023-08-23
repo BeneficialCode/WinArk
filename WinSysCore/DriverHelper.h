@@ -68,6 +68,9 @@ struct DriverHelper final {
 	static ULONG GetKernelInlineHookCount();
 
 	static bool ForceDeleteFile(const wchar_t* fileName);
+
+	static bool DisableDriverLoad(CiSymbols* pSym);
+	static bool EnableDriverLoad();
 private:
 	static bool OpenDevice();
 

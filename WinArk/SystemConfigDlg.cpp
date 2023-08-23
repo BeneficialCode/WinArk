@@ -9,6 +9,7 @@ using namespace WinSys;
 LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	//DlgResize_Init(true);
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
+	m_CheckDriverLoad.Attach(GetDlgItem(IDC_DISABLE_DRIVER_LOAD));
 	m_List.Attach(GetDlgItem(IDC_DEBUGGER_LIST));
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_GRIDLINES);
 	
@@ -73,6 +74,20 @@ LRESULT CSystemConfigDlg::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		if (success)
 			m_CheckImageLoad.EnableWindow(FALSE);
 	}
+	checkCode = m_CheckDriverLoad.GetCheck();
+	if (checkCode == BST_CHECKED) {
+		count += 1;
+		CiSymbols symbols;
+		success = InitCiSymbols(&symbols);
+		if(success)
+			success = DriverHelper::DisableDriverLoad(&symbols);
+		if (success)
+			m_CheckDriverLoad.EnableWindow(FALSE);
+		else {
+			AtlMessageBox(m_hWnd, L"Failed to disable driver load", IDS_TITLE, MB_ICONERROR);
+			return FALSE;
+		}
+	}
 
 	if (count == 0) {
 		AtlMessageBox(m_hWnd, L"You should select one config", L"Error", MB_ICONERROR);
@@ -91,6 +106,13 @@ LRESULT CSystemConfigDlg::OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, H
 		if (success)
 			m_CheckImageLoad.EnableWindow(TRUE);
 	}
+	checkCode = m_CheckDriverLoad.GetCheck();
+	if (checkCode == BST_CHECKED) {
+		success = DriverHelper::EnableDriverLoad();
+		if (success)
+			m_CheckDriverLoad.EnableWindow(TRUE);
+	}
+
 
 	GetDlgItem(IDC_SET_CALLBACK).EnableWindow(TRUE);
 	GetDlgItem(IDC_REMOVE_CALLBACK).EnableWindow(FALSE);
@@ -515,4 +537,12 @@ LRESULT CSystemConfigDlg::OnRemoveDebugger(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	}
 	m_List.DeleteItem(index);
 	return 0;
+}
+
+bool CSystemConfigDlg::InitCiSymbols(CiSymbols* pSym) {
+	pSym->MinCryptIsFileRevoked = (void*)SymbolHelper::GetCiSymbolAddressFromName("MinCryptIsFileRevoked");
+	if (pSym->MinCryptIsFileRevoked == nullptr)
+		return false;
+
+	return true;
 }

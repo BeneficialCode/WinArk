@@ -696,3 +696,21 @@ bool DriverHelper::ForceDeleteFile(const wchar_t* fileName) {
 		nullptr, 0, &bytes, nullptr);
 	return success;
 }
+
+bool DriverHelper::DisableDriverLoad(CiSymbols* pSym) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DISABLE_DRIVER_LOAD, pSym, sizeof(CiSymbols),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::EnableDriverLoad() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_DRIVER_LOAD, nullptr, 0,
+		nullptr, 0, &bytes, nullptr);
+}

@@ -119,6 +119,9 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 		InitSymbols(L"win32k.sys");
 		if (!g_hasSymbol)
 			return -1;
+		InitSymbols(L"ci.dll");
+		if (!g_hasSymbol)
+			return -1;
 		InitSymbols(L"drivers\\fltmgr.sys");
 		if (!g_hasSymbol)
 			return -1;

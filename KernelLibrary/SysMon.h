@@ -190,3 +190,6 @@ VOID PsCallImageNotifyRoutines(
 	_Inout_ PIMAGE_INFO_EX ImageInfoEx,
 	_In_ PVOID FileObject
 );
+
+bool DisableDriverLoad(CiSymbols* pSym);
+bool EnableDriverLoad();

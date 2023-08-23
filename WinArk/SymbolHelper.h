@@ -11,6 +11,7 @@ public:
 	static DWORD GetKernelStructSize(std::string name);
 	static DWORD GetFltmgrStructMemberOffset(std::string name, std::string memberName);
 	static void Init();
+	static ULONG64 GetCiSymbolAddressFromName(PCSTR name);
 
 	struct BitField {
 		USHORT Position;
@@ -30,4 +31,9 @@ private:
 	static inline std::string _fltmgrPdb;
 	static inline std::string _fltmgrModule;
 	static inline SymbolHandler _fltmgr;
+	static inline DWORD _ciSize;
+	static inline DWORD64 _ciBase;
+	static inline std::string _ciPdb;
+	static inline std::string _ciModule;
+	static inline SymbolHandler _ci;
 };

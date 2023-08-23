@@ -1670,6 +1670,34 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			ExFreePool(ntName.Buffer);
 			break;
 		}
+		case IOCTL_ARK_DISABLE_DRIVER_LOAD:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(CiSymbols)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto pSym = (CiSymbols*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = DisableDriverLoad(pSym);
+			if (!success)
+				break;
+			len = 0;
+			status = STATUS_SUCCESS;
+			break;
+		}
+		case IOCTL_ARK_ENABLE_DRIVER_LOAD:
+		{
+			bool success = EnableDriverLoad();
+			len = 0;
+			if (success)
+				status = STATUS_SUCCESS;
+			else
+				status = STATUS_UNSUCCESSFUL;
+			break;
+		}
 	}
 
 

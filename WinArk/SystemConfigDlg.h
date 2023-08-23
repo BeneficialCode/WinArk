@@ -55,8 +55,11 @@ private:
 
 	bool InitPebOffsets(DbgSysCoreInfo* pInfo);
 
+	bool InitCiSymbols(CiSymbols* pSym);
+
 private:
 	CButton m_CheckImageLoad;
+	CButton m_CheckDriverLoad;
 	WinSys::BasicSystemInfo m_BasicSysInfo;
 	bool m_enableDbgSys = false;
 	CListViewCtrl m_List;

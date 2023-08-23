@@ -11,6 +11,7 @@
 #include "Helpers.h"
 #include "Section.h"
 #include "SysMon.h"
+#include "detours.h"
 
 #define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
@@ -984,4 +985,42 @@ VOID PsCallImageNotifyRoutines(
 	}
 
 	KeLeaveCriticalRegion();
+}
+
+using PMinCryptIsFileRevoked = NTSTATUS(NTAPI*) (
+	PVOID Arg0,
+	PVOID Arg1,
+	ULONG Len
+	);
+
+PMinCryptIsFileRevoked g_pMinCryptIsFileRevoked = nullptr;
+
+NTSTATUS NTAPI HookMinCryptIsFileRevoked(PVOID Arg0, PVOID Arg1, ULONG Len) {
+	LogInfo("Arg0: %p,Arg1: %p,Size: %d\n", Arg0, Arg1, Len);
+	return STATUS_IMAGE_CERT_REVOKED;
+}
+
+bool DisableDriverLoad(CiSymbols* pSym) {
+	g_pMinCryptIsFileRevoked = (PMinCryptIsFileRevoked)pSym->MinCryptIsFileRevoked;
+	if (g_pMinCryptIsFileRevoked) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pMinCryptIsFileRevoked, HookMinCryptIsFileRevoked);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+	return true;
+}
+
+bool EnableDriverLoad() {
+	NTSTATUS status = DetourDetach((PVOID*)&g_pMinCryptIsFileRevoked, HookMinCryptIsFileRevoked);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	status = DetourTransactionCommit();
+	if (!NT_SUCCESS(status))
+		return false;
+
+	return true;
 }
