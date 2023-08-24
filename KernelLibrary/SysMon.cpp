@@ -995,6 +995,7 @@ using PMinCryptIsFileRevoked = NTSTATUS(NTAPI*) (
 
 PMinCryptIsFileRevoked g_pMinCryptIsFileRevoked = nullptr;
 
+
 NTSTATUS NTAPI HookMinCryptIsFileRevoked(PVOID Arg0, PVOID Arg1, ULONG Len) {
 	LogInfo("Arg0: %p,Arg1: %p,Size: %d\n", Arg0, Arg1, Len);
 	return STATUS_IMAGE_CERT_REVOKED;
@@ -1015,6 +1016,51 @@ bool DisableDriverLoad(CiSymbols* pSym) {
 
 bool EnableDriverLoad() {
 	NTSTATUS status = DetourDetach((PVOID*)&g_pMinCryptIsFileRevoked, HookMinCryptIsFileRevoked);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	status = DetourTransactionCommit();
+	if (!NT_SUCCESS(status))
+		return false;
+
+	return true;
+}
+
+using PI_MinCryptHashSearchCompare = int(NTAPI*) (
+	size_t Size,
+	PUCHAR Arg1,
+	PUCHAR Arg2
+	);
+
+PI_MinCryptHashSearchCompare g_pI_MinCryptHashSearchCompare = nullptr;
+
+int NTAPI HookI_MinCryptHashSearchCompare(size_t Size, PUCHAR Arg1, PUCHAR Arg2) {
+	for (int i = 0; i < Size; i++) {
+		DbgPrint("%02X", Arg1[i]);
+	}
+	LogInfo("\n");
+	for (int i = 0; i < Size; i++)
+		DbgPrint("%02X", Arg2[i]);
+	LogInfo("\n");
+
+	return memcmp(Arg1, Arg2, Size);
+}
+
+bool StartLogDriverHash(CiSymbols* pSym) {
+	g_pI_MinCryptHashSearchCompare = (PI_MinCryptHashSearchCompare)pSym->I_MinCryptHashSearchCompare;
+	if (g_pI_MinCryptHashSearchCompare) {
+		NTSTATUS status = DetourAttach((PVOID*)&g_pI_MinCryptHashSearchCompare, HookI_MinCryptHashSearchCompare);
+		if (!NT_SUCCESS(status))
+			return false;
+		status = DetourTransactionCommit();
+		if (!NT_SUCCESS(status))
+			return false;
+	}
+	return true;
+}
+
+bool StopLogDriverHash() {
+	NTSTATUS status = DetourDetach((PVOID*)&g_pI_MinCryptHashSearchCompare, HookI_MinCryptHashSearchCompare);
 	if (!NT_SUCCESS(status))
 		return false;
 

@@ -233,6 +233,8 @@ BEGIN
     LTEXT           "",IDC_BOOT_MODE,472,109,83,8
     CONTROL         "Disable driver load ( only test on Windows 11 )",IDC_DISABLE_DRIVER_LOAD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,56,184,10
+    CONTROL         "Log Driver Load Hash ( only test on Windows 11 )",IDC_LOG_HASH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,76,174,10
 END
 
 IDD_EVENT_PROPS DIALOGEX 0, 0, 351, 264

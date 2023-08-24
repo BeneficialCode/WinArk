@@ -231,8 +231,9 @@
 #define IDC_GROUP_DUMP                  1120
 #define IDC_DEBUGGER_LIST               1121
 #define IDC_BOOT_MODE                   1122
-#define IDC_CHECK1                      1123
 #define IDC_DISABLE_DRIVER_LOAD         1123
+#define IDC_CHECK1                      1124
+#define IDC_LOG_HASH                    1124
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -440,7 +441,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        294
 #define _APS_NEXT_COMMAND_VALUE         32996
-#define _APS_NEXT_CONTROL_VALUE         1124
+#define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

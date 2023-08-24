@@ -10,6 +10,7 @@ LRESULT CSystemConfigDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	//DlgResize_Init(true);
 	m_CheckImageLoad.Attach(GetDlgItem(IDC_INTERCEPT_DRIVER));
 	m_CheckDriverLoad.Attach(GetDlgItem(IDC_DISABLE_DRIVER_LOAD));
+	m_CheckLogHash.Attach(GetDlgItem(IDC_LOG_HASH));
 	m_List.Attach(GetDlgItem(IDC_DEBUGGER_LIST));
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_GRIDLINES);
 	
@@ -88,6 +89,20 @@ LRESULT CSystemConfigDlg::OnSetCallback(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 			return FALSE;
 		}
 	}
+	checkCode = m_CheckLogHash.GetCheck();
+	if (checkCode == BST_CHECKED) {
+		count += 1;
+		CiSymbols symbols;
+		success = InitCiSymbols(&symbols);
+		if (success)
+			success = DriverHelper::StartLogDriverHash(&symbols);
+		if (success)
+			m_CheckLogHash.EnableWindow(FALSE);
+		else {
+			AtlMessageBox(m_hWnd, L"Failed to enable log driver load hash", IDS_TITLE, MB_ICONERROR);
+			return FALSE;
+		}
+	}
 
 	if (count == 0) {
 		AtlMessageBox(m_hWnd, L"You should select one config", L"Error", MB_ICONERROR);
@@ -111,6 +126,12 @@ LRESULT CSystemConfigDlg::OnRemoveCallback(WORD /*wNotifyCode*/, WORD /*wID*/, H
 		success = DriverHelper::EnableDriverLoad();
 		if (success)
 			m_CheckDriverLoad.EnableWindow(TRUE);
+	}
+	checkCode = m_CheckLogHash.GetCheck();
+	if (checkCode == BST_CHECKED) {
+		success = DriverHelper::StopLogDriverHash();
+		if (success)
+			m_CheckLogHash.EnableWindow(TRUE);
 	}
 
 

@@ -714,3 +714,21 @@ bool DriverHelper::EnableDriverLoad() {
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_DRIVER_LOAD, nullptr, 0,
 		nullptr, 0, &bytes, nullptr);
 }
+
+bool DriverHelper::StartLogDriverHash(CiSymbols* pSym) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_START_LOG_DRIVER_HASH, pSym, sizeof(CiSymbols),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::StopLogDriverHash() {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_STOP_LOG_DRIVER_HASH, nullptr, 0,
+		nullptr, 0, &bytes, nullptr);
+}

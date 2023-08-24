@@ -71,6 +71,9 @@ struct DriverHelper final {
 
 	static bool DisableDriverLoad(CiSymbols* pSym);
 	static bool EnableDriverLoad();
+
+	static bool StartLogDriverHash(CiSymbols* pSym);
+	static bool StopLogDriverHash();
 private:
 	static bool OpenDevice();
 

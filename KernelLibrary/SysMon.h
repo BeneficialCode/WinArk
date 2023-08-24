@@ -193,3 +193,6 @@ VOID PsCallImageNotifyRoutines(
 
 bool DisableDriverLoad(CiSymbols* pSym);
 bool EnableDriverLoad();
+
+bool StartLogDriverHash(CiSymbols* pSym);
+bool StopLogDriverHash();
