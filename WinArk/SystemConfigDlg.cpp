@@ -565,7 +565,7 @@ bool CSystemConfigDlg::InitCiSymbols(CiSymbols* pSym) {
 	if (pSym->MinCryptIsFileRevoked == nullptr)
 		return false;
 
-	pSym->I_MinCryptHashSearchCompare = (void*)SymbolHelper::GetCiSymbolAddressFromName("PI_MinCryptHashSearchCompare");
+	pSym->I_MinCryptHashSearchCompare = (void*)SymbolHelper::GetCiSymbolAddressFromName("I_MinCryptHashSearchCompare");
 	if (pSym->I_MinCryptHashSearchCompare == nullptr)
 		return false;
 

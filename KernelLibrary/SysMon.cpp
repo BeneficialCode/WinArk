@@ -12,6 +12,7 @@
 #include "Section.h"
 #include "SysMon.h"
 #include "detours.h"
+#include "kstring.h"
 
 #define LIMIT_INJECTION_TO_PROC L"notepad.exe"	// Process to limit injection to (only in Debugger builds)
 
@@ -1035,14 +1036,31 @@ using PI_MinCryptHashSearchCompare = int(NTAPI*) (
 PI_MinCryptHashSearchCompare g_pI_MinCryptHashSearchCompare = nullptr;
 
 int NTAPI HookI_MinCryptHashSearchCompare(size_t Size, PUCHAR Arg1, PUCHAR Arg2) {
-	for (int i = 0; i < Size; i++) {
-		DbgPrint("%02X", Arg1[i]);
-	}
-	LogInfo("\n");
-	for (int i = 0; i < Size; i++)
-		DbgPrint("%02X", Arg2[i]);
-	LogInfo("\n");
-
+	do
+	{
+		LogInfo("Pid: %d\n", PsGetCurrentProcessId());
+		PCHAR hash = (PCHAR)ExAllocatePool(PagedPool, Size * 2 + 1);
+		if (hash == nullptr) {
+			break;
+		}
+		hash[0] = '\0';
+		CHAR hex[3];
+		for (int i = 0; i < Size; i++) {
+			sprintf_s(hex, "%02X", Arg1[i]);
+			strcat(hash, hex);
+		}
+		LogInfo(hash);
+		hash[0] = '\0';
+		for (int i = 0; i < Size; i++) {
+			sprintf_s(hex, "%02X", Arg2[i]);
+			strcat(hash, hex);
+		}
+		LogInfo(hash);
+		if (hash != nullptr) {
+			ExFreePool(hash);
+		}
+	} while (FALSE);
+	
 	return memcmp(Arg1, Arg2, Size);
 }
 
