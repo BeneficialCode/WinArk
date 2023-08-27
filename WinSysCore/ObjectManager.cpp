@@ -229,10 +229,17 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 		if (_skipThisProcess && handle.UniqueProcessId == ::GetCurrentProcessId())
 			continue;
 
-		std::wstring name;
-		if (namedObjectsOnly && (name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex)).empty())
+		std::wstring name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+		if (namedObjectsOnly && name.empty())
 			continue;
 
+		if (name.length() != 0) {
+			auto pos = name.find(L"\\Device\\PhysicalMemory", 0);
+			if (pos != std::string::npos) {
+				
+			}
+		}
+		
 		auto hi = std::make_shared<HandleInfo>();
 		hi->HandleValue = (ULONG)handle.HandleValue;
 		hi->GrantedAccess = handle.GrantedAccess;

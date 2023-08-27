@@ -213,6 +213,9 @@ bool CProcessHandleTable::CompareItems(const std::shared_ptr<WinSys::HandleInfo>
 		case 9: {
 			return SortHelper::SortStrings(m_DetailsCache[p1.get()], m_DetailsCache[p2.get()], asc);
 		}
+		case 2: {
+			return SortHelper::SortStrings(p1->Name, p2->Name, asc);
+		}
 	}
 	return false;
 }
