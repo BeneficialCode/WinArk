@@ -143,6 +143,11 @@ LOGICAL ExFastRefDereference(
 	_In_ PVOID Object
 );
 
+VOID ExDereferenceCallBackBlock(
+	_Inout_ PEX_CALLBACK Callback,
+	_In_ PEX_CALLBACK_ROUTINE_BLOCK CallbackBlock
+);
+
 EX_FAST_REF_S ExFastReference(
 	_Inout_ PEX_FAST_REF_S FastRef
 );

@@ -25,8 +25,17 @@ public:
 	static ULONG64 ReadBitField(PUCHAR readAddr, BitField* pBitField);
 	static ULONG64 ReadFieldValue(PUCHAR readAddr, ULONG readSize);
 
-	static NTSTATUS SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, const VOID* base,
+	static NTSTATUS SearchPattern(PUCHAR pPattern, UCHAR wildcard, ULONG_PTR len, PVOID pBase,
 		ULONG_PTR size, PVOID* ppFound);
+
+	static NTSTATUS ReadKernelValue64(ULONG_PTR addr, PULONG_PTR pValue);
+
+	static NTSTATUS ReadKernelValue32(ULONG_PTR addr, PLONG pValue);
+
+	static NTSTATUS MmIsKernelAddressValid(
+		_In_ PVOID VirtualAddress,
+		_In_ ULONG Size
+	);
 
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };

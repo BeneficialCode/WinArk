@@ -364,10 +364,12 @@ ULONG64 Helpers::ReadFieldValue(PUCHAR readAddr, ULONG readSize) {
 	return value;
 }
 
-NTSTATUS Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, const VOID* base,
+#pragma warning(push)
+#pragma warning(disable:6385)
+NTSTATUS Helpers::SearchPattern(PUCHAR pPattern, UCHAR wildcard, ULONG_PTR len, PVOID pBase,
 	ULONG_PTR size, PVOID* ppFound) {
-	ASSERT(ppFound != NULL && pattern != NULL && base != NULL);
-	if (ppFound == NULL || pattern == NULL || base == NULL)
+	ASSERT(ppFound != NULL && pPattern != NULL && pBase != NULL);
+	if (ppFound == NULL || pPattern == NULL || pBase == NULL)
 		return STATUS_INVALID_PARAMETER;
 
 	for (ULONG_PTR i = 0; i < size - len; i++)
@@ -375,13 +377,13 @@ NTSTATUS Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, c
 		BOOLEAN found = TRUE;
 		for (ULONG_PTR j = 0; j < len; j++)
 		{
-			PUCHAR pMem = (PUCHAR)base + i + j;
+			PUCHAR pMem = (PUCHAR)pBase + i + j;
 			BOOLEAN isValid = MmIsAddressValid(pMem);
 			if (!isValid) {
 				found = FALSE;
 				break;
 			}
-			if (pattern[j] != wildcard && pattern[j] != ((PCUCHAR)base)[i + j])
+			if (pPattern[j] != wildcard && pPattern[j] != ((PCUCHAR)pBase)[i + j])
 			{
 				found = FALSE;
 				break;
@@ -390,10 +392,143 @@ NTSTATUS Helpers::SearchPattern(PUCHAR pattern, UCHAR wildcard, ULONG_PTR len, c
 
 		if (found != FALSE)
 		{
-			*ppFound = (PUCHAR)base + i;
+			*ppFound = (PUCHAR)pBase + i;
 			return STATUS_SUCCESS;
 		}
 	}
 
 	return STATUS_NOT_FOUND;
+}
+#pragma warning(pop)
+
+NTSTATUS Helpers::ReadKernelValue64(ULONG_PTR addr, PULONG_PTR pValue) {
+	NTSTATUS status = STATUS_SUCCESS;
+	PMDL mdl = IoAllocateMdl((PVOID)addr, sizeof(ULONG_PTR), FALSE, FALSE, NULL);
+	if (mdl == NULL) {
+		status = STATUS_INSUFFICIENT_RESOURCES;
+		return status;
+	}
+
+	PULONG_PTR pMapping = NULL;
+	BOOLEAN locked = FALSE;
+	__try {
+		MmProbeAndLockPages(mdl, KernelMode, IoReadAccess);
+		locked = TRUE;
+		pMapping = (PULONG_PTR)MmMapLockedPagesSpecifyCache(mdl,
+			KernelMode,
+			MmCached,
+			NULL,
+			FALSE,
+			HighPagePriority);
+		if (pMapping == NULL) {
+			status = STATUS_UNSUCCESSFUL;
+			__leave;
+		}
+
+		*pValue = *pMapping;
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		status = GetExceptionCode();
+	}
+
+	if (pMapping != NULL) {
+		MmUnmapLockedPages(pMapping, mdl);
+	}
+	if (locked) {
+		MmUnlockPages(mdl);
+	}
+	if (mdl != NULL) {
+		IoFreeMdl(mdl);
+	}
+
+	return status;
+}
+
+NTSTATUS Helpers::ReadKernelValue32(ULONG_PTR addr, PLONG pValue) {
+	NTSTATUS status = STATUS_SUCCESS;
+	PMDL mdl = IoAllocateMdl((PVOID)addr, sizeof(LONG), FALSE, FALSE, NULL);
+	if (mdl == NULL) {
+		status = STATUS_INSUFFICIENT_RESOURCES;
+		return status;
+	}
+
+	PLONG pMapping = NULL;
+	BOOLEAN locked = FALSE;
+	__try {
+		MmProbeAndLockPages(mdl, KernelMode, IoReadAccess);
+		locked = TRUE;
+		pMapping = (PLONG)MmMapLockedPagesSpecifyCache(mdl,
+			KernelMode,
+			MmCached,
+			NULL,
+			FALSE,
+			HighPagePriority);
+		if (pMapping == NULL) {
+			status = STATUS_UNSUCCESSFUL;
+			__leave;
+		}
+
+		*pValue = *pMapping;
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		status = GetExceptionCode();
+	}
+
+	if (pMapping != NULL) {
+		MmUnmapLockedPages(pMapping, mdl);
+	}
+	if (locked) {
+		MmUnlockPages(mdl);
+	}
+	if (mdl != NULL) {
+		IoFreeMdl(mdl);
+	}
+
+	return status;
+}
+
+NTSTATUS Helpers::MmIsKernelAddressValid(
+	_In_ PVOID VirtualAddress,
+	_In_ ULONG Size
+) {
+	NTSTATUS status = STATUS_SUCCESS;
+	PMDL mdl = IoAllocateMdl(VirtualAddress, Size, FALSE, FALSE, NULL);
+	if (mdl == NULL) {
+		status = STATUS_INSUFFICIENT_RESOURCES;
+		return status;
+	}
+
+	PVOID pMapping = NULL;
+	BOOLEAN locked = FALSE;
+	__try {
+		MmProbeAndLockPages(mdl, KernelMode, IoReadAccess);
+		locked = TRUE;
+		pMapping = MmMapLockedPagesSpecifyCache(mdl,
+			KernelMode,
+			MmCached,
+			NULL,
+			FALSE,
+			HighPagePriority);
+		if (pMapping == NULL) {
+			status = STATUS_UNSUCCESSFUL;
+			__leave;
+		}
+
+
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER) {
+		status = GetExceptionCode();
+	}
+
+	if (pMapping != NULL) {
+		MmUnmapLockedPages(pMapping, mdl);
+	}
+	if (locked) {
+		MmUnlockPages(mdl);
+	}
+	if (mdl != NULL) {
+		IoFreeMdl(mdl);
+	}
+
+	return status;
 }
