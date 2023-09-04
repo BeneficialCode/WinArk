@@ -1095,18 +1095,19 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 						if (targetAddress < maxAddress) {
 							break;
 						}
-						/*status = Helpers::MmIsKernelAddressValid((PVOID)targetAddress, sizeof(ULONG_PTR));
-						if (!NT_SUCCESS(status)) {
-							continue;
-						}*/
-						LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+						PHYSICAL_ADDRESS physical = MmGetPhysicalAddress((PVOID)targetAddress);
+						if (physical.QuadPart) {
+							LogInfo("Physical Address: 0x%p\n", physical.QuadPart);
+							LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+
+							pData[totalCount].Address = (ULONG_PTR)pFound;
+							pData[totalCount].Type = KernelHookType::x64HookType3;
+							pData[totalCount].TargetAddress = targetAddress;
+							totalCount++;
+							LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+							LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
+						}
 						
-						pData[totalCount].Address = (ULONG_PTR)pFound;
-						pData[totalCount].Type = KernelHookType::x64HookType3;
-						pData[totalCount].TargetAddress = targetAddress;
-						totalCount++;
-						LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
-						LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
 					} while (FALSE);
 
 					searchAddr = (ULONG_PTR)pFound + patternSize;
@@ -1268,15 +1269,14 @@ ULONG khook::GetInlineHookCount() {
 						if (targetAddress < maxAddress) {
 							break;
 						}
-						/*status = Helpers::MmIsKernelAddressValid((PVOID)targetAddress, sizeof(ULONG_PTR));
-						if (!NT_SUCCESS(status)) {
-							continue;
-						}*/
-						LogInfo("Target Address: 0x%-16llX\n", targetAddress);
+						PHYSICAL_ADDRESS physical = MmGetPhysicalAddress((PVOID)targetAddress);
+						if (physical.QuadPart) {
+							LogInfo("Target Address: 0x%-16llX\n", targetAddress);
 
-						totalCount++;
-						LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
-						LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
+							totalCount++;
+							LogInfo("Detect suspicious hook type 3 at %p\n", pFound);
+							LogInfo("0x%-16llX\t\t%hs\n", instrAddress, printBuffer);
+						}
 					} while (FALSE);
 					searchAddr = (ULONG_PTR)pFound + patternSize;
 				}
