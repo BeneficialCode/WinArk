@@ -7,7 +7,6 @@
 using namespace WinSys;
 
 CSysInfoView::CSysInfoView(IMainFrame* frame) :CViewBase(frame),
-m_CpuCount(::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS)),
 m_Items{
 	ItemData(RowType::Version,L"Windows Version",ItemDataFlags::Const | ItemDataFlags::Special),
 	ItemData(RowType::BootTime,L"Boot Time",ItemDataFlags::Const | ItemDataFlags::Time | ItemDataFlags::Special),
@@ -20,7 +19,11 @@ m_Items{
 	ItemData(RowType::Vendor,L"Processor Vendor",ItemDataFlags::Const | ItemDataFlags::Special),
 	ItemData(RowType::Hypervisor,L"Hypervisor",ItemDataFlags::Const | ItemDataFlags::Special),
 	}
-{}
+{
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	m_CpuCount = info.dwNumberOfProcessors;
+}
 
 LRESULT CSysInfoView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(*this, rcDefault, nullptr, ListViewDefaultStyle & ~LVS_SHAREIMAGELISTS);

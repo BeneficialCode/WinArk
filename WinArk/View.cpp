@@ -105,7 +105,16 @@ bool CRegistryManagerView::GoToItem(PCWSTR path, PCWSTR name, PCWSTR data) {
 LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
 	::RegDeleteTree(HKEY_CURRENT_USER, DeletedPathBackup.Left(DeletedPathBackup.GetLength() - 1));
 
-	::ChangeWindowMessageFilterEx(m_hWnd, WM_COPYDATA, MSGFLT_ALLOW, nullptr);
+	using PChangeWindowMessageFilterEx = BOOL(WINAPI*)(HWND, UINT, DWORD, void*);
+	HMODULE hUser32 = GetModuleHandle(L"user32.dll");
+	if (hUser32 != nullptr) {
+		PChangeWindowMessageFilterEx pChangeWindowMessageFilterEx
+			= (PChangeWindowMessageFilterEx)GetProcAddress(hUser32, "ChangeWindowMessageFilterEx");
+		if (pChangeWindowMessageFilterEx != nullptr) {
+			pChangeWindowMessageFilterEx(m_hWnd, WM_COPYDATA, 1, nullptr);
+		}
+	}
+
 	m_Locations.Load(L"Software\\YuanOS\\WinArk");
 	if (AppSettings::Get().Load(L"Software\\YuanOS\\WinArk"))
 		m_ReadOnly = AppSettings::Get().ReadOnly();

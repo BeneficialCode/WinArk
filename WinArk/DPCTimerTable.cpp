@@ -154,7 +154,9 @@ void CDpcTimerTable::Refresh() {
 #endif // _WIN64
 		ULONG count = DriverHelper::GetKernelTimerCount(&data);
 		if (count != 0) {
-			int cpuCount = ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+			SYSTEM_INFO info;
+			GetSystemInfo(&info);
+			int cpuCount = info.dwNumberOfProcessors;
 			SIZE_T size = cpuCount * entryCount * sizeof(DpcTimerInfo);
 			ULONG maxCount = cpuCount * entryCount;
 			wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
