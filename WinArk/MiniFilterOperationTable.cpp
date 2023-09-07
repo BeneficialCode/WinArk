@@ -261,7 +261,8 @@ void COperationTable::Refresh() {
 	m_Table.data.n = 0;
 	m_Table.data.info.clear();
 
-	ULONG offset = SymbolHelper::GetFltmgrStructMemberOffset("_FLT_FILTER", "Operations");
+	ULONG offset = SymbolHelper::GetFltmgrStructMemberOffset("_FLT_FILTER", 
+		"Operations");
 
 	auto len = (ULONG)m_Name.length();
 	DWORD size = len * sizeof(WCHAR) + sizeof(MiniFilterData);

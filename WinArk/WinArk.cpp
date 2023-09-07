@@ -37,7 +37,6 @@ void InitSymbols(std::wstring fileName) {
 		info.GetPdbSignature(VA, entry);
 		::GetCurrentDirectory(MAX_PATH, path);
 		wcscat_s(path, L"\\Symbols");
-		std::filesystem::create_directory(path);
 		bool success = info.SymDownloadSymbol(path);
 		if (!success)
 			g_hasSymbol = false;

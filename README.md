@@ -9,7 +9,7 @@
 
 QQ Group: 392097880
 
-### If you don't want to become a contributor or submit issues,please don't join this group. 
+### If you don't want to become a contributor or submit issues, please don't join this group. 
 
 ## Contributing
 Contributing to WinArk is super appreciated.

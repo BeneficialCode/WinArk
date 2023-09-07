@@ -1,5 +1,19 @@
 #pragma once
 #include "ProgressDlg.h"
+#include <Poco/URIStreamOpener.h>
+#include <Poco/StreamCopier.h>
+#include <Poco/Path.h>
+#include <Poco/URI.h>
+#include <Poco/Net/HTTPStreamFactory.h>
+#include "Poco/Net/HTTPSStreamFactory.h"
+#include <Poco/Net/FTPStreamFactory.h>
+#include <Poco/SharedPtr.h>
+#include <Poco/Net/SSLManager.h>
+#include <Poco/Net/ConsoleCertificateHandler.h>
+#include <Poco/Net/PrivateKeyPassphraseHandler.h>
+#include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 
 struct CV_HEADER {
 	DWORD Signature;
@@ -40,6 +54,8 @@ public:
 };
 
 struct SymbolFileInfo {
+	SymbolFileInfo();
+	~SymbolFileInfo();
 	bool SymDownloadSymbol(std::wstring localFile);
 	bool GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry);
 	downslib_error Download(std::string url, std::wstring fileName, 
@@ -48,8 +64,11 @@ struct SymbolFileInfo {
 	unsigned long long GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
 		unsigned int timeout);
 
+	void PdbDownLoader(Poco::URI& uri, std::ostream& ostr);
+
 	CString _pdbSignature;
 	CString _pdbFile;
 	PdbValidationData _pdbValidation;
 	CProgressDlg _dlg;
+	CString _path;
 };

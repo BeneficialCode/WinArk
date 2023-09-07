@@ -18,6 +18,9 @@ public:
 		USHORT Size;
 	};
 	static DWORD GetKernelBitFieldPos(std::string name, std::string fieldName);
+
+	static bool GetPdbFile(std::wstring fileName,std::string& pdbDir,
+		std::string& pdbName);
 private:
 	
 	static inline DWORD _win32kSize, _kernelSize;

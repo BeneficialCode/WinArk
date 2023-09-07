@@ -2,27 +2,47 @@
 #include "SymbolHelper.h"
 #include "Helpers.h"
 #include <filesystem>
+#include <PEParser.h>
+#include "SymbolFileInfo.h"
+
+bool SymbolHelper::GetPdbFile(std::wstring fileName, std::string& pdbDir,
+	std::string& pdbName) {
+	WCHAR path[MAX_PATH];
+	::GetSystemDirectory(path, MAX_PATH);
+	wcscat_s(path, L"\\");
+	wcscat_s(path, fileName.c_str());
+	PEParser parser(path);
+	auto dir = parser.GetDataDirectory(IMAGE_DIRECTORY_ENTRY_DEBUG);
+	if (dir != nullptr) {
+		SymbolFileInfo info;
+		auto entry = static_cast<PIMAGE_DEBUG_DIRECTORY>(parser.GetAddress(dir->VirtualAddress));
+		ULONG_PTR VA = reinterpret_cast<ULONG_PTR>(parser.GetBaseAddress());
+		info.GetPdbSignature(VA, entry);
+		::GetCurrentDirectory(MAX_PATH, path);
+		wcscat_s(path, L"\\Symbols");
+		std::wstring curDir = path;
+		std::wstring dir = curDir + L"\\" + info._path.GetString();
+		std::wstring name = info._pdbFile.GetString();
+		pdbDir = Helpers::WstringToString(dir);
+		pdbName = Helpers::WstringToString(name);
+		return true;
+	}
+	return false;
+}
 
 void SymbolHelper::Init() {
 	void* win32kBase = Helpers::GetWin32kBase();
 	DWORD size = Helpers::GetWin32kImageSize();
-	char symPath[MAX_PATH];
-	::GetCurrentDirectoryA(MAX_PATH, symPath);
-	std::string pdbPath = "\\Symbols";
-	std::string name;
-	pdbPath = symPath + pdbPath;
 
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("win32") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	std::string pdbFile = pdbPath + "\\" + name;
+	std::string pdbPath, pdbName;
+	std::wstring fileName =L"win32k.sys";
+
+	GetPdbFile(fileName, pdbPath, pdbName);
+
+	std::string pdbFile = pdbPath + "\\" + pdbName;
 	_win32kSize = size;
 	_win32kPdb = pdbFile;
-	_win32kModule = std::string(name, 0, name.find("."));
+	_win32kModule = std::string(pdbName, 0, pdbName.find("."));
 
 #ifdef _WIN64
 	_win32kBase = (DWORD64)win32kBase;
@@ -33,22 +53,14 @@ void SymbolHelper::Init() {
 	void* kernelBase = Helpers::GetKernelBase();
 	size = Helpers::GetKernelImageSize();
 
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ntk") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
+	std::string kSysName = Helpers::GetNtosFileName();
+	fileName = Helpers::StringToWstring(kSysName);
+	GetPdbFile(fileName, pdbPath, pdbName);
 
-	ATLTRACE("%s", name.c_str());
-
-
-
-	pdbFile = pdbPath + "\\" + name;
+	pdbFile = pdbPath + "\\" + pdbName;
 	_kernelSize = size;
 	_kernelPdb = pdbFile;
-	_kernelModule = std::string(name, 0, name.find("."));
+	_kernelModule = std::string(pdbName, 0, pdbName.find("."));
 #ifdef _WIN64
 	_kernelBase = (DWORD64)kernelBase;
 #else
@@ -57,17 +69,14 @@ void SymbolHelper::Init() {
 
 	void* flgmgrBase = Helpers::GetKernelModuleBase("fltmgr.sys");
 	size = Helpers::GetKernelModuleImageSize("fltmgr.sys");
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("flt") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	pdbFile = pdbPath + "\\" + name;
+	
+	fileName = L"drivers\\fltmgr.sys";
+	GetPdbFile(fileName, pdbPath, pdbName);
+	pdbFile = pdbPath + "\\" + pdbName;
+
 	_fltmgrSize = size;
 	_fltmgrPdb = pdbFile;
-	_fltmgrModule = std::string(name, 0, name.find("."));
+	_fltmgrModule = std::string(pdbName, 0, pdbName.find("."));
 #ifdef _WIN64
 	_fltmgrBase = (DWORD64)flgmgrBase;
 #else
@@ -76,17 +85,14 @@ void SymbolHelper::Init() {
 
 	void* ciBase = Helpers::GetKernelModuleBase("ci.dll");
 	size = Helpers::GetKernelModuleImageSize("ci.dll");
-	for (auto& iter : std::filesystem::directory_iterator(pdbPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find("ci") != std::string::npos) {
-			name = filename;
-			break;
-		}
-	}
-	pdbFile = pdbPath + "\\" + name;
+	
+	fileName = L"ci.dll";
+	GetPdbFile(fileName, pdbPath, pdbName);
+	pdbFile = pdbPath + "\\" + pdbName;
+
 	_ciSize = size;
 	_ciPdb = pdbFile;
-	_ciModule = std::string(name, 0, name.find("."));
+	_ciModule = std::string(pdbName, 0, pdbName.find("."));
 #ifdef _WIN64
 	_ciBase = (DWORD64)ciBase;
 #else

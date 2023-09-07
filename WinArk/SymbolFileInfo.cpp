@@ -1,12 +1,36 @@
 #include "stdafx.h"
 #include "SymbolFileInfo.h"
-#include <WinInet.h>
 #include <filesystem>
 #include <Helpers.h>
+#include <fstream>
 
-#pragma comment(lib,"Wininet.lib")
+
+using Poco::URIStreamOpener;
+using Poco::StreamCopier;
+using Poco::Path;
+using Poco::Exception;
+using Poco::Net::HTTPStreamFactory;
+using Poco::Net::FTPStreamFactory;
+using Poco::SharedPtr;
+using Poco::Net::HTTPSStreamFactory;
+using Poco::Net::SSLManager;
+using Poco::Net::Context;
+using Poco::Net::InvalidCertificateHandler;
+using Poco::Net::ConsoleCertificateHandler;
+using Poco::Net::HTTPSClientSession;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPMessage;
+using Poco::Net::HTTPResponse;
+using Poco::Net::HTTPClientSession;
+
+#pragma comment(lib,"Ws2_32")
+#pragma comment(lib,"Iphlpapi")
+#pragma comment(lib,"Crypt32")
 
 bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
+	std::wstring path = localPath + L"\\" + _path.GetString();
+	std::filesystem::create_directories(path);
+
 	std::string url = "http://msdl.microsoft.com/download/symbols";
 
 	_dlg.ShowCancelButton(false);
@@ -16,10 +40,8 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 
 	CString temp = _pdbFile + L"/" + _pdbSignature + L"/" + _pdbFile;
 	std::wstring symbolUrl = temp.GetBuffer();
-	url+= std::string(symbolUrl.begin(), symbolUrl.end());
-	std::wstring oldFileName = _pdbFile.GetBuffer();
-	std::string deleteFile(oldFileName.begin(), oldFileName.end());
-	std::wstring fileName = localPath + L"\\" + _pdbSignature.GetBuffer() + L"_" + _pdbFile.GetBuffer();
+	url += Helpers::WstringToString(symbolUrl);
+	std::wstring fileName = path + L"\\" + _pdbFile.GetString();
 	bool isExist = std::filesystem::is_regular_file(fileName);
 	
 	if (isExist) {
@@ -33,28 +55,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		// How to know the pdb file has downloaded completley since the last time?
 		auto fileSize = std::filesystem::file_size(fileName);
 		if (fileSize) {
-			unsigned long long contentSize = GetPdbSize(url, fileName, "WinArk", 1000);
-			if (contentSize == 0) {
-				// Other error
-				return true;
-			}
-			if (contentSize != fileSize) {
-				int ret = AtlMessageBox(nullptr, L"The pdb size is not equal the content size from symbol server", L"Are you sure to run WinArk", MB_OKCANCEL);
-				if (ret == IDCANCEL) {
-					return false;
-				}
-				return true;
-			}
-			else
-				return true;
-		}
-	}
-	
-	for (auto& iter : std::filesystem::directory_iterator(localPath)) {
-		auto filename = iter.path().filename().string();
-		if (filename.find(deleteFile.c_str()) != std::string::npos) {
-			std::filesystem::remove(iter.path());
-			break;
+			return true;
 		}
 	}
 
@@ -110,223 +111,83 @@ bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY 
 		_pdbValidation.signature = 0;
 		_pdbValidation.age = cv->Age;
 	}
+	_path = _pdbFile + L"\\" + _pdbSignature;
 	return true;
 }
 
 downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, std::string userAgent,
 	unsigned int timeout,downslib_cb cb, void* userdata){
-	HINTERNET hInternet = nullptr;
-	HINTERNET hUrl = nullptr;
-	HANDLE hFile = nullptr;
-	HINTERNET hConnect = nullptr;
+	std::ofstream fileStream;
+	fileStream.open(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
 
-	Cleanup cleanup([&]()
-	{
-		DWORD lastError = ::GetLastError();
-		if (hFile != INVALID_HANDLE_VALUE) {
-			bool doDelete = false;
-			LARGE_INTEGER fileSize;
-			if (lastError != ERROR_SUCCESS || (::GetFileSizeEx(hFile, &fileSize) && fileSize.QuadPart == 0)) {
-				doDelete = true;
-			}
-			::CloseHandle(hFile);
-			if (doDelete)
-				DeleteFile(fileName.c_str());
-		}
-		if (hUrl != nullptr)
-			::InternetCloseHandle(hUrl);
-		if (hInternet != nullptr)
-			::InternetCloseHandle(hInternet);
-		if (hConnect != nullptr)
-			::InternetCloseHandle(hConnect);
-		::SetLastError(lastError);
-	});
-
-	hFile = ::CreateFile(fileName.c_str(), GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return downslib_error::createfile;
-
-	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
-		nullptr, nullptr, 0);
-	
-
-	if (!hInternet)
-		return downslib_error::inetopen;
-
-	DWORD flags;
-	DWORD len = sizeof(flags);
-	
-	::InternetSetOptionA(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
-	flags = INTERNET_FLAG_RELOAD;
-	if (strncmp(url.c_str(), "https://", 8) == 0)
-		flags |= INTERNET_FLAG_SECURE;
-
-	hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
-	DWORD error = ::GetLastError();
-	if (error == ERROR_INTERNET_INVALID_CA) {
-		std::string serviceName = "msdl.microsoft.com";
-		// Connect to the http server
-		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
-			INTERNET_DEFAULT_HTTP_PORT, nullptr,
-			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
-		int pos = static_cast<int>(url.find(".com") + 4);
-		std::string objName(url.begin() + pos, url.end());
-		hUrl = HttpOpenRequestA(hConnect, "GET",
-			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
-		
-		HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
-		error = ::GetLastError();
-		if (error == ERROR_INTERNET_INVALID_CA) {
-			// https://stackoverflow.com/questions/41357008/how-to-ignore-certificate-in-httppost-request-in-winapi
-			flags = 0;
-			InternetQueryOption(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, &len);
-			flags |= SECURITY_SET_MASK;
-			InternetSetOptionA(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, sizeof(flags));
-			HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+	SharedPtr<InvalidCertificateHandler> pCertHandler = new ConsoleCertificateHandler(false); // ask the user via console
+	Context::Ptr pContext = new Context(Context::CLIENT_USE, "");
+	SSLManager::instance().initializeClient(0, pCertHandler, pContext);
+	Poco::URI uri(url);
+	if (uri.getScheme() == "http") {
+		std::string path(uri.getPathAndQuery());
+		if (path.empty()) path = "/";
+		HTTPClientSession session(uri.getHost(), uri.getPort());
+		HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+		session.sendRequest(request);
+		HTTPResponse response;
+		session.peekResponse(response);
+		if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
+			uri = response.get("Location");
 		}
 	}
-	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
-		flags |= INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS;
-		hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
-		DWORD error = ::GetLastError();
-		if (error != 0) {
-			url.insert(4, "s");
-			flags |= INTERNET_FLAG_SECURE;
-			hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+	else if (uri.getScheme() == "https") {
+		HTTPSClientSession session(uri.getHost(), uri.getPort());
+		std::string path(uri.getPathAndQuery());
+		if (path.empty()) path = "/";
+		HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+		session.sendRequest(request);
+		HTTPResponse response;
+		session.peekResponse(response);
+		if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
+			uri = response.get("Location");
 		}
 	}
-	if (!hUrl)
-		return downslib_error::openurl;
-
-	// Get HTTP content length
-	char buffer[1<<11];
-	memset(buffer, 0, sizeof(buffer));
-	len = sizeof(buffer);
-	unsigned long long totalBytes = 0;
-	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_CONTENT_LENGTH, buffer, &len, 0)) {
-		if (sscanf_s(buffer, "%llu", &totalBytes) != 1)
-			totalBytes = 0;
-	}
-
-	_dlg.SetProgressRange(static_cast<int>(totalBytes));
-
-	// Get HTTP status code
-	len = sizeof(buffer);
-	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_STATUS_CODE, buffer, &len, 0)) {
-		int statusCode = 0;
-		if (sscanf_s(buffer, "%d", &statusCode) != 1)
-			statusCode = 500;
-		if (statusCode != 200) {
-			::SetLastError(statusCode);
-			return downslib_error::statuscode;
-		}
-	}
-	
-	DWORD read = 0;
-	DWORD written = 0;
-	unsigned long long readBytes = 0;
-	while (::InternetReadFile(hUrl, buffer, sizeof(buffer), &read)) {
-		readBytes += read;
-
-		// We are done if nothing more to read, so now we can report total size in our final cb call
-		if (read == 0)
-			totalBytes = readBytes;
-
-		// Call the callback to report progress and cancellation
-		if (cb && !cb(userdata, readBytes, totalBytes)) {
-			::SetLastError(ERROR_OPERATION_ABORTED);
-			return downslib_error::cancel;
-		}
-
-		// Exit if noting more read
-		if (read == 0)
-			break;
-
-		::WriteFile(hFile, buffer, read, &written, nullptr);
-	}
-
-	if (totalBytes > 0 && readBytes != totalBytes) {
-		::SetLastError(ERROR_IO_INCOMPLETE);
-		return downslib_error::incomplete;
-	}
-
-	::SetLastError(ERROR_SUCCESS);
+	PdbDownLoader(uri, fileStream);
+	_dlg.SetProgressRange(100);
+	cb(userdata, 100, 100);
+	fileStream.close();
 	return downslib_error::ok;
 }
 
 unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
 	unsigned int timeout) {
-	HINTERNET hInternet = nullptr;
-	HINTERNET hUrl = nullptr;
-	HINTERNET hConnect = nullptr;
+	
 
-	Cleanup cleanup([&]()
-	{
-		DWORD lastError = ::GetLastError();
-		if (hUrl != nullptr)
-			::InternetCloseHandle(hUrl);
-		if (hInternet != nullptr)
-			::InternetCloseHandle(hInternet);
-		if (hConnect != nullptr)
-			::InternetCloseHandle(hConnect);
-		::SetLastError(lastError);
-	});
+	return 0;
+}
 
-	hInternet = ::InternetOpenA(userAgent.c_str(), INTERNET_OPEN_TYPE_PRECONFIG,
-		nullptr, nullptr, 0);
+SymbolFileInfo::SymbolFileInfo() {
+	Poco::Net::initializeSSL();
+	HTTPStreamFactory::registerFactory();
+	HTTPSStreamFactory::registerFactory();
+	FTPStreamFactory::registerFactory();
+}
 
-	if (!hInternet)
-		return 0;
+SymbolFileInfo::~SymbolFileInfo() {
+	FTPStreamFactory::unregisterFactory();
+	HTTPSStreamFactory::unregisterFactory();
+	HTTPStreamFactory::unregisterFactory();
+	Poco::Net::uninitializeSSL();
+}
 
-	DWORD flags;
-	DWORD len = sizeof(flags);
-
-	::InternetSetOptionA(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
-	flags = INTERNET_FLAG_RELOAD;
-	if (strncmp(url.c_str(), "https://", 8) == 0)
-		flags |= INTERNET_FLAG_SECURE;
-
-	hUrl = InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
-	DWORD error = ::GetLastError();
-	if (error == ERROR_INTERNET_INVALID_CA) {
-		std::string serviceName = "msdl.microsoft.com";
-		// Connect to the http server
-		hConnect = InternetConnectA(hInternet, serviceName.c_str(),
-			INTERNET_DEFAULT_HTTP_PORT, nullptr,
-			nullptr, INTERNET_SERVICE_HTTP, 0, 0);
-		int pos = static_cast<int>(url.find(".com") + 4);
-		std::string objName(url.begin() + pos, url.end());
-		hUrl = HttpOpenRequestA(hConnect, "GET",
-			objName.c_str(), nullptr, nullptr, nullptr, INTERNET_FLAG_KEEP_CONNECTION, 0);
-
-		HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
-		error = ::GetLastError();
-		if (error == ERROR_INTERNET_INVALID_CA) {
-			// https://stackoverflow.com/questions/41357008/how-to-ignore-certificate-in-httppost-request-in-winapi
-			flags = 0;
-			InternetQueryOption(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, &len);
-			flags |= SECURITY_SET_MASK;
-			InternetSetOptionA(hUrl, INTERNET_OPTION_SECURITY_FLAGS, &flags, sizeof(flags));
-			HttpSendRequest(hUrl, nullptr, 0, nullptr, 0);
+void SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
+	try {
+		if (uri.getScheme() == "http") {
+			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
+			StreamCopier::copyStream(*pStr.get(), ostr);
+		}
+		else if (uri.getScheme() == "https") {
+			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
+			StreamCopier::copyStream(*pStr.get(), ostr);
 		}
 	}
-	if (error == ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR) {
-		url.insert(4, "s");
-		flags |= INTERNET_FLAG_SECURE;
-		hUrl = ::InternetOpenUrlA(hInternet, url.c_str(), nullptr, 0, flags, 0);
+	catch (Exception& exc) {
+		ostr << exc.displayText() << std::endl;
 	}
-	if (!hUrl)
-		return 0;
-
-	// Get HTTP content length
-	char buffer[1 << 11];
-	memset(buffer, 0, sizeof(buffer));
-	len = sizeof(buffer);
-	unsigned long long totalBytes = 0;
-	if (::HttpQueryInfoA(hUrl, HTTP_QUERY_CONTENT_LENGTH, buffer, &len, 0)) {
-		if (sscanf_s(buffer, "%llu", &totalBytes) != 1)
-			totalBytes = 0;
-	}
-
-	return totalBytes;
 }
