@@ -787,7 +787,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 						) {
 						// Process the element pointed to by p
 						PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
-						LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+						LogInfo("%wZ,%d,%d\n", &entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
 						// 首先得放得下结构体
 						if (size < sizeof(PiDDBCacheData)) {
 							status = STATUS_INFO_LENGTH_MISMATCH;
@@ -863,7 +863,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 					break;
 				}
 				for (ULONG i = 0; i < info->Count; ) {
-					LogInfo("%wZ,%p,%p,%X\n", pMmUnloadDrivers[i].Name, pMmUnloadDrivers[i].StartAddress,
+					LogInfo("%wZ,%p,%p,%X\n", &pMmUnloadDrivers[i].Name, pMmUnloadDrivers[i].StartAddress,
 						pMmUnloadDrivers[i].EndAddress,
 						pMmUnloadDrivers[i].CurrentTime);
 					// 首先得放得下结构体
@@ -939,7 +939,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 					p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, FALSE)) {
 					// Process the element pointed to by p
 					PiDDBCacheEntry* entry = (PiDDBCacheEntry*)p;
-					//LogInfo("%wZ,%d,%d\n", entry->DriverName, entry->LoadStatus, entry->TimeDateStamp);
+					
 					// part1 结构体大小
 					size += sizeof(PiDDBCacheData);
 					// part2 字符串长度+'\0'
@@ -1651,7 +1651,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 			UNICODE_STRING ntName;
 			status = FileManager::ConvertDosNameToNtName(name, &ntName);
-			LogInfo("Delete File %ws <=> %wZ\n", name, ntName);
+			LogInfo("Delete File %ws <=> %wZ\n", &name, ntName);
 
 			status = FileManager::DeleteFile(&ntName);
 

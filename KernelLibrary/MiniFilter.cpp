@@ -143,7 +143,7 @@ FLT_PREOP_CALLBACK_STATUS DelProtectPreCreate(PFLT_CALLBACK_DATA Data, PCFLT_REL
 
 	if (params.Options & FILE_DELETE_ON_CLOSE) {
 		// delete operation
-		auto filename = &FltObjects->FileObject->FileName;
+		PUNICODE_STRING filename = &FltObjects->FileObject->FileName;
 		LogInfo("Delete on close: %wZ\n", filename);
 
 		if (!IsDeleteAllowed(filename)) {
