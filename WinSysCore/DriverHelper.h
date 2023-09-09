@@ -74,6 +74,8 @@ struct DriverHelper final {
 
 	static bool StartLogDriverHash(CiSymbols* pSym);
 	static bool StopLogDriverHash();
+
+	static bool GetLegoNotifyRoutine(void* pPspLegoNotifyRoutine, void* pRoutine);
 private:
 	static bool OpenDevice();
 

@@ -857,6 +857,9 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				ULONG size = dic.OutputBufferLength;
 				// MmUnloadedDrivers MmLastUnloadedDriver
 				PUNLOADED_DRIVER pMmUnloadDrivers = nullptr;
+				if (!MmIsAddressValid(info->pMmUnloadedDrivers)) {
+					break;
+				}
 				pMmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;
 				LogInfo("MmUnloadDriversAddress %p\n", pMmUnloadDrivers);
 				if (!MmIsAddressValid(pMmUnloadDrivers)) {
@@ -1725,6 +1728,33 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_SUCCESS;
 			else
 				status = STATUS_UNSUCCESSFUL;
+			break;
+		}
+		case IOCTL_ARK_GET_LEGO_NOTIFY_ROUTINE:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			if (dic.OutputBufferLength < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			PLEGO_NOTIFY_ROUTINE* pPspLegoNotifyRoutine = (PLEGO_NOTIFY_ROUTINE*)Irp->AssociatedIrp.SystemBuffer;
+			PHYSICAL_ADDRESS physical = MmGetPhysicalAddress(pPspLegoNotifyRoutine);
+			if (!physical.QuadPart) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			PLEGO_NOTIFY_ROUTINE pRoutine = *pPspLegoNotifyRoutine;
+			Irp->AssociatedIrp.SystemBuffer = pRoutine;
+			status = STATUS_SUCCESS;
+			len = sizeof(PVOID);
 			break;
 		}
 	}

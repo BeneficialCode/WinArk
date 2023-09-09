@@ -138,6 +138,10 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 				case CallbackType::RegistryNotify:
 					s = L"Registry Notify";
 					break;
+
+				case CallbackType::LegoNotify:
+					s = L"Lego Notify";
+					break;
 			}
 			break;
 		}
@@ -347,6 +351,23 @@ void CKernelNotifyTable::Refresh() {
 				std::wstring path = Helpers::StringToWstring(info.Module);
 				info.Company = GetCompanyName(path);
 				info.Cookie = p[i].Cookie;
+				m_Table.data.info.push_back(std::move(info));
+			}
+		}
+	}
+
+	void* ppLegoRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspLegoNotifyRoutine");
+	if (ppLegoRoutine != nullptr) {
+		void* pRoutine = 0;
+		bool success = DriverHelper::GetLegoNotifyRoutine(ppLegoRoutine, &pRoutine);
+		if (success) {
+			if (pRoutine != 0) {
+				CallbackInfo info;
+				info.Routine = pRoutine;
+				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
+				info.Type = CallbackType::LegoNotify;
+				std::wstring path = Helpers::StringToWstring(info.Module);
+				info.Company = GetCompanyName(path);
 				m_Table.data.info.push_back(std::move(info));
 			}
 		}

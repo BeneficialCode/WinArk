@@ -110,7 +110,14 @@ extern Section g_sec;		// native section object
 extern Section g_secWow;	// Wow64 section object
 #endif // _WIN64
 
-
+//
+// Lego Callback
+//
+typedef
+VOID
+(NTAPI* PLEGO_NOTIFY_ROUTINE)(
+	_In_ PKTHREAD Thread
+	);
 
 void PushItem(LIST_ENTRY* entry);
 

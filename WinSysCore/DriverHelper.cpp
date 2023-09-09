@@ -105,7 +105,8 @@ HANDLE DriverHelper::OpenHandle(void* pObject, ACCESS_MASK access) {
 
 	DWORD bytes;
 	HANDLE hObject;
-	return ::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_OBJECT, &data, sizeof(data), &hObject, sizeof(hObject), &bytes, nullptr) ? hObject : nullptr;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_OPEN_OBJECT, &data, sizeof(data), 
+		&hObject, sizeof(hObject), &bytes, nullptr) ? hObject : nullptr;
 }
 
 // https://docs.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
@@ -731,4 +732,13 @@ bool DriverHelper::StopLogDriverHash() {
 	DWORD bytes;
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_STOP_LOG_DRIVER_HASH, nullptr, 0,
 		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::GetLegoNotifyRoutine(void* pPspLegoNotifyRoutine, void* pRoutine) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_GET_LEGO_NOTIFY_ROUTINE, pPspLegoNotifyRoutine, sizeof(PVOID),
+		pRoutine, sizeof(PVOID), &bytes, nullptr);
 }

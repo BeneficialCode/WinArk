@@ -121,38 +121,55 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	fileStream.open(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
 
 	SharedPtr<InvalidCertificateHandler> pCertHandler = new ConsoleCertificateHandler(false); // ask the user via console
-	Context::Ptr pContext = new Context(Context::CLIENT_USE, "");
+	Context::Ptr pContext = new Context(Context::CLIENT_USE, "", Context::VerificationMode::VERIFY_NONE);
 	SSLManager::instance().initializeClient(0, pCertHandler, pContext);
 	Poco::URI uri(url);
 	if (uri.getScheme() == "http") {
-		std::string path(uri.getPathAndQuery());
-		if (path.empty()) path = "/";
-		HTTPClientSession session(uri.getHost(), uri.getPort());
-		HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-		session.sendRequest(request);
-		HTTPResponse response;
-		session.peekResponse(response);
-		if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
-			uri = response.get("Location");
+		try
+		{
+			std::string path(uri.getPathAndQuery());
+			if (path.empty()) path = "/";
+			HTTPClientSession session(uri.getHost(), uri.getPort());
+			HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+			session.sendRequest(request);
+			HTTPResponse response;
+			session.peekResponse(response);
+			if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
+				uri = response.get("Location");
+			}
+		}
+		catch (Poco::Exception& exc)
+		{
+			fileStream << exc.displayText() << std::endl;
+			return downslib_error::incomplete;
 		}
 	}
 	else if (uri.getScheme() == "https") {
-		HTTPSClientSession session(uri.getHost(), uri.getPort());
-		std::string path(uri.getPathAndQuery());
-		if (path.empty()) path = "/";
-		HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-		session.sendRequest(request);
-		HTTPResponse response;
-		session.peekResponse(response);
-		if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
-			uri = response.get("Location");
+		try
+		{
+			HTTPSClientSession session(uri.getHost(), uri.getPort());
+			std::string path(uri.getPathAndQuery());
+			if (path.empty()) path = "/";
+			HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+			session.sendRequest(request);
+			HTTPResponse response;
+			session.peekResponse(response);
+			if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
+				uri = response.get("Location");
+			}
 		}
+		catch (Poco::Exception& exc)
+		{
+			fileStream << exc.displayText() << std::endl;
+			return downslib_error::incomplete;
+		}
+	
 	}
-	PdbDownLoader(uri, fileStream);
+	downslib_error ret = PdbDownLoader(uri, fileStream);
 	_dlg.SetProgressRange(100);
 	cb(userdata, 100, 100);
 	fileStream.close();
-	return downslib_error::ok;
+	return ret;
 }
 
 unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
@@ -176,7 +193,7 @@ SymbolFileInfo::~SymbolFileInfo() {
 	Poco::Net::uninitializeSSL();
 }
 
-void SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
+downslib_error SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
 	try {
 		if (uri.getScheme() == "http") {
 			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
@@ -186,8 +203,10 @@ void SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
 			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
 			StreamCopier::copyStream(*pStr.get(), ostr);
 		}
+		return downslib_error::ok;
 	}
 	catch (Exception& exc) {
 		ostr << exc.displayText() << std::endl;
+		return downslib_error::incomplete;
 	}
 }

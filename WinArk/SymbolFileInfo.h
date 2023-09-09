@@ -64,7 +64,7 @@ struct SymbolFileInfo {
 	unsigned long long GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
 		unsigned int timeout);
 
-	void PdbDownLoader(Poco::URI& uri, std::ostream& ostr);
+	downslib_error PdbDownLoader(Poco::URI& uri, std::ostream& ostr);
 
 	CString _pdbSignature;
 	CString _pdbFile;
