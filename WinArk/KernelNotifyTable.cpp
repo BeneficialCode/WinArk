@@ -356,10 +356,10 @@ void CKernelNotifyTable::Refresh() {
 		}
 	}
 
-	void* ppLegoRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspLegoNotifyRoutine");
-	if (ppLegoRoutine != nullptr) {
+	void* pLegoRoutine = (void*)SymbolHelper::GetKernelSymbolAddressFromName("PspLegoNotifyRoutine");
+	if (pLegoRoutine != nullptr) {
 		void* pRoutine = 0;
-		bool success = DriverHelper::GetLegoNotifyRoutine(ppLegoRoutine, &pRoutine);
+		bool success = DriverHelper::GetLegoNotifyRoutine(&pLegoRoutine, &pRoutine);
 		if (success) {
 			if (pRoutine != 0) {
 				CallbackInfo info;

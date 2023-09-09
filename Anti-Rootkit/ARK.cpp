@@ -1745,14 +1745,14 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			PLEGO_NOTIFY_ROUTINE* pPspLegoNotifyRoutine = (PLEGO_NOTIFY_ROUTINE*)Irp->AssociatedIrp.SystemBuffer;
+			void* pPspLegoNotifyRoutine = *(PVOID*)Irp->AssociatedIrp.SystemBuffer;
 			PHYSICAL_ADDRESS physical = MmGetPhysicalAddress(pPspLegoNotifyRoutine);
 			if (!physical.QuadPart) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			PLEGO_NOTIFY_ROUTINE pRoutine = *pPspLegoNotifyRoutine;
-			Irp->AssociatedIrp.SystemBuffer = pRoutine;
+			PLEGO_NOTIFY_ROUTINE pRoutine = *(PLEGO_NOTIFY_ROUTINE*)pPspLegoNotifyRoutine;
+			*(PLEGO_NOTIFY_ROUTINE*)Irp->AssociatedIrp.SystemBuffer = pRoutine;
 			status = STATUS_SUCCESS;
 			len = sizeof(PVOID);
 			break;
