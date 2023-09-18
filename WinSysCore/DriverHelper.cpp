@@ -51,8 +51,26 @@ bool DriverHelper::InstallDriver(bool justCopy,void* pBuffer,DWORD size) {
 	::GetSystemDirectory(path, MAX_PATH);
 	::wcscat_s(path, L"\\Drivers\\AntiRootkit.sys");
 	wil::unique_hfile hFile(::CreateFile(path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_SYSTEM, nullptr));
-	if (!hFile)
+	if (!hFile) {
+		DWORD error = ::GetLastError();
+		if (error == ERROR_SHARING_VIOLATION) {
+			wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS));
+			if (!hScm)
+				return false;
+
+			wil::unique_schandle hService(::OpenService(hScm.get(), L"AntiRootkit", SERVICE_ALL_ACCESS));
+			if (!hService)
+				return false;
+
+			SERVICE_STATUS status;
+			bool success = true;
+			::QueryServiceStatus(hService.get(), &status);
+			if (status.dwCurrentState == SERVICE_RUNNING) {
+				return true;
+			}
+		}
 		return false;
+	}
 
 	DWORD bytes = 0;
 	::WriteFile(hFile.get(), pBuffer, size, &bytes, nullptr);

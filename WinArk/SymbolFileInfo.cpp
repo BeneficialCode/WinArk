@@ -31,7 +31,7 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::wstring path = localPath + L"\\" + _path.GetString();
 	std::filesystem::create_directories(path);
 
-	std::string url = "http://msdl.microsoft.com/download/symbols";
+	std::string url = "https://msdl.microsoft.com/download/symbols";
 
 	_dlg.ShowCancelButton(false);
 
@@ -195,14 +195,8 @@ SymbolFileInfo::~SymbolFileInfo() {
 
 downslib_error SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
 	try {
-		if (uri.getScheme() == "http") {
-			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
-			StreamCopier::copyStream(*pStr.get(), ostr);
-		}
-		else if (uri.getScheme() == "https") {
-			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
-			StreamCopier::copyStream(*pStr.get(), ostr);
-		}
+		std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
+		StreamCopier::copyStream(*pStr.get(), ostr);
 		return downslib_error::ok;
 	}
 	catch (Exception& exc) {
