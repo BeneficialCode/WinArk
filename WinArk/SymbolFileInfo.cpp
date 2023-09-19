@@ -77,7 +77,12 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		}, 
 		(void*)&_dlg);
 	_dlg.EndDialog(IDCANCEL);
-	return result == downslib_error::ok ? true : false;
+	bool bOk = result == downslib_error::ok ? true : false;
+	if (!bOk) {
+		MessageBox(NULL, L"Failed init symbols,\r\nWinArk will exit...\r\n", L"WinArk", MB_ICONERROR);
+		std::filesystem::remove_all(path);
+	}
+	return bOk;
 }
 
 bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry) {

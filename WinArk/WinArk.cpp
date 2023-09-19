@@ -131,8 +131,6 @@ int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 
 	::WaitForSingleObject(hThread, INFINITE);
 	if (!g_hasSymbol||NULL == hThread) {
-		AtlMessageBox(0, L"Failed init symbols,\r\nWinArk will exit...\r\n", L"WinArk", MB_ICONERROR);
-		ClearSymbols();
 		return 0;
 	}
 	::CloseHandle(hThread);
