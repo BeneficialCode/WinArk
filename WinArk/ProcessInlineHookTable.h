@@ -91,7 +91,9 @@ private:
 
 
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
-	void CheckInlineHook(uint8_t* code, size_t codeSize, uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize);
+	void CheckInlineHook(uint8_t* code, size_t codeSize,
+		uint64_t address, ULONG_PTR moduleBase,
+		SIZE_T moduleSize,bool isX64Module);
 
 	bool IsInCodeBlock(ULONG_PTR address);
 

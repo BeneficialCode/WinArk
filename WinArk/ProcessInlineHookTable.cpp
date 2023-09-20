@@ -5,6 +5,7 @@
 #include "Helpers.h"
 #include <Processes.h>
 #include "ClipboardHelper.h"
+#include <PEParser.h>
 
 
 #pragma comment(lib,"capstone.lib")
@@ -438,7 +439,7 @@ void CProcessInlineHookTable::CheckX86HookType6(cs_insn* insn, size_t j, size_t 
 	if (d2 == nullptr)
 		return;
 
-	if (d2->x86.opcode[0] != 0xE8)
+	if (d2->x86.opcode[0] != 0xEB)
 		return;
 
 	if (strcmp(insn[j + 1].mnemonic, "jmp"))
@@ -474,32 +475,223 @@ void CProcessInlineHookTable::CheckX86HookType6(cs_insn* insn, size_t j, size_t 
 	m_Table.data.info.push_back(info);
 }
 
-void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize, uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize) {
-	// 反汇编时间较长的情况下，会卡UI
-	size_t count;
-	cs_insn* insn;
-	if (_x64) {
-		count = cs_disasm(_x64handle, code, codeSize, address, 0, &insn);
-		if (count > 0) {
-			for (size_t j = 0; j < count; j++) {
-				CheckX64HookType1(insn, j, count, moduleBase, moduleSize, address, codeSize);
-				CheckX64HookType2(insn, j, count);
-				CheckX64HookType4(insn, j, count, moduleBase, moduleSize, address, codeSize);
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+
+void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize, 
+	uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize,
+	bool isX64Module) {
+	ULONG_PTR startAddr = (ULONG_PTR)code;
+	ULONG_PTR maxSearchAddr = startAddr + codeSize;
+	size_t count = 0;
+	cs_insn* insn = nullptr;
+
+	
+
+	ULONG_PTR searchAddr = startAddr;
+	UCHAR x64HookType1[] = "\x48\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc";
+	ULONG patternSize = sizeof(x64HookType1) - 1;
+	ULONG remainSize = codeSize;
+	ULONG offset = 0;
+
+	if (isX64Module) {
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x64HookType1, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x64handle, (uint8_t*)pFound, 12, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX64HookType1(insn, 0, count, moduleBase, moduleSize, address, codeSize);
+				}
 			}
-			cs_free(insn, count);
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
+		}
+
+		searchAddr = startAddr;
+		UCHAR x64HookType2[] = "\x68\xcc\xcc\xcc\xcc\xc7\x44\x24\x04\xcc\xcc\xcc\xcc";
+		patternSize = sizeof(x64HookType2) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x64HookType2, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x64handle, (uint8_t*)pFound, 16, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX64HookType2(insn, 0, count);
+				}
+			}
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
+		}
+
+		searchAddr = startAddr;
+		UCHAR x64HookType4[] = "\xe9\xcc\xcc\xcc\xcc";
+		patternSize = sizeof(x64HookType4) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x64HookType4, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x64handle, (uint8_t*)pFound, 16, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX64HookType4(insn, 0, count, moduleBase,
+						moduleSize, address, codeSize);
+				}
+			}
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
 		}
 	}
-	else {
 
-		count = cs_disasm(_x86handle, code, codeSize, address, 0, &insn);
-		if (count > 0) {
-			for (size_t j = 0; j < count; j++) {
-				CheckX86HookType1(insn, j, count, moduleBase, moduleSize);
-				CheckX86HookType2(insn, j, count);
-				CheckX86HookType3(insn, j, count);
-				CheckX86HookType6(insn, j, count);
+	if (!_x64) {
+		searchAddr = startAddr;
+		UCHAR x86HookType1[] = "\xe9\xcc\xcc\xcc\xcc";
+		patternSize = sizeof(x86HookType1) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x86HookType1, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x86handle, (uint8_t*)pFound, 5, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX86HookType1(insn, 0, count, moduleBase, moduleSize);
+				}
 			}
-			cs_free(insn, count);
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
+		}
+
+		searchAddr = startAddr;
+		UCHAR x86HookType2[] = "\x68\xcc\xcc\xcc\xcc";
+		patternSize = sizeof(x86HookType2) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x86HookType2, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x86handle, (uint8_t*)pFound, 7, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX86HookType2(insn, 0, count);
+				}
+			}
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
+		}
+
+		searchAddr = startAddr;
+		UCHAR x86HookType3[] = "\xB8\xcc\xcc\xcc\xcc\xff\xe0";
+		patternSize = sizeof(x86HookType3) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x86HookType3, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x86handle, (uint8_t*)pFound, 7, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX86HookType3(insn, 0, count);
+				}
+			}
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
+		}
+
+		searchAddr = startAddr;
+		UCHAR x86HookType6[] = "\xe9\xcc\xcc\xcc\xcc\xeb\xcc";
+		patternSize = sizeof(x86HookType6) - 1;
+		remainSize = codeSize;
+		offset = 0;
+
+		while (searchAddr <= maxSearchAddr) {
+			PVOID pFound = NULL;
+			bool find = Helpers::SearchPattern(x86HookType3, 0xCC, patternSize,
+				(void*)searchAddr, remainSize, &pFound);
+			if (find) {
+				if (pFound == NULL) {
+					ATLASSERT(FALSE);
+				}
+				searchAddr = (ULONG_PTR)pFound + patternSize;
+				offset = (ULONG_PTR)pFound - startAddr;
+				ULONG_PTR addr = address + offset;
+				count = cs_disasm(_x86handle, (uint8_t*)pFound, 7, addr,
+					0, &insn);
+				if (count > 0) {
+					CheckX86HookType6(insn, 0, count);
+				}
+			}
+			else {
+				break;
+			}
+			remainSize = maxSearchAddr - searchAddr;
 		}
 	}
 }
@@ -538,15 +730,21 @@ void CProcessInlineHookTable::Refresh() {
 			}
 			address = (ULONG_PTR)block->BaseAddress;
 			auto m = GetModuleByAddress(address);
+			bool isX64Module = true;
 			if (m != nullptr) {
 				moduleSize = m->ModuleSize;
 				moduleBase = (ULONG_PTR)m->Base;
+				PEParser parser(m->Path.c_str());
+				isX64Module = parser.IsPe64();
 			}
 			else {
 				moduleBase = 0;
 				moduleSize = 0;
 			}
-			CheckInlineHook(code, size, address, moduleBase, moduleSize);
+			
+			CheckInlineHook(code, size, address, 
+				moduleBase, moduleSize,isX64Module);
+
 			free(code);
 			code = nullptr;
 		}
@@ -578,20 +776,28 @@ void CProcessInlineHookTable::CheckX64HookType1(cs_insn* insn, size_t j, size_t 
 	if (d2 == nullptr)
 		return;
 
+	cs_insn* ins2 = &insn[j + 1];
+
 	if (d1->x86.op_count != 2)
 		return;
 
-	cs_x86_op* op1, * op2;
+	cs_x86_op* op1, * op2, * op3;
 	op1 = &(d1->x86.operands[0]);
-	op2 = &(d2->x86.operands[1]);
+	op2 = &(d2->x86.operands[0]);
+	op3 = &(d1->x86.operands[1]);
 
-	if (op1->type != x86_op_type::X86_OP_REG)
+	
+	if (op3 != nullptr)
+		if (op3->type != x86_op_type::X86_OP_IMM)
+			return;
+
+	if (op1->type != X86_OP_REG)
 		return;
 
 	if (op1->access != CS_AC_WRITE)
 		return;
 
-	if (op2->type != X86_OP_IMM)
+	if (op2->type != X86_OP_REG)
 		return;
 
 	if (op1->size != 8)
@@ -709,6 +915,7 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 
 	if (d1->x86.opcode[0] == 0xEB)
 		return;
+
 	if (d1->x86.op_count != 1)
 		return;
 	if (d1->x86.operands[0].type != CS_OP_IMM)
