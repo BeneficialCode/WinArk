@@ -988,6 +988,9 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			ULONG remainSize = pSec->Misc.VirtualSize;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
+				if (remainSize < patternSize) {
+					break;
+				}
 				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, patternSize, 
 					(void*)searchAddr, remainSize, &pFound);
 				if (NT_SUCCESS(status)) {
@@ -1016,6 +1019,9 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			remainSize = pSec->Misc.VirtualSize;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
+				if (remainSize < patternSize) {
+					break;
+				}
 				NTSTATUS status = Helpers::SearchPattern(pattern2, 0xCC, patternSize, 
 					(void*)searchAddr, remainSize, &pFound);
 				if (NT_SUCCESS(status)) {
@@ -1046,6 +1052,9 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			remainSize = pSec->Misc.VirtualSize;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
+				if (remainSize < patternSize) {
+					break;
+				}
 				NTSTATUS status = Helpers::SearchPattern(pattern3, 0xCC, patternSize, 
 					(void*)searchAddr, remainSize, &pFound);
 				if (NT_SUCCESS(status)) {

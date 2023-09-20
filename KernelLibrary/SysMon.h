@@ -72,7 +72,7 @@ typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
 struct _OB_CALLBACK_BLOCK;
 
 typedef struct _OB_CALLBACK_ENTRY {
-	LIST_ENTRY EntryItemList;
+	LIST_ENTRY CallbackList;
 	OB_OPERATION Operations;						// magic bit
 	ULONG Flags;
 	struct _OB_CALLBACK_BLOCK* RegistrationHandle;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback

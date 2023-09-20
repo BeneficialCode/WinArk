@@ -553,7 +553,7 @@ bool EnumObCallbackNotify(POBJECT_TYPE objectType,ULONG callbackListOffset,ObCal
 	nextEntry = callbackListHead->Flink;
 	int i = 0;
 	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, CallbackList);
 		if (ExAcquireRundownProtection(&callbackEntry->RundownProtect)) {
 			LogInfo("PreOperation %p, PostOperation: %p\n", callbackEntry->PreOperation, callbackEntry->PostOperation);
 			if (FlagOn(callbackEntry->Operations, OB_OPERATION_HANDLE_CREATE))
@@ -592,7 +592,7 @@ LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset) {
 	nextEntry = callbackListHead->Flink;
 
 	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, CallbackList);
 		InterlockedIncrement(&count);
 		nextEntry = nextEntry->Flink;
 	}
@@ -803,7 +803,7 @@ bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, v
 	nextEntry = callbackListHead->Flink;
 	int i = 0;
 	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, EntryItemList);
+		callbackEntry = CONTAINING_RECORD(nextEntry, OB_CALLBACK_ENTRY, CallbackList);
 		if (ExAcquireRundownProtection(&callbackEntry->RundownProtect)) {
 			if (callbackEntry->RegistrationHandle == handle) {
 				break;

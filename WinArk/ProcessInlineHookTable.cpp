@@ -496,6 +496,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 	if (isX64Module) {
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x64HookType1, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -509,6 +512,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX64HookType1(insn, 0, count, moduleBase, moduleSize, address, codeSize);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -525,6 +529,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x64HookType2, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -538,6 +545,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX64HookType2(insn, 0, count);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -554,6 +562,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x64HookType4, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -568,6 +579,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 				if (count > 0) {
 					CheckX64HookType4(insn, 0, count, moduleBase,
 						moduleSize, address, codeSize);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -586,6 +598,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x86HookType1, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -599,6 +614,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX86HookType1(insn, 0, count, moduleBase, moduleSize);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -615,6 +631,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x86HookType2, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -628,6 +647,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX86HookType2(insn, 0, count);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -644,6 +664,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x86HookType3, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -657,6 +680,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX86HookType3(insn, 0, count);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -673,6 +697,9 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 
 		while (searchAddr <= maxSearchAddr) {
 			PVOID pFound = NULL;
+			if (remainSize < patternSize) {
+				break;
+			}
 			bool find = Helpers::SearchPattern(x86HookType3, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
@@ -686,6 +713,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX86HookType6(insn, 0, count);
+					cs_free(insn, count);
 				}
 			}
 			else {
@@ -734,7 +762,8 @@ void CProcessInlineHookTable::Refresh() {
 			if (m != nullptr) {
 				moduleSize = m->ModuleSize;
 				moduleBase = (ULONG_PTR)m->Base;
-				PEParser parser(m->Path.c_str());
+				std::wstring path = m->Path;
+				PEParser parser(path.c_str());
 				isX64Module = parser.IsPe64();
 			}
 			else {
