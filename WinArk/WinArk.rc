@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -33,7 +33,7 @@ BEGIN
     CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Technology Copyright 2022",IDC_STATIC,25,57,78,38
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
     GROUPBOX        "",IDC_STATIC,7,7,115,154
-    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；CanineTooth :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；重黎；\n\n袋鼠；2st；旭酱；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
+    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；CanineTooth :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；重黎；\n\n袋鼠；2st；涡苏；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
 END
 
 
@@ -66,12 +66,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -941,12 +941,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1467,7 +1467,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
