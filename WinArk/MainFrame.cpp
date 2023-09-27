@@ -15,6 +15,7 @@
 #include "RenameKeyCommand.h"
 #include "ColorsSelectionDlg.h"
 #include "ThemeSystem.h"
+#include "IniFile.h"
 
 
 #define IDC_VIEW_PROCESS 0xDAD
@@ -319,9 +320,10 @@ void CMainFrame::InitConfigView() {
 	m_hwndArray[static_cast<int>(TabColumn::Config)] = m_SysConfigView.m_hWnd;
 }
 
-void CMainFrame::InitBypassDectectView() {
-	HWND hWnd = m_BypassView.Create(m_hWnd, rcDefault);
-	m_hwndArray[static_cast<int>(TabColumn::BypassDectect)] = m_BypassView.m_hWnd;
+void CMainFrame::InitMiscView() {
+	m_MiscView = new CMiscView(this);
+	HWND hWnd = m_MiscView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	m_hwndArray[static_cast<int>(TabColumn::Misc)] = m_MiscView->m_hWnd;
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -396,11 +398,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		L"Services",
 		L"Config",
 		L"Event Trace",
-		L"Logon Sessions",
-		L"Bypass Detect",
 		L"Explorer",
-		L"System Information",
-		L"Task Scheduler"
+		L"Misc",
 	};
 
 	int i = 0;
@@ -425,7 +424,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 
 	SetWindowLong(GWL_EXSTYLE, ::GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-	SetLayeredWindowAttributes(m_hWnd, 0xffffff, static_cast<BYTE>(255 * 1.0), LWA_ALPHA);
+	SetLayeredWindowAttributes(m_hWnd, 0xffffff, _opacity, LWA_ALPHA);
 	
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -448,11 +447,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitKernelView();
 	InitConfigView();
 	InitEtwView();
-	InitLogonSessionsView();
-	InitBypassDectectView();
+	
 	InitExplorerView();
-	InitSysInfoView();
-	InitTaskSchedView();
+	InitMiscView();
 
 	UpdateLayout();
 	UpdateUI();
@@ -547,20 +544,11 @@ LRESULT CMainFrame::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			UIAddToolBar(m_tb.m_hWnd);
 			m_pEtwView->ShowWindow(SW_SHOW);
 			break;
-		case TabColumn::LogonSession:
-			m_pLogonSessionView->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::BypassDectect:
-			m_BypassView.ShowWindow(SW_SHOW);
-			break;
 		case TabColumn::Explorer:
 			m_ExplorerView.ShowWindow(SW_SHOW);
 			break;
-		case TabColumn::SysInfo:
-			m_SysInfoView->ShowWindow(SW_SHOW);
-			break;
-		case TabColumn::TaskSchedView:
-			m_TaskSchedView.ShowWindow(SW_SHOW);
+		case TabColumn::Misc:
+			m_MiscView->ShowWindow(SW_SHOW);
 			break;
 		default:
 			break;
@@ -765,11 +753,7 @@ void CMainFrame::InitEtwView() {
 	m_hwndArray[static_cast<int>(TabColumn::Etw)] = m_pEtwView->m_hWnd;
 }
 
-void CMainFrame::InitLogonSessionsView() {
-	m_pLogonSessionView = new CLogonSessionsView(this);
-	m_pLogonSessionView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
-	m_hwndArray[static_cast<int>(TabColumn::LogonSession)] = m_pLogonSessionView->m_hWnd;
-}
+
 
 
 void CMainFrame::InitProcessToolBar(CToolBarCtrl& tb) {
@@ -880,9 +864,9 @@ LRESULT CMainFrame::OnColors(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		ThemeColor(L"辅助对象的颜色",g_myColor[Blue]),
 		ThemeColor(L"条件断点颜色",g_myColor[Magenta]),
 	};
-	CColorsSelectionDlg dlg(Colors, _countof(Colors));
+	CColorsSelectionDlg dlg(Colors, _countof(Colors),_opacity);
 	if (dlg.DoModal() == IDOK) {
-		
+		_opacity = dlg.GetOpacity();
 	}
 	return TRUE;
 }
@@ -956,6 +940,8 @@ void CMainFrame::LoadSettings(PCWSTR filename) {
 		SetColor(colors, _countof(colors));
 		InitPenSys();
 		InitBrushSys();
+		IniFile file(filename);
+		_opacity = file.ReadInt(L"Opacity", L"Value", 255);
 	}
 }
 
@@ -976,6 +962,8 @@ void CMainFrame::SaveSettings(PCWSTR filename) {
 		ThemeColor(L"条件断点颜色",g_myColor[Magenta]),
 	};
 	SaveColors(filename, L"TableColor", Colors, _countof(Colors));
+	IniFile file(filename);
+	file.WriteInt(L"Opacity", L"Value", _opacity);
 }
 
 LRESULT CMainFrame::OnEditFind(WORD, WORD, HWND, BOOL&) {
@@ -1080,15 +1068,3 @@ void CMainFrame::InitExplorerView() {
 	m_hwndArray[static_cast<int>(TabColumn::Explorer)] = m_ExplorerView.m_hWnd;
 }
 
-void CMainFrame::InitSysInfoView() {
-	m_SysInfoView = new CSysInfoView(this);
-	m_SysInfoView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	m_hwndArray[static_cast<int>(TabColumn::SysInfo)] = m_SysInfoView->m_hWnd;
-}
-
-void CMainFrame::InitTaskSchedView() {
-	m_TaskSchedView.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
-		| WS_CLIPCHILDREN);
-	m_TaskSchedView.m_MainSplitter.ShowWindow(SW_SHOW);
-	m_hwndArray[static_cast<int>(TabColumn::TaskSchedView)] = m_TaskSchedView.m_hWnd;
-}

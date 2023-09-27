@@ -504,6 +504,9 @@
     <ClCompile Include="TaskSchedView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="MiscView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1006,6 +1009,9 @@
     </ClInclude>
     <ClInclude Include="CustomSplitterWindow.h">
       <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="MiscView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

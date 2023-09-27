@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "ColorsSelectionDlg.h"
 #include "ThemeSystem.h"
+#include "IniFile.h"
 
 static WCHAR iniFileFilter[] = L"Ini files (*.ini)\0*.ini\0All File\0*.*\0";
 
-CColorsSelectionDlg::CColorsSelectionDlg(ThemeColor* colors, int count) 
-    :m_Colors(colors,colors+count),m_CountColors(count){
+CColorsSelectionDlg::CColorsSelectionDlg(ThemeColor* colors, int count,
+    int opacity) 
+    :m_Colors(colors,colors+count),m_CountColors(count),_opacity(opacity){
     ATLASSERT(colors);
 }
 
@@ -104,6 +106,8 @@ LRESULT CColorsSelectionDlg::OnSave(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
         iniFileFilter, *this);
     if (dlg.DoModal() == IDOK) {
         SaveColors(dlg.m_szFileName, L"TableColor", m_Colors.data(), m_CountColors);
+        IniFile file(dlg.m_szFileName);
+        file.WriteInt(L"Opacity", L"Value", _opacity);
     }
     return 0;
 }
@@ -154,6 +158,12 @@ LRESULT CColorsSelectionDlg::OnLoad(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
         if (LoadColors(dlg.m_szFileName, L"TableColor", m_Colors.data(), m_CountColors)) {
             SetColor();
         }
+        IniFile file(dlg.m_szFileName);
+        _opacity = file.ReadInt(L"Opacity", L"Value", 255);
     }
     return 0;
+}
+
+const int CColorsSelectionDlg::GetOpacity() const {
+    return _opacity;
 }

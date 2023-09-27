@@ -8,9 +8,11 @@ class CColorsSelectionDlg :
 public:
 	enum {IDD = IDD_COLORS};
 
-	CColorsSelectionDlg(ThemeColor* colors, int count);
+	CColorsSelectionDlg(ThemeColor* colors, int count,int opacity);
 
 	const ThemeColor* GetColors() const;
+
+	const int GetOpacity() const;
 
 	BEGIN_MSG_MAP(CColorsSelectionDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
