@@ -252,6 +252,7 @@
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
     <ClInclude Include="FilterFileNameInformation.h" />
+    <ClInclude Include="HashTable.h" />
     <ClInclude Include="IoTimer.h" />
     <ClInclude Include="KernelTimer.h" />
     <ClInclude Include="ExecutiveResource.h" />
@@ -305,6 +306,7 @@
     <ClCompile Include="DevMonManager.cpp" />
     <ClCompile Include="disasm.cpp" />
     <ClCompile Include="FilterFileNameInformation.cpp" />
+    <ClCompile Include="HashTable.cpp" />
     <ClCompile Include="IoTimer.cpp" />
     <ClCompile Include="KernelTimer.cpp" />
     <ClCompile Include="ExecutiveResource.cpp" />

@@ -195,6 +195,9 @@
     <ClInclude Include="ProcessNetFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HashTable.h">
+      <Filter>ktl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -331,6 +334,9 @@
     </ClCompile>
     <ClCompile Include="ProcessNetFilter.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HashTable.cpp">
+      <Filter>ktl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

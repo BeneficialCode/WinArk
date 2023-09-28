@@ -1089,6 +1089,6 @@ bool StopLogDriverHash() {
 	status = DetourTransactionCommit();
 	if (!NT_SUCCESS(status))
 		return false;
-
+	
 	return true;
 }
