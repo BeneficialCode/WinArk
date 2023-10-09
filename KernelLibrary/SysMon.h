@@ -74,13 +74,14 @@ struct _OB_CALLBACK_BLOCK;
 typedef struct _OB_CALLBACK_ENTRY {
 	LIST_ENTRY CallbackList;
 	OB_OPERATION Operations;						// 1 for Creations, 2 for Duplications
-	ULONG Flags;
+	BOOL Enabled;
 	struct _OB_CALLBACK_BLOCK* RegistrationHandle;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
 	POB_PRE_OPERATION_CALLBACK PreOperation;
 	POB_POST_OPERATION_CALLBACK PostOperation;
 	EX_RUNDOWN_REF RundownProtect;
 }OB_CALLBACK_ENTRY, * POB_CALLBACK_ENTRY;
+
 
 
 // x86 0x10	0x24	16	36
