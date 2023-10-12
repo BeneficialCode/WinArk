@@ -405,23 +405,23 @@ ULONG DriverHelper::GetImageNotifyCount(PULONG* pCount) {
 	return count;
 }
 
-ULONG DriverHelper::GetPiDDBCacheDataSize(ULONG_PTR Address) {
+ULONG DriverHelper::GetPiDDBCacheDataSize(ULONG_PTR addr) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
 	DWORD size = 0;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE, &Address, sizeof(ULONG_PTR),
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_PIDDBCACHE_DATA_SIZE, &addr, sizeof(ULONG_PTR),
 		&size, sizeof(DWORD), &bytes, nullptr);
 	return size;
 }
 
-bool DriverHelper::EnumPiDDBCacheTable(ULONG_PTR Address,PVOID buffer,ULONG size) {
+bool DriverHelper::EnumPiDDBCacheTable(ULONG_PTR addr,PVOID buffer,ULONG size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PIDDBCACHE_TABLE, &Address, sizeof(ULONG_PTR),
+	::DeviceIoControl(_hDevice, IOCTL_ARK_ENUM_PIDDBCACHE_TABLE, &addr, sizeof(ULONG_PTR),
 		buffer, size, &bytes, nullptr);
 	return true;
 }
@@ -458,23 +458,23 @@ ULONG DriverHelper::GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo) {
 	return size;
 }
 
-bool DriverHelper::EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size) {
+bool DriverHelper::EnumObCallbackNotify(ULONG offset,ObCallbackInfo* pCallbackInfo,ULONG size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
-	::DeviceIoControl(_hDevice,IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY, pNotifyInfo, sizeof(NotifyInfo),
+	::DeviceIoControl(_hDevice,IOCTL_ARK_ENUM_OBJECT_CALLBACK, &offset, sizeof(ULONG),
 		pCallbackInfo, size, &bytes, nullptr);
 	return true;
 }
 
-LONG DriverHelper::GetObCallbackCount(KernelNotifyInfo* pNotifyInfo) {
+LONG DriverHelper::GetObCallbackCount(ULONG offset) {
 	if (!OpenDevice())
 		return 0;
 
 	DWORD bytes;
 	LONG count = 0;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT, pNotifyInfo, sizeof(NotifyInfo),
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_OBJECT_CALLBACK_COUNT, &offset, sizeof(offset),
 		&count, sizeof(LONG), &bytes, nullptr);
 	return count;
 }
@@ -759,4 +759,31 @@ bool DriverHelper::GetLegoNotifyRoutine(void* pPspLegoNotifyRoutine, void* pRout
 	DWORD bytes;
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_GET_LEGO_NOTIFY_ROUTINE, pPspLegoNotifyRoutine, sizeof(PVOID),
 		pRoutine, sizeof(PVOID), &bytes, nullptr);
+}
+
+bool DriverHelper::RemoveObCallback(ULONG_PTR addr) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_REMOVE_OB_CALLBACK, &addr, sizeof(ULONG_PTR),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::DisableObCallback(ULONG_PTR addr) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DISABLE_OB_CALLBACK, &addr, sizeof(ULONG_PTR),
+		nullptr, 0, &bytes, nullptr);
+}
+
+bool DriverHelper::EnableObCallback(ULONG_PTR addr) {
+	if (!OpenDevice())
+		return false;
+
+	DWORD bytes;
+	return ::DeviceIoControl(_hDevice, IOCTL_ARK_ENABLE_OB_CALLBACK, &addr, sizeof(ULONG_PTR),
+		nullptr, 0, &bytes, nullptr);
 }

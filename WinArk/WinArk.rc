@@ -848,6 +848,18 @@ BEGIN
         MENUITEM "Copy",                        ID_KERNEL_INLINEHOOK_COPY
         MENUITEM "Export",                      ID_KERNEL_INLINEHOOK_EXPORT
     END
+    POPUP "objectcallback"
+    BEGIN
+        MENUITEM "Enable",                      ID_OB_CALLBACK_ENABLE
+        MENUITEM "Disable",                     ID_OB_CALLBACK_DISABLE
+        MENUITEM SEPARATOR
+        MENUITEM "Remove",                      ID_OB_CALLBACK_REMOVE
+        MENUITEM "Remove by Company Name",      ID_OB_CALLBACK_REMOVE_BY_NAME
+        MENUITEM SEPARATOR
+        MENUITEM "Copy",                        ID_OB_CALLBACK_COPY
+        MENUITEM "Export",                      ID_OB_CALLBACK_EXPORT
+        MENUITEM "Refresh",                     ID_OB_CALLBACK_REFRESH
+    END
 END
 
 IDR_SCYLLA_CONTEXT MENU

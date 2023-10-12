@@ -1,30 +1,30 @@
 #pragma once
 #include "Table.h"
 #include "resource.h"
+#include "DriverHelper.h"
 
-enum class CallbackType {
-	CreateProcessNotify,CreateThreadNotify,LoadImageNotify,
-	RegistryNotify,LegoNotify,
-};
 
-struct CallbackInfo {
-	void* Routine;
-	CallbackType Type;
-	std::string Module;
+struct ObjectCallbackInfo {
+	void* RegistrationHandle;
+	void* CallbackEntry;
+	ObjectCallbackType Type;
+	bool Enabled;
+	void* PreOperation;
+	void* PostOperation;
+	ULONG Operations;
 	std::wstring Company;
-	void* Address;
-	LARGE_INTEGER Cookie;
+	std::string Module;
 };
 
-class CKernelNotifyTable :
-	public CTable<CallbackInfo>,
-	public CWindowImpl<CKernelNotifyTable> {
+class CObjectCallbackTable :
+	public CTable<ObjectCallbackInfo>,
+	public CWindowImpl<CObjectCallbackTable> {
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CKernelNotifyTable(BarInfo& bars, TableInfo& table);
-	int ParseTableEntry(CString& s, char& mask, int& select, CallbackInfo& info, int column);
-	bool CompareItems(const CallbackInfo& s1, const CallbackInfo& s2, int col, bool asc);
+	CObjectCallbackTable(BarInfo& bars, TableInfo& table);
+	int ParseTableEntry(CString& s, char& mask, int& select, ObjectCallbackInfo& info, int column);
+	bool CompareItems(const ObjectCallbackInfo& s1, const ObjectCallbackInfo& s2, int col, bool asc);
 
 	BEGIN_MSG_MAP(CKernelNotifyTable)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
@@ -44,11 +44,13 @@ public:
 		MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
-		COMMAND_ID_HANDLER(ID_KERNEL_REFRESH,OnRefresh)
-		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE,OnRemove)
-		COMMAND_ID_HANDLER(ID_NOTIFY_COPY,OnNotifyCopy)
-		COMMAND_ID_HANDLER(ID_NOTIFY_EXPORT, OnNotifyExport)
-		COMMAND_ID_HANDLER(ID_KERNEL_REMOVE_BY_NAME,OnRemoveByCompanyName)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_REFRESH, OnRefresh)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_REMOVE, OnRemove)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_ENABLE,OnEnable)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_DISABLE,OnDisable)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_COPY, OnCopy)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_EXPORT, OnExport)
+		COMMAND_ID_HANDLER(ID_OB_CALLBACK_REMOVE_BY_NAME,OnRemoveByCompanyName)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -69,18 +71,21 @@ public:
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDisable(WORD, WORD, HWND, BOOL&);
+	LRESULT OnEnable(WORD, WORD, HWND, BOOL&);
 	LRESULT OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRemoveByCompanyName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCopy(WORD, WORD, HWND, BOOL&);
+	LRESULT OnExport(WORD, WORD, HWND, BOOL&);
 
+	enum class ObCallbackColumn {
+		CallbackEntry,RegisterarionHandle,Type,Enabled,PreOperation,PostOperation,Opeartions,Company,ModuleName
+	};
 
-
-	LRESULT OnNotifyCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnNotifyExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	std::wstring GetCompanyName(std::wstring path);
-
+	PCWSTR TypeToString(ObjectCallbackType type);
+	CString DecodeOperations(ULONG operations);
 private:
 	void Refresh();
 
-	std::wstring GetSingleNotifyInfo(CallbackInfo& info);
+	std::wstring GetSingleInfo(ObjectCallbackInfo& info);
 };

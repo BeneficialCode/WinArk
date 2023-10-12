@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -434,13 +434,31 @@
 #define ID_TASK_DELETE                  32993
 #define ID_TASK_PROPERTIES              32994
 #define ID_TASK_ENABLE                  32995
+#define ID_OBJECTCALLBACK_REMOVE        32996
+#define ID_OBJECTCALLBACK_ENABLE        32997
+#define ID_OBJECTCALLBACK_DISABLE       32998
+#define ID_OBJECTCALLBACK_REMOVEBYCOMPANYNAME 32999
+#define ID_OBJECTCALLBACK_COPY          33000
+#define ID_OBJECTCALLBACK_EXPORT        33001
+#define ID_OBJECTCALLBACK_REMOVE_BY_NAME 33002
+#define ID_OBJ_CALLBACK_ENABLE          33003
+#define ID_OBJ_CALLBACK_DISABLE         33004
+#define ID_OBJ_CALLBACK_REMOVE          33005
+#define ID_OB_CALLBACK_REMOVE_BY_NAME   33006
+#define ID_OB_CALLBACK_REMOVE           33007
+#define ID_OB_CALLBACK_DISABLE          33008
+#define ID_OB_CALLBACK_ENABLE           33009
+#define ID_OB_CALLBACK_COPY             33010
+#define ID_OB_CALLBACK_EXPORT           33011
+#define ID_OBJECTCALLBACK_REFRESH       33012
+#define ID_OB_CALLBACK_REFRESH          33013
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        294
-#define _APS_NEXT_COMMAND_VALUE         32996
+#define _APS_NEXT_COMMAND_VALUE         33014
 #define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

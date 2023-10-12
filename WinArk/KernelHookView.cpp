@@ -20,10 +20,11 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	}columns[] = {
 		L"SSDT",
 		L"Shadow SSDT",
-		L"Kernel Notifications",
+		L"Notify Routine",
 		L"MiniFilter",
 		L"WFP Filter",
-		L"Inline Hook"
+		L"Inline Hook",
+		L"Object Callback"
 	};
 
 	int i = 0;
@@ -37,6 +38,7 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitMiniFilterTable();
 	InitWFPFilterTable();
 	InitInlineHookTable();
+	InitObCallbackTable();
 
 	return 0;
 }
@@ -219,7 +221,7 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_ShadowSSDTHookTable->ShowWindow(SW_SHOW);
 			m_ShadowSSDTHookTable->SetFocus();
 			break;
-		case TabColumn::ObjectCallback:
+		case TabColumn::NotifyRoutine:
 			m_KernelNotifyTable->ShowWindow(SW_SHOW);
 			m_KernelNotifyTable->SetFocus();
 			break;
@@ -234,6 +236,10 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::InlineHook:
 			m_InlineHookTable->ShowWindow(SW_SHOW);
 			m_InlineHookTable->SetFocus();
+			break;
+		case TabColumn::ObjectCallback:
+			m_ObjectCallbackTable->ShowWindow(SW_SHOW);
+			m_ObjectCallbackTable->SetFocus();
 			break;
 	}
 	_index = index;
@@ -270,7 +276,7 @@ void CKernelHookView::InitKernelNotifyTable() {
 	rect.top += height;
 	rect.bottom -= height;
 	m_KernelNotifyTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	m_hwndArray[static_cast<int>(TabColumn::ObjectCallback)] = m_KernelNotifyTable->m_hWnd;
+	m_hwndArray[static_cast<int>(TabColumn::NotifyRoutine)] = m_KernelNotifyTable->m_hWnd;
 	m_KernelNotifyTable->ShowWindow(SW_HIDE);
 }
 
@@ -309,4 +315,45 @@ void CKernelHookView::InitInlineHookTable() {
 	width = rect.right - rect.left - 2 * iHorizontalUnit;
 	m_hwndArray[static_cast<int>(TabColumn::InlineHook)] = m_InlineHookTable->m_hWnd;
 	m_InlineHookTable->ShowWindow(SW_HIDE);
+}
+
+void CKernelHookView::InitObCallbackTable() {
+	BarDesc bars[] = {
+		{22,"Callback Entry",0},
+		{22,"Registration Handle",0},
+		{18,"Object Type",0},
+		{10,"Enabled",0},
+		{22,"PreOperation",0},
+		{22,"PostOperation",0},
+		{36,"Operations",0},
+		{25,"Company Name",0},
+		{260,"Module",0},
+	};
+
+	TableInfo table = {
+		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
+	};
+
+	BarInfo info;
+	info.nbar = _countof(bars);
+	info.font = 9;
+	for (int i = 0; i < info.nbar; i++) {
+		info.bar[i].defdx = bars[i].defdx;
+		info.bar[i].mode = bars[i].mode;
+		info.bar[i].name = bars[i].name;
+	}
+
+
+	m_ObjectCallbackTable = new CObjectCallbackTable(info, table);
+
+	RECT rect;
+	GetClientRect(&rect);
+	m_ObjectCallbackTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
+	int iHorizontalUnit = LOWORD(GetDialogBaseUnits());
+	int iVerticalUnit = HIWORD(GetDialogBaseUnits());
+	int width, height;
+	height = rect.bottom - rect.top - 3 * iHorizontalUnit;
+	width = rect.right - rect.left - 2 * iHorizontalUnit;
+	m_hwndArray[static_cast<int>(TabColumn::ObjectCallback)] = m_ObjectCallbackTable->m_hWnd;
+	m_ObjectCallbackTable->ShowWindow(SW_HIDE);
 }

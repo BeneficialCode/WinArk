@@ -507,6 +507,9 @@
     <ClCompile Include="MiscView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectCallbackTable.cpp">
+      <Filter>Table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1012,6 +1015,9 @@
     </ClInclude>
     <ClInclude Include="MiscView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectCallbackTable.h">
+      <Filter>Table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

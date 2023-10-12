@@ -32,8 +32,8 @@ struct DriverHelper final {
 	static bool EnumUnloadedDrivers(UnloadedDriversInfo* pInfo,PVOID buffer,ULONG size);
 	static ULONG GetPiDDBCacheDataSize(ULONG_PTR Address);
 	static ULONG GetUnloadedDriverDataSize(UnloadedDriversInfo* pInfo);
-	static bool EnumObCallbackNotify(KernelNotifyInfo* pNotifyInfo,ObCallbackInfo* pCallbackInfo,ULONG size);
-	static LONG GetObCallbackCount(KernelNotifyInfo* pNotifyInfo);
+	static bool EnumObCallbackNotify(ULONG offset,ObCallbackInfo* pCallbackInfo,ULONG size);
+	static LONG GetObCallbackCount(ULONG offset);
 	static ULONG GetCmCallbackCount(PULONG* pCount);
 	static ULONG GetIoTimerCount(PULONG* pCount);
 	static bool EnumCmCallbackNotify(PVOID pHeadList, CmCallbackInfo* pCallbackInfo,ULONG size);
@@ -76,6 +76,9 @@ struct DriverHelper final {
 	static bool StopLogDriverHash();
 
 	static bool GetLegoNotifyRoutine(void* pPspLegoNotifyRoutine, void* pRoutine);
+	static bool RemoveObCallback(ULONG_PTR addr);
+	static bool DisableObCallback(ULONG_PTR addr);
+	static bool EnableObCallback(ULONG_PTR addr);
 private:
 	static bool OpenDevice();
 

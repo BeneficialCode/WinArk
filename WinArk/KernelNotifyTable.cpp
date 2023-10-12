@@ -119,28 +119,12 @@ int CKernelNotifyTable::ParseTableEntry(CString& s, char& mask, int& select, Cal
 					s = L"LoadImage";
 					break;
 
-				case CallbackType::ProcessObPostOperationNotify:
-					s = L"Process ObPostOperation";
-					break;
-
-				case CallbackType::ProcessObPreOperationNotify:
-					s = L"Process ObPreOperation";
-					break;
-
-				case CallbackType::ThreadObPostOperationNotify:
-					s = L"Thread ObPostOperation";
-					break;
-
-				case CallbackType::ThreadObPreOperationNotify:
-					s = L"Thread ObPreOperation";
-					break;
-
 				case CallbackType::RegistryNotify:
-					s = L"Registry Notify";
+					s = L"Registry";
 					break;
 
 				case CallbackType::LegoNotify:
-					s = L"Lego Notify";
+					s = L"Lego";
 					break;
 			}
 			break;
@@ -206,74 +190,6 @@ void CKernelNotifyTable::Refresh() {
 				m_Table.data.info.push_back(std::move(info));
 			}
 		}
-	}
-
-	ULONG offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-	KernelNotifyInfo notifyInfo;
-	notifyInfo.Type = NotifyType::ProcessObjectNotify;
-	notifyInfo.Offset = offset;
-	count = DriverHelper::GetObCallbackCount(&notifyInfo);
-	if (count > 0) {
-		ULONG size = Max * sizeof(ObCallbackInfo);
-		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
-
-		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
-		if (p != nullptr) {
-			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
-			for (ULONG i = 0; i < count; i++) {
-				CallbackInfo info;
-				info.Routine = p[i].PostOperation;
-				info.Type = CallbackType::ProcessObPostOperationNotify;
-				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-				std::wstring path = Helpers::StringToWstring(info.Module);
-				info.Company = GetCompanyName(path);
-				info.Address = p[i].RegistrationHandle;
-				m_Table.data.info.push_back(std::move(info));
-
-				info.Routine = p[i].PreOperation;
-				info.Type = CallbackType::ProcessObPreOperationNotify;
-				info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-				path = Helpers::StringToWstring(info.Module);
-				info.Company = GetCompanyName(path);
-				info.Address = p[i].RegistrationHandle;
-				m_Table.data.info.push_back(std::move(info));
-			}
-		}
-	}
-
-
-	notifyInfo.Type = NotifyType::ThreadObjectNotify;
-	count = DriverHelper::GetObCallbackCount(&notifyInfo);
-	if (count > 0) {
-		ULONG size = Max * sizeof(ObCallbackInfo);
-		wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE));
-		ObCallbackInfo* p = (ObCallbackInfo*)buffer.get();
-		if (p != nullptr) {
-			DriverHelper::EnumObCallbackNotify(&notifyInfo, p, size);
-			for (ULONG i = 0; i < count; i++) {
-				if (p[i].PostOperation) {
-					CallbackInfo info;
-					info.Routine = p[i].PostOperation;
-					info.Type = CallbackType::ThreadObPostOperationNotify;
-					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path = Helpers::StringToWstring(info.Module);
-					info.Company = GetCompanyName(path);
-					info.Address = p[i].RegistrationHandle;
-					m_Table.data.info.push_back(std::move(info));
-				}
-				if (p[i].PreOperation) {
-					CallbackInfo info;
-					info.Routine = p[i].PreOperation;
-					info.Type = CallbackType::ThreadObPreOperationNotify;
-					info.Module = Helpers::GetKernelModuleByAddress((ULONG_PTR)info.Routine);
-					std::wstring path = Helpers::StringToWstring(info.Module);
-					info.Company = GetCompanyName(path);
-					info.Address = p[i].RegistrationHandle;
-					m_Table.data.info.push_back(std::move(info));
-				}
-			}
-		}
-
 	}
 
 	count = 0;
@@ -429,27 +345,6 @@ LRESULT CKernelNotifyTable::OnRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			data.Type = NotifyType::LoadImageNotify;
 			break;
 
-		case CallbackType::ProcessObPostOperationNotify:
-		case CallbackType::ProcessObPreOperationNotify:
-			data.Type = NotifyType::ProcessObjectNotify;
-			data.Address = p.Address;
-			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-			if (data.Offset == -1) {
-				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
-				return 0;
-			}
-			break;
-		case CallbackType::ThreadObPostOperationNotify:
-		case CallbackType::ThreadObPreOperationNotify:
-			data.Type = NotifyType::ThreadObjectNotify;
-			data.Address = p.Address;
-			data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-			if (data.Offset == -1) {
-				AtlMessageBox(*this, L"Please delete the ntoskrnl.pdb, then launch the WinArk again", IDS_TITLE, MB_ICONWARNING | MB_OK | MB_DEFBUTTON2);
-				return 0;
-			}
-			break;
-
 		case CallbackType::RegistryNotify:
 			data.Type = NotifyType::RegistryNotify;
 			data.Cookie = p.Cookie;
@@ -499,18 +394,6 @@ LRESULT CKernelNotifyTable::OnRemoveByCompanyName(WORD /*wNotifyCode*/, WORD /*w
 				data.Type = NotifyType::LoadImageNotify;
 				break;
 
-			case CallbackType::ProcessObPostOperationNotify:
-			case CallbackType::ProcessObPreOperationNotify:
-				data.Type = NotifyType::ProcessObjectNotify;
-				data.Address = p.Address;
-				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-				break;
-			case CallbackType::ThreadObPostOperationNotify:
-			case CallbackType::ThreadObPreOperationNotify:
-				data.Type = NotifyType::ThreadObjectNotify;
-				data.Address = p.Address;
-				data.Offset = SymbolHelper::GetKernelStructMemberOffset("_OBJECT_TYPE", "CallbackList");
-				break;
 
 			case CallbackType::RegistryNotify:
 				data.Type = NotifyType::RegistryNotify;
@@ -556,24 +439,8 @@ std::wstring CKernelNotifyTable::GetSingleNotifyInfo(CallbackInfo& info) {
 			s = L"LoadImage";
 			break;
 
-		case CallbackType::ProcessObPostOperationNotify:
-			s = L"Process ObPostOperation";
-			break;
-
-		case CallbackType::ProcessObPreOperationNotify:
-			s = L"Process ObPreOperation";
-			break;
-
-		case CallbackType::ThreadObPostOperationNotify:
-			s = L"Thread ObPostOperation";
-			break;
-
-		case CallbackType::ThreadObPreOperationNotify:
-			s = L"Thread ObPreOperation";
-			break;
-
 		case CallbackType::RegistryNotify:
-			s = L"Registry Notify";
+			s = L"Registry";
 			break;
 	}
 	s += L"\t";

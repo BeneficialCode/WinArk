@@ -986,35 +986,23 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
-		case IOCTL_ARK_ENUM_OBJECT_CALLBACK_NOTIFY:
+		case IOCTL_ARK_ENUM_OBJECT_CALLBACK:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			
-			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
-			POBJECT_TYPE pObjectType = nullptr;
-			switch (pInfo->Type) {
-				case NotifyType::ProcessObjectNotify:
-					pObjectType = *PsProcessType;
-					break;
-
-				case NotifyType::ThreadObjectNotify:
-					pObjectType = *PsThreadType;
-					break;
-			}
-			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+			ULONG offset = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			LONG count = GetObCallbackCount(offset);
 			if (dic.OutputBufferLength < sizeof(ObCallbackInfo) * count) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			
-			bool success = EnumObCallbackNotify(pObjectType, pInfo->Offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
+			bool success = EnumObCallbackNotify(offset,(ObCallbackInfo*)Irp->AssociatedIrp.SystemBuffer);
 			if (success) {
 				len = dic.OutputBufferLength;
 				status = STATUS_SUCCESS;
@@ -1022,32 +1010,22 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
-		case IOCTL_ARK_GET_OBJECT_CALLBACK_NOTIFY_COUNT:
+		case IOCTL_ARK_GET_OBJECT_CALLBACK_COUNT:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
-			if (dic.InputBufferLength < sizeof(KernelNotifyInfo)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
 			if (dic.OutputBufferLength < sizeof(LONG)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			KernelNotifyInfo* pInfo = (KernelNotifyInfo*)Irp->AssociatedIrp.SystemBuffer;
-			POBJECT_TYPE pObjectType = nullptr;
-			switch (pInfo->Type) {
-				case NotifyType::ProcessObjectNotify:
-					pObjectType = *PsProcessType;
-					break;
-
-				case NotifyType::ThreadObjectNotify:
-					pObjectType = *PsThreadType;
-					break;
-			}
-			LONG count = GetObCallbackCount(pObjectType, pInfo->Offset);
+			ULONG offset = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			LONG count = GetObCallbackCount(offset);
 			*(LONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(LONG);
 			status = STATUS_SUCCESS;
@@ -1755,6 +1733,57 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			*(PLEGO_NOTIFY_ROUTINE*)Irp->AssociatedIrp.SystemBuffer = pRoutine;
 			status = STATUS_SUCCESS;
 			len = sizeof(PVOID);
+			break;
+		}
+		case IOCTL_ARK_REMOVE_OB_CALLBACK:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			POB_CALLBACK_ENTRY pCallbackEntry = *(POB_CALLBACK_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+			bool success = RemoveObCallbackNotify(pCallbackEntry);
+			if (success) {
+				status = STATUS_SUCCESS;
+			}
+			else
+				status = STATUS_UNSUCCESSFUL;
+			break;
+		}
+
+		case IOCTL_ARK_DISABLE_OB_CALLBACK:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			POB_CALLBACK_ENTRY pCallbackEntry = *(POB_CALLBACK_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+			DisableObCallbackNotify(pCallbackEntry);
+			status = STATUS_SUCCESS;
+			break;
+		}
+
+		case IOCTL_ARK_ENABLE_OB_CALLBACK:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			POB_CALLBACK_ENTRY pCallbackEntry = *(POB_CALLBACK_ENTRY*)Irp->AssociatedIrp.SystemBuffer;
+			EnableObCallbackNotify(pCallbackEntry);
+			status = STATUS_SUCCESS;
 			break;
 		}
 	}

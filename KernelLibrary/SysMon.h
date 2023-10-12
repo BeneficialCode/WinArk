@@ -74,7 +74,7 @@ struct _OB_CALLBACK_BLOCK;
 typedef struct _OB_CALLBACK_ENTRY {
 	LIST_ENTRY CallbackList;
 	OB_OPERATION Operations;						// 1 for Creations, 2 for Duplications
-	BOOL Enabled;
+	BOOLEAN Enabled;
 	struct _OB_CALLBACK_BLOCK* RegistrationHandle;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
 	POB_PRE_OPERATION_CALLBACK PreOperation;
@@ -128,9 +128,9 @@ void OnImageLoadNotify(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
 NTSTATUS OnRegistryNotify(PVOID context, PVOID arg1, PVOID arg2);
 
 bool EnumSystemNotify(PEX_CALLBACK callback, ULONG count,KernelCallbackInfo* info);
-bool EnumObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset,ObCallbackInfo* info);
-LONG GetObCallbackCount(POBJECT_TYPE objectType, ULONG callbackListOffset);
-bool RemoveObCallbackNotify(POBJECT_TYPE objectType, ULONG callbackListOffset, void* handle);
+bool EnumObCallbackNotify(ULONG callbackListOffset,ObCallbackInfo* info);
+LONG GetObCallbackCount(ULONG callbackListOffset);
+bool RemoveObCallbackNotify(POB_CALLBACK_ENTRY pCallbackEntry);
 
 bool EnumRegistryNotify(PLIST_ENTRY pListHead, CmCallbackInfo* info);
 
@@ -209,3 +209,6 @@ bool EnableDriverLoad();
 
 bool StartLogDriverHash(CiSymbols* pSym);
 bool StopLogDriverHash();
+
+void DisableObCallbackNotify(POB_CALLBACK_ENTRY pCallbackEntry);
+void EnableObCallbackNotify(POB_CALLBACK_ENTRY pCallbackEntry);

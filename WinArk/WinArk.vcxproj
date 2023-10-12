@@ -261,6 +261,7 @@
     <ClCompile Include="KernelEATHookTable.cpp" />
     <ClCompile Include="KernelInlineHookTable.cpp" />
     <ClCompile Include="MiscView.cpp" />
+    <ClCompile Include="ObjectCallbackTable.cpp" />
     <ClCompile Include="ProcessATHookDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
@@ -425,6 +426,7 @@
     <ClInclude Include="KernelEATHookTable.h" />
     <ClInclude Include="KernelInlineHookTable.h" />
     <ClInclude Include="MiscView.h" />
+    <ClInclude Include="ObjectCallbackTable.h" />
     <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />

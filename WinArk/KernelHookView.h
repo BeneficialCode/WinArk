@@ -5,6 +5,7 @@
 #include "MiniFilterTable.h"
 #include "WFPFilterTable.h"
 #include "KernelInlineHookTable.h"
+#include "ObjectCallbackTable.h"
 
 
 class CKernelHookView:
@@ -32,9 +33,10 @@ public:
 	void InitMiniFilterTable();
 	void InitWFPFilterTable();
 	void InitInlineHookTable();
+	void InitObCallbackTable();
 
 	enum class TabColumn : int {
-		SSDT,ShadowSSDT,ObjectCallback,MiniFilter,WFPFilter,InlineHook
+		SSDT,ShadowSSDT,NotifyRoutine,MiniFilter,WFPFilter,InlineHook,ObjectCallback
 	};
 private:
 	// 动态创建出来的控件
@@ -46,6 +48,7 @@ private:
 	CMiniFilterTable* m_MiniFilterTable{ nullptr };
 	CWFPFilterTable* m_WFPFilterTable{ nullptr };
 	CKernelInlineHookTable* m_InlineHookTable{ nullptr };
+	CObjectCallbackTable* m_ObjectCallbackTable{ nullptr };
 	HWND m_hwndArray[16];
 	int _index = 0;
 };
