@@ -4,6 +4,7 @@
 #include <ProcessVMTracker.h>
 #include <ProcessModuleTracker.h>
 #include <capstone/capstone.h>
+#include <PEParser.h>
 
 enum class HookType {
 	x64HookType1,x64HookType2,x64HookType3,x64HookType4,
@@ -16,6 +17,7 @@ struct InlineHookInfo {
 	ULONG_PTR Address;
 	ULONG_PTR TargetAddress;
 	std::wstring TargetModule;
+	std::vector<uint8_t> OriginalCode;
 };
 
 class CProcessInlineHookTable :
@@ -88,6 +90,10 @@ private:
 	void CheckX86HookType2(cs_insn* insn, size_t j, size_t count);
 	void CheckX86HookType3(cs_insn* insn, size_t j, size_t count);
 	void CheckX86HookType6(cs_insn* insn, size_t j, size_t count);
+
+	bool CheckCode(ULONG_PTR addr, SIZE_T size);
+	void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
+
 
 
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);

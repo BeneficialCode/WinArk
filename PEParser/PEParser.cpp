@@ -400,3 +400,35 @@ ULONG PEParser::GetEAT() const {
 	ULONG eat = data->AddressOfFunctions;
 	return eat;
 }
+
+DWORD PEParser::GetImageSize() const {
+	return IsPe64() ? GetOptionalHeader64().SizeOfImage : GetOptionalHeader32().SizeOfImage;
+}
+
+DWORD PEParser::GetHeadersSize() const {
+	return IsPe64() ? GetOptionalHeader64().SizeOfHeaders : GetOptionalHeader32().SizeOfHeaders;
+}
+
+std::vector<RelocInfo> PEParser::GetRelocs(void* image_base) {
+	std::vector<RelocInfo> relocs;
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_BASERELOC);
+	DWORD reloc_va = dir->VirtualAddress;
+	if (!reloc_va)
+		return {};
+
+	auto current_base_relocation = reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<uint64_t>(image_base) + reloc_va);
+	const auto reloc_end = reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<uint64_t>(current_base_relocation) + dir->Size);
+	
+	while (current_base_relocation < reloc_end && current_base_relocation->SizeOfBlock) {
+		RelocInfo reloc_info;
+
+		reloc_info.address = reinterpret_cast<uint64_t>(image_base) + current_base_relocation->VirtualAddress;
+		reloc_info.item = reinterpret_cast<uint16_t*>(reinterpret_cast<uint64_t>(current_base_relocation) + sizeof(IMAGE_BASE_RELOCATION));
+		reloc_info.count = (current_base_relocation->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(uint16_t);
+		relocs.push_back(reloc_info);
+
+		current_base_relocation = reinterpret_cast<PIMAGE_BASE_RELOCATION>(reinterpret_cast<uint64_t>(current_base_relocation) + current_base_relocation->SizeOfBlock);
+	}
+
+	return relocs;
+}

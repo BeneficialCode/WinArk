@@ -55,6 +55,9 @@ extern CAppModule _Module;
 #include <algorithm>
 #include <map>
 #include <format>
+#include <filesystem>
+#include <fstream>
+#include <vector>
 
 #include <tdh.h>
 #include <evntcons.h>
