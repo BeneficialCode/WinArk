@@ -12,6 +12,7 @@ PEParser::PEParser(const wchar_t* path) :_path(path) {
 	_hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (_hFile == INVALID_HANDLE_VALUE)
 		return;
+	::GetFileSizeEx(_hFile, &_fileSize);
 	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
 	if (!_hMemMap)
 		return;
@@ -431,4 +432,8 @@ std::vector<RelocInfo> PEParser::GetRelocs(void* image_base) {
 	}
 
 	return relocs;
+}
+
+LARGE_INTEGER PEParser::GetFileSize() const {
+	return _fileSize;
 }

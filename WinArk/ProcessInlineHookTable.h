@@ -84,14 +84,15 @@ private:
 		ULONG_PTR base, size_t size);
 	void CheckX64HookType2(cs_insn* insn, size_t j, size_t count);
 	void CheckX64HookType4(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
-		ULONG_PTR base, size_t size);
+		ULONG_PTR base, size_t size, bool isCheckCode, PBYTE pMem);
 
-	void CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize);
+	void CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize,
+		bool isCheckCode, PBYTE pMem);
 	void CheckX86HookType2(cs_insn* insn, size_t j, size_t count);
 	void CheckX86HookType3(cs_insn* insn, size_t j, size_t count);
 	void CheckX86HookType6(cs_insn* insn, size_t j, size_t count);
 
-	bool CheckCode(ULONG_PTR addr, SIZE_T size);
+	bool CheckCode(ULONG_PTR addr, SIZE_T size, ULONG_PTR imageBase, ULONG imageSize, PBYTE pMem);
 	void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
 
 
@@ -99,7 +100,7 @@ private:
 	std::shared_ptr<WinSys::ModuleInfo> GetModuleByAddress(ULONG_PTR address);
 	void CheckInlineHook(uint8_t* code, size_t codeSize,
 		uint64_t address, ULONG_PTR moduleBase,
-		SIZE_T moduleSize,bool isX64Module);
+		SIZE_T moduleSize, bool isX64Module, bool isCheckCode, PBYTE pMem);
 
 	bool IsInCodeBlock(ULONG_PTR address);
 

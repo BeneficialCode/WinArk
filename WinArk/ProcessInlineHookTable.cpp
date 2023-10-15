@@ -245,7 +245,8 @@ bool CProcessInlineHookTable::IsInCodeBlock(ULONG_PTR address) {
 	return false;
 }
 
-void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize) {
+void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, SIZE_T moduleSize,
+	bool isCheckCode, PBYTE pMem) {
 	cs_detail* d1;
 	d1 = insn[j].detail;
 	if (d1 == nullptr)
@@ -287,22 +288,25 @@ void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t 
 		return;
 	}
 
-	if (!CheckCode(insn[j].address, 5))
-		return;
-
-	InlineHookInfo info;
-	info.TargetAddress = targetAddress;
-	info.TargetModule = L"Unknown";
-	auto m = GetModuleByAddress(targetAddress);
-	if (m != nullptr) {
-		info.TargetModule = m->Path;
+	auto m = GetModuleByAddress(insn[j].address);
+	if (isCheckCode && m!=nullptr) {
+		if (!CheckCode(insn[j].address, 5, (ULONG_PTR)m->ImageBase,
+			m->ModuleSize, pMem))
+			return;
 	}
+	InlineHookInfo info;
 	info.Type = HookType::x86HookType1;
 	info.Address = insn[j].address;
-	m = GetModuleByAddress(info.Address);
 	info.Name = L"Unknown";
 	if (m != nullptr)
 		info.Name = m->Name;
+	info.TargetAddress = targetAddress;
+	info.TargetModule = L"Unknown";
+	m = GetModuleByAddress(targetAddress);
+	if (m != nullptr) {
+		info.TargetModule = m->Path;
+	}
+	
 	m_Table.data.info.push_back(info);
 }
 
@@ -481,8 +485,8 @@ void CProcessInlineHookTable::CheckX86HookType6(cs_insn* insn, size_t j, size_t 
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 
 void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
-	uint64_t address, ULONG_PTR moduleBase, SIZE_T moduleSize,
-	bool isX64Module) {
+	uint64_t address, ULONG_PTR moduleBase,
+	SIZE_T moduleSize, bool isX64Module, bool isCheckCode, PBYTE pMem){
 	ULONG_PTR startAddr = (ULONG_PTR)code;
 	ULONG_PTR maxSearchAddr = startAddr + codeSize;
 	size_t count = 0;
@@ -581,7 +585,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 					0, &insn);
 				if (count > 0) {
 					CheckX64HookType4(insn, 0, count, moduleBase,
-						moduleSize, address, codeSize);
+						moduleSize, address, codeSize, isCheckCode, pMem);
 					cs_free(insn, count);
 				}
 			}
@@ -616,7 +620,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 				count = cs_disasm(_x86handle, (uint8_t*)pFound, 5, addr,
 					0, &insn);
 				if (count > 0) {
-					CheckX86HookType1(insn, 0, count, moduleBase, moduleSize);
+					CheckX86HookType1(insn, 0, count, moduleBase, moduleSize, isCheckCode, pMem);
 					cs_free(insn, count);
 				}
 			}
@@ -762,12 +766,47 @@ void CProcessInlineHookTable::Refresh() {
 			address = (ULONG_PTR)block->BaseAddress;
 			auto m = GetModuleByAddress(address);
 			bool isX64Module = true;
+			bool isCheckCode = true;
+			void* local_image_base = nullptr;
 			if (m != nullptr) {
 				moduleSize = m->ModuleSize;
 				moduleBase = (ULONG_PTR)m->Base;
 				std::wstring path = m->Path;
 				PEParser parser(path.c_str());
 				isX64Module = parser.IsPe64();
+
+				uint32_t image_size = parser.GetImageSize();
+				local_image_base = ::VirtualAlloc(nullptr, image_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+				if (!local_image_base)
+					isCheckCode = false;
+
+				if (local_image_base) {
+					BYTE* data = (BYTE*)parser.GetBaseAddress();
+					LARGE_INTEGER fileSize = parser.GetFileSize();
+
+					uint64_t real_image_base = (uint64_t)m->ImageBase;
+
+					// Copy image headers
+					memcpy(local_image_base, data, parser.GetHeadersSize());
+
+					// Copy image sections
+
+					for (auto i = 0; i < parser.GetSectionCount(); ++i) {
+						auto section = parser.GetSectionHeader(i);
+						if ((section[i].Characteristics & IMAGE_SCN_CNT_UNINITIALIZED_DATA) > 0)
+							continue;
+						auto local_section = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(local_image_base)
+							+ section[i].VirtualAddress);
+						if (section[i].PointerToRawData + section[i].SizeOfRawData > fileSize.QuadPart) {
+							continue;
+						}
+						memcpy(local_section, reinterpret_cast<void*>(reinterpret_cast<uint64_t>(data)
+							+ section[i].PointerToRawData), section[i].SizeOfRawData);
+					}
+
+					std::vector<RelocInfo> relocs = parser.GetRelocs(local_image_base);
+					RelocateImageByDelta(relocs, real_image_base - parser.GetImageBase());
+				}
 			}
 			else {
 				moduleBase = 0;
@@ -775,8 +814,13 @@ void CProcessInlineHookTable::Refresh() {
 			}
 
 			CheckInlineHook(code, size, address,
-				moduleBase, moduleSize, isX64Module);
+				moduleBase, moduleSize, isX64Module,isCheckCode,(PBYTE)local_image_base);
 
+			if (isCheckCode) {
+				if (local_image_base != nullptr) {
+					VirtualFree(local_image_base, 0, MEM_RELEASE);
+				}
+			}
 			free(code);
 			code = nullptr;
 		}
@@ -937,7 +981,7 @@ void CProcessInlineHookTable::CheckX64HookType2(cs_insn* insn, size_t j, size_t 
 }
 
 void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t count, ULONG_PTR moduleBase, size_t moduleSize,
-	ULONG_PTR base, size_t size) {
+	ULONG_PTR base, size_t size, bool isCheckCode, PBYTE pMem) {
 	cs_detail* d1;
 	d1 = insn[j].detail;
 	if (d1 == nullptr)
@@ -1011,10 +1055,17 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		return;
 	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
 
-	if (!CheckCode(insn[j].address, 5))
-		return;
+	auto m = GetModuleByAddress(insn[j].address);
+	if (isCheckCode && m != nullptr) {
+		if (!CheckCode(insn[j].address, 5, (ULONG_PTR)m->ImageBase,
+			m->ModuleSize, pMem))
+			return;
+	}
 
 	InlineHookInfo info;
+	info.Name = L"Unknown";
+	if (m != nullptr)
+		info.Name = m->Name;
 	if (success) {
 		info.TargetAddress = codeAddress;
 	}
@@ -1022,19 +1073,12 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		info.TargetAddress = targetAddress;
 	}
 	info.TargetModule = L"Unknown";
-	auto m = GetModuleByAddress(info.TargetAddress);
+	m = GetModuleByAddress(info.TargetAddress);
 	if (m != nullptr) {
 		info.TargetModule = m->Path;
 	}
 	info.Type = HookType::x64HookType4;
 	info.Address = insn[j].address;
-
-
-
-	m = GetModuleByAddress(info.Address);
-	info.Name = L"Unknown";
-	if (m != nullptr)
-		info.Name = m->Name;
 	m_Table.data.info.push_back(info);
 }
 
@@ -1107,57 +1151,7 @@ std::wstring CProcessInlineHookTable::GetSingleHookInfo(InlineHookInfo& info) {
 	return text.GetString();
 }
 
-bool CProcessInlineHookTable::CheckCode(ULONG_PTR addr, SIZE_T size) {
-	auto m = GetModuleByAddress(addr);
-	if (nullptr == m)
-		return true;
-
-	if (!std::filesystem::exists(m->Path))
-		return true;
-
-	std::vector<uint8_t> raw_image = { 0 };
-	std::ifstream file_ifstream(m->Path, std::ios::binary);
-	if (!file_ifstream)
-		return true;
-
-	raw_image.assign((std::istreambuf_iterator<char>(file_ifstream)), std::istreambuf_iterator<char>());
-	file_ifstream.close();
-
-	BYTE* data = raw_image.data();
-	uint32_t dataSize = raw_image.size();
-
-	PEParser parser(data);
-
-	uint32_t image_size = parser.GetImageSize();
-
-	void* local_image_base = ::VirtualAlloc(nullptr, image_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-	if (!local_image_base)
-		return true;
-
-	uint64_t real_image_base = (uint64_t)m->ImageBase;
-
-
-	// Copy image headers
-	memcpy(local_image_base, data, parser.GetHeadersSize());
-
-	// Copy image sections
-
-	for (auto i = 0; i < parser.GetSectionCount(); ++i) {
-		auto section = parser.GetSectionHeader(i);
-		if ((section[i].Characteristics & IMAGE_SCN_CNT_UNINITIALIZED_DATA) > 0)
-			continue;
-		auto local_section = reinterpret_cast<void*>(reinterpret_cast<uint64_t>(local_image_base)
-			+ section[i].VirtualAddress);
-		if (section[i].PointerToRawData + section[i].SizeOfRawData > dataSize) {
-			continue;
-		}
-		memcpy(local_section, reinterpret_cast<void*>(reinterpret_cast<uint64_t>(data)
-			+ section[i].PointerToRawData), section[i].SizeOfRawData);
-	}
-
-	std::vector<RelocInfo> relocs = parser.GetRelocs(local_image_base);
-	RelocateImageByDelta(relocs, real_image_base - parser.GetImageBase());
-
+bool CProcessInlineHookTable::CheckCode(ULONG_PTR addr, SIZE_T size, ULONG_PTR imageBase, ULONG imageSize, PBYTE pMem) {
 	bool isHooked = true;
 	void* code = nullptr;
 	do
@@ -1170,20 +1164,20 @@ bool CProcessInlineHookTable::CheckCode(ULONG_PTR addr, SIZE_T size) {
 		bool success = ::ReadProcessMemory(m_hProcess, (LPVOID)addr, code, size, &bytes);
 		if (!success)
 			break;
-		if (addr < real_image_base)
+		if (addr < imageBase)
 			break;
-		ULONG offset = addr - real_image_base;
-		if (offset > image_size) {
+		ULONG offset = addr - imageBase;
+		if (offset > imageSize) {
 			break;
 		}
-		BYTE* pOriCode = (BYTE*)local_image_base + offset;
+		BYTE* pOriCode = (BYTE*)pMem + offset;
 		if (memcmp(code, pOriCode, size) == 0) {
 			isHooked = false;
 		}
 	} while (false);
 	if (nullptr != code)
 		VirtualFree(code, 0, MEM_RELEASE);
-	VirtualFree(local_image_base, 0, MEM_RELEASE);
+	
 	return isHooked;
 }
 
