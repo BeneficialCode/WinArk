@@ -113,7 +113,8 @@ bool CProcessInlineHookTable::CompareItems(const InlineHookInfo& s1, const Inlin
 
 // we have to specify the architectures explicitly when install capstone by vcpkg
 LRESULT CProcessInlineHookTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&) {
-	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ);
+	m_hProcess = DriverHelper::OpenProcess(m_Pid, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
+		| PROCESS_VM_WRITE | PROCESS_VM_OPERATION);
 	if (m_hProcess == nullptr)
 		return -1;
 
@@ -198,6 +199,11 @@ LRESULT CProcessInlineHookTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lPa
 	::GetCursorPos(&pt);
 	bool show = Tablefunction(m_hWnd, uMsg, wParam, lParam);
 	if (show) {
+		int selected = m_Table.data.selected;
+		ATLASSERT(selected >= 0);
+		auto& info = m_Table.data.info[selected];
+		if (!info.CanRestore)
+			EnableMenuItem(hSubMenu, ID_INLINEHOOK_RESTORE, MF_DISABLED);
 		auto id = (UINT)TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, nullptr);
 		if (id) {
 			PostMessage(WM_COMMAND, id);
@@ -295,6 +301,7 @@ void CProcessInlineHookTable::CheckX86HookType1(cs_insn* insn, size_t j, size_t 
 			return;
 	}
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	info.Type = HookType::x86HookType1;
 	info.Address = insn[j].address;
 	info.Name = L"Unknown";
@@ -348,6 +355,7 @@ void CProcessInlineHookTable::CheckX86HookType2(cs_insn* insn, size_t j, size_t 
 		return;
 
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	info.TargetAddress = targetAddress;
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(targetAddress);
@@ -415,6 +423,7 @@ void CProcessInlineHookTable::CheckX86HookType3(cs_insn* insn, size_t j, size_t 
 		return;
 
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	info.TargetAddress = targetAddress;
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(targetAddress);
@@ -467,6 +476,7 @@ void CProcessInlineHookTable::CheckX86HookType6(cs_insn* insn, size_t j, size_t 
 
 	ULONG_PTR targetAddress = d2->x86.operands[0].imm;
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	info.TargetAddress = targetAddress;
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(targetAddress);
@@ -739,6 +749,7 @@ void CProcessInlineHookTable::Refresh() {
 	m_Modules = m_ModuleTracker.GetModules();
 
 	m_Sys64Modules.clear();
+	m_Table.data.n = 0;
 	m_Table.data.info.clear();
 	m_Sys32Modules.clear();
 	for (const auto& m : m_Modules) {
@@ -900,6 +911,7 @@ void CProcessInlineHookTable::CheckX64HookType1(cs_insn* insn, size_t j, size_t 
 		return;
 
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	info.TargetAddress = targetAddress;
 	info.TargetModule = L"Unknown";
 	auto m = GetModuleByAddress(targetAddress);
@@ -963,6 +975,7 @@ void CProcessInlineHookTable::CheckX64HookType2(cs_insn* insn, size_t j, size_t 
 		return;
 
 	InlineHookInfo info;
+	info.CanRestore = FALSE;
 	ULONG_PTR lowAddr = d1->x86.operands[0].imm;
 	ULONG_PTR highAddr = d2->x86.operands[1].imm;
 	info.TargetAddress = ((ULONG_PTR)highAddr << 32) | lowAddr;
@@ -1055,14 +1068,31 @@ void CProcessInlineHookTable::CheckX64HookType4(cs_insn* insn, size_t j, size_t 
 		return;
 	success = ::ReadProcessMemory(m_hProcess, (LPVOID)codeAddress, &dummy, sizeof(dummy), &dummy);
 
+	InlineHookInfo info;
+	info.CanRestore = FALSE;
+
 	auto m = GetModuleByAddress(insn[j].address);
 	if (isCheckCode && m != nullptr) {
 		if (!CheckCode(insn[j].address, 5, (ULONG_PTR)m->ImageBase,
 			m->ModuleSize, pMem))
 			return;
+		ULONG offset = insn[j].address - (ULONG_PTR)m->ImageBase;
+		BYTE* pOriCode = (BYTE*)pMem + offset;
+		cs_insn* all_insn;
+		size_t codeSize = 0;
+		int insn_count = cs_disasm(_x64handle, (uint8_t*)pOriCode, 16, insn[j].address,
+			0, &all_insn);
+		if (insn_count) {
+			for (int i = 0; i < insn_count; i++)
+				codeSize += all_insn[i].size;
+			cs_free(all_insn, insn_count);
+		}
+		info.OriginalCode.resize(codeSize);
+		memcpy(info.OriginalCode.data(), pOriCode, codeSize);
+		info.CanRestore = TRUE;
 	}
 
-	InlineHookInfo info;
+	
 	info.Name = L"Unknown";
 	if (m != nullptr)
 		info.Name = m->Name;
@@ -1190,4 +1220,21 @@ void CProcessInlineHookTable::RelocateImageByDelta(std::vector<RelocInfo>& reloc
 				*reinterpret_cast<uint64_t*>(current_reloc.address + offset) += delta;
 		}
 	}
+}
+
+LRESULT CProcessInlineHookTable::OnRestore(WORD, WORD, HWND, BOOL&) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& info = m_Table.data.info[selected];
+
+	SIZE_T bytes = 0;
+	bool success = ::WriteProcessMemory(m_hProcess, (LPVOID)info.Address, info.OriginalCode.data(),
+		info.OriginalCode.size(), &bytes);
+	return TRUE;
+}
+
+LRESULT CProcessInlineHookTable::OnRefresh(WORD, WORD, HWND, BOOL&) {
+	Refresh();
+	Invalidate();
+	return TRUE;
 }

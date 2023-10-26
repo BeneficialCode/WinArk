@@ -588,6 +588,7 @@
     <Image Include="res\delete_button.ico" />
     <Image Include="res\dll-add.ico" />
     <Image Include="res\dll-delete.ico" />
+    <Image Include="res\donate.bmp" />
     <Image Include="res\event3.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\filter-add.ico" />

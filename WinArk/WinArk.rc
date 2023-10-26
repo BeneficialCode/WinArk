@@ -24,16 +24,19 @@ LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 321, 168
+IDD_ABOUTBOX DIALOGEX 0, 0, 385, 228
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,264,147,50,14
-    CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Technology Copyright 2022",IDC_STATIC,25,57,78,38
+    DEFPUSHBUTTON   "OK",IDOK,328,207,50,14
+    CTEXT           "WinArk Application v1.0\n\n(c) YuanOS Technology Copyright 2022",IDC_STATIC,23,49,78,38
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,20,20
-    GROUPBOX        "",IDC_STATIC,7,7,115,154
-    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；CanineTooth :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；重黎；\n\n袋鼠；2st；涡苏；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,138,18,124,119
+    GROUPBOX        "",IDC_STATIC,7,7,115,214
+    LTEXT           "致谢:\n\nPavel Yosifovich; L0x1c；Pepsi；Kanren3；CanineTooth :)\n\n布墨；积积；枪手；Pizza!\n\nQfrost；荣博士；翔哥；重黎；\n\n袋鼠；2st；涡苏；VeroFess；\n\nllkbkh；无名侠；CornerCry\n\n<以上排名不分先后>",IDC_STATIC,18,93,124,119
+    GROUPBOX        "Donate",IDC_STATIC,127,14,244,185
+    CONTROL         IDB_DONATE,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE,127,71,251,124
+    CTEXT           "人尚且不能永久，尽力所能及之事。\n如果您对我们的工作表示认可，您可以尝试扫码捐助我们,\n万分感谢您的支持。\n一块钱也是爱。\n",IDC_STATIC,141,29,219,43,WS_BORDER
 END
 
 
@@ -48,9 +51,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 314
+        RIGHTMARGIN, 378
         TOPMARGIN, 7
-        BOTTOMMARGIN, 161
+        BOTTOMMARGIN, 221
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -714,6 +717,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Start All",                   ID_SERVICE_START_ALL
         MENUITEM "Export By Pid",               ID_SERVICE_EXPORT_BY_PID
+        MENUITEM "Refresh",                     ID_SERVICE_REFRESH
     END
 END
 
@@ -753,6 +757,8 @@ BEGIN
     BEGIN
         MENUITEM "Copy",                        ID_INLINEHOOK_COPY
         MENUITEM "Export",                      ID_INLINEHOOK_EXPORT
+        MENUITEM "Restore",                     ID_INLINEHOOK_RESTORE
+        MENUITEM "Refresh",                     ID_INLINEHOOK_REFRESH_ALL
     END
     POPUP "memory"
     BEGIN
@@ -941,6 +947,14 @@ IDI_TIMER               ICON                    "res\\Timer.ico"
 //
 
 IDR_POOLTAG             TXT                     "res\\pooltag.txt"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_DONATE              BITMAP                  "res\\donate.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

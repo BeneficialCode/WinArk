@@ -98,6 +98,7 @@
 #define IDI_TASK                        291
 #define IDI_ACTION                      292
 #define IDI_TIMER                       293
+#define IDB_DONATE                      294
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -452,14 +453,18 @@
 #define ID_OB_CALLBACK_EXPORT           33011
 #define ID_OBJECTCALLBACK_REFRESH       33012
 #define ID_OB_CALLBACK_REFRESH          33013
+#define ID_SERVICE_REFRESH              33014
+#define ID_INLINEHOOK_RESTORE           33015
+#define ID_INLINEHOOK_REFRESH33016      33016
+#define ID_INLINEHOOK_REFRESH_ALL       33017
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        294
-#define _APS_NEXT_COMMAND_VALUE         33014
-#define _APS_NEXT_CONTROL_VALUE         1125
+#define _APS_NEXT_RESOURCE_VALUE        295
+#define _APS_NEXT_COMMAND_VALUE         33018
+#define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

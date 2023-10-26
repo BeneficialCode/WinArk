@@ -680,3 +680,10 @@ std::wstring CServiceTable::GetSingleServiceInfo(ServiceInfo& info) {
 
 	return text.GetString();
 }
+
+LRESULT CServiceTable::OnRefresh(WORD, WORD, HWND, BOOL&) {
+	Refresh();
+	Invalidate();
+
+	return TRUE;
+}

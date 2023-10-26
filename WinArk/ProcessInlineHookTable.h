@@ -18,6 +18,7 @@ struct InlineHookInfo {
 	ULONG_PTR TargetAddress;
 	std::wstring TargetModule;
 	std::vector<uint8_t> OriginalCode;
+	bool CanRestore;
 };
 
 class CProcessInlineHookTable :
@@ -51,6 +52,8 @@ public:
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_INLINEHOOK_COPY,OnHookCopy)
 		COMMAND_ID_HANDLER(ID_INLINEHOOK_EXPORT, OnHookExport)
+		COMMAND_ID_HANDLER(ID_INLINEHOOK_RESTORE,OnRestore)
+		COMMAND_ID_HANDLER(ID_INLINEHOOK_REFRESH_ALL,OnRefresh)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -74,6 +77,9 @@ public:
 	LRESULT OnHookCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnHookExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	std::wstring GetSingleHookInfo(InlineHookInfo& info);
+	LRESULT OnRestore(WORD, WORD, HWND, BOOL&);
+	LRESULT OnRefresh(WORD, WORD, HWND, BOOL&);
+
 
 	void Refresh();
 
