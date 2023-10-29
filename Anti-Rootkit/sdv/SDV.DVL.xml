@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Data> 
+<AssessmentScore ScoreName="AntiRootkit.x64.General.XMLTimeStamp" ScoreValue="0" ScoreUnit="10/29/2023 13:45:43" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.DriverBinary" ScoreValue="0" ScoreUnit="AntiRootkit.sys" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.BinaryTimeStamp" ScoreValue="0" ScoreUnit="01/01/1601 08:00:00" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.DriverType" ScoreValue="0" ScoreUnit="generic" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.DriverSize" ScoreValue="0" ScoreUnit="LOC" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.DriverVersion" ScoreValue="0" ScoreUnit="0" />
+<AssessmentScore ScoreName="AntiRootkit.x64.General.Libs" ScoreValue="0" ScoreUnit="Number of external libraries used" />
+<AssessmentScore ScoreName="AntiRootkit.x64.SDV.Version" ScoreValue="0" ScoreUnit="sdv-2019-11-12" />
+<AssessmentScore ScoreName="AntiRootkit.x64.SDV.NA.Reason" ScoreValue="0" ScoreUnit="Unrecoverable error in InterceptedBuild stage." />
+</Data>

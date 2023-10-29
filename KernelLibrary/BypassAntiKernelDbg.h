@@ -19,8 +19,8 @@ NTSTATUS NTAPI NtQuerySystemInformation(
 
 struct BypassAntiKernelDbg {
 	static PVOID GetExportSymbolAddress(PCWSTR symbolName);
-	static bool Bypass();
-	static bool Unbypass();
+	static NTSTATUS Bypass();
+	static NTSTATUS Unbypass();
 	using PNtQuerySystemInformation = decltype(&NtQuerySystemInformation);
 	static inline PNtQuerySystemInformation g_pNtQuerySystemInformation{};
 };

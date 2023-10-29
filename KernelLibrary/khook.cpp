@@ -1185,7 +1185,7 @@ ULONG khook::GetInlineHookCount() {
 
 			ULONG_PTR maxSearchAddr = maxAddress - patternSize;
 			ULONG_PTR searchAddr = startAddr;
-			ULONG remainSize = pSec->Misc.VirtualSize;
+			ULONG_PTR remainSize = pSec->Misc.VirtualSize;
 			while (searchAddr <= maxSearchAddr) {
 				PVOID pFound = NULL;
 				NTSTATUS status = Helpers::SearchPattern(pattern1, 0xCC, patternSize, 

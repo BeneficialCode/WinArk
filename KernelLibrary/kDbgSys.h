@@ -15,10 +15,7 @@ NTSTATUS ObCreateObject(
 	_Out_ PVOID * Object
 );
 
-extern "C"
-PIMAGE_NT_HEADERS RtlImageNtHeader(
-	_In_ PVOID BaseAddress
-);
+
 
 extern "C"
 NTSTATUS

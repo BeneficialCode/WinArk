@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SlamConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SlamFlags xmlns="http://www.microsoft.com/SDV">-halt_labels -gate RunDispatchFunction -driver -arrays -no_pa 3 -field_pa_version nocollapse -max_fields_nocollapse 100</SlamFlags>
+  <SlamclFlags xmlns="http://www.microsoft.com/SDV" />
+  <ScannerFlags xmlns="http://www.microsoft.com/SDV" />
+  <SlamCFlags xmlns="http://www.microsoft.com/SDV" />
+  <SDV_SlamConfig_Maximum_Driver_Size xmlns="http://www.microsoft.com/SDV">10000000</SDV_SlamConfig_Maximum_Driver_Size>
+  <SDV_SlamConfig_Timeout xmlns="http://www.microsoft.com/SDV">86400</SDV_SlamConfig_Timeout>
+  <SDV_SlamConfig_Spaceout xmlns="http://www.microsoft.com/SDV">2500</SDV_SlamConfig_Spaceout>
+  <SDV_SlamConfig_NumberOfThreads xmlns="http://www.microsoft.com/SDV">20</SDV_SlamConfig_NumberOfThreads>
+  <SDV_SlamConfig_Model_Export_Libraries xmlns="http://www.microsoft.com/SDV" />
+  <SDV_SlamConfig_Osmodel_Libraries xmlns="http://www.microsoft.com/SDV">no_cfg_support.lib,bufferoverflowfastfailk.lib,csq.lib,int64.lib,rtlver.lib,ntstrsafe.lib,sehupd.lib,wdmsec.lib,wdm.lib,ntoskrnl.lib,BufferOverflowK.lib,hal.lib,wmilib.lib,memcmp.lib,usbd.lib,armrt.lib</SDV_SlamConfig_Osmodel_Libraries>
+  <SDV_engine xmlns="http://www.microsoft.com/SDV">engineq</SDV_engine>
+  <SDV_engine_backup xmlns="http://www.microsoft.com/SDV" />
+  <SDV_frontend xmlns="http://www.microsoft.com/SDV">esp</SDV_frontend>
+</SlamConfig>

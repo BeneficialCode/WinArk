@@ -42,6 +42,11 @@ private:
     NTSTATUS CreateKnownDllSection(DllStats& pDllState);
 };
 
+extern "C"
+PIMAGE_NT_HEADERS RtlImageNtHeader(
+	_In_ PVOID BaseAddress
+);
+
 extern "C" {
 	enum KAPC_ENVIRONMENT
 	{
@@ -125,6 +130,5 @@ extern "C" {
 		_Out_ PSIZE_T ResultLength OPTIONAL
 	);
 
-	__declspec(dllimport) PIMAGE_NT_HEADERS RtlImageNtHeader(PVOID Base);
 	__declspec(dllimport) PVOID RtlImageDirectoryEntryToData(PVOID Base, BOOLEAN MappedAsImage, USHORT DirectoryEntry, PULONG Size);
 }

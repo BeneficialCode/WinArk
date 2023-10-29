@@ -40,28 +40,28 @@ NTSTATUS NTAPI HookNtQuerySystemInformation(
 	return status;
 }
 
-bool BypassAntiKernelDbg::Bypass() {
+NTSTATUS BypassAntiKernelDbg::Bypass() {
 	g_pNtQuerySystemInformation = (PNtQuerySystemInformation)GetExportSymbolAddress(L"NtQuerySystemInformation");
 	if (g_pNtQuerySystemInformation) {
 		NTSTATUS status = DetourAttach((PVOID*)&g_pNtQuerySystemInformation, HookNtQuerySystemInformation);
 		if (!NT_SUCCESS(status))
-			return false;
+			return status;
 		status = DetourTransactionCommit();
 		if (!NT_SUCCESS(status))
-			return false;
+			return status;
 	}
-	return true;
+	return STATUS_SUCCESS;
 
 }
 
-bool BypassAntiKernelDbg::Unbypass() {
+NTSTATUS BypassAntiKernelDbg::Unbypass() {
 	NTSTATUS status = DetourDetach((PVOID*)&g_pNtQuerySystemInformation, HookNtQuerySystemInformation);
 	if (!NT_SUCCESS(status))
-		return false;
+		return status;
 
 	status = DetourTransactionCommit();
 	if (!NT_SUCCESS(status))
-		return false;
+		return status;
 
-	return true;
+	return STATUS_SUCCESS;
 }

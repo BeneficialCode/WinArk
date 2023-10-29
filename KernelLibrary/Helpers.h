@@ -44,11 +44,13 @@ public:
 ////////////////////////////////
 extern "C" {
 	__declspec(dllimport) BOOLEAN PsIsProcessBeingDebugged(PEPROCESS Process);
-	__declspec(dllimport) NTSTATUS ZwQueryInformationProcess(_In_ HANDLE ProcessHandle,
+	__declspec(dllimport) NTSTATUS NTAPI ZwQueryInformationProcess(
+		_In_ HANDLE ProcessHandle,
 		_In_ PROCESSINFOCLASS ProcessInformationClass,
-		_Out_ PVOID ProcessInformation,
+		_Out_writes_bytes_(ProcessInformationLength) PVOID ProcessInformation,
 		_In_ ULONG ProcessInformationLength,
-		_Out_opt_ PULONG ReturnLength);
+		_Out_opt_ PULONG ReturnLength
+	);
 	
 }
 //////////////////////////////////

@@ -62,19 +62,29 @@ PDEVICE_OBJECT g_DeviceObject;
 PDRIVER_OBJECT g_DriverObject;
 FilterState g_State;
 
-DRIVER_UNLOAD AntiRootkitUnload;
-DRIVER_DISPATCH AntiRootkitDeviceControl, AntiRootkitCreateClose;
-DRIVER_DISPATCH AntiRootkitRead, AntiRootkitWrite, AntiRootkitShutdown;
+extern "C"
+{
+	DRIVER_INITIALIZE DriverEntry;
+	DRIVER_UNLOAD AntiRootkitUnload;
+
+	_Dispatch_type_(IRP_MJ_DEVICE_CONTROL)
+	DRIVER_DISPATCH AntiRootkitDeviceControl;
+
+	_Dispatch_type_(IRP_MJ_CREATE)
+	_Dispatch_type_(IRP_MJ_CLOSE)
+	DRIVER_DISPATCH AntiRootkitCreateClose;
+
+	_Dispatch_type_(IRP_MJ_READ)
+	DRIVER_DISPATCH AntiRootkitRead;
+
+	_Dispatch_type_(IRP_MJ_WRITE)
+	DRIVER_DISPATCH AntiRootkitWrite;
+
+	_Dispatch_type_(IRP_MJ_SHUTDOWN)
+	DRIVER_DISPATCH AntiRootkitShutdown;
+}
 
 
-
-extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(
-	_In_ HANDLE ProcessHandle,
-	_In_ PROCESSINFOCLASS ProcessInformationClass,
-	_Out_writes_bytes_(ProcessInformationLength) PVOID ProcessInformation,
-	_In_ ULONG ProcessInformationLength,
-	_Out_opt_ PULONG ReturnLength
-);
 
 extern "C" NTSTATUS ZwOpenThread(
 	_Out_ PHANDLE ThreadHandle,
@@ -115,7 +125,8 @@ NTSTATUS NTAPI ObReferenceObjectByName(
 // 就认为全部执行失败，那么是不合理的。
 // 系统处于低资源，中毒状态下，应保证驱动能在恶劣环境下，最大程度地完成逻辑处理
 extern "C" NTSTATUS
-DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
+DriverEntry(_In_ PDRIVER_OBJECT DriverObject,
+	_In_ PUNICODE_STRING RegistryPath) {
 	if (*InitSafeBootMode > 0) {
 		// The operating system is in Safe Mode.
 		return STATUS_NOT_SAFE_MODE_DRIVER;
@@ -391,7 +402,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			bool success = khook::GetApiAddress(number,&address);
 			if (success) {
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
-				len = sizeof(address);
+				len = sizeof(void*);
 				status = STATUS_SUCCESS;
 			}
 			break;
@@ -417,7 +428,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			bool success = khook::GetShadowApiAddress(number, &address);
 			if (success) {
 				*(PVOID*)Irp->AssociatedIrp.SystemBuffer = address;
-				len = sizeof(address);
+				len = sizeof(void*);
 				status = STATUS_SUCCESS;
 			}
 			break;
@@ -571,7 +582,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 
 			auto data = static_cast<KeyData*>(Irp->AssociatedIrp.SystemBuffer);
-			if (dic.InputBufferLength < sizeof(KeyData) + ULONG((data->Length - 1) * 2)) {
+			if (dic.InputBufferLength < sizeof(KeyData) + ULONG((ULONGLONG)(data->Length - 1) * 2)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
@@ -1461,7 +1472,7 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			}
 
 			auto data = static_cast<DumpSysData*>(Irp->AssociatedIrp.SystemBuffer);
-			if (dic.InputBufferLength < sizeof(DumpSysData) + ULONG((data->Length - 1) * 2)) {
+			if (dic.InputBufferLength < sizeof(DumpSysData) + ULONG((ULONGLONG)(data->Length - 1) * 2)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
