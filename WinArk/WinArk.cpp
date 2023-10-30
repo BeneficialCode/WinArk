@@ -242,7 +242,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	::SymSetOptions(SYMOPT_UNDNAME | SYMOPT_CASE_INSENSITIVE |
 		SYMOPT_AUTO_PUBLICS | SYMOPT_INCLUDE_32BIT_MODULES |
-		SYMOPT_OMAP_FIND_NEAREST | SYMOPT_DEFERRED_LOADS);
+		SYMOPT_OMAP_FIND_NEAREST);
 	::SymInitialize(::GetCurrentProcess(), nullptr, TRUE);
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
