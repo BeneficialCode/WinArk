@@ -240,6 +240,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (CheckInstall(lpstrCmdLine))
 		return 0;
 
+	::SymSetOptions(SYMOPT_UNDNAME | SYMOPT_CASE_INSENSITIVE |
+		SYMOPT_AUTO_PUBLICS | SYMOPT_INCLUDE_32BIT_MODULES |
+		SYMOPT_OMAP_FIND_NEAREST | SYMOPT_DEFERRED_LOADS);
+	::SymInitialize(::GetCurrentProcess(), nullptr, TRUE);
+
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 	
 	DriverHelper::LoadDriver(false);
@@ -247,6 +252,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	_Module.Term();
 	::CoUninitialize();
 	::CloseHandle(g_hSingleInstMutex);
+
+	::SymCleanup(::GetCurrentProcess());
 
 	return nRet;
 }

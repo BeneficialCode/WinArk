@@ -213,4 +213,5 @@ private:
 
 	HANDLE m_hProcess{ INVALID_HANDLE_VALUE };
 	DWORD64 _address{ 0 };
+	static inline bool _first = false;
 };
