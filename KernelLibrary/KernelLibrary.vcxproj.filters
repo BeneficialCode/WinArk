@@ -198,6 +198,9 @@
     <ClInclude Include="HashTable.h">
       <Filter>ktl</Filter>
     </ClInclude>
+    <ClInclude Include="reflector.h">
+      <Filter>hook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -337,6 +340,9 @@
     </ClCompile>
     <ClCompile Include="HashTable.cpp">
       <Filter>ktl</Filter>
+    </ClCompile>
+    <ClCompile Include="reflector.cpp">
+      <Filter>hook</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

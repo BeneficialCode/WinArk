@@ -343,8 +343,6 @@ ULONG DetourIsCodeFiller(PUCHAR pCode) {
 #ifdef DETOURS_X64
 
 struct _DETOUR_TRAMPOLINE {
-	// An X64 instuction can be 15 bytes long.
-	// In practice 11 seems to be the limit.
 	UCHAR rbCode[0x30];		// target code + jmp to pRemain
 	UCHAR cbCode;			// size of moved target code
 	UCHAR cbCodeBreak;		// padding to make debugging easier
@@ -755,6 +753,17 @@ NTSTATUS NTAPI DetourTransactionCommitEx() {
 			LogDebug("detours: pbTramp =%p: "
 				"%02x %02x %02x %02x "
 				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
+				"%02x %02x %02x %02x "
 				"%02x %02x %02x %02x\n",
 				o->pTrampoline,
 				o->pTrampoline->rbCode[0], o->pTrampoline->rbCode[1],
@@ -762,7 +771,15 @@ NTSTATUS NTAPI DetourTransactionCommitEx() {
 				o->pTrampoline->rbCode[4], o->pTrampoline->rbCode[5],
 				o->pTrampoline->rbCode[6], o->pTrampoline->rbCode[7],
 				o->pTrampoline->rbCode[8], o->pTrampoline->rbCode[9],
-				o->pTrampoline->rbCode[10], o->pTrampoline->rbCode[11]);
+				o->pTrampoline->rbCode[10],o->pTrampoline->rbCode[11],
+				o->pTrampoline->rbCode[12],o->pTrampoline->rbCode[13],
+				o->pTrampoline->rbCode[14], o->pTrampoline->rbCode[15],
+				o->pTrampoline->rbCode[16], o->pTrampoline->rbCode[17], 
+				o->pTrampoline->rbCode[18], o->pTrampoline->rbCode[19], 
+				o->pTrampoline->rbCode[20], o->pTrampoline->rbCode[21], 
+				o->pTrampoline->rbCode[22], o->pTrampoline->rbCode[23], 
+				o->pTrampoline->rbCode[24], o->pTrampoline->rbCode[25], 
+				o->pTrampoline->rbCode[26], o->pTrampoline->rbCode[27]);
 
 #ifdef DETOURS_IA64
 

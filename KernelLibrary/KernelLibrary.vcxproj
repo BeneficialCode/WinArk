@@ -281,6 +281,7 @@
     <ClInclude Include="ProcessNetFilter.h" />
     <ClInclude Include="ProcessProtect.h" />
     <ClInclude Include="QueuedSpinLock.h" />
+    <ClInclude Include="reflector.h" />
     <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="SpinLock.h" />
@@ -341,6 +342,7 @@
     <ClCompile Include="ProcessNetFilter.cpp" />
     <ClCompile Include="ProcessProtect.cpp" />
     <ClCompile Include="QueuedSpinLock.cpp" />
+    <ClCompile Include="reflector.cpp" />
     <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="Section.cpp" />
     <ClCompile Include="SpinLock.cpp" />
