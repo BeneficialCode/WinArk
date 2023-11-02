@@ -4,6 +4,7 @@
 #include "Logging.h"
 #include "Memory.h"
 #include "disasm.h"
+#include "reflector.h"
 
 
 extern "C" {
@@ -343,7 +344,7 @@ ULONG DetourIsCodeFiller(PUCHAR pCode) {
 #ifdef DETOURS_X64
 
 struct _DETOUR_TRAMPOLINE {
-	UCHAR rbCode[0x30];		// target code + jmp to pRemain
+	UCHAR rbCode[0x60];		// target code + jmp to pRemain
 	UCHAR cbCode;			// size of moved target code
 	UCHAR cbCodeBreak;		// padding to make debugging easier
 	UCHAR rbRestore[0x30];	// original target code.
@@ -354,8 +355,6 @@ struct _DETOUR_TRAMPOLINE {
 	PUCHAR pDetour;			// first instruction of detour function.
 	UCHAR rbCodeIn[8];		// jmp [pDetour]
 };
-
-C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 136);
 
 enum {
 	SIZE_OF_JUMP_CODE = 14,
@@ -1028,7 +1027,12 @@ NTSTATUS NTAPI DetourAttachEx(_Inout_ PVOID* ppPointer,
 
 	prbCode = pTrampoline->rbCode + pTrampoline->cbCode;
 #ifdef DETOURS_X64
-	prbCode = DetourGenJmpIndirect(prbCode, &pTrampoline->pRemain);
+	// fixup the trampoline
+	prbCode = ReflectCode(pTarget, pTrampoline->cbCode, pTrampoline->rbCode, sizeof(pTrampoline->rbCode));
+	if (prbCode == pTrampoline->rbCode) {
+		status = STATUS_UNSUCCESSFUL;
+		goto fail;
+	}
 	prbCode = DetourGenBrk(prbCode, pPool);
 #endif
 

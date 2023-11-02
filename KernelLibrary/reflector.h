@@ -48,6 +48,9 @@ PVOID Reflector(_In_ PUCHAR Address,
     _In_ ULONG Length,
     _In_opt_ REPAIR_CALLBACK Callback);
 
+PUCHAR ReflectCode(_In_ PUCHAR Address, _In_ ULONG Length, 
+    _In_ PUCHAR pTrampoline, _In_ ULONG Size);
+
 ULONG GetAnalyzerCount(_In_ PUCHAR Address, _In_ ULONG Length);
 
 PANALYZER BuildAnalyzer(_In_ PUCHAR Address, _In_ ULONG Count);
