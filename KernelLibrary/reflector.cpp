@@ -59,6 +59,47 @@ PVOID NTAPI Reflector(_In_ PUCHAR Address,
     return procedure;
 }
 
+PUCHAR ReflectCode(_In_ PUCHAR Address, _In_ ULONG Length,
+    _In_ PUCHAR pTrampoline, _In_ ULONG Size) {
+    ULONG count = 0;
+    PANALYZER pAnalyzers = NULL;
+    NTSTATUS status = STATUS_SUCCESS;
+    s_TotalSize = 0;
+
+    do
+    {
+        if (!ZYAN_SUCCESS(ZydisDecoderInit(&s_Decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64)))
+            break;
+        // 获取重构指令的数量
+        count = GetAnalyzerCount(Address, Length);
+        pAnalyzers = BuildAnalyzer(Address, count);
+        if (NULL == pAnalyzers) {
+            break;
+        }
+        BuildAllRepairInfo(pAnalyzers, count);
+        status = BuildFirstProcedure(pTrampoline, pAnalyzers, count, NULL);
+        if (!NT_SUCCESS(status)) {
+            break;
+        }
+        status = BuildSecondProcedure(pAnalyzers, count);
+        if (!NT_SUCCESS(status)) {
+            break;
+        }
+    } while (FALSE);
+
+    NT_ASSERT(s_TotalSize < Size);
+
+    if (NULL != pAnalyzers) {
+        ExFreePool(pAnalyzers);
+        pAnalyzers = NULL;
+    }
+
+    if (!NT_SUCCESS(status)) {
+        return pTrampoline;
+    }
+    return pTrampoline + s_TotalSize;
+}
+
 ULONG GetAnalyzerCount(_In_ PUCHAR Address, _In_ ULONG Length) {
     ZyanStatus status = ZYAN_STATUS_SUCCESS;
     ZydisDecodedInstruction instruction;
@@ -335,6 +376,7 @@ NTSTATUS BuildFirstProcedure(_In_ PUCHAR Procedure, _In_ PANALYZER pAnalyzers,
     }
 
     if (NULL != pAnalyzer) {
+        // 构建跳转回去的代码
         PUCHAR pInsn = BuildTruncationInstruction(pAnalyzer);
         if (NULL == pInsn)
             return STATUS_UNSUCCESSFUL;
