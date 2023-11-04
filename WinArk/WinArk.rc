@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -69,12 +69,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -940,6 +940,28 @@ IDI_ACTION              ICON                    "res\\action.ico"
 
 IDI_TIMER               ICON                    "res\\Timer.ico"
 
+IDI_COMPUTER            ICON                    "res\\laptop.ico"
+
+IDI_FOLDER_CLOSED       ICON                    "res\\folder_closed.ico"
+
+IDI_FOLDER_LINK         ICON                    "res\\link.ico"
+
+IDI_FOLDER_ACCESSDENIED ICON                    "res\\folder_accessdenied.ico"
+
+IDI_HIVE                ICON                    "res\\hive.ico"
+
+IDI_HIVE_ACCESSDENIED   ICON                    "res\\hive-accessdenied.ico"
+
+IDI_FOLDER_UP           ICON                    "res\\folderup.ico"
+
+IDI_BINARY              ICON                    "res\\Binary.ico"
+
+IDI_TEXT                ICON                    "res\\text.ico"
+
+IDI_DWORD               ICON                    "res\\number-4.ico"
+
+IDI_QWORD               ICON                    "res\\number-8.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -967,12 +989,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1493,7 +1515,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

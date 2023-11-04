@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -99,6 +99,18 @@
 #define IDI_ACTION                      292
 #define IDI_TIMER                       293
 #define IDB_DONATE                      294
+#define IDI_COMPUTER                    295
+#define IDI_FOLDER_CLOSED               296
+#define IDI_FOLDER_LINK                 297
+#define IDI_FOLDER_ACCESSDENIED         298
+#define IDI_HIVE                        299
+#define IDI_HIVE_ACCESSDENIED           300
+#define IDI_FOLDER_UP                   301
+#define IDI_BINARY                      302
+#define IDI_TEXT                        303
+#define IDI_DWORD                       304
+#define IDI_ICON3                       305
+#define IDI_QWORD                       305
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -462,7 +474,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        295
+#define _APS_NEXT_RESOURCE_VALUE        306
 #define _APS_NEXT_COMMAND_VALUE         33018
 #define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101

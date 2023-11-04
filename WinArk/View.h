@@ -70,12 +70,12 @@ public:
 
 	CString GetColumnText(HWND, int row, int col) const;
 
-	// int GetRowImage(HWND, int row) const;
+	int GetRowImage(HWND hWnd, int row, int col) const;
 	void DoSort(const SortInfo* si);
 	bool IsSortable(HWND, int col) const;
 	BOOL OnRightClickList(HWND, int row, int col, const POINT&);
 	BOOL OnDoubleClickList(HWND, int row, int col, const POINT& pt);
-
+	int GetKeyImage(const RegistryItem& item) const;
 	/*void DrawItem(LPDRAWITEMSTRUCT dis);*/
 
 	enum {

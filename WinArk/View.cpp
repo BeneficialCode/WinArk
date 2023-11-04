@@ -150,9 +150,22 @@ LRESULT CRegistryManagerView::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS, WS_EX_CLIENTEDGE, TreeId);
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER | TVS_EX_RICHTOOLTIP, 0);
 
+	CImageList images;
+	images.Create(16, 16, ILC_COLOR32 | ILC_COLOR | ILC_MASK, 16, 4);
+	UINT icons[] = {
+		IDI_COMPUTER,IDI_FOLDER,IDI_FOLDER_CLOSED,IDI_FOLDER_LINK,
+		IDI_FOLDER_ACCESSDENIED,IDI_HIVE,IDI_HIVE_ACCESSDENIED,IDI_FOLDER_UP,
+		IDI_BINARY,IDI_TEXT,IDI_REGISTRY,IDI_DWORD,IDI_QWORD,
+	};
+	for (auto icon : icons) {
+		images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
+	}
+	m_Tree.SetImageList(images, TVSIL_NORMAL);
+
 	m_List.Create(m_MainSplitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 		| LVS_OWNERDATA | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_EDITLABELS, WS_EX_CLIENTEDGE);
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
+	m_List.SetImageList(images, LVSIL_SMALL);
 
 	auto cm = GetColumnManager(m_List);
 	cm->AddColumn(L"Name", LVCFMT_LEFT, 220, ColumnType::Name);
@@ -342,10 +355,13 @@ void CRegistryManagerView::InitTree() {
 	::GetComputerName(name, &len);
 	m_hLocalRoot = m_Tree.InsertItem(name + CString(L" (Local)"), 1, 1, TVI_ROOT, TVI_LAST);
 	m_hLocalRoot.SetData(static_cast<DWORD_PTR>(NodeType::Machine));
+	m_Tree.SetItemImage(m_hLocalRoot, 0, 0);
 	m_hStdReg = m_Tree.InsertItem(L"Standard Registry", 0, 0, m_hLocalRoot, TVI_LAST);
+	m_Tree.SetItemImage(m_hStdReg, 10, 10);
 	SetNodeData(m_hStdReg, NodeType::StandardRoot);
 	m_hRealReg = m_Tree.InsertItem(L"REGISTRY", 11, 11, m_hLocalRoot, TVI_LAST);
 	SetNodeData(m_hRealReg, NodeType::RegistryRoot | NodeType::Predefined | NodeType::Key);
+	m_Tree.SetItemImage(m_hRealReg, 10, 10);
 	m_hLocalRoot.Expand(TVE_EXPAND);
 	m_Tree.SelectItem(m_hStdReg);
 }
@@ -363,7 +379,11 @@ HTREEITEM CRegistryManagerView::BuildTree(HTREEITEM hRoot, HKEY hKey, PCWSTR nam
 		hRoot = m_Tree.InsertItem(name, 3, 2, hRoot, TVI_LAST);
 		auto path = GetFullNodePath(hRoot);
 		if (Registry::IsHiveKey(path)) {
+			m_Tree.SetItemImage(hRoot, 5, 5);
 			SetNodeData(hRoot, GetNodeData(hRoot) | NodeType::Hive);
+		}
+		else {
+			m_Tree.SetItemImage(hRoot, 2, 2);
 		}
 		auto subkeys = Registry::GetSubKeyCount(hKey);
 		if (subkeys) {
@@ -384,16 +404,24 @@ HTREEITEM CRegistryManagerView::BuildTree(HTREEITEM hRoot, HKEY hKey, PCWSTR nam
 				subKey.Close();
 				CString linkPath;
 				if (Registry::IsKeyLink(key, name, linkPath)) {
-					// m_Tree.SetItemImage(hItem, 4, 4);
+					m_Tree.SetItemImage(hItem, 3, 3);
+				}
+				else {
+					m_Tree.SetItemImage(hItem, 2, 2);
 				}
 			}
-
 			else if (error == ERROR_ACCESS_DENIED) {
 				SetNodeData(hItem, GetNodeData(hItem) | NodeType::AccessDenied);
+				m_Tree.SetItemImage(hItem, 4, 4);
 			}
 			auto path = GetFullNodePath(hItem);
 			if (Registry::IsHiveKey(path)) {
+				int image = error == ERROR_ACCESS_DENIED ? 6 : 5;
+				m_Tree.SetItemImage(hItem, image, image);
 				SetNodeData(hItem, GetNodeData(hItem) | NodeType::Hive);
+			}
+			else {
+				m_Tree.SetItemImage(hItem, 2, 2);
 			}
 			return true;
 			});
@@ -1632,4 +1660,42 @@ LRESULT CRegistryManagerView::OnExportBin(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			AtlMessageBox(*this, L"Failed to locate bin", IDS_TITLE, MB_ICONERROR);
 	}
 	return 0;
+}
+
+int CRegistryManagerView::GetKeyImage(const RegistryItem& item) const {
+	int image = 2;
+	if (!m_CurrentKey)
+		return image;
+
+	CString linkPath;
+	if (Registry::IsKeyLink(m_CurrentKey.Get(), item.Name, linkPath))
+		return 3;
+
+	RegistryKey key;
+	auto error = key.Open(m_CurrentKey.Get(), item.Name, READ_CONTROL);
+	if (Registry::IsHiveKey(GetFullNodePath(m_Tree.GetSelectedItem()) + L"\\" + item.Name))
+		image = error == ERROR_ACCESS_DENIED ? 6 : 5;
+	else if (error == ERROR_ACCESS_DENIED)
+		image = 4;
+
+	return image;
+}
+
+int CRegistryManagerView::GetRowImage(HWND hWnd, int row, int col) const {
+	switch (m_Items[row].Type) {
+	case REG_KEY:
+		return GetKeyImage(m_Items[row]);
+	case REG_KEY_UP:
+		return 7;
+	case REG_DWORD:
+		return 11;
+	case REG_QWORD:
+		return 12;
+	case REG_SZ:
+	case REG_EXPAND_SZ:
+	case REG_MULTI_SZ:
+	case REG_NONE:
+		return 9;
+	}
+	return 8;
 }

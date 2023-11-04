@@ -584,6 +584,7 @@
     <Image Include="res\arrow_down_blue.ico" />
     <Image Include="res\arrow_up_blue.ico" />
     <Image Include="res\autoscroll.ico" />
+    <Image Include="res\Binary.ico" />
     <Image Include="res\cancel.ico" />
     <Image Include="res\delete_button.ico" />
     <Image Include="res\dll-add.ico" />
@@ -597,6 +598,9 @@
     <Image Include="res\filter.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\Folder.ico" />
+    <Image Include="res\folderup.ico" />
+    <Image Include="res\folder_accessdenied.ico" />
+    <Image Include="res\folder_closed.ico" />
     <Image Include="res\folder_open.ico" />
     <Image Include="res\gear.ico" />
     <Image Include="res\goto.ico" />
@@ -604,13 +608,19 @@
     <Image Include="res\handles.ico" />
     <Image Include="res\heap.ico" />
     <Image Include="res\heap2.ico" />
+    <Image Include="res\hive-accessdenied.ico" />
+    <Image Include="res\hive.ico" />
     <Image Include="res\icon1.ico" />
     <Image Include="res\icon2.ico" />
+    <Image Include="res\laptop.ico" />
     <Image Include="res\letter-k.ico" />
     <Image Include="res\letter-u.ico" />
+    <Image Include="res\link.ico" />
     <Image Include="res\memory.ico" />
     <Image Include="res\Modules.ico" />
     <Image Include="res\network.ico" />
+    <Image Include="res\number-4.ico" />
+    <Image Include="res\number-8.ico" />
     <Image Include="res\object.ico" />
     <Image Include="res\ok.ico" />
     <Image Include="res\ok_button.ico" />
@@ -627,6 +637,7 @@
     <Image Include="res\Stop.ico" />
     <Image Include="res\storage.ico" />
     <Image Include="res\task.ico" />
+    <Image Include="res\text.ico" />
     <Image Include="res\threads-delete.ico" />
     <Image Include="res\threads-new.ico" />
     <Image Include="res\threads.ico" />
