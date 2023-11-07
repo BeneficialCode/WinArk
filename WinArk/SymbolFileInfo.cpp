@@ -33,8 +33,6 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 
 	std::string url = "https://msdl.microsoft.com/download/symbols";
 
-	_dlg.ShowCancelButton(false);
-
 	if (url.back() != '/')
 		url += '/';
 
@@ -59,24 +57,18 @@ bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 		}
 	}
 
-	_dlg.SetMessageText(L"Starting download " + _pdbFile);
-
 	wil::unique_handle hThread(::CreateThread(nullptr, 0, [](auto params)->DWORD {
 		SymbolFileInfo* info = (SymbolFileInfo*)params;
-		info->_dlg.DoModal();
 		return 0;
 		}, this, 0, nullptr));
 
-	auto result = Download(url, fileName, "WinArk", 1000, 
-		[](void* userdata,unsigned long long readBytes,unsigned long long totalBytes) {
-			CProgressDlg* pDlg = (CProgressDlg*)userdata;
-			if (totalBytes) {
-				pDlg->UpdateProgress(static_cast<int>(readBytes));
-			}
+	auto result = Download(url, fileName, "WinArk", 1000,
+		[](void* userdata, unsigned long long readBytes, unsigned long long totalBytes) {
+
 			return true;
-		}, 
-		(void*)&_dlg);
-	_dlg.EndDialog(IDCANCEL);
+		},
+		nullptr);
+	
 	bool bOk = result == downslib_error::ok ? true : false;
 	if (!bOk) {
 		MessageBox(NULL, L"Failed init symbols,\r\nWinArk will exit...\r\n", L"WinArk", MB_ICONERROR);
@@ -171,7 +163,6 @@ downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, 
 	
 	}
 	downslib_error ret = PdbDownLoader(uri, fileStream);
-	_dlg.SetProgressRange(100);
 	cb(userdata, 100, 100);
 	fileStream.close();
 	return ret;
