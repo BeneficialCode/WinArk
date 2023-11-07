@@ -701,81 +701,93 @@ PUCHAR BuildLocalInstruction(_In_ PANALYZER pAnalyzers, _In_ PANALYZER pAnalyzer
 }
 
 PUCHAR BuildRemoteJccInstruction(_In_ PANALYZER pAnalyzer) {
-    ZydisEncoderRequest requests[6];
+    SIZE_T size = sizeof(ZydisEncoderRequest) * 6;
+    ZydisEncoderRequest* pRequests = (ZydisEncoderRequest*)ExAllocatePoolWithTag(NonPagedPool,
+        size, 'tqer');
+    if (NULL == pRequests) {
+        return NULL;
+    }
 
-    requests[0].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[0].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[0].mnemonic = pAnalyzer->Encoder.Request.mnemonic;
-    requests[0].branch_type = ZYDIS_BRANCH_TYPE_SHORT;
-    requests[0].branch_width = ZYDIS_BRANCH_WIDTH_8;
-    requests[0].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[0].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
-    requests[0].operand_count = 1;
-    requests[0].operands[0].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
-    requests[0].operands[0].imm.s = 2;
+    RtlZeroMemory(pRequests, size);
 
-    requests[1].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[1].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[1].mnemonic = ZYDIS_MNEMONIC_JMP;
-    requests[1].branch_type = ZYDIS_BRANCH_TYPE_SHORT;
-    requests[1].branch_width = ZYDIS_BRANCH_WIDTH_8;
-    requests[1].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[1].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
-    requests[1].operand_count = 1;
-    requests[1].operands[0].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
-    requests[1].operands[0].imm.s = 16;
+    pRequests[0].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[0].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[0].mnemonic = pAnalyzer->Encoder.Request.mnemonic;
+    pRequests[0].branch_type = ZYDIS_BRANCH_TYPE_SHORT;
+    pRequests[0].branch_width = ZYDIS_BRANCH_WIDTH_8;
+    pRequests[0].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[0].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
+    pRequests[0].operand_count = 1;
+    pRequests[0].operands[0].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
+    pRequests[0].operands[0].imm.s = 2;
 
-    requests[2].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[2].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[2].mnemonic = ZYDIS_MNEMONIC_PUSH;
-    requests[2].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[2].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
-    requests[2].operand_count = 1;
-    requests[2].operands[0].type = ZYDIS_OPERAND_TYPE_REGISTER;
-    requests[2].operands[0].reg.value = ZYDIS_REGISTER_RAX;
+    pRequests[1].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[1].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[1].mnemonic = ZYDIS_MNEMONIC_JMP;
+    pRequests[1].branch_type = ZYDIS_BRANCH_TYPE_SHORT;
+    pRequests[1].branch_width = ZYDIS_BRANCH_WIDTH_8;
+    pRequests[1].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[1].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
+    pRequests[1].operand_count = 1;
+    pRequests[1].operands[0].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
+    pRequests[1].operands[0].imm.s = 16;
 
-    requests[3].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[3].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[3].mnemonic = ZYDIS_MNEMONIC_MOV;
-    requests[3].branch_type = ZYDIS_BRANCH_TYPE_NONE;
-    requests[3].branch_width = ZYDIS_BRANCH_WIDTH_NONE;
-    requests[3].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[3].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
-    requests[3].operand_count = 2;
-    requests[3].operands[0].type = ZYDIS_OPERAND_TYPE_REGISTER;
-    requests[3].operands[0].reg.value = ZYDIS_REGISTER_RAX;
-    requests[3].operands[1].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
-    requests[3].operands[1].imm.u = (ZyanU64)pAnalyzer->Repair.Address;
+    pRequests[2].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[2].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[2].mnemonic = ZYDIS_MNEMONIC_PUSH;
+    pRequests[2].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[2].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
+    pRequests[2].operand_count = 1;
+    pRequests[2].operands[0].type = ZYDIS_OPERAND_TYPE_REGISTER;
+    pRequests[2].operands[0].reg.value = ZYDIS_REGISTER_RAX;
 
-    requests[4].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[4].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[4].mnemonic = ZYDIS_MNEMONIC_XCHG;
-    requests[4].branch_type = ZYDIS_BRANCH_TYPE_NONE;
-    requests[4].branch_width = ZYDIS_BRANCH_WIDTH_NONE;
-    requests[4].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[4].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_32;
-    requests[4].operand_count = 2;
-    requests[4].operands[0].type = ZYDIS_OPERAND_TYPE_MEMORY;
-    requests[4].operands[0].mem.base = ZYDIS_REGISTER_RSP;
-    requests[4].operands[0].mem.index = ZYDIS_REGISTER_NONE;
-    requests[4].operands[0].mem.scale = 0;
-    requests[4].operands[0].mem.displacement = 0;
-    requests[4].operands[0].mem.size = 8;
-    requests[4].operands[1].type = ZYDIS_OPERAND_TYPE_REGISTER;
-    requests[4].operands[1].reg.value = ZYDIS_REGISTER_RAX;
+    pRequests[3].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[3].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[3].mnemonic = ZYDIS_MNEMONIC_MOV;
+    pRequests[3].branch_type = ZYDIS_BRANCH_TYPE_NONE;
+    pRequests[3].branch_width = ZYDIS_BRANCH_WIDTH_NONE;
+    pRequests[3].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[3].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
+    pRequests[3].operand_count = 2;
+    pRequests[3].operands[0].type = ZYDIS_OPERAND_TYPE_REGISTER;
+    pRequests[3].operands[0].reg.value = ZYDIS_REGISTER_RAX;
+    pRequests[3].operands[1].type = ZYDIS_OPERAND_TYPE_IMMEDIATE;
+    pRequests[3].operands[1].imm.u = (ZyanU64)pAnalyzer->Repair.Address;
 
-    requests[5].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
-    requests[5].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
-    requests[5].mnemonic = ZYDIS_MNEMONIC_RET;
-    requests[5].branch_type = ZYDIS_BRANCH_TYPE_NEAR;
-    requests[5].branch_width = ZYDIS_BRANCH_WIDTH_64;
-    requests[5].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
-    requests[5].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
-    requests[5].operand_count = 0;
+    pRequests[4].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[4].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[4].mnemonic = ZYDIS_MNEMONIC_XCHG;
+    pRequests[4].branch_type = ZYDIS_BRANCH_TYPE_NONE;
+    pRequests[4].branch_width = ZYDIS_BRANCH_WIDTH_NONE;
+    pRequests[4].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[4].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_32;
+    pRequests[4].operand_count = 2;
+    pRequests[4].operands[0].type = ZYDIS_OPERAND_TYPE_MEMORY;
+    pRequests[4].operands[0].mem.base = ZYDIS_REGISTER_RSP;
+    pRequests[4].operands[0].mem.index = ZYDIS_REGISTER_NONE;
+    pRequests[4].operands[0].mem.scale = 0;
+    pRequests[4].operands[0].mem.displacement = 0;
+    pRequests[4].operands[0].mem.size = 8;
+    pRequests[4].operands[1].type = ZYDIS_OPERAND_TYPE_REGISTER;
+    pRequests[4].operands[1].reg.value = ZYDIS_REGISTER_RAX;
 
+    pRequests[5].machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    pRequests[5].allowed_encodings = ZYDIS_ENCODABLE_ENCODING_LEGACY;
+    pRequests[5].mnemonic = ZYDIS_MNEMONIC_RET;
+    pRequests[5].branch_type = ZYDIS_BRANCH_TYPE_NEAR;
+    pRequests[5].branch_width = ZYDIS_BRANCH_WIDTH_64;
+    pRequests[5].address_size_hint = ZYDIS_ADDRESS_SIZE_HINT_64;
+    pRequests[5].operand_size_hint = ZYDIS_OPERAND_SIZE_HINT_64;
+    pRequests[5].operand_count = 0;
 
-    return BuildInstructionFromRequest(pAnalyzer->Encoder.Address,
-        ARRAYSIZE(requests), requests);
+    PUCHAR pInst = BuildInstructionFromRequest(
+        pAnalyzer->Encoder.Address,
+        size / sizeof(ZydisEncoderRequest),
+        pRequests);
+
+    ExFreePool(pRequests);
+
+    return pInst;
 }
 
 PUCHAR BuildRemoteJmpInstruction(_In_ PANALYZER pAnalyzer) {
@@ -866,7 +878,7 @@ PUCHAR BuildImpCallInstruction(_In_ PANALYZER pAnalyzer) {
         0xC3
     };
 
-    *(PUCHAR*)&code = pAnalyzer->Repair.Address;
+    *(PUCHAR*)&code[10] = pAnalyzer->Repair.Address;
 
     RtlCopyMemory(pAnalyzer->Encoder.Address, code, sizeof(code));
 
