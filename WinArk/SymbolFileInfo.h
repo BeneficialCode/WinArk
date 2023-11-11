@@ -1,5 +1,4 @@
 #pragma once
-#include "ProgressDlg.h"
 #include <Poco/URIStreamOpener.h>
 #include <Poco/StreamCopier.h>
 #include <Poco/Path.h>
@@ -69,6 +68,5 @@ struct SymbolFileInfo {
 	CString _pdbSignature;
 	CString _pdbFile;
 	PdbValidationData _pdbValidation;
-	CProgressDlg _dlg;
 	CString _path;
 };
