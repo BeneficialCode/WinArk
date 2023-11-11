@@ -5,6 +5,7 @@
 #include "..\KernelLibrary\reflector.h"
 #include "..\KernelLibrary\detours.h"
 #include "..\KernelLibrary\khook.h"
+#include "..\KernelLibrary\HashTable.h"
 
 
 DRIVER_UNLOAD DriverUnload;
@@ -15,34 +16,49 @@ PUCHAR g_pNewNtUserGetForegroundWindow;
 // u win32k!NtUserGetForegroundWindow
 PUCHAR g_pAddr = (PUCHAR)0xfffff96000082744;
 
+HASH_TABLE g_Table;
+
+
+
 extern "C" 
 NTSTATUS
 DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 	UNREFERENCED_PARAMETER(RegistryPath);
 	DriverObject->DriverUnload = DriverUnload;
 
-	bool success = khook::SearchSessionProcess();
-	if (!success)
-		return STATUS_UNSUCCESSFUL;
+	HashTableInitialize(&g_Table, 0, 0, nullptr);
 
-	PEPROCESS Process;
-	NTSTATUS status = PsLookupProcessByProcessId(khook::_pid, &Process);
-	if (!NT_SUCCESS(status))
-		return STATUS_UNSUCCESSFUL;
+	PHASH_BUCKET pBuckets = (PHASH_BUCKET)ExAllocatePoolWithTag(PagedPool, PAGE_SIZE, 'tset');
+	if (!pBuckets) {
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+	HashTableChangeTable(&g_Table, PAGE_SIZE / 8, pBuckets);
 
-	KAPC_STATE apcState;
-	KeStackAttachProcess(Process, &apcState);
+	do
+	{
+		auto item = (HASH_BUCKET*)ExAllocatePoolWithTag(PagedPool, sizeof(HASH_BUCKET), 'meti');
+		if (!item)
+			break;
 
-	g_pNewNtUserGetForegroundWindow = (PUCHAR)Reflector(g_pAddr, 0x30, NULL);
-	KdPrint(("pNewNtUserGetForegroundWindow: %p\n", g_pNewNtUserGetForegroundWindow));
-	status = DetourAttach((PVOID*)&g_pAddr, g_pNewNtUserGetForegroundWindow);
-	if (g_pNewNtUserGetForegroundWindow != nullptr)
-		ExFreePool(g_pNewNtUserGetForegroundWindow);
-	if (!NT_SUCCESS(status))
-		return status;
-	
-	KeUnstackDetachProcess(&apcState);
-	ObDereferenceObject(Process);
+		RtlZeroMemory(item, sizeof(HASH_BUCKET));
+		
+		item->HashValue = 0x1000;
+		HashTableInsert(&g_Table, item);
+
+	} while (FALSE);
+
+
+
+
+	HASH_TABLE_ITERATOR iter;
+	HashTableIterInit(&iter, &g_Table);
+	while (HashTableIterGetNext(&iter)) {
+		HashTableIterRemove(&iter);
+	}
+	PHASH_BUCKET p = HashTableCleanup(&g_Table);
+	if (p) {
+		ExFreePoolWithTag(p, 'tset');
+	}
 
 	return STATUS_SUCCESS;
 }

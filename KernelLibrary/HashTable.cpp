@@ -214,7 +214,7 @@ PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 	}
 }
 
-PHASH_BUCKET MpHashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
+PHASH_BUCKET HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
 	PHASH_BUCKET pHashEntry;
 	pHashEntry = Iterator->HashEntry;
 	PHASH_BUCKET pBucket = Iterator->Bucket;
