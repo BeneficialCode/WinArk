@@ -86,6 +86,9 @@ BOOLEAN IsPowerOfTwo(UINT32 x) {
 }
 
 UINT32 RoundToPowerOfTwo(UINT32 value, BOOLEAN roundUpToNext){
+	if (0 == value) {
+		return value;
+	}
 	// if value is a power of 2, return it
 	if (IsPowerOfTwo(value)) {
 		return value;
@@ -147,8 +150,9 @@ PHASH_TABLE HashTableGetTable(PHASH_BUCKET HashEntry) {
 	return pHash;
 }
 
-PHASH_TABLE HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
+PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
 	PHASH_BUCKET pBuckets) {
+	PHASH_BUCKET pOldBuckets = NULL;
 	UINT32 count = RoundToPowerOfTwo(size, FALSE);
 	if (count > 0x4000000)
 		count = 0x4000000;
@@ -169,11 +173,11 @@ PHASH_TABLE HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
 			PushEntryList(&pBuckets[idx].Entry, &p->Entry);
 		}
 	}
-	pBuckets = Hash->Buckets;
+	pOldBuckets = Hash->Buckets;
 	Hash->Buckets = pBuckets;
-	Hash->BucketCount = (count >> 32) | Hash->BucketCount & 0x1F;
+	Hash->BucketCount = (count << 5) | Hash->BucketCount & 0x1F;
 
-	return Hash;
+	return pOldBuckets;
 }
 
 PHASH_TABLE_ITERATOR HashTableIterInit(PHASH_TABLE_ITERATOR Iterator,

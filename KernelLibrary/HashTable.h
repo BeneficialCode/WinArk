@@ -3,8 +3,8 @@ typedef struct _HASH_BUCKET {
 	union {
 		ULONG_PTR Hash;
 		SINGLE_LIST_ENTRY Entry;
+		UINT64 HashValue;
 	};
-	UINT64 HashValue;
 }HASH_BUCKET,*PHASH_BUCKET;
 
 typedef struct _HASH_TABLE {
@@ -48,7 +48,7 @@ BOOLEAN IsPowerOfTwo(UINT32 x);
 PHASH_BUCKET HashTableCleanup(PHASH_TABLE Hash);
 PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT32 Key, PHASH_BUCKET Bucket);
 PHASH_TABLE HashTableGetTable(PHASH_BUCKET HashEntry);
-PHASH_TABLE HashTableChangeTable(PHASH_TABLE Hash, ULONG size, PHASH_BUCKET pBucket);
+PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size, PHASH_BUCKET pBucket);
 PHASH_TABLE_ITERATOR HashTableIterInit(PHASH_TABLE_ITERATOR Iterator, PHASH_TABLE Hash);
 PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator);
 PHASH_BUCKET HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator);
