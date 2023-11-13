@@ -35,7 +35,7 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 	if (!pBuckets) {
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
-	HashTableChangeTable(&g_Table, PAGE_SIZE / 8, pBuckets);
+	HashTableChangeTable(&g_Table, PAGE_SIZE / sizeof(HASH_BUCKET), pBuckets);
 
 	do
 	{
