@@ -17,7 +17,7 @@ class CKernelInlineHookTable :
 public:
 	DECLARE_WND_CLASS_EX(NULL, CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW, COLOR_WINDOW);
 
-	CKernelInlineHookTable(BarInfo& bars, TableInfo& table);
+	CKernelInlineHookTable(BarInfo& bars, TableInfo& table, ULONG_PTR base = 0);
 	int ParseTableEntry(CString& s, char& mask, int& select, KernelInlineHookInfo& info,
 		int column);
 	bool CompareItems(const KernelInlineHookInfo& s1, const KernelInlineHookInfo& s2,
@@ -72,4 +72,5 @@ private:
 	enum class Column {
 		HookObject, HookType, Address, TargetAddress, Module
 	};
+	ULONG_PTR _base;
 };

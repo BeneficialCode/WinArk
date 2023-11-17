@@ -5,6 +5,7 @@
 #include "ClipboardHelper.h"
 #include "DriverHelper.h"
 #include "KernelEATHookDlg.h"
+#include "KernelInlineHookDlg.h"
 
 
 LRESULT CKernelModuleTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -270,6 +271,17 @@ LRESULT CKernelModuleTable::OnKernelEATHookScan(WORD /*wNotifyCode*/, WORD /*wID
 	auto& kernelModule = m_Table.data.info[selected];
 
 	CKernelEATHookDlg dlg(kernelModule);
+	dlg.DoModal(m_hWnd);
+
+	return 0;
+}
+
+LRESULT CKernelModuleTable::OnKernelInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& kernelModule = m_Table.data.info[selected];
+
+	CKernelInlineHookDlg dlg(kernelModule);
 	dlg.DoModal(m_hWnd);
 
 	return 0;

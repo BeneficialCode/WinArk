@@ -64,8 +64,8 @@ struct DriverHelper final {
 
 	static bool EnumExtTable(ExtHostData* pData, void* pInfo, ULONG size);
 
-	static bool DetectInlineHook(ULONG count,KernelInlineHookData* pInfo, ULONG size);
-	static ULONG GetKernelInlineHookCount();
+	static bool DetectInlineHook(KInlineData* pData,KernelInlineHookData* pInfo, ULONG size);
+	static ULONG GetKernelInlineHookCount(ULONG_PTR base);
 
 	static bool ForceDeleteFile(const wchar_t* fileName);
 

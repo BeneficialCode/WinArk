@@ -23,7 +23,6 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		L"Notify Routine",
 		L"MiniFilter",
 		L"WFP Filter",
-		L"Inline Hook",
 		L"Object Callback"
 	};
 
@@ -37,7 +36,6 @@ LRESULT CKernelHookView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	InitKernelNotifyTable();
 	InitMiniFilterTable();
 	InitWFPFilterTable();
-	InitInlineHookTable();
 	InitObCallbackTable();
 
 	return 0;
@@ -233,10 +231,6 @@ LRESULT CKernelHookView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			m_WFPFilterTable->ShowWindow(SW_SHOW);
 			m_WFPFilterTable->SetFocus();
 			break;
-		case TabColumn::InlineHook:
-			m_InlineHookTable->ShowWindow(SW_SHOW);
-			m_InlineHookTable->SetFocus();
-			break;
 		case TabColumn::ObjectCallback:
 			m_ObjectCallbackTable->ShowWindow(SW_SHOW);
 			m_ObjectCallbackTable->SetFocus();
@@ -278,43 +272,6 @@ void CKernelHookView::InitKernelNotifyTable() {
 	m_KernelNotifyTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
 	m_hwndArray[static_cast<int>(TabColumn::NotifyRoutine)] = m_KernelNotifyTable->m_hWnd;
 	m_KernelNotifyTable->ShowWindow(SW_HIDE);
-}
-
-void CKernelHookView::InitInlineHookTable() {
-	BarDesc bars[] = {
-		{20,"Hook Object",0},
-		{14,"Hook Type",0},
-		{62,"Hook Address",0},
-		{22,"Target Address",0},
-		{260,"Target Module",0},
-	};
-
-	TableInfo table = {
-		1,1,TABLE_SORTMENU | TABLE_COPYMENU | TABLE_APPMENU,9,0,0,0
-	};
-
-	BarInfo info;
-	info.nbar = _countof(bars);
-	info.font = 9;
-	for (int i = 0; i < info.nbar; i++) {
-		info.bar[i].defdx = bars[i].defdx;
-		info.bar[i].mode = bars[i].mode;
-		info.bar[i].name = bars[i].name;
-	}
-
-
-	m_InlineHookTable = new CKernelInlineHookTable(info, table);
-	
-	RECT rect;
-	GetClientRect(&rect);
-	m_InlineHookTable->Create(m_hWnd, rect, nullptr, WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_EX_LAYERED);
-	int iHorizontalUnit = LOWORD(GetDialogBaseUnits());
-	int iVerticalUnit = HIWORD(GetDialogBaseUnits());
-	int width, height;
-	height = rect.bottom - rect.top - 3 * iHorizontalUnit;
-	width = rect.right - rect.left - 2 * iHorizontalUnit;
-	m_hwndArray[static_cast<int>(TabColumn::InlineHook)] = m_InlineHookTable->m_hWnd;
-	m_InlineHookTable->ShowWindow(SW_HIDE);
 }
 
 void CKernelHookView::InitObCallbackTable() {

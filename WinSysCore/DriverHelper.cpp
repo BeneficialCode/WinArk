@@ -686,22 +686,22 @@ bool DriverHelper::EnumExtTable(ExtHostData* pData, void* pInfo, ULONG size) {
 		pInfo, size, &bytes, nullptr);
 }
 
-bool DriverHelper::DetectInlineHook(ULONG count,KernelInlineHookData* pData, ULONG size) {
+bool DriverHelper::DetectInlineHook(KInlineData* pData, KernelInlineHookData* pInfo, ULONG size) {
 	if (!OpenDevice())
 		return false;
 
 	DWORD bytes;
 	return ::DeviceIoControl(_hDevice, IOCTL_ARK_DETECT_KERNEL_INLINE_HOOK,
-		&count, sizeof(ULONG), pData, size, &bytes, nullptr);
+		pData, sizeof(KInlineData), pInfo, size, &bytes, nullptr);
 }
 
-ULONG DriverHelper::GetKernelInlineHookCount() {
+ULONG DriverHelper::GetKernelInlineHookCount(ULONG_PTR base) {
 	if (!OpenDevice())
 		return 0;
 
 	DWORD bytes;
 	ULONG count = 0;
-	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_KERNEL_INLINE_HOOK_COUNT, nullptr, 0,
+	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_KERNEL_INLINE_HOOK_COUNT, &base, sizeof(ULONG_PTR),
 		&count, sizeof(ULONG), &bytes, nullptr);
 	return count;
 }

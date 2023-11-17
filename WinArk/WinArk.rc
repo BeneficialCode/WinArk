@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体) resources
+// Chinese (Simplified) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -69,12 +69,12 @@ BEGIN
     0
 END
 
-#endif    // 中文(简体) resources
+#endif    // Chinese (Simplified) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(简体，中国) resources
+// Chinese (Simplified, PRC) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -704,6 +704,7 @@ BEGIN
         MENUITEM "Go to file location",         ID_KERNEL_GOTOFILELOCATION
         MENUITEM "Dump",                        ID_KERNEL_DUMP
         MENUITEM "EAT Hook Scan",               ID_KERNEL_EATHOOKSCAN
+        MENUITEM "Inline Hook Scan",            ID_KERNEL_INLINE_HOOK_SCAN
     END
     POPUP "service"
     BEGIN
@@ -989,12 +990,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // 中文(简体，中国) resources
+#endif    // Chinese (Simplified, PRC) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 英语(美国) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1515,7 +1516,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // 英语(美国) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

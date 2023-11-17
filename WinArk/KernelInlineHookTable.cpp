@@ -5,8 +5,8 @@
 #include "SortHelper.h"
 
 
-CKernelInlineHookTable::CKernelInlineHookTable(BarInfo& bars, TableInfo& table)
-	:CTable(bars, table) {
+CKernelInlineHookTable::CKernelInlineHookTable(BarInfo& bars, TableInfo& table, ULONG_PTR base)
+	:CTable(bars, table),_base(base){
 	SetTableWindowInfo(bars.nbar);
 }
 
@@ -179,7 +179,7 @@ LRESULT CKernelInlineHookTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lP
 
 void CKernelInlineHookTable::Refresh() {
 	m_Table.data.info.clear();
-	ULONG count = DriverHelper::GetKernelInlineHookCount();
+	ULONG count = DriverHelper::GetKernelInlineHookCount(_base);
 	if (count == 0) {
 		return;
 	}
@@ -187,7 +187,10 @@ void CKernelInlineHookTable::Refresh() {
 	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, size,
 		MEM_COMMIT, PAGE_READWRITE));
 	KernelInlineHookData* pData = (KernelInlineHookData*)buffer.get();
-	bool success = DriverHelper::DetectInlineHook(count,pData, size);
+	KInlineData info;
+	info.Count = count;
+	info.ImageBase = _base;
+	bool success = DriverHelper::DetectInlineHook(&info, pData, size);
 	if (success) {
 		KernelInlineHookInfo info;
 		for (ULONG i = 0; i < count; i++) {

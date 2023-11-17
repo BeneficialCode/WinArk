@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 WinArk.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by WinArk.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -469,13 +469,15 @@
 #define ID_INLINEHOOK_RESTORE           33015
 #define ID_INLINEHOOK_REFRESH33016      33016
 #define ID_INLINEHOOK_REFRESH_ALL       33017
+#define ID_KERNEL_INLINEHOOKSCAN        33018
+#define ID_KERNEL_INLINE_HOOK_SCAN      33019
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        306
-#define _APS_NEXT_COMMAND_VALUE         33018
+#define _APS_NEXT_COMMAND_VALUE         33020
 #define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

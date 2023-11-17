@@ -937,17 +937,28 @@ ULONG khook::GetShadowServiceLimit() {
 	return _win32kTable->NumberOfServices;
 }
 
-void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
-	bool success = GetKernelAndWin32kBase();
-	if (!success) {
+void khook::DetectInlineHook(KInlineData* pInfo,KernelInlineHookData* pData) {
+	PVOID imageBase = (PVOID)pInfo->ImageBase;
+	ULONG desiredCount = pInfo->Count;
+
+	bool success = SearchSessionProcess();
+	if (!success)
 		return;
-	}
+
+	PEPROCESS Process;
+	NTSTATUS status = PsLookupProcessByProcessId(_pid, &Process);
+	if (!NT_SUCCESS(status))
+		return;
+
+	KAPC_STATE apcState;
+	KeStackAttachProcess(Process, &apcState);
+
 #ifndef _WIN64
 	// x86 code
 	
 #else
 	// x64 code
-	PEParser parser(_kernelImageBase);
+	PEParser parser(imageBase);
 	int count = parser.GetSectionCount();
 	ULONG totalCount = 0;
 
@@ -963,7 +974,6 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 	SIZE_T readOffset = 0;
 	ZydisDecodedInstruction instruction;
 	ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
-	ZyanStatus status;
 	CHAR printBuffer[128];
 
 	for (int i = 0; i < count; i++) {
@@ -976,7 +986,7 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
 			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
 			(*(PULONG)pSec->Name != 'TINI')) {
-			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)imageBase + pSec->VirtualAddress);
 			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
 			LogInfo("start address: %p max address: %p\n", startAddr, maxAddress);
 
@@ -1135,20 +1145,33 @@ void khook::DetectInlineHook(ULONG desiredCount,KernelInlineHookData* pData) {
 	}
 #endif
 
+	KeUnstackDetachProcess(&apcState);
+	ObDereferenceObject(Process);
+
 }
 
-ULONG khook::GetInlineHookCount() {
-	bool success = GetKernelAndWin32kBase();
-	if (!success) {
-		return 0;
-	}
+ULONG khook::GetInlineHookCount(ULONG_PTR base) {
 	ULONG totalCount = 0;
+	PVOID imageBase = (PVOID)base;
+
+	bool success = SearchSessionProcess();
+	if (!success)
+		return STATUS_UNSUCCESSFUL;
+
+	PEPROCESS Process;
+	NTSTATUS status = PsLookupProcessByProcessId(_pid, &Process);
+	if (!NT_SUCCESS(status))
+		return status;
+
+	KAPC_STATE apcState;
+	KeStackAttachProcess(Process, &apcState);
+
 #ifndef _WIN64
 	// x86 code
 
 #else
 	// x64 code
-	PEParser parser(_kernelImageBase);
+	PEParser parser(imageBase);
 	int count = parser.GetSectionCount();
 	
 
@@ -1164,7 +1187,6 @@ ULONG khook::GetInlineHookCount() {
 	SIZE_T readOffset = 0;
 	ZydisDecodedInstruction instruction;
 	ZydisDecodedOperand operands[ZYDIS_MAX_OPERAND_COUNT];
-	ZyanStatus status;
 	CHAR printBuffer[128];
 
 	for (int i = 0; i < count; i++) {
@@ -1177,7 +1199,7 @@ ULONG khook::GetInlineHookCount() {
 			pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
 			!(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
 			(*(PULONG)pSec->Name != 'TINI')) {
-			ULONG_PTR startAddr = (ULONG_PTR)((PUCHAR)_kernelImageBase + pSec->VirtualAddress);
+			ULONG_PTR startAddr = (ULONG_PTR)(base + pSec->VirtualAddress);
 			ULONG_PTR maxAddress = startAddr + pSec->Misc.VirtualSize;
 
 			UCHAR pattern1[] = "\x48\xb8\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xff\xe0";
@@ -1300,6 +1322,9 @@ ULONG khook::GetInlineHookCount() {
 		}
 	}
 	
+	KeUnstackDetachProcess(&apcState);
+	ObDereferenceObject(Process);
+
 #endif
 	LogInfo("Total inline count: %d\n", totalCount);
 	

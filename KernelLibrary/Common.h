@@ -338,6 +338,11 @@ struct ExtHostData {
 	USHORT Count;
 };
 
+struct KInlineData {
+	ULONG_PTR ImageBase;
+	ULONG Count;
+};
+
 enum class KernelHookType {
 	x64HookType1, x64HookType2, x64HookType3
 };
