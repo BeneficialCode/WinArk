@@ -46,30 +46,33 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 		RtlZeroMemory(item, sizeof(FullItem));
 
 		UINT64 value = 0x1000;
-		item->Bucket.HashValue = HashUlongPtr(value);
+		UINT64 key = HashUlongPtr(value);
+		item->Bucket.HashValue = key;
 		item->Value = 0x7fff0;
 
 
 		HashTableInsert(&g_Table, &item->Bucket);
 
+		PHASH_BUCKET pBucket = NULL;
+		FullItem* pData = NULL;
+		pBucket = HashTableFindNext(&g_Table, key, pBucket);
+		if (pBucket != NULL) {
+			pData = CONTAINING_RECORD(pBucket, FullItem, Bucket);
+			KdPrint(("Value: %p\n", pData->Value));
+		}
+
+		HASH_TABLE_ITERATOR iter;
+		HashTableIterInit(&iter, &g_Table);
+		while (HashTableIterGetNext(&iter)) {
+			pData = CONTAINING_RECORD(iter.Bucket, FullItem, Bucket);
+			HashTableIterRemove(&iter);
+			KdPrint(("Value: %p\n", pData->Value));
+			ExFreePoolWithTag(pData, 'meti');
+		}
+
 	} while (FALSE);
 
-	PHASH_BUCKET pBucket = NULL;
-	FullItem* pData = NULL;
-	pBucket = HashTableFindNext(&g_Table, 0x1000, pBucket);
-	if (pBucket != NULL) {
-		pData = CONTAINING_RECORD(pBucket, FullItem, Bucket);
-		KdPrint(("Value: %p\n", pData->Value));
-	}
-
-	HASH_TABLE_ITERATOR iter;
-	HashTableIterInit(&iter, &g_Table);
-	while (HashTableIterGetNext(&iter)) {
-		pData = CONTAINING_RECORD(iter.Bucket, FullItem, Bucket);
-		HashTableIterRemove(&iter);
-		KdPrint(("Value: %p\n", pData));
-		ExFreePoolWithTag(pData, 'meti');
-	}
+	
 
 	PHASH_BUCKET p = HashTableCleanup(&g_Table);
 	if (p) {
