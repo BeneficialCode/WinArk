@@ -99,7 +99,6 @@ private:
 	void CheckX86HookType6(cs_insn* insn, size_t j, size_t count);
 
 	bool CheckCode(ULONG_PTR addr, SIZE_T size, ULONG_PTR imageBase, ULONG imageSize, PBYTE pMem);
-	void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
 
 
 

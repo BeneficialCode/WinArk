@@ -42,6 +42,8 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		COMMAND_ID_HANDLER(ID_KERNEL_INLINEHOOK_REFRESH,OnRefresh)
+		COMMAND_ID_HANDLER(ID_KERNEL_INLINEHOOK_COPY,OnHookCopy)
+		COMMAND_ID_HANDLER(ID_KERNEL_INLINEHOOK_EXPORT,OnHookExport)
 	END_MSG_MAP()
 
 
@@ -66,6 +68,12 @@ public:
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void Refresh();
+
+	LRESULT OnHookCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnHookExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	std::wstring GetSingleHookInfo(KernelInlineHookInfo& info);
+
+	bool CheckIsHooked(ULONG_PTR address,ULONG_PTR targetAddress,KernelHookType type);
 
 private:
 	CString TypeToString(KernelHookType type);
