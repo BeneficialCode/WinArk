@@ -510,6 +510,9 @@
     <ClCompile Include="ObjectCallbackTable.cpp">
       <Filter>Table</Filter>
     </ClCompile>
+    <ClCompile Include="KernelInlineHookDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1018,6 +1021,9 @@
     </ClInclude>
     <ClInclude Include="ObjectCallbackTable.h">
       <Filter>Table</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelInlineHookDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

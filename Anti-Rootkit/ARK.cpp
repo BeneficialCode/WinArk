@@ -1584,17 +1584,21 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
+			if (dic.InputBufferLength < sizeof(KInlineData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
 			if (dic.InputBufferLength < sizeof(ULONG)) {
 				status = STATUS_INVALID_BUFFER_SIZE;
 				break;
 			}
-			ULONG count = *(ULONG*)Irp->AssociatedIrp.SystemBuffer;
+			KInlineData* pInfo = (KInlineData*)Irp->AssociatedIrp.SystemBuffer;
 			KernelInlineHookData* pData = (KernelInlineHookData*)Irp->AssociatedIrp.SystemBuffer;
-			if (dic.OutputBufferLength < sizeof(KernelInlineHookData)*count) {
+			if (dic.OutputBufferLength < sizeof(KernelInlineHookData)*pInfo->Count) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			khook::DetectInlineHook(count, pData);
+			khook::DetectInlineHook(pInfo, pData);
 			len = dic.OutputBufferLength;
 			status = STATUS_SUCCESS;
 			break;
@@ -1606,11 +1610,16 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_INVALID_PARAMETER;
 				break;
 			}
+			if (dic.InputBufferLength < sizeof(ULONG_PTR)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 			if (dic.OutputBufferLength < sizeof(ULONG)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			ULONG count = khook::GetInlineHookCount();
+			ULONG_PTR base = *(PULONG_PTR)Irp->AssociatedIrp.SystemBuffer;
+			ULONG count = khook::GetInlineHookCount(base);
 			status = STATUS_SUCCESS;
 			*(ULONG*)Irp->AssociatedIrp.SystemBuffer = count;
 			len = sizeof(count);

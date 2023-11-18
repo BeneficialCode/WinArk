@@ -259,6 +259,7 @@
     <ClCompile Include="HexEdit.cpp" />
     <ClCompile Include="KernelEATHookDlg.cpp" />
     <ClCompile Include="KernelEATHookTable.cpp" />
+    <ClCompile Include="KernelInlineHookDlg.cpp" />
     <ClCompile Include="KernelInlineHookTable.cpp" />
     <ClCompile Include="MiscView.cpp" />
     <ClCompile Include="ObjectCallbackTable.cpp" />
@@ -424,6 +425,7 @@
     <ClInclude Include="HexEdit.h" />
     <ClInclude Include="KernelEATHookDlg.h" />
     <ClInclude Include="KernelEATHookTable.h" />
+    <ClInclude Include="KernelInlineHookDlg.h" />
     <ClInclude Include="KernelInlineHookTable.h" />
     <ClInclude Include="MiscView.h" />
     <ClInclude Include="ObjectCallbackTable.h" />

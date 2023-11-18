@@ -407,8 +407,9 @@ bool CSystemConfigDlg::InitRoutines(DbgSysCoreInfo* pInfo) {
 		return false;
 
 	pInfo->MiReferenceControlAreaFile = (void*)SymbolHelper::GetKernelSymbolAddressFromName("MiReferenceControlAreaFile");
-	if (!pInfo->MiReferenceControlAreaFile)
-		return false;
+	if (!pInfo->MiReferenceControlAreaFile) {
+		// not exist on win10 1511
+	}
 	return true;
 }
 

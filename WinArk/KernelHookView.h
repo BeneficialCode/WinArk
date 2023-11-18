@@ -32,11 +32,10 @@ public:
 	void InitKernelNotifyTable();
 	void InitMiniFilterTable();
 	void InitWFPFilterTable();
-	void InitInlineHookTable();
 	void InitObCallbackTable();
 
 	enum class TabColumn : int {
-		SSDT,ShadowSSDT,NotifyRoutine,MiniFilter,WFPFilter,InlineHook,ObjectCallback
+		SSDT,ShadowSSDT,NotifyRoutine,MiniFilter,WFPFilter,ObjectCallback
 	};
 private:
 	// 动态创建出来的控件
@@ -47,7 +46,6 @@ private:
 	CKernelNotifyTable* m_KernelNotifyTable{ nullptr };
 	CMiniFilterTable* m_MiniFilterTable{ nullptr };
 	CWFPFilterTable* m_WFPFilterTable{ nullptr };
-	CKernelInlineHookTable* m_InlineHookTable{ nullptr };
 	CObjectCallbackTable* m_ObjectCallbackTable{ nullptr };
 	HWND m_hwndArray[16];
 	int _index = 0;

@@ -1195,7 +1195,7 @@ LRESULT CRegistryManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&){
 		m_Clipboard.Items.push_back(item);
 		m_Clipboard.Operation = ClipboardOperation::Copy;
 	}
-	else {
+	else if (::GetFocus() == m_List) {
 		ATLASSERT(::GetFocus() == m_List);
 		auto count = m_List.GetSelectedCount();
 		ATLASSERT(count >= 1);
@@ -1217,6 +1217,11 @@ LRESULT CRegistryManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&){
 		ClipboardHelper::CopyText(m_hWnd, text);
 		m_Clipboard.Operation = ClipboardOperation::Copy;
 	}
+	else {
+		m_AddressBar.Copy();
+	}
+	
+
 	return 0;
 }
 

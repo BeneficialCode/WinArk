@@ -38,11 +38,14 @@ public:
 		COMMAND_ID_HANDLER(ID_KERNEL_GOTOFILELOCATION,OnGoToFileLocation)
 		COMMAND_ID_HANDLER(ID_KERNEL_DUMP,OnKernelDump)
 		COMMAND_ID_HANDLER(ID_KERNEL_EATHOOKSCAN,OnKernelEATHookScan)
+		COMMAND_ID_HANDLER(ID_KERNEL_INLINE_HOOK_SCAN,OnKernelInlineHookScan)
 	END_MSG_MAP()
 
 	LRESULT OnGoToFileLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnKernelDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnKernelEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnKernelInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/);
