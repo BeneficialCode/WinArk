@@ -816,7 +816,7 @@ void CProcessInlineHookTable::Refresh() {
 					}
 
 					std::vector<RelocInfo> relocs = parser.GetRelocs(local_image_base);
-					RelocateImageByDelta(relocs, real_image_base - parser.GetImageBase());
+					PEParser::RelocateImageByDelta(relocs, real_image_base - parser.GetImageBase());
 				}
 			}
 			else {
@@ -1209,17 +1209,6 @@ bool CProcessInlineHookTable::CheckCode(ULONG_PTR addr, SIZE_T size, ULONG_PTR i
 		VirtualFree(code, 0, MEM_RELEASE);
 	
 	return isHooked;
-}
-
-void CProcessInlineHookTable::RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta) {
-	for (const auto& current_reloc : relocs) {
-		for (auto i = 0u; i < current_reloc.count; ++i) {
-			const uint16_t type = current_reloc.item[i] >> 12;
-			const uint16_t offset = current_reloc.item[i] & 0xFFF;
-			if (type == IMAGE_REL_BASED_DIR64)
-				*reinterpret_cast<uint64_t*>(current_reloc.address + offset) += delta;
-		}
-	}
 }
 
 LRESULT CProcessInlineHookTable::OnRestore(WORD, WORD, HWND, BOOL&) {

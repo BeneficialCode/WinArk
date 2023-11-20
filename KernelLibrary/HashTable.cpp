@@ -104,9 +104,9 @@ PHASH_BUCKET HashTableCleanup(PHASH_TABLE Hash) {
 	return Hash->Buckets;
 }
 
-PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT32 Key, PHASH_BUCKET Bucket) {
+PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket) {
 	UINT64 value = -1ull << (Hash->BucketCount & 0x1F);
-	UINT32 k = value & Key;
+	UINT64 k = value & Key;
 	PHASH_BUCKET pBucket = NULL;
 	BOOL bLastLink = FALSE;
 	if (Bucket) {
@@ -120,11 +120,13 @@ PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT32 Key, PHASH_BUCKET Bucket
 		UINT32 idx = HashTableGetBucketIndex(count, k);
 		pBucket = &Hash->Buckets[idx];
 	}
-	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink;
+	for (bLastLink = HashBucketLastLink(pBucket); 
+		!bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
 		if (k == (value & pBucket->HashValue)) {
-			return pBucket;
+			return (PHASH_BUCKET)pBucket->Hash;
 		}
+		pBucket = (PHASH_BUCKET)pBucket->Hash;
 	}
 	return NULL;
 }
@@ -163,13 +165,13 @@ PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
 	}
 	
 	UINT64 value = -1ull << (Hash->BucketCount & 0x1F);
-	count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-	for (UINT32 j = 0; j < count; ++j) {
+	UINT32 bucketCount = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+	for (UINT32 j = 0; j < bucketCount; ++j) {
 		PHASH_BUCKET pBucket = &Hash->Buckets[j];
 		while (!HashBucketLastLink(pBucket)) {
 			p = pBucket;
-			pBucket = CONTAINING_RECORD(pBucket->Entry.Next, HASH_BUCKET, Entry);
-			UINT32 idx = HashTableGetBucketIndex(count, value & p->HashValue);
+			pBucket = (PHASH_BUCKET)p->Entry.Next;
+			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & p->HashValue);
 			PushEntryList(&pBuckets[idx].Entry, &p->Entry);
 		}
 	}
@@ -204,9 +206,9 @@ PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 				return NULL;
 			if (!HashBucketLastLink(pBucket))
 				break;
-			pBucket = CONTAINING_RECORD(pBucket->Entry.Next, HASH_BUCKET, Entry);
+			pBucket = (PHASH_BUCKET)pBucket->Entry.Next;
 		}
-		PHASH_BUCKET pHashEntry = CONTAINING_RECORD(pBucket->Entry.Next, HASH_BUCKET, Entry);
+		PHASH_BUCKET pHashEntry = (PHASH_BUCKET)pBucket->Hash;
 		count = (Iterator->Bucket - Iterator->Hash->Buckets) >> 3;
 		Iterator->Bucket = pBucket;
 		Iterator->HashEntry = pHashEntry;
@@ -226,7 +228,7 @@ PHASH_BUCKET HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
 
 	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		PHASH_BUCKET p = CONTAINING_RECORD(pBucket->Entry.Next, HASH_BUCKET, Entry);
+		PHASH_BUCKET p = (PHASH_BUCKET)pBucket->Hash;
 		if (p == pHashEntry) {
 			--Iterator->Hash->ItemCount;
 			p->Entry.Next = pHashEntry->Entry.Next;

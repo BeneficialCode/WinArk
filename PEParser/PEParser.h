@@ -222,6 +222,7 @@ public:
 	LARGE_INTEGER GetFileSize() const;
 
 	std::vector<RelocInfo> GetRelocs(void* imageBase);
+	static void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
 
 private:
 	bool IsObjectPe64() const;

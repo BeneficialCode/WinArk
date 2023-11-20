@@ -437,3 +437,14 @@ std::vector<RelocInfo> PEParser::GetRelocs(void* image_base) {
 LARGE_INTEGER PEParser::GetFileSize() const {
 	return _fileSize;
 }
+
+void PEParser::RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta) {
+	for (const auto& current_reloc : relocs) {
+		for (auto i = 0u; i < current_reloc.count; ++i) {
+			const uint16_t type = current_reloc.item[i] >> 12;
+			const uint16_t offset = current_reloc.item[i] & 0xFFF;
+			if (type == IMAGE_REL_BASED_DIR64)
+				*reinterpret_cast<uint64_t*>(current_reloc.address + offset) += delta;
+		}
+	}
+}
