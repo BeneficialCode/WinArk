@@ -66,7 +66,9 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"WinHttpAutoProxySvc",LR"(HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WinHttpAutoProxySvc)"},
 		{ L"VulnerableDriverBlocklistEnable",LR"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Config)"},
 		{ L"Known Dlls",LR"(HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs)"},
-		{ L"Lsa",LR"(HKLM\SYSTEM\CurrentControlSet\Control\Lsa)"}
+		{ L"Lsa",LR"(HKLM\SYSTEM\CurrentControlSet\Control\Lsa)"},
+		{ L"LogonUI",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI)"},
+		{ L"Credential Providers",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers)"},
 	};
 
 	for (const auto& [name, path] : locations) {
