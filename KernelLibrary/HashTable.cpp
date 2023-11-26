@@ -38,11 +38,12 @@ UINT32 HashTableGetBucketIndex(UINT32 bucketCount, UINT64 key) {
 	return (bucketCount - 1) & HashUlongPtr(key);
 }
 
-UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET HashEntry) {
+UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET pBucket) {
 	UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-	UINT64 key = (-1ull << (Hash->BucketCount & 0x1F)) & HashEntry->HashValue;
+	PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+	UINT64 key = (ULONGLONG(-1) << (Hash->BucketCount & 0x1F)) & pEntry->HashVaue;
 	UINT32 idx = HashTableGetBucketIndex(count, key);
-	PushEntryList(&Hash->Buckets[idx].Entry, &HashEntry->Entry);
+	PushEntryList((PSINGLE_LIST_ENTRY)&Hash->Buckets[idx], pBucket->Link);
 	count = Hash->ItemCount + 1;
 	Hash->ItemCount = count;
 	return count;
@@ -105,7 +106,7 @@ PHASH_BUCKET HashTableCleanup(PHASH_TABLE Hash) {
 }
 
 PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket) {
-	UINT64 value = -1ull << (Hash->BucketCount & 0x1F);
+	UINT64 value = ULONGLONG(-1) << (Hash->BucketCount & 0x1F);
 	UINT64 k = value & Key;
 	PHASH_BUCKET pBucket = NULL;
 	BOOL bLastLink = FALSE;
@@ -123,7 +124,8 @@ PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket
 	for (bLastLink = HashBucketLastLink(pBucket); 
 		!bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		if (k == (value & pBucket->HashValue)) {
+		PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+		if (k == (value & pEntry->HashVaue)) {
 			return (PHASH_BUCKET)pBucket->Hash;
 		}
 		pBucket = (PHASH_BUCKET)pBucket->Hash;
@@ -146,7 +148,8 @@ PHASH_TABLE HashTableGetTable(PHASH_BUCKET HashEntry) {
 	pEntry = NULL;
 	do
 	{
-		pEntry = HashTableFindNext(pHash, HashEntry->HashValue, pEntry);
+		PHASH_ENTRY pHashEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+		pEntry = HashTableFindNext(pHash, pHashEntry->HashVaue, pEntry);
 	} while (pEntry && pEntry != HashEntry);
 
 	return pHash;
@@ -164,15 +167,15 @@ PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
 		p->Hash = (ULONG_PTR)Hash | 1;
 	}
 	
-	UINT64 value = -1ull << (Hash->BucketCount & 0x1F);
+	UINT64 value = ULONGLONG(-1) << (Hash->BucketCount & 0x1F);
 	UINT32 bucketCount = (Hash->BucketCount >> 5) & 0x7FFFFFF;
 	for (UINT32 j = 0; j < bucketCount; ++j) {
 		PHASH_BUCKET pBucket = &Hash->Buckets[j];
 		while (!HashBucketLastLink(pBucket)) {
 			p = pBucket;
-			pBucket = (PHASH_BUCKET)p->Entry.Next;
-			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & p->HashValue);
-			PushEntryList(&pBuckets[idx].Entry, &p->Entry);
+			PHASH_ENTRY pEntry = CONTAINING_RECORD(p, HASH_ENTRY, Entry);
+			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & pEntry->HashVaue);
+			PushEntryList((PSINGLE_LIST_ENTRY)&pBuckets[idx], p->Link);
 		}
 	}
 	pOldBuckets = Hash->Buckets;
@@ -197,7 +200,7 @@ PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 	if (!HashEntry || HashBucketLastLink(HashEntry)) {
 		PHASH_TABLE Hash = Iterator->Hash;
 		
-		UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+		count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
 		PHASH_BUCKET pBucket = Iterator->Bucket;
 		PHASH_BUCKET pEnd = &Hash->Buckets[count];
 		while (TRUE)
@@ -206,7 +209,7 @@ PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 				return NULL;
 			if (!HashBucketLastLink(pBucket))
 				break;
-			pBucket = (PHASH_BUCKET)pBucket->Entry.Next;
+			pBucket = (PHASH_BUCKET)pBucket->Link->Next;
 		}
 		PHASH_BUCKET pHashEntry = (PHASH_BUCKET)pBucket->Hash;
 		count = (Iterator->Bucket - Iterator->Hash->Buckets) >> 3;
@@ -231,8 +234,8 @@ PHASH_BUCKET HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
 		PHASH_BUCKET p = (PHASH_BUCKET)pBucket->Hash;
 		if (p == pHashEntry) {
 			--Iterator->Hash->ItemCount;
-			p->Entry.Next = pHashEntry->Entry.Next;
-			pHashEntry->Entry.Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)pHashEntry->Entry.Next | 0x8000000000000002);
+			p->Link->Next = pHashEntry->Link->Next;
+			pHashEntry->Link->Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)pHashEntry->Link->Next | 0x8000000000000002);
 			Iterator->HashEntry = p;
 			return pHashEntry;
 		}

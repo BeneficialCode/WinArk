@@ -21,6 +21,7 @@ HASH_TABLE g_Table;
 struct FullItem {
 	HASH_BUCKET Bucket;
 	ULONG_PTR Value;
+	HASH_ENTRY Entry;
 };
 
 extern "C" 
@@ -35,7 +36,7 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 	if (!pBuckets) {
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
-	HashTableChangeTable(&g_Table, PAGE_SIZE / sizeof(HASH_BUCKET), pBuckets);
+	HashTableChangeTable(&g_Table, PAGE_SIZE / sizeof(SINGLE_LIST_ENTRY), pBuckets);
 
 	do
 	{
@@ -47,7 +48,7 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 
 		UINT64 value = 0x1000;
 		UINT64 key = HashUlongPtr(value);
-		item->Bucket.HashValue = key;
+		item->Entry.HashVaue = key;
 		item->Value = 0x7fff0;
 
 
