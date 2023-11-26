@@ -18,10 +18,15 @@ PUCHAR g_pAddr = (PUCHAR)0xfffff96000082744;
 
 HASH_TABLE g_Table;
 
-struct FullItem {
-	ULONG_PTR Value;
-	HASH_ENTRY Entry;
+
+struct FZG
+{
+	int height;
+	int age;
+	HASH_BUCKET bucket;
+	char* name;
 };
+
 
 extern "C" 
 NTSTATUS
@@ -31,45 +36,66 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 
 	HashTableInitialize(&g_Table, 0, 0, nullptr);
 
-	PHASH_BUCKET pBuckets = (PHASH_BUCKET)ExAllocatePoolWithTag(PagedPool, PAGE_SIZE, 'tset');
+
+	int AllocCount = 100;
+
+
+	PHASH_BUCKET pBuckets = (PHASH_BUCKET)ExAllocatePoolWithTag(PagedPool, AllocCount * sizeof(PSINGLE_LIST_ENTRY), 'tset');
 	if (!pBuckets) {
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
-	HashTableChangeTable(&g_Table, PAGE_SIZE / sizeof(SINGLE_LIST_ENTRY), pBuckets);
+	HashTableChangeTable(&g_Table, AllocCount, (PSINGLE_LIST_ENTRY)pBuckets);
 
 	do
 	{
-		auto item = (FullItem*)ExAllocatePoolWithTag(PagedPool, sizeof(FullItem), 'meti');
-		if (!item)
-			break;
+		auto item = (FZG*)ExAllocatePoolWithTag(PagedPool, sizeof(FZG), 'meti');
+		auto item2 = (FZG*)ExAllocatePoolWithTag(PagedPool, sizeof(FZG), 'meti');
+		RtlZeroMemory(item, sizeof(FZG));
+		RtlZeroMemory(item2, sizeof(FZG));
 
-		RtlZeroMemory(item, sizeof(FullItem));
+		
 
-		UINT64 value = 0x1000;
-		UINT64 key = HashUlongPtr(value);
-		item->Entry.HashVaue = key;
-		item->Value = 0x7fff0;
+		item->age = 18;
+		item->height = 183;
+		item->name = "ShuaiGeZengZhenDeShuai";
+		UINT64 hash = HashUlongPtr((UINT64)item->name);
+		item->bucket.HashValue = hash;
+		
+		item2->age = 19;
+		item2->height = 182;
+		item2->name = "ShuaiGeCunZhenDeShuai";
+		UINT64 hash2 = HashUlongPtr((UINT64)item2->name);
+		item2->bucket.HashValue = hash2;
 
-
-		HashTableInsert(&g_Table, &item->Entry.Link);
+		
+		HashTableInsert(&g_Table, &item->bucket);
+		HashTableInsert(&g_Table, &item2->bucket);
 
 		PHASH_BUCKET pBucket = NULL;
-		FullItem* pData = NULL;
-		pBucket = HashTableFindNext(&g_Table, key, pBucket);
-		if (pBucket != NULL) {
-			pData = CONTAINING_RECORD(pBucket, FullItem, Entry);
-			KdPrint(("Value: %p\n", pData->Value));
+		while (TRUE) {
+			pBucket = HashTableFindNext(&g_Table, hash, pBucket);
+			if (!pBucket) {
+				KdPrint(("Not Found!"));
+				break;
+			}
+
+			FZG* result = CONTAINING_RECORD(pBucket, FZG, bucket);
+			KdPrint(("%d %d %s", result->age, result->height, result->name));
 		}
 
-		HASH_TABLE_ITERATOR iter;
-		HashTableIterInit(&iter, &g_Table);
-		while (HashTableIterGetNext(&iter)) {
-			pData = CONTAINING_RECORD(iter.Bucket, FullItem, Entry);
-			HashTableIterRemove(&iter);
-			KdPrint(("Value: %p\n", pData->Value));
-			ExFreePoolWithTag(pData, 'meti');
-		}
 
+		DbgBreakPoint();
+		HASH_TABLE_ITERATOR Iterator;
+		HashTableIterInit(&Iterator, &g_Table);
+		while (HashTableIterGetNext(&Iterator))
+		{
+			FZG* result = CONTAINING_RECORD(Iterator.HashEntry, FZG, bucket);
+			KdPrint(("result %p", result));
+			HashTableIterRemove(&Iterator);
+			//KdPrint(("Iterator %d %d %s", result->age, result->height, result->name));
+			//ExFreePoolWithTag(result, 'meti');
+			
+		}
 	} while (FALSE);
 
 	
@@ -78,6 +104,22 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 	if (p) {
 		ExFreePoolWithTag(p, 'tset');
 	}
+
+	DbgBreakPoint();
+	HASH_TABLE_ITERATOR iter;
+	HashTableIterInit(&iter, (PHASH_TABLE)(0xfffff80510af0000 + 0x20AF0));
+	while (HashTableIterGetNext(&iter))
+	{
+		KdPrint(("result %p", iter.HashEntry));
+		HashTableIterRemove(&iter);
+	}
+	// 好像不是test.sys蓝的，肯定必现，你没结构体大小 不好验证。
+	// 没问题吧？？？？ 每 怎么验证正确性：） 结构体 你需要它的结构体大小 还有bucket所在的位置
+	// // -0x10 + 0x30 = name 你试一下继续下个段
+	// 不看以下新版本的吗 一样
+	// 代码要动吗 不动 断点断了以后 给我操作 我看看 // 结构体没对上 -0x10 + 0x30不对 // 确实是+0x38 我刚刚看错了 意思就是遍历对了
+	// 按错了 md 重新来一下 我看看为什么蓝屏 这个iter貌似是要配合Remove一起用的
+	// 这样试试？这样我估计会蓝 因为毕竟你是在遍历别人的链表 是没有锁的 别人在你遍历的过程里面 删一个你就炸了 还有可能是这个原因。
 
 	return STATUS_SUCCESS;
 }

@@ -38,12 +38,12 @@ UINT32 HashTableGetBucketIndex(UINT32 bucketCount, UINT64 key) {
 	return (bucketCount - 1) & HashUlongPtr(key);
 }
 
-UINT32 HashTableInsert(PHASH_TABLE Hash, PSINGLE_LIST_ENTRY pListEntry) {
+UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET Entry) {
 	UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-	PHASH_ENTRY pEntry = CONTAINING_RECORD(pListEntry, HASH_ENTRY, Link);
-	UINT64 key = (ULONGLONG(-1) << (Hash->BucketCount & 0x1F)) & pEntry->HashVaue;
+	UINT64 key = (ULONGLONG(-1) << (Hash->BucketCount & 0x1F)) & Entry->HashValue;
 	UINT32 idx = HashTableGetBucketIndex(count, key);
-	PushEntryList((PSINGLE_LIST_ENTRY)&Hash->Buckets[idx], pListEntry);
+
+	PushEntryList(&Hash->Buckets[idx], (PSINGLE_LIST_ENTRY)Entry);
 	count = Hash->ItemCount + 1;
 	Hash->ItemCount = count;
 	return count;
@@ -63,7 +63,7 @@ UINT32 GetHighestBitIndex(UINT32 value) {
 }
 
 void HashTableInitialize(PHASH_TABLE Hash, UINT32 Flags,
-	UINT32 BucketCount, PHASH_BUCKET Buckets) {
+	UINT32 BucketCount, PSINGLE_LIST_ENTRY Buckets) {
 	UINT32 count = RoundToPowerOfTwo(BucketCount, FALSE);
 	if (count > 0x4000000)
 		count = 0x4000000;
@@ -71,11 +71,11 @@ void HashTableInitialize(PHASH_TABLE Hash, UINT32 Flags,
 	Hash->BucketCount = (count << 5) | Hash->BucketCount & 0x1F;
 	Hash->Buckets = Buckets;
 	Hash->BucketCount = Flags & 0x1F | Hash->BucketCount & 0xFFFFFFE0;
-	PHASH_BUCKET p = Buckets;
-	PHASH_BUCKET pEnd = &Buckets[count];
+	PSINGLE_LIST_ENTRY p = Buckets;
+	PHASH_BUCKET pEnd = (PHASH_BUCKET)&Buckets[count];
 	if (p) {
-		while (p < pEnd) {
-			p->Hash = ((ULONG_PTR)Hash | 1);
+		while ((PHASH_BUCKET)p < pEnd) {
+			((PHASH_BUCKET)(p))->Hash = ((ULONG_PTR)Hash | 1);
 			p++;
 		}
 	}
@@ -102,7 +102,7 @@ UINT32 RoundToPowerOfTwo(UINT32 value, BOOLEAN roundUpToNext){
 }
 
 PHASH_BUCKET HashTableCleanup(PHASH_TABLE Hash) {
-	return Hash->Buckets;
+	return (PHASH_BUCKET)Hash->Buckets;
 }
 
 PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket) {
@@ -119,16 +119,16 @@ PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket
 		if (count == 0)
 			return NULL;
 		UINT32 idx = HashTableGetBucketIndex(count, k);
-		pBucket = &Hash->Buckets[idx];
+		pBucket = (PHASH_BUCKET)&Hash->Buckets[idx];
 	}
+
 	for (bLastLink = HashBucketLastLink(pBucket); 
 		!bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Link);
-		if (k == (value & pEntry->HashVaue)) {
-			return (PHASH_BUCKET)pBucket->Hash;
+		if (k == (value & ((PHASH_BUCKET)(pBucket->Link.Next))->HashValue)) {
+			return (PHASH_BUCKET)pBucket->Link.Next;
 		}
-		pBucket = (PHASH_BUCKET)pBucket->Hash;
+		pBucket = (PHASH_BUCKET)pBucket->Link.Next;
 	}
 	return NULL;
 }
@@ -141,45 +141,44 @@ PHASH_TABLE HashTableGetTable(PHASH_BUCKET HashEntry) {
 
 	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		pEntry = (PHASH_BUCKET)pBucket->Link;
+		pEntry = (PHASH_BUCKET)(pBucket->Link.Next);
 	}
 
 	pHash = (PHASH_TABLE)(pBucket->Hash & ~1ull);
 	pEntry = NULL;
 	do
 	{
-		PHASH_ENTRY pHashEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Link);
-		pEntry = HashTableFindNext(pHash, pHashEntry->HashVaue, pEntry);
+		pEntry = HashTableFindNext(pHash, HashEntry->HashValue, pEntry);
 	} while (pEntry && pEntry != HashEntry);
 
 	return pHash;
 }
 
 PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
-	PHASH_BUCKET pBuckets) {
+	PSINGLE_LIST_ENTRY pBuckets) {
 	PHASH_BUCKET pOldBuckets = NULL;
 	UINT32 count = RoundToPowerOfTwo(size, FALSE);
 	if (count > 0x4000000)
 		count = 0x4000000;
-	PHASH_BUCKET p = pBuckets;
-	PHASH_BUCKET pEnd = &pBuckets[count];
-	for (; p < pEnd; ++p) {
-		p->Hash = (ULONG_PTR)Hash | 1;
+	PSINGLE_LIST_ENTRY p = pBuckets;
+	PHASH_BUCKET pEnd = (PHASH_BUCKET)&pBuckets[count];
+	for (; p < (PSINGLE_LIST_ENTRY)pEnd; ++p) {
+		((PHASH_BUCKET)(p))->Hash = (ULONG_PTR)Hash | 1;
 	}
 	
 	UINT64 value = ULONGLONG(-1) << (Hash->BucketCount & 0x1F);
 	UINT32 bucketCount = (Hash->BucketCount >> 5) & 0x7FFFFFF;
 	for (UINT32 j = 0; j < bucketCount; ++j) {
-		PHASH_BUCKET pBucket = &Hash->Buckets[j];
+		PHASH_BUCKET pBucket = (PHASH_BUCKET)&Hash->Buckets[j];
 		while (!HashBucketLastLink(pBucket)) {
-			p = pBucket;
-			PHASH_ENTRY pEntry = CONTAINING_RECORD(p, HASH_ENTRY, Link);
-			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & pEntry->HashVaue);
-			PushEntryList((PSINGLE_LIST_ENTRY)&pBuckets[idx], p->Link);
+			PHASH_ENTRY pEntry = (PHASH_ENTRY)pBucket->Link.Next;
+			pBucket->Link.Next = pBucket->Link.Next->Next;
+			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & pEntry->HashValue);
+			PushEntryList((PSINGLE_LIST_ENTRY)&pBuckets[idx], (PSINGLE_LIST_ENTRY)&p->Next);
 		}
 	}
-	pOldBuckets = Hash->Buckets;
-	Hash->Buckets = pBuckets;
+	pOldBuckets = (PHASH_BUCKET)Hash->Buckets;
+	Hash->Buckets = (PSINGLE_LIST_ENTRY)pBuckets;
 	Hash->BucketCount = (count << 5) | Hash->BucketCount & 0x1F;
 
 	return pOldBuckets;
@@ -189,7 +188,7 @@ PHASH_TABLE_ITERATOR HashTableIterInit(PHASH_TABLE_ITERATOR Iterator,
 	PHASH_TABLE Hash) {
 	RtlZeroMemory(Iterator, sizeof(HASH_TABLE_ITERATOR));
 	Iterator->Hash = Hash;
-	Iterator->Bucket = Hash->Buckets;
+	Iterator->Bucket = (PHASH_BUCKET)Hash->Buckets;
 	Iterator->HashEntry = Iterator->Bucket;
 	return Iterator;
 }
@@ -197,28 +196,32 @@ PHASH_TABLE_ITERATOR HashTableIterInit(PHASH_TABLE_ITERATOR Iterator,
 PHASH_BUCKET HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 	PHASH_BUCKET HashEntry = Iterator->HashEntry;
 	UINT32 count = 0;
+
 	if (!HashEntry || HashBucketLastLink(HashEntry)) {
+		// 这个分支完全没有走过 直接就g了 相当于连链表的大小都没判断过
 		PHASH_TABLE Hash = Iterator->Hash;
-		
+		PSINGLE_LIST_ENTRY pBucket = (PSINGLE_LIST_ENTRY)&Iterator->Bucket->HashValue;
+
 		count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-		PHASH_BUCKET pBucket = Iterator->Bucket;
-		PHASH_BUCKET pEnd = &Hash->Buckets[count];
+		PHASH_BUCKET pEnd = (PHASH_BUCKET)&Hash->Buckets[count];
 		while (TRUE)
 		{
-			if (pBucket >= pEnd)
+			if (pBucket >= (PSINGLE_LIST_ENTRY)pEnd)
 				return NULL;
-			if (!HashBucketLastLink(pBucket))
+			if (!HashBucketLastLink((PHASH_BUCKET)pBucket))
 				break;
-			pBucket = (PHASH_BUCKET)pBucket->Link->Next;
+			pBucket++;
 		}
-		PHASH_BUCKET pHashEntry = (PHASH_BUCKET)pBucket->Hash;
-		count = (Iterator->Bucket - Iterator->Hash->Buckets) >> 3;
-		Iterator->Bucket = pBucket;
+		PHASH_BUCKET pHashEntry = (PHASH_BUCKET)pBucket->Next;
+		Iterator->Bucket = (PHASH_BUCKET)pBucket;
 		Iterator->HashEntry = pHashEntry;
 		return pHashEntry;
 	}
 	else {
-		count = (Iterator->Bucket - Iterator->Hash->Buckets) >> 3;
+		// 一直走的这 一直顺着链表往下遍历 很有可能是过程里面 有成员被移除了。数据不一致，我和他不同步，嗯 你们不同步啊
+		// 这方法都没法让别人遍历了，真好。有因为可以try catch估计问题不大 多写几个判断就行了。啥判断啊，你又没法影响wdfilter MmCopyVirtualMemory 然后 MmIsValid把 估计不会蓝
+		// 不好控制，今天就这样吧？ok
+		Iterator->HashEntry = (PHASH_BUCKET)HashEntry->Link.Next;
 		return Iterator->HashEntry;
 	}
 }
@@ -229,16 +232,15 @@ PHASH_BUCKET HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
 	PHASH_BUCKET pBucket = Iterator->Bucket;
 	BOOLEAN bLastLink = FALSE;
 
-	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink;
-		bLastLink = HashBucketLastLink(pBucket)) {
-		PHASH_BUCKET p = (PHASH_BUCKET)pBucket->Hash;
-		if (p == pHashEntry) {
+	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink; bLastLink = HashBucketLastLink(pBucket)) {
+		if (pBucket == pHashEntry) {
+			pBucket->Hash = pHashEntry->Hash;
 			--Iterator->Hash->ItemCount;
-			p->Link->Next = pHashEntry->Link->Next;
-			pHashEntry->Link->Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)pHashEntry->Link->Next | 0x8000000000000002);
-			Iterator->HashEntry = p;
+			pHashEntry->Hash |= 0x8000000000000002ui64;
+			Iterator->HashEntry = pBucket;
 			return pHashEntry;
 		}
+		pBucket = (PHASH_BUCKET)pBucket->Link.Next;
 	}
 
 	return NULL;
