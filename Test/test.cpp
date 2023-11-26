@@ -19,7 +19,6 @@ PUCHAR g_pAddr = (PUCHAR)0xfffff96000082744;
 HASH_TABLE g_Table;
 
 struct FullItem {
-	HASH_BUCKET Bucket;
 	ULONG_PTR Value;
 	HASH_ENTRY Entry;
 };
@@ -52,20 +51,20 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 		item->Value = 0x7fff0;
 
 
-		HashTableInsert(&g_Table, &item->Bucket);
+		HashTableInsert(&g_Table, &item->Entry.Link);
 
 		PHASH_BUCKET pBucket = NULL;
 		FullItem* pData = NULL;
 		pBucket = HashTableFindNext(&g_Table, key, pBucket);
 		if (pBucket != NULL) {
-			pData = CONTAINING_RECORD(pBucket, FullItem, Bucket);
+			pData = CONTAINING_RECORD(pBucket, FullItem, Entry);
 			KdPrint(("Value: %p\n", pData->Value));
 		}
 
 		HASH_TABLE_ITERATOR iter;
 		HashTableIterInit(&iter, &g_Table);
 		while (HashTableIterGetNext(&iter)) {
-			pData = CONTAINING_RECORD(iter.Bucket, FullItem, Bucket);
+			pData = CONTAINING_RECORD(iter.Bucket, FullItem, Entry);
 			HashTableIterRemove(&iter);
 			KdPrint(("Value: %p\n", pData->Value));
 			ExFreePoolWithTag(pData, 'meti');

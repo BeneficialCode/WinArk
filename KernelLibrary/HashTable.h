@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct _HASH_ENTRY {
-	SINGLE_LIST_ENTRY Entry;
+	SINGLE_LIST_ENTRY Link;
 	ULONG_PTR HashVaue;
 }HASH_ENTRY, * PHASH_ENTRY;
 
@@ -37,7 +37,7 @@ UINT64 HashUStringUpcase(PWCH pBuffer, int len);
 
 UINT32 HashTableGetBucketIndex(UINT32 bucketCount, UINT64 key);
 
-UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET pBucket);
+UINT32 HashTableInsert(PHASH_TABLE Hash, PSINGLE_LIST_ENTRY pListEntry);
 
 BOOLEAN HashBucketLastLink(PHASH_BUCKET bucket);
 

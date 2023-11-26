@@ -38,12 +38,12 @@ UINT32 HashTableGetBucketIndex(UINT32 bucketCount, UINT64 key) {
 	return (bucketCount - 1) & HashUlongPtr(key);
 }
 
-UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET pBucket) {
+UINT32 HashTableInsert(PHASH_TABLE Hash, PSINGLE_LIST_ENTRY pListEntry) {
 	UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-	PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+	PHASH_ENTRY pEntry = CONTAINING_RECORD(pListEntry, HASH_ENTRY, Link);
 	UINT64 key = (ULONGLONG(-1) << (Hash->BucketCount & 0x1F)) & pEntry->HashVaue;
 	UINT32 idx = HashTableGetBucketIndex(count, key);
-	PushEntryList((PSINGLE_LIST_ENTRY)&Hash->Buckets[idx], pBucket->Link);
+	PushEntryList((PSINGLE_LIST_ENTRY)&Hash->Buckets[idx], pListEntry);
 	count = Hash->ItemCount + 1;
 	Hash->ItemCount = count;
 	return count;
@@ -124,7 +124,7 @@ PHASH_BUCKET HashTableFindNext(PHASH_TABLE Hash, UINT64 Key, PHASH_BUCKET Bucket
 	for (bLastLink = HashBucketLastLink(pBucket); 
 		!bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+		PHASH_ENTRY pEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Link);
 		if (k == (value & pEntry->HashVaue)) {
 			return (PHASH_BUCKET)pBucket->Hash;
 		}
@@ -141,14 +141,14 @@ PHASH_TABLE HashTableGetTable(PHASH_BUCKET HashEntry) {
 
 	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink;
 		bLastLink = HashBucketLastLink(pBucket)) {
-		pEntry = pBucket;
+		pEntry = (PHASH_BUCKET)pBucket->Link;
 	}
 
 	pHash = (PHASH_TABLE)(pBucket->Hash & ~1ull);
 	pEntry = NULL;
 	do
 	{
-		PHASH_ENTRY pHashEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Entry);
+		PHASH_ENTRY pHashEntry = CONTAINING_RECORD(pBucket, HASH_ENTRY, Link);
 		pEntry = HashTableFindNext(pHash, pHashEntry->HashVaue, pEntry);
 	} while (pEntry && pEntry != HashEntry);
 
@@ -173,7 +173,7 @@ PHASH_BUCKET HashTableChangeTable(PHASH_TABLE Hash, ULONG size,
 		PHASH_BUCKET pBucket = &Hash->Buckets[j];
 		while (!HashBucketLastLink(pBucket)) {
 			p = pBucket;
-			PHASH_ENTRY pEntry = CONTAINING_RECORD(p, HASH_ENTRY, Entry);
+			PHASH_ENTRY pEntry = CONTAINING_RECORD(p, HASH_ENTRY, Link);
 			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & pEntry->HashVaue);
 			PushEntryList((PSINGLE_LIST_ENTRY)&pBuckets[idx], p->Link);
 		}
