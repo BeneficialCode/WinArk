@@ -153,7 +153,7 @@ PSINGLE_LIST_ENTRY HashTableFindNext(PHASH_TABLE Hash, UINT64 HashValue, PSINGLE
 	for (bLastLink = HashBucketLastLink(p);
 		!bLastLink;
 		bLastLink = HashBucketLastLink(p)) {
-		UINT64 k2 = value & ((PHASH_BUCKET)p)->HashValue;
+		UINT64 k2 = value & ((PHASH_BUCKET)p->Next)->HashValue;
 		if (k1 == k2) {
 			return p->Next;
 		}
