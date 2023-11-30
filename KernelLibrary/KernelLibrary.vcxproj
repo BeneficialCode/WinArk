@@ -252,6 +252,7 @@
     <ClInclude Include="DevMonManager.h" />
     <ClInclude Include="disasm.h" />
     <ClInclude Include="FilterFileNameInformation.h" />
+    <ClInclude Include="hal.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="IoTimer.h" />
     <ClInclude Include="KernelTimer.h" />
