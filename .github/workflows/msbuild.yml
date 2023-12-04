@@ -37,4 +37,4 @@ jobs:
 
     - name: Build kernel-mode
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild Anti-Rootkit.sln -target:Anti-Rootkit:Rebuild /p:Configuration="Release";Platform=X64
+      run: msbuild Anti-Rootkit.sln -target:Anti-Rootkit:Rebuild '/p:Configuration="Release";Platform=X64'
