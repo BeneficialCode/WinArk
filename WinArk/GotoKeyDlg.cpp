@@ -69,6 +69,8 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Lsa",LR"(HKLM\SYSTEM\CurrentControlSet\Control\Lsa)"},
 		{ L"LogonUI",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI)"},
 		{ L"Credential Providers",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers)"},
+		{ L"DisallowRun",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun)"},
+		{ L"DisablePath",LR"(HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\0\Paths)"},
 	};
 
 	for (const auto& [name, path] : locations) {
