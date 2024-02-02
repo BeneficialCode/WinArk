@@ -26,15 +26,15 @@ permissions:
 jobs:
   build_driver:
     name: build AntiRootkit.sys
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v2
       with: { submodules: recursive}
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.3.1
+      uses: microsoft/setup-msbuild@v1.1.3
       with: {vs-version: '[16.11,]'}
 
     - name: Build kernel-mode
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild '/p:Configuration=${{env.BUILD_CONFIGURATION}};Platform=X64' ${{env.SOLUTION_FILE_PATH}} /t:Anti-Rootkit:Rebuild
+      run: msbuild.exe Anti-Rootkit.sln -target:Anti-Rootkit:Rebuild '/p:Configuration="Release";Platform=X64'
