@@ -191,7 +191,6 @@ void CWindowsView::InitTree() {
 	if (!hDesktop)
 		return;
 
-	m_SelectedHwnd.Attach(hDesktop);
 	CWaitCursor wait;
 
 	m_Tree.LockWindowUpdate(TRUE);
@@ -201,14 +200,15 @@ void CWindowsView::InitTree() {
 	m_Deleting = false;
 
 	m_DesktopNode = AddNode(hDesktop, TVI_ROOT);
+
 	::EnumWindows([](auto hWnd, auto lp)->BOOL {
 		auto pThis = (CWindowsView*)lp;
 		pThis->AddNode(hWnd, pThis->m_DesktopNode);
 		return TRUE;
 		}, reinterpret_cast<LPARAM>(this));
+
 	m_DesktopNode.Expand(TVE_EXPAND);
 	m_Tree.LockWindowUpdate(FALSE);
-
 	m_DesktopNode.Select();
 	m_DesktopNode.EnsureVisible();
 	m_Tree.SetScrollPos(SB_HORZ, 0);
@@ -485,33 +485,44 @@ LRESULT CWindowsView::OnNodeSelected(int, LPNMHDR, BOOL&) {
 
 LRESULT CWindowsView::OnWindowShow(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_Selected);
-	m_SelectedHwnd.ShowWindow(SW_SHOW);
+	if (m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(SW_SHOW);
 
 	return 0;
 }
 
 LRESULT CWindowsView::OnWindowHide(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_Selected);
-	m_SelectedHwnd.ShowWindow(SW_HIDE);
+	if (m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(SW_HIDE);
+	return 0;
+}
+
+LRESULT CWindowsView::OnWindowClose(WORD, WORD, HWND, BOOL&) {
+	if (m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(WM_CLOSE);
 	return 0;
 }
 
 LRESULT CWindowsView::OnWindowMinimize(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_Selected);
-	m_SelectedHwnd.ShowWindow(SW_MINIMIZE);
+	if(m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(SW_MINIMIZE);
 	return 0;
 }
 
 LRESULT CWindowsView::OnWindowMaximize(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_Selected);
-	m_SelectedHwnd.ShowWindow(SW_MAXIMIZE);
+	if(m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(SW_MAXIMIZE);
 
 	return 0;
 }
 
 LRESULT CWindowsView::OnWindowRestore(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_Selected);
-	m_SelectedHwnd.ShowWindow(SW_RESTORE);
+	if(m_SelectedHwnd)
+		m_SelectedHwnd.ShowWindowAsync(SW_RESTORE);
 	return 0;
 }
 
