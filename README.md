@@ -9,7 +9,7 @@
 
 If you have any questions about the WinArk, just don't hesitate to join this group.
 
-Telegram Group: t.me/WinArk_dev
+Telegram Group: [t.me/WinArk_dev](https://t.me/WinArk_dev)
 
 ### If you don't want to become a contributor or submit issues, please don't join this group. 
 
