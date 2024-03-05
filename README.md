@@ -7,7 +7,9 @@
 ## Compiling
 * [How to build WinArk](doc/build-winark.md)
 
-QQ Group: 392097880
+If you have any questions about the WinArk, just don't hesitate to join this group.
+
+Telegram Group: [t.me/WinArk_dev](https://t.me/WinArk_dev)
 
 ### If you don't want to become a contributor or submit issues, please don't join this group. 
 
@@ -15,6 +17,7 @@ QQ Group: 392097880
 Contributing to WinArk is super appreciated.
 If you want to contribute to WinArk, please read the [Coding Conventions](doc/Coding%20Conventions.md)
 
+If anyone wants to support me, you may do so by donating me some money: https://www.paypal.me/VirtualCCSimon
 
 ## Screenshots
 
