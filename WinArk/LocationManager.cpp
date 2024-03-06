@@ -94,12 +94,18 @@ bool LocationManager::SaveToFile(PCWSTR path) const {
 bool LocationManager::Load(PCWSTR path) {
 	WCHAR fullpath[MAX_PATH];
 	::GetModuleFileName(nullptr, fullpath, _countof(fullpath));
-	auto ch = fullpath[3];
-	fullpath[3] = 0;
-	if (::GetDriveType(fullpath) == DRIVE_FIXED)
+	auto dot = wcsrchr(fullpath, L'.');
+	if (!dot)
+		return false;
+
+	*dot = 0;
+	wcscat_s(fullpath, L".ini");
+
+	if (::GetFileAttributes(fullpath) == INVALID_FILE_ATTRIBUTES) {
 		return LoadFromRegistry(path);
-	fullpath[3] = ch;
-	wcscpy_s(fullpath + wcslen(fullpath) - 3, _countof(fullpath), L"ini");
+	}
+
+	// load from file
 	return LoadFromFile(fullpath);
 }
 
