@@ -565,7 +565,28 @@ CTreeItem CRegistryManagerView::InsertKeyItem(HTREEITEM hParent, PCWSTR name, No
 HTREEITEM CRegistryManagerView::BuildKeyPath(const CString& path, bool accessible) {
 	auto hItem = path[0] == L'\\' ? m_hRealReg : m_hStdReg;
 	CString name;
-	int start = path[0] == L'\\' ? 10 : 0;
+
+	int start = path[0] == L'\\' ? 9 : 0;
+
+	if (path.Left(2) == L"\\\\") {
+		// remote Registry
+		start = path.Find(L"\\", 2);
+		auto remoteName = path.Mid(2, start - 2);
+		hItem = m_Tree.GetRootItem().GetNextSibling();
+
+		while (hItem) {
+			CString text;
+			m_Tree.GetItemText(hItem, text);
+			if (text.CompareNoCase(remoteName) == 0)
+				break;
+
+			hItem = m_Tree.GetNextSiblingItem(hItem);
+		}
+
+		if (!hItem)
+			return nullptr;
+	}
+
 	TreeHelper th(m_Tree);
 	while (!(name = path.Tokenize(L"\\", start)).IsEmpty()) {
 		auto hChild = th.FindChild(hItem, name);
@@ -1110,9 +1131,15 @@ void CRegistryManagerView::RefreshFull(HTREEITEM hItem) {
 }
 
 LRESULT CRegistryManagerView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
-	RefreshFull(m_hStdReg);
-	RefreshFull(m_hRealReg);
-	UpdateList();
+	auto path = GetCurrentKeyPath();
+	TreeHelper th(m_Tree);
+	th.DoForEachItem(m_hStdReg, 0, [this](auto hItem, auto state) {
+		RefreshItem(hItem);
+		});
+	th.DoForEachItem(m_hRealReg, 0, [this](auto hItem, auto state) {
+		RefreshItem(hItem);
+		});
+	GotoKey(path);
 	return 0;
 }
 
