@@ -7,6 +7,7 @@
 #include "Logging.h"
 #include "Zydis/Zydis.h"
 #include "reflector.h"
+#include "hal.h"
 
 SystemServiceTable* khook::_ntTable = nullptr;
 SystemServiceTable* khook::_win32kTable = nullptr;

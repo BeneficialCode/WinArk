@@ -7,14 +7,15 @@
 ## Compiling
 * [How to build WinArk](doc/build-winark.md)
 
-QQ Group: 392097880
+If you have any questions about the WinArk, just don't hesitate to join this group.
+
+Telegram Group: [t.me/WinArk_dev](https://t.me/WinArk_dev)
 
 ### If you don't want to become a contributor or submit issues, please don't join this group. 
 
 ## Contributing
 Contributing to WinArk is super appreciated.
 If you want to contribute to WinArk, please read the [Coding Conventions](doc/Coding%20Conventions.md)
-
 
 ## Screenshots
 
@@ -36,7 +37,6 @@ If you want to contribute to WinArk, please read the [Coding Conventions](doc/Co
 - Core features by [SystemExplorer](https://github.com/zodiacon/SystemExplorer)
 - Disassembly powered by [capstone](https://github.com/capstone-engine/capstone)
 - PE parser by [TotalPE](https://github.com/zodiacon/PEParser)
-- Network Explorer by [NetworkExplorer](https://github.com/zodiacon/NetworkExplorer)
 - Registry Explorer by [TotalRegistry](https://github.com/zodiacon/TotalRegistry)
 - DeviceExplorer by [DeviceExplorer](https://github.com/zodiacon/DeviceExplorer)
 - Event Trace by [ProcMonXv2](https://github.com/zodiacon/ProcMonXv2)
