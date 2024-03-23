@@ -110,14 +110,14 @@ void* PEParser::GetBaseAddress() const {
 	return _address;
 }
 
-CString PEParser::GetSectionName(ULONG section) const {
+std::string PEParser::GetSectionName(ULONG section) const {
 	auto header = GetSectionHeader(section);
 	if (header == nullptr)
-		return L"";
+		return "";
 
 	if (header->Name[IMAGE_SIZEOF_SHORT_NAME - 1] == '\0')
-		return CString((PCSTR)header->Name);
-	return CString((PCSTR)header->Name, IMAGE_SIZEOF_SHORT_NAME);
+		return std::string((PCSTR)header->Name);
+	return std::string((PCSTR)header->Name, IMAGE_SIZEOF_SHORT_NAME);
 }
 
 std::vector<ExportedSymbol> PEParser::GetExports() const {
@@ -251,10 +251,17 @@ void* PEParser::GetAddress(unsigned rva) const {
 }
 
 SubsystemType PEParser::GetSubsystemType() const {
-	return static_cast<SubsystemType>(GetOptionalHeader64().Subsystem);
+	if (IsPe64())
+		return static_cast<SubsystemType>(GetOptionalHeader64().Subsystem);
+	else
+		return static_cast<SubsystemType>(GetOptionalHeader32().Subsystem);
 }
 
 void PEParser::CheckValidity() {
+	if (_address == nullptr) {
+		_valid = false;
+		return;
+	}
 	if (::strncmp((PCSTR)_address, "!<arch>\n", 8) == 0) {
 		// LIB import library
 		_importLib = true;
