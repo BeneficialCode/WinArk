@@ -56,17 +56,18 @@ typedef struct _EX_CALLBACK
 #define MAX_FAST_REFS 7
 #endif
 
-typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
+typedef struct _CM_CALLBACK_CONTEXT
 {
-	LIST_ENTRY		ListEntry;
-	ULONG           PreCallListCount;
-	ULONG			Pad;
+	LIST_ENTRY		CallbackListEntry;
+	ULONG			ActiveCalls;
 	LARGE_INTEGER	Cookie;
 	PVOID           CallerContext;
 	PVOID			Function;
 	UNICODE_STRING	Altitude;
 	LIST_ENTRY		ObjectContextListHead;
-} CM_CALLBACK_CONTEXT_BLOCKEX, * PCM_CALLBACK_CONTEXT_BLOCKEX;
+} CM_CALLBACK_CONTEXT, * PCM_CALLBACK_CONTEXT;
+
+
 
 
 struct _OB_CALLBACK_BLOCK;

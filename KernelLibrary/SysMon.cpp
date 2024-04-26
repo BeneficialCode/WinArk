@@ -521,10 +521,10 @@ bool EnumRegistryNotify(PLIST_ENTRY pListHead,CmCallbackInfo* info) {
 
 	PLIST_ENTRY callbackListHead = pListHead;
 	PLIST_ENTRY nextEntry = callbackListHead->Flink;
-	PCM_CALLBACK_CONTEXT_BLOCKEX callbackEntry = nullptr;
+	PCM_CALLBACK_CONTEXT callbackEntry = nullptr;
 	int i = 0;
 	while (nextEntry != callbackListHead) {
-		callbackEntry = CONTAINING_RECORD(nextEntry, CM_CALLBACK_CONTEXT_BLOCKEX, ListEntry);
+		callbackEntry = CONTAINING_RECORD(nextEntry, CM_CALLBACK_CONTEXT, CallbackListEntry);
 		LogInfo("Cookie %p, Function: %p\n", callbackEntry->Cookie, callbackEntry->Function);
 		info[i].Address = callbackEntry->Function;
 		info[i].Cookie = callbackEntry->Cookie;
