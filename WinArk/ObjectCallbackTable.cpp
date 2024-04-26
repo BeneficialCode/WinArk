@@ -237,7 +237,7 @@ void CObjectCallbackTable::Refresh() {
 				ObjectCallbackInfo info;
 				info.CallbackEntry = p[i].CallbackEntry;
 				info.Operations = p[i].Operations;
-				info.Enabled = p[i].Enabled;
+				info.Enabled = p[i].Flags;
 				info.RegistrationHandle = p[i].RegistrationHandle;
 				info.PreOperation = p[i].PreOperation;
 				info.PostOperation = p[i].PostOperation;

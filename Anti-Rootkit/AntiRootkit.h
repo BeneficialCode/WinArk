@@ -223,7 +223,7 @@ struct ObCallbackInfo{
 	PVOID PostOperation;
 	ObjectCallbackType Type;
 	PVOID CallbackEntry;
-	bool Enabled;
+	ULONG Flags;
 	ULONG Operations;
 };
 
