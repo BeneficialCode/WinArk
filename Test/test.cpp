@@ -2,7 +2,6 @@
 #include <fltKernel.h>
 #include <minwindef.h>
 #include <ntstrsafe.h>
-#include "..\KernelLibrary\reflector.h"
 #include "..\KernelLibrary\detours.h"
 #include "..\KernelLibrary\khook.h"
 #include "..\KernelLibrary\HashTable.h"
@@ -59,13 +58,13 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 		item->height = 183;
 		item->name = "ShuaiGeZengZhenDeShuai";
 		UINT64 hash = HashUlongPtr((UINT64)item->name);
-		item->bucket.HashValue = hash;
+		item->bucket.Key = hash;
 		
 		item2->age = 19;
 		item2->height = 182;
 		item2->name = "ShuaiGeCunZhenDeShuai";
 		UINT64 hash2 = HashUlongPtr((UINT64)item2->name);
-		item2->bucket.HashValue = hash2;
+		item2->bucket.Key = hash2;
 
 		
 		HashTableInsert(&g_Table, &item->bucket);
@@ -107,7 +106,8 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 
 	DbgBreakPoint();
 	HASH_TABLE_ITERATOR iter;
-	HashTableIterInit(&iter, (PHASH_TABLE)(0xfffff80010bf0000 + 0x20AF0));
+	// WdBoot.sys	0xFFFFF80167830000	0xA000	25	Microsoft Corporation	C:\Windows\system32\drivers\wd\WdBoot.sys
+	HashTableIterInit(&iter, (PHASH_TABLE)(0xFFFFF80167830000 + 0x20AF0));
 	while (HashTableIterGetNext(&iter))
 	{
 		KdPrint(("result %p", iter.HashEntry));
