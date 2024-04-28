@@ -265,8 +265,11 @@ LRESULT CBigPoolView::OnGetDisplayInfo(int, LPNMHDR nmhdr, BOOL&) {
 				break;
 
 			case ColumnType::VirtualAddress:
-				StringCchPrintf(item.pszText, item.cchTextMax, L"0x%p", info.BigPoolInfo.VirtualAddress);
+			{
+				ULONG_PTR addr = info.BigPoolInfo.NonPaged ? (ULONG_PTR)info.BigPoolInfo.VirtualAddress - 1 : (ULONG_PTR)info.BigPoolInfo.VirtualAddress;
+				StringCchPrintf(item.pszText, item.cchTextMax, L"0x%p", addr);
 				break;
+			}
 			
 			case ColumnType::Size:
 			{
