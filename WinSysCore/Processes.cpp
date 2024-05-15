@@ -387,5 +387,7 @@ std::vector<std::pair<std::wstring, std::wstring>> Process::GetEnvironment(HANDL
 		env.push_back(std::move(var));
 	}
 
+	free(buffer);
+
 	return env;
 }
