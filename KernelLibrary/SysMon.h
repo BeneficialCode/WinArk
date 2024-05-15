@@ -56,30 +56,31 @@ typedef struct _EX_CALLBACK
 #define MAX_FAST_REFS 7
 #endif
 
-typedef struct _CM_CALLBACK_CONTEXT_BLOCKEX
+typedef struct _CM_CALLBACK_CONTEXT
 {
-	LIST_ENTRY		ListEntry;
-	ULONG           PreCallListCount;
-	ULONG			Pad;
+	LIST_ENTRY		CallbackListEntry;
+	ULONG			ActiveCalls;
 	LARGE_INTEGER	Cookie;
 	PVOID           CallerContext;
 	PVOID			Function;
 	UNICODE_STRING	Altitude;
 	LIST_ENTRY		ObjectContextListHead;
-} CM_CALLBACK_CONTEXT_BLOCKEX, * PCM_CALLBACK_CONTEXT_BLOCKEX;
+} CM_CALLBACK_CONTEXT, * PCM_CALLBACK_CONTEXT;
+
+
 
 
 struct _OB_CALLBACK_BLOCK;
 
 typedef struct _OB_CALLBACK_ENTRY {
-	LIST_ENTRY CallbackList;
+	LIST_ENTRY CallbackListEntry;
 	OB_OPERATION Operations;						// 1 for Creations, 2 for Duplications
-	BOOLEAN Enabled;
-	struct _OB_CALLBACK_BLOCK* RegistrationHandle;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
+	ULONG Flags;
+	struct _OB_CALLBACK_BLOCK* Registration;	// Points to the OB_CALLBACK_BLOCK used for ObUnRegisterCallback
 	POBJECT_TYPE ObjectType;
-	POB_PRE_OPERATION_CALLBACK PreOperation;
-	POB_POST_OPERATION_CALLBACK PostOperation;
-	EX_RUNDOWN_REF RundownProtect;
+	POB_PRE_OPERATION_CALLBACK PreCallback;
+	POB_POST_OPERATION_CALLBACK PostCallback;
+	EX_RUNDOWN_REF RundownReference;
 }OB_CALLBACK_ENTRY, * POB_CALLBACK_ENTRY;
 
 
@@ -88,10 +89,10 @@ typedef struct _OB_CALLBACK_ENTRY {
 // x64 0x20 0x40	32	64
 typedef struct _OB_CALLBACK_BLOCK {
 	USHORT Version;
-	USHORT Count;
+	USHORT RegistrationCount;
 	POB_OPERATION_REGISTRATION RegistrationContext;
 	UNICODE_STRING Altitude;
-	OB_CALLBACK_ENTRY Items[ANYSIZE_ARRAY]; // Callback array
+	OB_CALLBACK_ENTRY CallbackContext[ANYSIZE_ARRAY]; // Callback array
 }OB_CALLBACK_BLOCK, * POB_CALLBACK_BLOCK;
 
 

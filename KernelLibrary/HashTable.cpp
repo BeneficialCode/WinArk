@@ -21,15 +21,15 @@ UINT32 GetHighestBitIndex(UINT32 value) {
 	return index;
 }
 
-void HashTableInitialize(PHASH_TABLE Hash, UINT32 Flags,
+void HashTableInitialize(PHASH_TABLE Hash, UINT32 MaskBitCount,
 	UINT32 BucketCount, PSINGLE_LIST_ENTRY Buckets) {
 	UINT32 count = RoundToPowerOfTwo(BucketCount, FALSE);
 	if (count > 0x4000000)
 		count = 0x4000000;
-	Hash->ItemCount = 0;
-	Hash->BucketCount = (count << 5) | Hash->BucketCount & 0x1F;
+	Hash->EntryCount = 0;
+	Hash->BucketCount = count;
 	Hash->Buckets = Buckets;
-	Hash->BucketCount = Flags & 0x1F | Hash->BucketCount & 0xFFFFFFE0;
+	Hash->MaskBitCount = MaskBitCount;
 	PSINGLE_LIST_ENTRY p = Buckets;
 	PSINGLE_LIST_ENTRY pEnd = &Buckets[count];
 	if (p) {
@@ -87,14 +87,13 @@ UINT32 HashTableGetBucketIndex(UINT32 bucketCount, UINT64 key) {
 }
 
 UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET pBucket) {
-	UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
-	UINT32 flags = Hash->BucketCount & 0x1F;
-	UINT64 key = (MAXULONG_PTR << flags) & pBucket->HashValue;
+	UINT32 count = Hash->BucketCount;
+	UINT64 key = (MAXULONG_PTR << Hash->MaskBitCount) & pBucket->Key;
 	UINT32 idx = HashTableGetBucketIndex(count, key);
 
 	PushEntryList(&Hash->Buckets[idx], (PSINGLE_LIST_ENTRY)pBucket);
-	count = Hash->ItemCount + 1;
-	Hash->ItemCount = count;
+	count = Hash->EntryCount + 1;
+	Hash->EntryCount = count;
 	return count;
 }
 
@@ -113,14 +112,14 @@ PSINGLE_LIST_ENTRY HashTableChangeTable(PHASH_TABLE Hash, ULONG allocCount, PSIN
 		p->Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)Hash | 1);
 	}
 
-	UINT64 value = MAXULONG_PTR << (Hash->BucketCount & 0x1F);
-	UINT32 bucketCount = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+	UINT64 value = MAXULONG_PTR << Hash->MaskBitCount;
+	UINT32 bucketCount = Hash->BucketCount;
 	for (UINT32 j = 0; j < bucketCount; ++j) {
 		PSINGLE_LIST_ENTRY pBucket = &Hash->Buckets[j];
 		while (!HashBucketLastLink(pBucket)) {
 			PSINGLE_LIST_ENTRY pEntry = pBucket->Next;
 			pBucket->Next = pBucket->Next->Next;
-			UINT64 hashValue = ((PHASH_BUCKET)pEntry)->HashValue;
+			UINT64 hashValue = ((PHASH_BUCKET)pEntry)->Key;
 			UINT32 idx = HashTableGetBucketIndex(bucketCount, value & hashValue);
 			PushEntryList(&pBuckets[idx], pEntry);
 		}
@@ -128,13 +127,13 @@ PSINGLE_LIST_ENTRY HashTableChangeTable(PHASH_TABLE Hash, ULONG allocCount, PSIN
 
 	pOldBuckets = Hash->Buckets;
 	Hash->Buckets = pBuckets;
-	Hash->BucketCount = (count << 5) | Hash->BucketCount & 0x1F;
+	Hash->BucketCount = count;
 
 	return pOldBuckets;
 }
 
 PSINGLE_LIST_ENTRY HashTableFindNext(PHASH_TABLE Hash, UINT64 HashValue, PSINGLE_LIST_ENTRY pLink) {
-	UINT64 value = MAXULONG_PTR << (Hash->BucketCount & 0x1F);
+	UINT64 value = MAXULONG_PTR << Hash->MaskBitCount;
 	UINT64 k1 = value & HashValue;
 	BOOL bLastLink = FALSE;
 	PSINGLE_LIST_ENTRY p = pLink;
@@ -143,7 +142,7 @@ PSINGLE_LIST_ENTRY HashTableFindNext(PHASH_TABLE Hash, UINT64 HashValue, PSINGLE
 		bLastLink = HashBucketLastLink(pLink);
 	}
 	else {
-		UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+		UINT32 count = Hash->BucketCount;
 		if (count == 0)
 			return NULL;
 		UINT32 idx = HashTableGetBucketIndex(count, k1);
@@ -153,7 +152,7 @@ PSINGLE_LIST_ENTRY HashTableFindNext(PHASH_TABLE Hash, UINT64 HashValue, PSINGLE
 	for (bLastLink = HashBucketLastLink(p);
 		!bLastLink;
 		bLastLink = HashBucketLastLink(p)) {
-		UINT64 k2 = value & ((PHASH_BUCKET)p->Next)->HashValue;
+		UINT64 k2 = value & ((PHASH_BUCKET)p->Next)->Key;
 		if (k1 == k2) {
 			return p->Next;
 		}
@@ -177,7 +176,7 @@ PHASH_TABLE HashTableGetTable(PSINGLE_LIST_ENTRY HashEntry) {
 	PSINGLE_LIST_ENTRY pEntry = NULL;
 	do
 	{
-		UINT64 hashValue = ((PHASH_BUCKET)HashEntry)->HashValue;
+		UINT64 hashValue = ((PHASH_BUCKET)HashEntry)->Key;
 		pEntry = HashTableFindNext(pHash, hashValue, pEntry);
 	} while (pEntry && pEntry != HashEntry);
 
@@ -189,22 +188,22 @@ PSINGLE_LIST_ENTRY HashTableCleanup(PHASH_TABLE Hash) {
 }
 
 PSINGLE_LIST_ENTRY HashTableRemoveKey(PHASH_TABLE Hash, UINT64 HashValue) {
-	if (!Hash->ItemCount)
+	if (!Hash->EntryCount)
 		return NULL;
 
-	UINT64 value = MAXULONG_PTR << (Hash->BucketCount & 0x1F);
+	UINT64 value = MAXULONG_PTR << Hash->MaskBitCount;
 	UINT64 k1 = value & HashValue;
-	UINT32 count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+	UINT32 count = Hash->BucketCount;
 	UINT32 idx = HashTableGetBucketIndex(count, k1);
 	PSINGLE_LIST_ENTRY p = &Hash->Buckets[idx];
 
 	BOOL bLastLink;
 	for (bLastLink = HashBucketLastLink(p); !bLastLink; bLastLink = HashBucketLastLink(p)) {
 		PSINGLE_LIST_ENTRY pNext = p->Next;
-		UINT64 k2 = value & ((PHASH_BUCKET)p)->HashValue;
+		UINT64 k2 = value & ((PHASH_BUCKET)p)->Key;
 		if (k1 == k2) {
 			p->Next = pNext->Next;
-			--Hash->ItemCount;
+			--Hash->EntryCount;
 			pNext->Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)pNext->Next | 0x8000000000000002);
 			return p->Next;
 		}
@@ -229,7 +228,7 @@ PSINGLE_LIST_ENTRY HashTableIterGetNext(PHASH_TABLE_ITERATOR Iterator) {
 		PHASH_TABLE Hash = Iterator->Hash;
 		PSINGLE_LIST_ENTRY pBucket = Iterator->Bucket + 1;
 
-		count = (Hash->BucketCount >> 5) & 0x7FFFFFF;
+		count = Hash->BucketCount;
 		PSINGLE_LIST_ENTRY pEnd = &Hash->Buckets[count];
 		while (TRUE)
 		{
@@ -258,7 +257,7 @@ PSINGLE_LIST_ENTRY HashTableIterRemove(PHASH_TABLE_ITERATOR Iterator) {
 	for (bLastLink = HashBucketLastLink(pBucket); !bLastLink; bLastLink = HashBucketLastLink(pBucket)) {
 		if (pBucket->Next == pHashEntry) {
 			pBucket->Next = pHashEntry->Next;
-			--Iterator->Hash->ItemCount;
+			--Iterator->Hash->EntryCount;
 			pHashEntry->Next = (PSINGLE_LIST_ENTRY)((ULONG_PTR)pHashEntry->Next | 0x8000000000000002);
 			Iterator->HashEntry = pBucket;
 			return pHashEntry;

@@ -1,16 +1,14 @@
 #pragma once
 
 typedef struct _HASH_BUCKET {
-	union {
-		ULONG_PTR Hash;
-		SINGLE_LIST_ENTRY Link;
-	};
-	UINT64 HashValue;
+	SINGLE_LIST_ENTRY BucketLink;
+	UINT64 Key;
 }HASH_BUCKET, * PHASH_BUCKET;
 
 typedef struct _HASH_TABLE {
-	UINT32 ItemCount;
-	UINT32 BucketCount;
+	UINT32 EntryCount;
+	UINT32 MaskBitCount : 5;
+	UINT32 BucketCount : 27;
 	PSINGLE_LIST_ENTRY Buckets;
 }HASH_TABLE, * PHASH_TABLE;
 
@@ -32,7 +30,7 @@ UINT32 RoundToPowerOfTwo(UINT32 value, BOOLEAN roundUpToNext);
 BOOLEAN IsPowerOfTwo(UINT32 x);
 
 
-void HashTableInitialize(PHASH_TABLE Hash, UINT32 Flags,
+void HashTableInitialize(PHASH_TABLE Hash, UINT32 MaskBitCount,
 	UINT32 BucketCount, PSINGLE_LIST_ENTRY Buckets);
 UINT32 HashTableGetBucketIndex(UINT32 BucketCount, UINT64 Key);
 UINT32 HashTableInsert(PHASH_TABLE Hash, PHASH_BUCKET pBucket);

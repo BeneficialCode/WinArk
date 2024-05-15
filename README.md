@@ -17,8 +17,6 @@ Telegram Group: [t.me/WinArk_dev](https://t.me/WinArk_dev)
 Contributing to WinArk is super appreciated.
 If you want to contribute to WinArk, please read the [Coding Conventions](doc/Coding%20Conventions.md)
 
-If anyone wants to support me, you may do so by donating me some money: https://www.paypal.me/VirtualCCSimon
-
 ## Screenshots
 
 ![](./Untitled%2016.png)
@@ -39,7 +37,6 @@ If anyone wants to support me, you may do so by donating me some money: https://
 - Core features by [SystemExplorer](https://github.com/zodiacon/SystemExplorer)
 - Disassembly powered by [capstone](https://github.com/capstone-engine/capstone)
 - PE parser by [TotalPE](https://github.com/zodiacon/PEParser)
-- Network Explorer by [NetworkExplorer](https://github.com/zodiacon/NetworkExplorer)
 - Registry Explorer by [TotalRegistry](https://github.com/zodiacon/TotalRegistry)
 - DeviceExplorer by [DeviceExplorer](https://github.com/zodiacon/DeviceExplorer)
 - Event Trace by [ProcMonXv2](https://github.com/zodiacon/ProcMonXv2)

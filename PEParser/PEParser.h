@@ -1,5 +1,4 @@
 #pragma once
-
 class CLRMetadataParser;
 
 struct ExportedSymbol {
@@ -136,7 +135,7 @@ enum class MachineType : unsigned short {
 };
 
 struct ResourceInfo {
-	CString Name;
+	std::string Name;
 	DWORD Rva;
 	DWORD Size;
 	void* Address;
@@ -177,7 +176,7 @@ public:
 
 	ULONG GetEAT() const;
 
-	CString GetSectionName(ULONG section) const;
+	std::string GetSectionName(ULONG section) const;
 
 	void* RVA2FA(unsigned rva) const;
 
