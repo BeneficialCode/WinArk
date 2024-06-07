@@ -71,6 +71,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Credential Providers",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers)"},
 		{ L"DisallowRun",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun)"},
 		{ L"DisablePath",LR"(HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\0\Paths)"},
+		{ L"Internet Settings",LR"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings)"},
 	};
 
 	for (const auto& [name, path] : locations) {
