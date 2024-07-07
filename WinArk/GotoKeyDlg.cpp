@@ -72,6 +72,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"DisallowRun",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun)"},
 		{ L"DisablePath",LR"(HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\0\Paths)"},
 		{ L"Internet Settings",LR"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings)"},
+		{ L"Session Manager",LR"(HKLM\System\CurrentControlSet\Control\Session Manager)"},
 	};
 
 	for (const auto& [name, path] : locations) {
