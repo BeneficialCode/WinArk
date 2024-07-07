@@ -1,7 +1,5 @@
 #pragma once
 
-//#include <winternl.h>
-
 #pragma comment(lib, "ntdll")
 
 #define DIRECTORY_QUERY                 (0x0001)

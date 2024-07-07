@@ -173,6 +173,7 @@ ULONG_PTR CSSDTHookTable::GetOrignalAddress(DWORD number) {
 	uintptr_t rva = (uintptr_t)_KiServiceTable - (uintptr_t)_kernelBase;
 	ULONG_PTR imageBase = (ULONG_PTR)_fileMapVA;
 #ifdef _WIN64
+	// On 64-bit Windows systems, the stored values in SSDT are not absolute address
 	auto CheckAddressMethod = [&]()->bool {
 		auto pEntry = (char*)_fileMapVA + rva + 8 * number;
 		ULONGLONG value = *(ULONGLONG*)pEntry;

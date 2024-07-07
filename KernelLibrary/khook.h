@@ -175,20 +175,6 @@ enum class HookType {
     ShadowSSDT
 };
 
-//#define VIRTUAL_ADDRESS_BITS 48
-//#define VIRTUAL_ADDRESS_MASK ((((ULONG_PTR)1) << VIRTUAL_ADDRESS_BITS) - 1)
-//
-//#define MiGetPteAddress(va) \
-//    ((PMMPTE)(((((ULONG_PTR)(va) & VIRTUAL_ADDRESS_MASK) >> PTI_SHIFT) << PTE_SHIFT) + PTE_BASE))
-//
-//#define MiGetPxeAddress(va)   ((PMMPTE)PXE_BASE + MiGetPxeOffset(va))
-//
-//#define MiGetPpeAddress(va)   \
-//    ((PMMPTE)(((((ULONG_PTR)(va) & VIRTUAL_ADDRESS_MASK) >> PPI_SHIFT) << PTE_SHIFT) + PPE_BASE))
-//
-//#define MiGetPdeAddress(va)  \
-//    ((PMMPTE)(((((ULONG_PTR)(va) & VIRTUAL_ADDRESS_MASK) >> PDI_SHIFT) << PTE_SHIFT) + PDE_BASE))
-
 class khook{
 public:
 	

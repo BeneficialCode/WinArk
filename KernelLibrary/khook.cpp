@@ -386,6 +386,7 @@ bool khook::HookSSDT(const char* apiName, void* newfunc) {
 		_info->Index = index;
 		_info->Old = oldValue;
 		_info->New = newValue;
+		// The lower 4 bits store the number of arguments passed on the stack to the system call
 		_info->OriginalAddress = (oldValue >> 4) + base;
 #else
 		newValue = (ULONG)newfunc;

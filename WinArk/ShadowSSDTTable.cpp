@@ -117,7 +117,8 @@ int CShadowSSDTHookTable::ParseTableEntry(CString& s, char& mask, int& select, S
 	switch (column)
 	{
 		case 0:
-			s.Format(L"%d (0x%-x)", info.ServiceNumber, info.ServiceNumber);
+			// The win32k system call numbers start with 0x1000
+			s.Format(L"%d (0x%-x)", info.ServiceNumber + 0x1000, info.ServiceNumber + 0x1000);
 			break;
 		case 1:
 			s = Helpers::StringToWstring(info.ServiceFunctionName).c_str();

@@ -60,9 +60,10 @@ LRESULT CKernelHookView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return 0;
 }
 
+// System Service Dispatch Table
 void CKernelHookView::InitSSDTHookTable() {
 	BarDesc bars[] = {
-		{12,"Service Number",0},
+		{20,"System Call Number",0},
 		{55,"Service Name",0},
 		{20,"Original Address",0},
 		{10,"Is Hook",0},
@@ -97,7 +98,7 @@ void CKernelHookView::InitSSDTHookTable() {
 
 void CKernelHookView::InitShadowSSDTHookTable() {
 	BarDesc bars[] = {
-		{15,"Service Number",0},
+		{20,"System Call Number",0},
 		{55,"Service Name",0},
 		{20,"Original Address",0},
 		{10,"Is Hook",0},
