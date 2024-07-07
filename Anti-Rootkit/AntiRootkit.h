@@ -25,27 +25,10 @@ Access - indicates whether this operation is to the driver (FILE_WRITE_ACCESS), 
 Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the IRP_MJ_DEVICE_CONTROL handler.
 */
 
-// 64bit和32bit内核开发差异
-// 一、新增机制
-//		1.Wow64子系统
-//			文件重定向 以下除外
-//				%windir%\System32\catroot
-//				%windir%\System32\catroot2
-//				%windir%\System32\drivers\etc
-//				%windir%\System32\logfiles
-//				%windir%\System32\spool
-//			注册表重定向
-//		2.PatchGuard技术
-// 二、编程差异
-//		1.内嵌汇编
-//		2.预处理与条件编译
-//		3.数据结构调整
-//			如果数据结构里包含指针，thunking不会帮助转换需要使用固定长度的类型来定义变量
-
 // 回调驱动 链接器 命令行 + -----> /integritycheck
 #define ANTI_ROOTKIT_DEVICE 0x8000
 
-#define DRIVER_CURRENT_VERSION 0xD9
+#define DRIVER_CURRENT_VERSION 0xDA
 
 
 // 用MDL锁定用户内存
@@ -112,7 +95,7 @@ Typical drivers just use FILE_ANY_ACCESS and deal with the actual request in the
 #define IOCTL_ARK_REMOVE_OB_CALLBACK				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x843,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_DISABLE_OB_CALLBACK				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x844,METHOD_BUFFERED,FILE_ANY_ACCESS)
 #define IOCTL_ARK_ENABLE_OB_CALLBACK				CTL_CODE(ANTI_ROOTKIT_DEVICE,0x845,METHOD_BUFFERED,FILE_ANY_ACCESS)
-
+#define IOCTL_ARK_KILL_PROCESS						CTL_CODE(ANTI_ROOTKIT_DEVICE,0x846,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
 // 原始方式
 // METHOD_NEITHER in: DeviceIoControl.Type3InputBuffer out: Irp->UersBuffer

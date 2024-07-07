@@ -143,6 +143,8 @@ HANDLE DriverHelper::OpenProcess(DWORD pid, ACCESS_MASK access) {
 	return ::OpenProcess(access, FALSE, pid);
 }
 
+
+
 bool DriverHelper::OpenDevice() {
 	if (!_hDevice||_hDevice==INVALID_HANDLE_VALUE) {
 		_hDevice = ::CreateFile(L"\\\\.\\AntiRootkit", GENERIC_WRITE | GENERIC_READ,
@@ -316,6 +318,15 @@ PVOID DriverHelper::GetEprocess(HANDLE pid) {
 	::DeviceIoControl(_hDevice, IOCTL_ARK_GET_EPROCESS, &pid, sizeof(pid),
 		&address, sizeof(address), &bytes, nullptr);
 	return address;
+}
+
+bool DriverHelper::KillProcess(ULONG pid) {
+	if (!OpenDevice())
+		return false;
+	DWORD bytes;
+	bool ok = ::DeviceIoControl(_hDevice, IOCTL_ARK_KILL_PROCESS, &pid, sizeof(pid),
+		nullptr, 0, &bytes, nullptr);
+	return ok;
 }
 
 bool DriverHelper::InitNtServiceTable(PULONG * pTable) {

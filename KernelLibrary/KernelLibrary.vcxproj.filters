@@ -204,6 +204,9 @@
     <ClInclude Include="hal.h">
       <Filter>hook</Filter>
     </ClInclude>
+    <ClInclude Include="ProcessAccessRights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

@@ -37,6 +37,8 @@ public:
 		_In_ ULONG Size
 	);
 
+	static NTSTATUS KillProcess(ULONG pid);
+
 	static inline ULONG_PTR KiWaitNever, KiWaitAlways;
 };
 

@@ -446,14 +446,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			OBJECT_ATTRIBUTES attr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
 			CLIENT_ID id{};
 			id.UniqueProcess = UlongToHandle(data->Id);
-			// 嵌套陷阱，ZwOpenProcess内部可能会执行第三方的回调函数，
-			// 回调函数调用时，函数处于同一个线程，且共用一个线程栈，这里可能存在“栈溢出”的可能
-			// 1.对于调用存在回调函数的api，尽可能少使用栈空间，大量内存，考虑申请内存
-			// 2.对于自身执行在过滤驱动或回调函数中的代码，尽可能少使用栈空间
-			// 3.自身执行在过滤驱动或回调函数中的代码，如需要调用嵌套的api,考虑另起线程，
-			// 通过线程间通信把系统api调用的结果返回给最初线程。
-			// 4.避免在代码中使用递归，如果非要使用，注意递归深度
-
 			status = ZwOpenProcess((HANDLE*)data, data->AccessMask, &attr, &id);
 			len = NT_SUCCESS(status) ? sizeof(HANDLE) : 0;
 			break;
@@ -760,10 +752,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		case IOCTL_ARK_ENUM_PIDDBCACHE_TABLE:
 		{
-			// RtlLookupElementGenericTableAvl()
-			// RtlDeleteElementGenericTableAvl()
-			// EtwpFreeKeyNameList
-			// PiDDBCacheTable
 			len = dic.InputBufferLength;
 			if (len < sizeof(ULONG_PTR)) {
 				status = STATUS_BUFFER_TOO_SMALL;
@@ -942,7 +930,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			PRTL_AVL_TABLE PiDDBCacheTable = nullptr;
 			ULONG_PTR PiDDBCacheTableAddress = *(ULONG_PTR*)Irp->AssociatedIrp.SystemBuffer;
 			PiDDBCacheTable = (PRTL_AVL_TABLE)PiDDBCacheTableAddress;
-			//ULONG count = RtlNumberGenericTableElementsAvl(PiDDBCacheTable);
 			if (PiDDBCacheTable != nullptr) {
 				for (auto p = RtlEnumerateGenericTableAvl(PiDDBCacheTable, TRUE);
 					p != nullptr;
@@ -1263,6 +1250,21 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
+		case IOCTL_ARK_KILL_PROCESS:
+		{
+			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+			if (dic.InputBufferLength < sizeof(ULONG)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			ULONG pid = *(PULONG)Irp->AssociatedIrp.SystemBuffer;
+			status = Helpers::KillProcess(pid);
+			break;
+		}
+
 		case IOCTL_ARK_GET_IO_TIMER_COUNT:
 		{
 			if (Irp->AssociatedIrp.SystemBuffer == nullptr) {
@@ -1445,7 +1447,6 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
-			// 获得输出缓冲区的长度
 			if (dic.OutputBufferLength < sizeof(PEPROCESS)) {
 				status = STATUS_BUFFER_TOO_SMALL;
 				break;

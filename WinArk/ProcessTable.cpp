@@ -277,12 +277,8 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
-	auto hProcess = DriverHelper::OpenProcess(p->Id, PROCESS_TERMINATE);
 	BOOL ok = false;
-	if (hProcess) {
-		ok = ::TerminateProcess(hProcess, 0);
-		::CloseHandle(hProcess);
-	}
+	ok = DriverHelper::KillProcess(p->Id);
 	if (!ok)
 		AtlMessageBox(*this, L"Failed to kill process", IDS_TITLE, MB_ICONERROR);
 	else

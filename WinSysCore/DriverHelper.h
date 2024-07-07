@@ -79,6 +79,7 @@ struct DriverHelper final {
 	static bool RemoveObCallback(ULONG_PTR addr);
 	static bool DisableObCallback(ULONG_PTR addr);
 	static bool EnableObCallback(ULONG_PTR addr);
+	static bool KillProcess(ULONG pid);
 private:
 	static bool OpenDevice();
 

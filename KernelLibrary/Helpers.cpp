@@ -4,8 +4,8 @@
 #include <ntimage.h>
 #include "PEParser.h"
 #include "khook.h"
+#include "ProcessAccessRights.h"
 
-// AntiRootkit!khook::GetSystemServiceTable
 ULONG_PTR Helpers::SearchSignature(ULONG_PTR address, PUCHAR signature, ULONG size,ULONG memSize) {
 	int i = memSize;
     ULONG_PTR maxAddress = address + memSize - size;
@@ -530,5 +530,19 @@ NTSTATUS Helpers::MmIsKernelAddressValid(
 		IoFreeMdl(mdl);
 	}
 
+	return status;
+}
+
+NTSTATUS Helpers::KillProcess(ULONG pid) {
+	OBJECT_ATTRIBUTES procAttr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
+	CLIENT_ID cid{}; // zero-out sturcture
+	cid.UniqueProcess = UlongToHandle(pid);
+	HANDLE hProcess;
+	auto status = ZwOpenProcess(&hProcess, PROCESS_TERMINATE, &procAttr, &cid);
+	if (!NT_SUCCESS(status))
+		return status;
+
+	status = ZwTerminateProcess(hProcess, 1);
+	ZwClose(hProcess);
 	return status;
 }
