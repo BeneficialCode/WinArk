@@ -577,6 +577,8 @@ BEGIN
     BEGIN
         MENUITEM "Refresh",                     ID_PROCESS_REFRESH
         MENUITEM "&Kill",                       ID_PROCESS_KILL
+        MENUITEM "Resume",                      ID_PROCESS_RESUME
+        MENUITEM "Suspend",                     ID_PROCESS_SUSPEND
         MENUITEM "Properties",                  ID_PROCESS_PROPERTIES
         MENUITEM "Go to File Location",         ID_PROCESS_GOTOFILELOCATION
         POPUP "Details"

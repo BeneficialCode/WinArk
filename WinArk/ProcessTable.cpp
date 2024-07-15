@@ -25,6 +25,8 @@ NtSuspendProcess(
 	_In_ HANDLE ProcessHandle
 );
 
+extern "C" NTSTATUS NtResumeProcess(_In_ HANDLE ProcessHandle);
+
 CProcessTable::CProcessTable(BarInfo& bars,TableInfo& table)
 	:CTable(bars,table){
 	SetTableWindowInfo(bars.nbar);
@@ -283,6 +285,35 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		AtlMessageBox(*this, L"Failed to kill process", IDS_TITLE, MB_ICONERROR);
 	else
 		Refresh();
+	return 0;
+}
+
+LRESULT CProcessTable::OnProcessResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int selected = m_Table.data.selected;
+	ATLASSERT(selected >= 0);
+	auto& p = m_Table.data.info[selected];
+
+	CString text;
+	text.Format(L"»Ö¸´½ø³Ì: %u (%ws)?", p->Id, p->GetImageName().c_str());
+	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
+		return 0;
+
+	auto hProcess = DriverHelper::OpenProcess(p->Id, PROCESS_SUSPEND_RESUME);
+	BOOL ok = false;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	if (hProcess) {
+		status = NtResumeProcess(hProcess);
+		if (NT_SUCCESS(status))
+			ok = true;
+		::CloseHandle(hProcess);
+	}
+
+	if (!ok) {
+		AtlMessageBox(*this, L"Failed to suspend process", IDS_TITLE, MB_ICONERROR);
+	}
+	else {
+		Refresh();
+	}
 	return 0;
 }
 

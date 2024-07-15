@@ -30,8 +30,9 @@ public:
 		MESSAGE_HANDLER(WM_KEYDOWN,OnKeyDown)
 		MESSAGE_HANDLER(WM_SYSKEYDOWN, OnSysKeyDown)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDlgCode)
-		//MESSAGE_HANDLER(WM_SIZE,OnSize)
 		COMMAND_ID_HANDLER(ID_PROCESS_KILL,OnProcessKill)
+		COMMAND_ID_HANDLER(ID_PROCESS_SUSPEND,OnProcessSuspend)
+		COMMAND_ID_HANDLER(ID_PROCESS_RESUME,OnProcessResume)
 		COMMAND_ID_HANDLER(ID_PROCESS_REFRESH, OnProcessRefresh)
 		COMMAND_ID_HANDLER(ID_PROCESS_MODULES,OnProcessModules)
 		COMMAND_ID_HANDLER(ID_PROCESS_PROPERTIES,OnProcessProperties)
@@ -82,6 +83,7 @@ public:
 	LRESULT OnProcessMemory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessInlineHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnProcessResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessEATHookScan(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessVadInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnProcessDump(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
