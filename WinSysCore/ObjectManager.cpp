@@ -519,8 +519,21 @@ bool ObjectManager::GetStats(ObjectAndHandleStats& stats) {
 
 std::wstring ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) const {
 	auto hDup = DriverHelper::DupHandle(hObject, pid, 0);
+	if (hDup == nullptr) {
+		OBJECT_ATTRIBUTES procAttr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
+		CLIENT_ID cid{};
+		cid.UniqueProcess = UlongToHandle(pid);
+		HANDLE hProcess;
+		NTSTATUS status = NtOpenProcess(&hProcess, PROCESS_DUP_HANDLE, &procAttr, &cid);
+		if (!NT_SUCCESS(status))
+			return L"";
+		status = NtDuplicateObject(hProcess, hObject, NtCurrentProcess(), &hDup, READ_CONTROL, 0, 0);
+		if (!NT_SUCCESS(status))
+			return L"";
+	}
 	std::wstring name = GetObjectName(hDup, type);
-	::CloseHandle(hDup);
+	if (hDup != nullptr)
+		::CloseHandle(hDup);
 	return name;
 }
 
