@@ -144,7 +144,7 @@ std::wstring Process::GetFullImageName() const {
 	return success ? std::wstring(name) : L"";
 }
 
-std::wstring Process::GetCommandLine() const {
+std::wstring Process::GetCmdLine() const {
 	if (::IsWindows8OrGreater()) {
 		ULONG size = 8192;
 		auto buffer = std::make_unique<BYTE[]>(size);
@@ -163,7 +163,7 @@ std::wstring Process::GetCommandLine() const {
 	return L"";
 }
 
-std::wstring Process::GetUserName() const {
+std::wstring Process::GetTokenUserName() const {
 	wil::unique_handle hToken;
 	if (!::OpenProcessToken(_handle.get(), TOKEN_QUERY, hToken.addressof()))
 		return L"";
@@ -304,15 +304,15 @@ HANDLE WinSys::Process::GetNextThread(HANDLE hThread, ThreadAccessMask access) {
 	return hNewThread;
 }
 
-std::wstring WinSys::Process::GetCurrentDirectory() const {
+std::wstring WinSys::Process::GetCurDirectory() const {
 	wil::unique_handle h;
 	if (!::DuplicateHandle(::GetCurrentProcess(), _handle.get(), ::GetCurrentProcess(), h.addressof(),
 		PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, 0))
 		return L"";
-	return GetCurrentDirectory(h.get());
+	return GetCurDirectory(h.get());
 }
 
-std::wstring Process::GetCurrentDirectory(HANDLE hProcess) {
+std::wstring Process::GetCurDirectory(HANDLE hProcess) {
 	std::wstring path;
 	PEB peb;
 	if (!GetProcessPeb(hProcess, &peb))

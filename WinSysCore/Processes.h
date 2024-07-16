@@ -94,8 +94,8 @@ namespace WinSys {
 		bool IsValid() const;
 
 		std::wstring GetFullImageName() const;
-		std::wstring GetCommandLine() const;
-		std::wstring GetUserName() const;
+		std::wstring GetCmdLine() const;
+		std::wstring GetTokenUserName() const;
 		std::wstring GetName() const;
 		std::wstring GetWindowTitle() const;
 
@@ -114,8 +114,8 @@ namespace WinSys {
 		int GetMemoryPriority() const;
 		IoPriority GetIoPriority() const;
 		ProcessPriorityClass GetPriorityClass() const;
-		std::wstring GetCurrentDirectory() const;
-		static std::wstring GetCurrentDirectory(HANDLE hProcess);
+		std::wstring GetCurDirectory() const;
+		static std::wstring GetCurDirectory(HANDLE hProcess);
 		static std::wstring GetCmdLine(HANDLE hProcess);
 		static std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment(HANDLE hProcess);
 		std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment() const;

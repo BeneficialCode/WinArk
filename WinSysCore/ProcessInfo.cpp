@@ -11,7 +11,7 @@ const std::vector<std::shared_ptr<ThreadInfo>>& ProcessInfo::GetThreads() const 
 	return _threads;
 }
 
-const std::wstring& WinSys::ProcessInfo::GetUserName() const {
+const std::wstring& WinSys::ProcessInfo::GetTokenUserName() const {
 	if (_userName.empty())
 		return _userName;
 

@@ -22,7 +22,7 @@ namespace WinSys {
 			return _nativeImagePath;
 		}
 		const std::vector<std::shared_ptr<ThreadInfo>>& GetThreads() const;
-		const std::wstring& GetUserName() const;
+		const std::wstring& GetTokenUserName() const;
 
 		int BasePriority;
 		uint32_t Id;

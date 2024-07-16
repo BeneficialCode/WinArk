@@ -68,10 +68,10 @@ WinSys::ProcessPriorityClass ProcessInfoEx::GetPriorityClass() {
 	return _process ? _process->GetPriorityClass() : WinSys::ProcessPriorityClass::Unknown;
 }
 
-const std::wstring& ProcessInfoEx::GetCommandLine() const {
+const std::wstring& ProcessInfoEx::GetCmdLine() const {
 	if (_commandLine.empty() && _pi->Id > 4) {
 		if (_process)
-			_commandLine = _process->GetCommandLine();
+			_commandLine = _process->GetCmdLine();
 	}
 	return _commandLine;
 }
@@ -93,7 +93,7 @@ std::wstring ProcessInfoEx::GetCurDirectory() const {
 	if (!hProcess)
 		return L"";
 
-	auto dir = WinSys::Process::GetCurrentDirectory(hProcess);
+	auto dir = WinSys::Process::GetCurDirectory(hProcess);
 	if (hProcess)
 		::CloseHandle(hProcess);
 	return dir;
@@ -179,7 +179,7 @@ const std::wstring& ProcessInfoEx::UserName() const {
 			_username = L"NT AUTHORITY\\SYSTEM";
 		else {
 			if (_process)
-				_username = _process->GetUserName();
+				_username = _process->GetTokenUserName();
 			if (_username.empty())
 				_username = L"<¾Ü¾ø·ÃÎÊ>";
 		}

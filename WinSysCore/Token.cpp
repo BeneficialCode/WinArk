@@ -46,7 +46,7 @@ std::pair<std::wstring, Sid> Token::GetUserNameAndSid() const {
 	return { L"",Sid() };
 }
 
-std::wstring WinSys::Token::GetUserName() const {
+std::wstring WinSys::Token::GetTokenUserName() const {
 	return GetUserNameAndSid().first;
 }
 

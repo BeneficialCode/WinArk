@@ -24,7 +24,7 @@ public:
 	//WinSys::IoPriority GetIoPriority() const;
 	int GetMemoryPriority() const;
 	WinSys::ProcessPriorityClass GetPriorityClass();
-	const std::wstring& GetCommandLine() const;
+	const std::wstring& GetCmdLine() const;
 	//bool IsElevated() const;
 	/*uint32_t GetGdiObjects() const;
 	uint32_t GetUserObjects() const;

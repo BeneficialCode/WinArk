@@ -62,7 +62,7 @@ void CProcessPropertiesDlg::InitProcess() {
 		imagePath = true;
 		SetDlgItemText(IDC_PATH, path.c_str());
 	}
-	SetDlgItemText(IDC_COMMANDLINE, m_px.GetCommandLine().c_str());
+	SetDlgItemText(IDC_COMMANDLINE, m_px.GetCmdLine().c_str());
 	text.Format(L"%d bit", m_px.GetBitness());
 	SetDlgItemText(IDC_PLATFORM, text);
 	SetDlgItemText(IDC_USERNAME, m_px.UserName().c_str());
@@ -174,7 +174,7 @@ LRESULT CProcessPropertiesDlg::OnExploreDirectory(WORD /*wNotifyCode*/, WORD wID
 }
 
 LRESULT CProcessPropertiesDlg::OnCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto& cmd = m_px.GetCommandLine();
+	auto& cmd = m_px.GetCmdLine();
 	if (!cmd.empty()) {
 		ClipboardHelper::CopyText(*this, cmd.c_str());
 	}

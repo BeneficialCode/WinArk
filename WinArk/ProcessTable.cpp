@@ -76,7 +76,7 @@ int CProcessTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 			s = px.GetExecutablePath().c_str();
 			break;
 		case ProcessColumn::CmdLine:
-			s = px.GetCommandLine().c_str();
+			s = px.GetCmdLine().c_str();
 			if (s.GetLength() > MAX_PATH) {
 				select = DRAW_HILITE;
 			}

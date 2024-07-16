@@ -58,7 +58,7 @@ namespace WinSys {
 		bool EnablePrivilege(PCWSTR privName, bool enable);
 
 		std::pair<std::wstring, Sid> GetUserNameAndSid() const;
-		std::wstring GetUserName() const;
+		std::wstring GetTokenUserName() const;
 
 		bool IsValid() const;
 		operator const bool() const {
