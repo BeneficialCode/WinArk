@@ -101,6 +101,9 @@ std::unique_ptr<ServiceConfiguration> ServiceManager::GetServiceConfiguration(co
 			}
 		}
 	}
+	result->Tag = config->dwTagId;
+	result->StartType = static_cast<ServiceStartType>(config->dwStartType);
+	result->ErrorControl = static_cast<ServiceErrorControl>(config->dwErrorControl);
 
 	if (result->StartType == ServiceStartType::Auto) {
 		// check if delayed auto start

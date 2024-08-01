@@ -193,7 +193,7 @@ void CMainFrame::InitServiceTable() {
 		{20,"Service Type",0},
 		{20,"Process ID"},
 		{30,"Process Name"},
-		{20,"Boot Type",0},
+		{20,"Start Type",0},
 		{260,"Binary Path",0},
 		{30,"Account Name",0},
 		{20,"Error Control",0},
