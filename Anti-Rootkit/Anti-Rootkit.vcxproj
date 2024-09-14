@@ -164,6 +164,9 @@
     <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
     <TargetName>AntiRootkit</TargetName>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -250,7 +253,7 @@ mkdir $(ProjectDir)..\Bin</Command>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <AssemblyDebug>false</AssemblyDebug>
       <AdditionalOptions>/debug:"NONE" /release /pdbcompress %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>fltmgr.lib;Zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fltmgr.lib;Zydis.lib;Zycore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y $(OutDir)AntiRootkit.sys $(ProjectDir)..\Bin</Command>

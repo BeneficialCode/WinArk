@@ -9,6 +9,7 @@
 #include "reflector.h"
 #include "hal.h"
 
+
 SystemServiceTable* khook::_ntTable = nullptr;
 SystemServiceTable* khook::_win32kTable = nullptr;
 PVOID khook::_kernelImageBase = nullptr;
