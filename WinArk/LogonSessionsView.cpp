@@ -84,7 +84,7 @@ LRESULT CLogonSessionsView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Session", LVCFMT_RIGHT, 60, ColumnFlags::Const | ColumnFlags::Visible);
 	cm->AddColumn(L"Logon Type", LVCFMT_LEFT, 150, ColumnFlags::Const | ColumnFlags::Visible);
 	cm->AddColumn(L"Auth Package", LVCFMT_LEFT, 150, ColumnFlags::Const | ColumnFlags::Visible);
-	cm->AddColumn(L"SID", LVCFMT_LEFT, 230, ColumnFlags::Const | ColumnFlags::Visible);
+	cm->AddColumn(L"SID", LVCFMT_LEFT, 420, ColumnFlags::Const | ColumnFlags::Visible);
 
 	cm->UpdateColumns();
 
