@@ -384,6 +384,7 @@
     <ClCompile Include="SymbolFileInfo.cpp" />
     <ClCompile Include="SysInfoView.cpp" />
     <ClCompile Include="SystemConfigDlg.cpp" />
+    <ClCompile Include="SystemUsersView.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="TaskHelper.cpp" />
     <ClCompile Include="TaskSchedView.cpp" />
@@ -554,6 +555,7 @@
     <ClInclude Include="SymbolFileInfo.h" />
     <ClInclude Include="SysInfoView.h" />
     <ClInclude Include="SystemConfigDlg.h" />
+    <ClInclude Include="SystemUsersView.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="TaskHelper.h" />
     <ClInclude Include="TaskSchedView.h" />

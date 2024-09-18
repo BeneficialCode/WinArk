@@ -3,6 +3,7 @@
 #include "TaskSchedView.h"
 #include "LogonSessionsView.h"
 #include "BypassDlg.h"
+#include "SystemUsersView.h"
 
 class CMiscView :
 	public CWindowImpl<CMiscView> {
@@ -25,13 +26,14 @@ public:
 	LRESULT OnTcnSelChange(int, LPNMHDR hdr, BOOL&);
 
 	enum class TabColumn :int {
-		LogonSessions, BypassDetect, SystemInformation, TaskScheduler
+		LogonSessions, BypassDetect, SystemInformation, TaskScheduler, SysUserInfos
 	};
 
 	void InitLogonSessionsView();
 	void InitBypassDectectView();
 	void InitSysInfoView();
 	void InitTaskSchedView();
+	void InitSystemUserInfoView();
 
 private:
 	CContainedWindowT<CTabCtrl> m_TabCtrl;
@@ -47,4 +49,6 @@ private:
 	CSysInfoView* m_SysInfoView{ nullptr };
 
 	CBypassDlg m_BypassView;
+
+	CSystemUsersView* m_pSysUserInfoView{ nullptr };
 };

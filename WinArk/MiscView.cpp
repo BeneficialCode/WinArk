@@ -21,6 +21,7 @@ LRESULT CMiscView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		L"Bypass Detect",
 		L"System Information",
 		L"Task Scheduler",
+		L"System Users"
 	};
 
 	int i = 0;
@@ -32,6 +33,7 @@ LRESULT CMiscView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	InitBypassDectectView();
 	InitSysInfoView();
 	InitTaskSchedView();
+	InitSystemUserInfoView();
 
 	return 0;
 }
@@ -81,6 +83,10 @@ LRESULT CMiscView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 		case TabColumn::TaskScheduler:
 			m_TaskSchedView.ShowWindow(SW_SHOW);
 			break;
+
+		case TabColumn::SysUserInfos:
+			m_pSysUserInfoView->ShowWindow(SW_SHOW);
+			break;
 	}
 	_index = index;
 	::PostMessage(m_hWnd, WM_SIZE, 0, 0);
@@ -96,6 +102,12 @@ void CMiscView::InitLogonSessionsView() {
 	m_pLogonSessionView = new CLogonSessionsView(m_pFrame);
 	m_pLogonSessionView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 	m_hwndArray[static_cast<int>(TabColumn::LogonSessions)] = m_pLogonSessionView->m_hWnd;
+}
+
+void CMiscView::InitSystemUserInfoView() {
+	m_pSysUserInfoView = new CSystemUsersView(m_pFrame);
+	m_pSysUserInfoView->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
+	m_hwndArray[static_cast<int>(TabColumn::SysUserInfos)] = m_pSysUserInfoView->m_hWnd;
 }
 
 void CMiscView::InitSysInfoView() {
