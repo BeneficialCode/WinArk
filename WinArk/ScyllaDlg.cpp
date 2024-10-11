@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ScyllaDlg.h"
 
+
 BOOL CScyllaDlg::PreTranslateMessage(MSG* pMsg) {
 	if (m_Accelerators.TranslateAccelerator(m_hWnd, pMsg)) {
 		return TRUE;
@@ -15,23 +16,19 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 {
 	DWORD pid = static_cast<DWORD>(lParam);
 	std::wstring bitness = m_px.GetBitness() == 64 ? L" (x64) " : L" (x86) ";
-	WCHAR proc[25];
+	WCHAR proc[25] = { 0 };
 	_itow_s(pid, proc, 10);
-	std::wstring title = L"Dump Process: pid = ";
+	std::wstring title = L"Scylla v1.0.0 Dump Process: pid = ";
 	title += proc;
 	title += bitness;
-	title += m_px.GetExecutablePath();
+	title += m_px.GetProcess()->GetName();
 	SetWindowText(title.c_str());
-
-	// Register ourselves to receive PreTranslateMessage
-	/*CMessageLoop* pLoop = _Module.GetMessageLoop();
-	pLoop->AddMessageFilter(this);*/
+	m_Icon.LoadIcon(IDI_SCYLLA);
+	SetIcon(m_Icon, TRUE);
 
 	SetupStatusBar();
 	
-	// attach controls
-	// DoDataExchange();
-	
+	EnableDialogControls(FALSE);
 
 	ProcessHandler();
 
@@ -94,4 +91,15 @@ void CScyllaDlg::OnContextMenu(CWindow wnd, CPoint point)
 
 void CScyllaDlg::DisplayContextMenuLog(CWindow, CPoint) {
 
+}
+
+void CScyllaDlg::EnableDialogControls(BOOL value) {
+	GetDlgItem(IDC_BTN_PICKDLL).EnableWindow(value);
+	GetDlgItem(IDC_BTN_DUMP).EnableWindow(value);
+	GetDlgItem(IDC_BTN_FIX_DUMP).EnableWindow(value);
+	GetDlgItem(IDC_BTN_AUTO_SEARCH).EnableWindow(value);
+	GetDlgItem(IDC_BTN_GET_IMPORTS).EnableWindow(value);
+	GetDlgItem(IDC_BTN_SHOW_SUSPECT).EnableWindow(value);
+	GetDlgItem(IDC_BTN_SHOW_INVALID).EnableWindow(value);
+	GetDlgItem(IDC_BTN_CLEAR).EnableWindow(value);
 }

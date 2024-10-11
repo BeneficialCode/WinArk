@@ -109,8 +109,11 @@
 #define IDI_BINARY                      302
 #define IDI_TEXT                        303
 #define IDI_DWORD                       304
-#define IDI_ICON3                       305
 #define IDI_QWORD                       305
+#define IDI_SCYLLA                      306
+#define IDI_CHECK                       307
+#define IDI_SCYLLA_WARNING              310
+#define IDI_SCYLLA_ERROR                311
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -474,13 +477,14 @@
 #define ID_PROCESS_RESUME               33020
 #define ID_PROCESS_SUS                  33021
 #define ID_PROCESS_SUSPEND              33022
+#define ID_MISC                         33023
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        306
-#define _APS_NEXT_COMMAND_VALUE         33023
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         33024
 #define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

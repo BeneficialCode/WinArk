@@ -47,6 +47,7 @@ public:
 
 	void DisplayContextMenuLog(CWindow, CPoint);
 
+	void EnableDialogControls(BOOL value);
 
 	void ProcessHandler();
 
@@ -70,4 +71,5 @@ private:
 	CHexEdit _oepAddress;
 	CHexEdit _iatAddress;
 	CHexEdit _iatSize;
+	CIcon m_Icon;
 };

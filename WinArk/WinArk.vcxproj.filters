@@ -516,6 +516,9 @@
     <ClCompile Include="SystemUsersView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ImportsHandling.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1031,6 +1034,18 @@
     <ClInclude Include="SystemUsersView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="Thunks.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportsHandling.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="MultiTree.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="Architecture.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WinArk.rc">
@@ -1231,6 +1246,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\number-8.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\scylla.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\check.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\error.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\warning.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

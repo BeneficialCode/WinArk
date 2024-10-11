@@ -257,6 +257,7 @@
     <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="ExtensionTableDlg.cpp" />
     <ClCompile Include="HexEdit.cpp" />
+    <ClCompile Include="ImportsHandling.cpp" />
     <ClCompile Include="KernelEATHookDlg.cpp" />
     <ClCompile Include="KernelEATHookTable.cpp" />
     <ClCompile Include="KernelInlineHookDlg.cpp" />
@@ -412,6 +413,7 @@
     <ClInclude Include="AccessMaskDecoder.h" />
     <ClInclude Include="AppCommandBase.h" />
     <ClInclude Include="AppSettings.h" />
+    <ClInclude Include="Architecture.h" />
     <ClInclude Include="BigPoolView.h" />
     <ClInclude Include="BinaryEventDataSerializer.h" />
     <ClInclude Include="BinaryValueDlg.h" />
@@ -424,11 +426,13 @@
     <ClInclude Include="ExtensionTable.h" />
     <ClInclude Include="ExtensionTableDlg.h" />
     <ClInclude Include="HexEdit.h" />
+    <ClInclude Include="ImportsHandling.h" />
     <ClInclude Include="KernelEATHookDlg.h" />
     <ClInclude Include="KernelEATHookTable.h" />
     <ClInclude Include="KernelInlineHookDlg.h" />
     <ClInclude Include="KernelInlineHookTable.h" />
     <ClInclude Include="MiscView.h" />
+    <ClInclude Include="MultiTree.h" />
     <ClInclude Include="ObjectCallbackTable.h" />
     <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
@@ -564,6 +568,7 @@
     <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeSystem.h" />
     <ClInclude Include="ThreadObjectType.h" />
+    <ClInclude Include="Thunks.h" />
     <ClInclude Include="TimerObjectType.h" />
     <ClInclude Include="TokenObjectType.h" />
     <ClInclude Include="TokenPropertiesDlg.h" />
@@ -590,10 +595,12 @@
     <Image Include="res\autoscroll.ico" />
     <Image Include="res\Binary.ico" />
     <Image Include="res\cancel.ico" />
+    <Image Include="res\check.ico" />
     <Image Include="res\delete_button.ico" />
     <Image Include="res\dll-add.ico" />
     <Image Include="res\dll-delete.ico" />
     <Image Include="res\donate.bmp" />
+    <Image Include="res\error.ico" />
     <Image Include="res\event3.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\filter-add.ico" />
@@ -636,6 +643,7 @@
     <Image Include="res\refresh.ico" />
     <Image Include="res\registry.ico" />
     <Image Include="res\Schedule.ico" />
+    <Image Include="res\scylla.ico" />
     <Image Include="res\search.ico" />
     <Image Include="res\stack.ico" />
     <Image Include="res\Stop.ico" />
@@ -647,6 +655,7 @@
     <Image Include="res\threads.ico" />
     <Image Include="res\Timer.ico" />
     <Image Include="res\tools.ico" />
+    <Image Include="res\warning.ico" />
     <Image Include="res\WinArk.ico" />
     <Image Include="res\window.ico" />
   </ItemGroup>

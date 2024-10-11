@@ -878,8 +878,7 @@ BEGIN
         MENUITEM "&Dump",                       ID_FILE_DUMP
     END
     MENUITEM "Imports",                     0
-    MENUITEM "Trace",                       0
-    MENUITEM "Misc",                        0
+    MENUITEM "Misc",                        ID_MISC
     MENUITEM "Help",                        0
 END
 
@@ -964,6 +963,14 @@ IDI_TEXT                ICON                    "res\\text.ico"
 IDI_DWORD               ICON                    "res\\number-4.ico"
 
 IDI_QWORD               ICON                    "res\\number-8.ico"
+
+IDI_SCYLLA              ICON                    "res\\scylla.ico"
+
+IDI_CHECK               ICON                    "res\\check.ico"
+
+IDI_SCYLLA_WARNING      ICON                    "res\\warning.ico"
+
+IDI_SCYLLA_ERROR        ICON                    "res\\error.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
