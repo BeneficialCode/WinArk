@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "resource.h"
 #include "ImportsHandling.h"
 #include "Architecture.h"
 
@@ -75,5 +76,20 @@ ImportsHandling::Icon ImportsHandling::GetAppropiateIcon(bool valid) {
 }
 
 ImportsHandling::ImportsHandling(CMultiSelectTreeViewCtrl& treeImports):TreeImports(treeImports) {
-	
+	CDCHandle dc = CWindow(::GetDesktopWindow()).GetDC();
+	int bits = dc.GetDeviceCaps(BITSPIXEL);
+	const UINT flags = bits > 16 ? ILC_COLOR32 : (ILC_COLOR24 | ILC_MASK);
+	TreeIcons.Create(16, 16, flags, 3, 1);
+
+	UINT icons[] = {
+		IDI_CHECK,IDI_SCYLLA_WARNING,IDI_SCYLLA_ERROR
+	};
+
+	for (UINT icon : icons) {
+		TreeIcons.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
+	}
+}
+
+ImportsHandling::~ImportsHandling() {
+	TreeIcons.Destroy();
 }

@@ -10,13 +10,13 @@ public:
 	std::map<DWORD_PTR, ImportModuleThunk> NewModuleMap;
 
 	ImportsHandling(CMultiSelectTreeViewCtrl& treeImports);
-	
+	~ImportsHandling();
 private:
-	DWORD NumberOfFunctions;
+	DWORD NumberOfFunctions = 0;
 
-	unsigned int m_ThunkCount;
-	unsigned int m_InvalidThunkCount;
-	unsigned int m_SuspectThunkCount;
+	unsigned int m_ThunkCount = 0;
+	unsigned int m_InvalidThunkCount = 0;
+	unsigned int m_SuspectThunkCount = 0;
 
 	struct TreeItemData
 	{
@@ -34,7 +34,7 @@ private:
 
 	TreeItemData* GetItemData(CTreeItem item);
 
-	WCHAR Text[512];
+	WCHAR Text[512] = { 0 };
 
 	CMultiSelectTreeViewCtrl& TreeImports;
 	CImageList TreeIcons;
