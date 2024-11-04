@@ -247,6 +247,7 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
+    <ClCompile Include="ApiReader.cpp" />
     <ClCompile Include="AppCommandBase.cpp" />
     <ClCompile Include="BigPoolView.cpp" />
     <ClCompile Include="BinaryEventDataSerializer.cpp" />
@@ -264,6 +265,7 @@
     <ClCompile Include="KernelInlineHookTable.cpp" />
     <ClCompile Include="MiscView.cpp" />
     <ClCompile Include="ObjectCallbackTable.cpp" />
+    <ClCompile Include="ProcessAccessHelper.cpp" />
     <ClCompile Include="ProcessATHookDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
@@ -411,6 +413,7 @@
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
+    <ClInclude Include="ApiReader.h" />
     <ClInclude Include="AppCommandBase.h" />
     <ClInclude Include="AppSettings.h" />
     <ClInclude Include="Architecture.h" />
@@ -434,6 +437,7 @@
     <ClInclude Include="MiscView.h" />
     <ClInclude Include="MultiTree.h" />
     <ClInclude Include="ObjectCallbackTable.h" />
+    <ClInclude Include="ProcessAccessHelper.h" />
     <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />
     <ClInclude Include="ClipboardHelper.h" />

@@ -519,6 +519,12 @@
     <ClCompile Include="ImportsHandling.cpp">
       <Filter>Scylla</Filter>
     </ClCompile>
+    <ClCompile Include="ApiReader.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessAccessHelper.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1044,6 +1050,12 @@
       <Filter>Scylla</Filter>
     </ClInclude>
     <ClInclude Include="Architecture.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="ApiReader.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessAccessHelper.h">
       <Filter>Scylla</Filter>
     </ClInclude>
   </ItemGroup>

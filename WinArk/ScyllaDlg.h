@@ -1,7 +1,7 @@
 #pragma once
 #include "resource.h"
 #include "HexEdit.h"
-
+#include "ImportsHandling.h"
 
 
 class CScyllaDlg 
@@ -22,7 +22,7 @@ public:
 	END_DDX_MAP()
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm(pm), m_px(px) {}
+	CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm(pm), m_px(px),_importsHandling(_treeImports){}
 
 	BEGIN_MSG_MAP_EX(CScyllaDlg)
 		MSG_WM_SIZE(OnSize)
@@ -60,6 +60,10 @@ protected:
 		Invalid,
 		ImageBase
 	};
+
+	WCHAR _text[512];
+	ImportsHandling _importsHandling;
+	CMultiSelectTreeViewCtrl _treeImports;
 
 private:
 	ProcessInfoEx& m_px;
