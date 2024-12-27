@@ -3,29 +3,14 @@
 #include <filesystem>
 #include <Helpers.h>
 #include <fstream>
+#include <asio.hpp>
+#include <asio\ssl.hpp>
 
-
-using Poco::URIStreamOpener;
-using Poco::StreamCopier;
-using Poco::Path;
-using Poco::Exception;
-using Poco::Net::HTTPStreamFactory;
-using Poco::Net::FTPStreamFactory;
-using Poco::SharedPtr;
-using Poco::Net::HTTPSStreamFactory;
-using Poco::Net::SSLManager;
-using Poco::Net::Context;
-using Poco::Net::InvalidCertificateHandler;
-using Poco::Net::ConsoleCertificateHandler;
-using Poco::Net::HTTPSClientSession;
-using Poco::Net::HTTPRequest;
-using Poco::Net::HTTPMessage;
-using Poco::Net::HTTPResponse;
-using Poco::Net::HTTPClientSession;
 
 #pragma comment(lib,"Ws2_32")
 #pragma comment(lib,"Iphlpapi")
 #pragma comment(lib,"Crypt32")
+
 
 bool SymbolFileInfo::SymDownloadSymbol(std::wstring localPath) {
 	std::wstring path = localPath + L"\\" + _path.GetString();
@@ -113,90 +98,239 @@ bool SymbolFileInfo::GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY 
 }
 
 downslib_error SymbolFileInfo::Download(std::string url, std::wstring fileName, std::string userAgent,
-	unsigned int timeout,downslib_cb cb, void* userdata){
-	std::ofstream fileStream;
-	fileStream.open(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
+    unsigned int timeout, downslib_cb cb, void* userdata) {
+    std::ofstream fileStream(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
+    if (!fileStream) {
+        return downslib_error::incomplete;
+    }
 
-	SharedPtr<InvalidCertificateHandler> pCertHandler = new ConsoleCertificateHandler(false); // ask the user via console
-	Context::Ptr pContext = new Context(Context::CLIENT_USE, "", Context::VerificationMode::VERIFY_NONE);
-	SSLManager::instance().initializeClient(0, pCertHandler, pContext);
-	Poco::URI uri(url);
-	if (uri.getScheme() == "http") {
-		try
-		{
-			std::string path(uri.getPathAndQuery());
-			if (path.empty()) path = "/";
-			HTTPClientSession session(uri.getHost(), uri.getPort());
-			HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-			session.sendRequest(request);
-			HTTPResponse response;
-			session.peekResponse(response);
-			if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
-				uri = response.get("Location");
-			}
-		}
-		catch (Poco::Exception& exc)
-		{
-			fileStream << exc.displayText() << std::endl;
-			return downslib_error::incomplete;
-		}
-	}
-	else if (uri.getScheme() == "https") {
-		try
-		{
-			HTTPSClientSession session(uri.getHost(), uri.getPort());
-			std::string path(uri.getPathAndQuery());
-			if (path.empty()) path = "/";
-			HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-			session.sendRequest(request);
-			HTTPResponse response;
-			session.peekResponse(response);
-			if (response.getStatus() == HTTPResponse::HTTPStatus::HTTP_FOUND) {
-				uri = response.get("Location");
-			}
-		}
-		catch (Poco::Exception& exc)
-		{
-			fileStream << exc.displayText() << std::endl;
-			return downslib_error::incomplete;
-		}
-	
-	}
-	downslib_error ret = PdbDownLoader(uri, fileStream);
-	cb(userdata, 100, 100);
-	fileStream.close();
-	return ret;
-}
+    using tcp = asio::ip::tcp;
+    namespace ssl = asio::ssl;
 
-unsigned long long SymbolFileInfo::GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
-	unsigned int timeout) {
-	
+    try {
+        asio::io_context ioc;
+        ssl::context ctx(ssl::context::sslv23_client);
 
-	return 0;
+        int redirect_count = 0;
+        const int max_redirects = 5;
+
+        while (redirect_count < max_redirects) {
+            std::string protocol, host, path;
+
+            if (url.substr(0, 8) == "https://") {
+                protocol = "https";
+                url = url.substr(8);
+            }
+            else if (url.substr(0, 7) == "http://") {
+                protocol = "http";
+                url = url.substr(7);
+            }
+            else {
+                throw std::runtime_error("Invalid URL protocol");
+            }
+
+            size_t path_pos = url.find('/');
+            host = (path_pos == std::string::npos) ? url : url.substr(0, path_pos);
+            path = (path_pos == std::string::npos) ? "/" : url.substr(path_pos);
+
+            tcp::resolver resolver(ioc);
+            auto const results = resolver.resolve(host, protocol);
+
+            std::string request = "GET " + path + " HTTP/1.1\r\n"
+                "Host: " + host + "\r\n"
+                "User-Agent: " + userAgent + "\r\n"
+                "Accept: */*\r\n"
+                "Connection: close\r\n\r\n";
+
+            if (protocol == "https") {
+                ssl::stream<tcp::socket> stream(ioc, ctx);
+                SSL_set_tlsext_host_name(stream.native_handle(), host.c_str());
+
+                asio::connect(stream.next_layer(), results.begin(), results.end());
+                stream.handshake(ssl::stream_base::client);
+                asio::write(stream, asio::buffer(request));
+
+                asio::streambuf response;
+                asio::error_code header_ec;
+                asio::read_until(stream, response, "\r\n\r\n", header_ec);
+                if (header_ec) {
+                    throw asio::system_error(header_ec);
+                }
+
+                std::istream response_stream(&response);
+                std::string http_version;
+                unsigned int status_code;
+                std::string status_message;
+
+                response_stream >> http_version >> status_code;
+                std::getline(response_stream, status_message);
+
+                if (status_code == 301 || status_code == 302 || status_code == 307 || status_code == 308) {
+                    std::string header;
+                    while (std::getline(response_stream, header) && header != "\r") {
+                        if (header.substr(0, 9) == "Location:") {
+                            std::string new_url = header.substr(10);
+                            new_url.erase(0, new_url.find_first_not_of(" \t"));
+                            new_url.erase(new_url.find_last_not_of(" \r\n") + 1);
+
+                            if (new_url[0] == '/') {
+                                new_url = protocol + "://" + host + new_url;
+                            }
+                            url = new_url;
+                            redirect_count++;
+                            goto continue_redirect;
+                        }
+                    }
+                }
+
+                if (status_code != 200) {
+                    return downslib_error::incomplete;
+                }
+
+                // Skip remaining headers
+                std::string header;
+                while (std::getline(response_stream, header) && header != "\r");
+
+                // Write any data that was already read along with the headers
+                if (response.size() > 0) {
+                    fileStream << &response;
+                }
+
+                // Read the response body in chunks
+                const size_t chunk_size = 8192;
+                std::vector<char> buffer(chunk_size);
+                asio::error_code ec;
+                size_t bytes_transferred = 0;
+
+                while (true) {
+                    bytes_transferred = stream.read_some(asio::buffer(buffer), ec);
+
+                    if (ec) {
+                        // Check if this is a normal end of stream
+                        if (ec == asio::error::eof ||
+                            ec.value() == 1 ||  // stream_truncated
+                            ec == asio::ssl::error::stream_truncated) {
+                            break;  // Normal termination
+                        }
+                        throw asio::system_error(ec);
+                    }
+
+                    if (bytes_transferred > 0) {
+                        fileStream.write(buffer.data(), bytes_transferred);
+                        if (!fileStream) {
+                            throw std::runtime_error("Failed to write to file");
+                        }
+                    }
+
+                    if (bytes_transferred == 0) {
+                        break;
+                    }
+                }
+                break;
+            }
+            else {  // HTTP
+                tcp::socket socket(ioc);
+                asio::connect(socket, results.begin(), results.end());
+                asio::write(socket, asio::buffer(request));
+
+                asio::streambuf response;
+                asio::error_code header_ec;
+                asio::read_until(socket, response, "\r\n\r\n", header_ec);
+                if (header_ec) {
+                    throw asio::system_error(header_ec);
+                }
+
+                std::istream response_stream(&response);
+                std::string http_version;
+                unsigned int status_code;
+                std::string status_message;
+
+                response_stream >> http_version >> status_code;
+                std::getline(response_stream, status_message);
+
+                if (status_code == 301 || status_code == 302 || status_code == 307 || status_code == 308) {
+                    std::string header;
+                    while (std::getline(response_stream, header) && header != "\r") {
+                        if (header.substr(0, 9) == "Location:") {
+                            std::string new_url = header.substr(10);
+                            new_url.erase(0, new_url.find_first_not_of(" \t"));
+                            new_url.erase(new_url.find_last_not_of(" \r\n") + 1);
+
+                            if (new_url[0] == '/') {
+                                new_url = protocol + "://" + host + new_url;
+                            }
+                            url = new_url;
+                            redirect_count++;
+                            goto continue_redirect;
+                        }
+                    }
+                }
+
+                if (status_code != 200) {
+                    return downslib_error::incomplete;
+                }
+
+                // Skip remaining headers
+                std::string header;
+                while (std::getline(response_stream, header) && header != "\r");
+
+                // Write any data that was already read along with the headers
+                if (response.size() > 0) {
+                    fileStream << &response;
+                }
+
+                // Read the response body in chunks
+                const size_t chunk_size = 8192;
+                std::vector<char> buffer(chunk_size);
+                asio::error_code ec;
+                size_t bytes_transferred = 0;
+
+                while (true) {
+                    bytes_transferred = socket.read_some(asio::buffer(buffer), ec);
+
+                    if (ec) {
+                        if (ec == asio::error::eof || ec.value() == 1) {
+                            break;  // Normal termination
+                        }
+                        throw asio::system_error(ec);
+                    }
+
+                    if (bytes_transferred > 0) {
+                        fileStream.write(buffer.data(), bytes_transferred);
+                        if (!fileStream) {
+                            throw std::runtime_error("Failed to write to file");
+                        }
+                    }
+
+                    if (bytes_transferred == 0) {
+                        break;
+                    }
+                }
+                break;
+            }
+
+        continue_redirect:
+            continue;
+        }
+
+        if (redirect_count >= max_redirects) {
+            throw std::runtime_error("Too many redirects");
+        }
+    }
+    catch (std::exception&) {
+        fileStream.close();
+        return downslib_error::incomplete;
+    }
+
+    if (cb) {
+        cb(userdata, 100, 100);
+    }
+    fileStream.close();
+    return downslib_error::ok;
 }
 
 SymbolFileInfo::SymbolFileInfo() {
-	Poco::Net::initializeSSL();
-	HTTPStreamFactory::registerFactory();
-	HTTPSStreamFactory::registerFactory();
-	FTPStreamFactory::registerFactory();
 }
 
 SymbolFileInfo::~SymbolFileInfo() {
-	FTPStreamFactory::unregisterFactory();
-	HTTPSStreamFactory::unregisterFactory();
-	HTTPStreamFactory::unregisterFactory();
-	Poco::Net::uninitializeSSL();
-}
-
-downslib_error SymbolFileInfo::PdbDownLoader(Poco::URI& uri, std::ostream& ostr) {
-	try {
-		std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(uri));
-		StreamCopier::copyStream(*pStr.get(), ostr);
-		return downslib_error::ok;
-	}
-	catch (Exception& exc) {
-		ostr << exc.displayText() << std::endl;
-		return downslib_error::incomplete;
-	}
 }

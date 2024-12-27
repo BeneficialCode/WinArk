@@ -110,7 +110,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
-      <ExceptionHandling>false</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>

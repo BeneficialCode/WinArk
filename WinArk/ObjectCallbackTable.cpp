@@ -120,11 +120,17 @@ PCWSTR CObjectCallbackTable::TypeToString(ObjectCallbackType type) {
 
 CString CObjectCallbackTable::DecodeOperations(ULONG operations) {
 	CString result;
+	bool needSeparator = false;
+
 	if ((operations & OB_OPERATION_HANDLE_CREATE) == OB_OPERATION_HANDLE_CREATE) {
-		result += L"HANDLE_CREATE" + CString(L" | ");
+		result += L"HANDLE_CREATE";
+		needSeparator = true;
 	}
 
 	if ((operations & OB_OPERATION_HANDLE_DUPLICATE) == OB_OPERATION_HANDLE_DUPLICATE) {
+		if (needSeparator) {
+			result += L" | ";
+		}
 		result += L"HANDLE_DUPLICATE";
 	}
 

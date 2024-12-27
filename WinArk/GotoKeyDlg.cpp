@@ -73,6 +73,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"DisablePath",LR"(HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\0\Paths)"},
 		{ L"Internet Settings",LR"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings)"},
 		{ L"Session Manager",LR"(HKLM\System\CurrentControlSet\Control\Session Manager)"},
+		{ L"NetworkCards",LR"(HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkCards)"},
 	};
 
 	for (const auto& [name, path] : locations) {

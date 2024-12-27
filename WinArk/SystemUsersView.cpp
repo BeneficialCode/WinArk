@@ -2,10 +2,6 @@
 #include "SystemUsersView.h"
 #include <algorithm>
 #include "SortHelper.h"
-#include <Poco/DateTime.h>
-#include <Poco/Timestamp.h>
-#include <Poco/DateTimeFormatter.h>
-#include <Poco/Timezone.h>
 #include <lm.h>
 #include <sddl.h>
 #include <SecurityHelper.h>
@@ -13,17 +9,23 @@
 
 
 std::string CSystemUsersView::GetReadableTime(DWORD time) const {
-	Poco::Int64 timestamp = time;
-	if (timestamp == 0) {
+	if (time == 0) {
 		return std::string("Never");
 	}
 
-	Poco::Timestamp ts(timestamp * Poco::Timestamp::resolution());
-	Poco::DateTime utcDateTime(ts);
-	int timeZoneOffset = Poco::Timezone::utcOffset();
-	Poco::DateTime localDateTime = utcDateTime + Poco::Timespan(timeZoneOffset, 0);
-	std::string readableTime = Poco::DateTimeFormatter::format(localDateTime, "%Y-%m-%d %H:%M:%S");
-	return readableTime;
+	// Convert DWORD time to std::chrono::system_clock::time_point
+	std::chrono::system_clock::time_point tp = std::chrono::system_clock::from_time_t(time);
+
+	// Convert to time_t for localtime conversion
+	std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+
+	// Convert to local time
+	std::tm local_tm = *std::localtime(&tt);
+
+	// Format the time as a string
+	std::ostringstream oss;
+	oss << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S");
+	return oss.str();
 }
 
 

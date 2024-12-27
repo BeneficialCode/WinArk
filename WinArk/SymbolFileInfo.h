@@ -1,18 +1,5 @@
 #pragma once
-#include <Poco/URIStreamOpener.h>
-#include <Poco/StreamCopier.h>
-#include <Poco/Path.h>
-#include <Poco/URI.h>
-#include <Poco/Net/HTTPStreamFactory.h>
-#include "Poco/Net/HTTPSStreamFactory.h"
-#include <Poco/Net/FTPStreamFactory.h>
-#include <Poco/SharedPtr.h>
-#include <Poco/Net/SSLManager.h>
-#include <Poco/Net/ConsoleCertificateHandler.h>
-#include <Poco/Net/PrivateKeyPassphraseHandler.h>
-#include <Poco/Net/HTTPSClientSession.h>
-#include <Poco/Net/HTTPRequest.h>
-#include <Poco/Net/HTTPResponse.h>
+
 
 struct CV_HEADER {
 	DWORD Signature;
@@ -59,11 +46,6 @@ struct SymbolFileInfo {
 	bool GetPdbSignature(ULONG_PTR imageBase,PIMAGE_DEBUG_DIRECTORY entry);
 	downslib_error Download(std::string url, std::wstring fileName, 
 		std::string userAgent, unsigned int timeout,downslib_cb = nullptr, void* userdata = nullptr);
-
-	unsigned long long GetPdbSize(std::string url, std::wstring fileName, std::string userAgent,
-		unsigned int timeout);
-
-	downslib_error PdbDownLoader(Poco::URI& uri, std::ostream& ostr);
 
 	CString _pdbSignature;
 	CString _pdbFile;
