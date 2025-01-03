@@ -99,6 +99,24 @@ bool RemoveNotifyIcon() {
 	return Shell_NotifyIcon(NIM_DELETE, &notifyIcon);
 }
 
+bool EnableDebugPrivilege() {
+	HANDLE hToken;
+	if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
+		return false;
+
+	TOKEN_PRIVILEGES tp;
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	if (!::LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &tp.Privileges[0].Luid))
+		return false;
+
+	auto success = ::AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), nullptr, nullptr);
+	auto error = ::GetLastError();
+	::CloseHandle(hToken);
+
+	return success && error == ERROR_SUCCESS;
+}
+
 int Run(LPTSTR lpstrCmdLine = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
@@ -236,6 +254,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	::SetUnhandledExceptionFilter(SelfUnhandledExceptionFilter);
 
 	SecurityHelper::EnablePrivilege(SE_SYSTEM_ENVIRONMENT_NAME, true);
+
+	EnableDebugPrivilege();
 
 	if (CheckInstall(lpstrCmdLine))
 		return 0;

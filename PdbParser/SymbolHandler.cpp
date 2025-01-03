@@ -71,10 +71,8 @@ SymbolHandler::~SymbolHandler() {
 		::CloseHandle(m_hProcess);
 }
 
-ULONG64 SymbolHandler::LoadSymbolsForModule(PCSTR moduleName,DWORD64 baseAddress,DWORD dllSize) {
-	_address = SymLoadModule64(m_hProcess, nullptr, moduleName, moduleName, baseAddress, dllSize);
-	if (_address == 0)
-		_address = SymLoadModuleEx(m_hProcess, nullptr, moduleName, nullptr, baseAddress, dllSize, nullptr, 0);
+ULONG64 SymbolHandler::LoadSymbolsForModule(PCSTR imageName, PCSTR moduleName, DWORD64 baseAddress,DWORD dllSize) {
+	_address = SymLoadModuleEx(m_hProcess, nullptr, imageName, nullptr, baseAddress, dllSize, nullptr, 0);
 	return _address;
 }
 
@@ -152,7 +150,7 @@ DWORD64 SymbolHandler::LoadKernelModule(DWORD64 address) {
 			fullpath.Replace("\\SystemRoot\\", "%SystemRoot%\\");
 			if (fullpath.Mid(1, 2) == "??")
 				fullpath = fullpath.Mid(4);
-			return LoadSymbolsForModule(fullpath, (DWORD64)module.ImageBase);
+			return LoadSymbolsForModule(fullpath, nullptr, (DWORD64)module.ImageBase);
 		}
 	}
 
@@ -245,7 +243,12 @@ IMAGEHLP_MODULE SymbolHandler::GetModuleInfo(DWORD64 address) {
 ULONG_PTR SymbolHandler::GetSymbolAddressFromName(PCSTR name) {
 	auto symbol = std::make_unique<ImagehlpSymbol>();
 	auto info = symbol->GetSymbolInfo();
-	::SymGetSymFromName(m_hProcess, name, info);
+	BOOL success = ::SymGetSymFromName64(m_hProcess, name, info);
+	if (!success) {
+		DWORD error = ::GetLastError();
+		std::string value = to_string(error);
+		OutputDebugStringA(value.c_str());	
+	}
 	return info->Address;
 }
 

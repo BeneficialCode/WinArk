@@ -187,7 +187,7 @@ public:
 	~SymbolHandler();
 
 	HANDLE GetHandle() const;
-	ULONG64 LoadSymbolsForModule(PCSTR moduleName, DWORD64 baseAddress = 0, DWORD dllSize = 0);
+	ULONG64 LoadSymbolsForModule(PCSTR imageName,PCSTR moduleName, DWORD64 baseAddress = 0, DWORD dllSize = 0);
 	
 	ULONG_PTR GetSymbolAddressFromName(PCSTR name);
 

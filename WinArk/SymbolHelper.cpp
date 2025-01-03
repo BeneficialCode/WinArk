@@ -44,11 +44,16 @@ void SymbolHelper::Init() {
 	_win32kPdb = pdbFile;
 	_win32kModule = std::string(pdbName, 0, pdbName.find("."));
 
+	std::string moduleName = std::string(pdbName, 0, pdbName.find("."));
+
+
 #ifdef _WIN64
 	_win32kBase = (DWORD64)win32kBase;
 #else
 	_win32kBase = (DWORD32)win32kBase;
 #endif
+
+	_win32k.LoadSymbolsForModule(_win32kPdb.c_str(), moduleName.c_str(), _win32kBase, _win32kSize);
 
 	void* kernelBase = Helpers::GetKernelBase();
 	size = Helpers::GetKernelImageSize();
@@ -66,6 +71,8 @@ void SymbolHelper::Init() {
 #else
 	_kernelBase = (DWORD)kernelBase;
 #endif
+	moduleName = std::string(pdbName, 0, pdbName.find("."));
+	_kernel.LoadSymbolsForModule(_kernelPdb.c_str(), moduleName.c_str(), _kernelBase, _kernelSize);
 
 	void* flgmgrBase = Helpers::GetKernelModuleBase("fltmgr.sys");
 	size = Helpers::GetKernelModuleImageSize("fltmgr.sys");
@@ -82,6 +89,8 @@ void SymbolHelper::Init() {
 #else
 	_fltmgrBase = (DWORD)flgmgrBase;
 #endif
+	moduleName = std::string(pdbName, 0, pdbName.find("."));
+	_fltmgr.LoadSymbolsForModule(_fltmgrPdb.c_str(), moduleName.c_str(), _fltmgrBase, _fltmgrSize);
 
 	void* ciBase = Helpers::GetKernelModuleBase("ci.dll");
 	size = Helpers::GetKernelModuleImageSize("ci.dll");
@@ -98,13 +107,8 @@ void SymbolHelper::Init() {
 #else
 	_ciBase = (DWORD)ciBase;
 #endif
-
-	_win32k.LoadSymbolsForModule(_win32kPdb.c_str(), _win32kBase, _win32kSize);
-	_kernel.LoadSymbolsForModule(_kernelPdb.c_str(), _kernelBase, _kernelSize);
-	_fltmgr.LoadSymbolsForModule(_fltmgrPdb.c_str(), _fltmgrBase, _fltmgrSize);
-	_ci.LoadSymbolsForModule(_ciPdb.c_str(), _ciBase, _ciSize);
-
-
+	moduleName = std::string(pdbName, 0, pdbName.find("."));
+	_ci.LoadSymbolsForModule(_ciPdb.c_str(), moduleName.c_str(), _ciBase, _ciSize);
 }
 
 std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, PDWORD64 offset) {
@@ -118,13 +122,23 @@ std::unique_ptr<SymbolInfo> SymbolHelper::GetSymbolFromAddress(DWORD64 address, 
 // https://blog.csdn.net/xiaoxinjiang/article/details/7013488
 ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
 	std::string symbolName = _kernelModule + "!" + name;
-	return _kernel.GetSymbolAddressFromName(symbolName.c_str());
+	ULONG64 addr = _kernel.GetSymbolAddressFromName(symbolName.c_str());
+	if (addr == 0) {
+		OutputDebugStringA(symbolName.c_str());
+		abort();
+	}
+	return addr;
 }
 
 ULONG64 SymbolHelper::GetWin32kSymbolAddressFromName(PCSTR name) {
 	// https://stackoverflow.com/questions/4867159/how-do-you-use-symloadmoduleex-to-load-a-pdb-file
 	std::string symbolName = _win32kModule + "!" + name;
-	return _win32k.GetSymbolAddressFromName(symbolName.c_str());
+	ULONG64 addr = _win32k.GetSymbolAddressFromName(symbolName.c_str());
+	if (addr == 0) {
+		OutputDebugStringA(symbolName.c_str());
+		abort();
+	}
+	return addr;
 }
 
 DWORD SymbolHelper::GetKernelStructMemberOffset(std::string name, std::string memberName) {
