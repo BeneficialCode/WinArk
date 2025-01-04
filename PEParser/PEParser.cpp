@@ -417,6 +417,10 @@ DWORD PEParser::GetHeadersSize() const {
 	return IsPe64() ? GetOptionalHeader64().SizeOfHeaders : GetOptionalHeader32().SizeOfHeaders;
 }
 
+DWORD PEParser::GetAddressOfEntryPoint() const {
+	return IsPe64() ? GetOptionalHeader64().AddressOfEntryPoint : GetOptionalHeader32().AddressOfEntryPoint;
+}
+
 std::vector<RelocInfo> PEParser::GetRelocs(void* image_base) {
 	std::vector<RelocInfo> relocs;
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_BASERELOC);

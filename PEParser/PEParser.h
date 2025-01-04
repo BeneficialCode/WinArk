@@ -173,6 +173,7 @@ public:
 
 	DWORD GetImageSize() const;
 	DWORD GetHeadersSize() const;
+	DWORD GetAddressOfEntryPoint() const;
 
 	ULONG GetEAT() const;
 

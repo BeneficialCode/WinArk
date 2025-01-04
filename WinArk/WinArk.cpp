@@ -234,6 +234,9 @@ LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	g_hSingleInstMutex = ::CreateMutex(nullptr, FALSE, L"WinArkSingleInstanceMutex");
+	if (!g_hSingleInstMutex) {
+		return 1;
+	}
 	if (!::wcsstr(lpstrCmdLine, L"runas")) {
 		if (g_hSingleInstMutex) {
 			if (::GetLastError() == ERROR_ALREADY_EXISTS) {
