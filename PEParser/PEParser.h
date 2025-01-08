@@ -7,6 +7,9 @@ struct ExportedSymbol {
 	std::string ForwardName;
 	DWORD Address;
 	unsigned short Ordinal;
+	bool IsForward;
+	WORD Hint;
+	bool HasName;
 };
 
 struct ImportedSymbol {
@@ -223,6 +226,7 @@ public:
 
 	std::vector<RelocInfo> GetRelocs(void* imageBase);
 	static void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
+
 
 private:
 	bool IsObjectPe64() const;

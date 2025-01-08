@@ -139,18 +139,26 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 	auto ordinalBase = data->Base;
 
 	std::unordered_map<uint32_t, std::string> functionNamesMap;
+	std::unordered_map<uint32_t, uint32_t> hintsMap;
 	for (uint32_t idx = 0; idx < data->NumberOfNames; idx++) {
 		uint16_t ordinal;
 		ordinal = *(USHORT*)(ordinals + idx * 2) + (USHORT)ordinalBase;
 		uint32_t name;
 		auto offset = *(ULONG*)(names + idx * 4);
 		functionNamesMap[ordinal] = (PCSTR)GetAddress(offset);
+		hintsMap[ordinal] = idx;
 	}
 
 	for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
 		ExportedSymbol symbol;
 		int ordinal = i + (USHORT)ordinalBase;
 		symbol.Ordinal = ordinal;
+
+		std::unordered_map<uint32_t,uint32_t>::iterator iter = hintsMap.find(ordinal);
+		if (iter != hintsMap.end()) {
+			symbol.Hint = iter->second;
+		}
+
 		bool hasName = false;
 		auto pos = functionNamesMap.find(ordinal);
 		if (pos != functionNamesMap.end()) {
@@ -163,10 +171,13 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 		}
 		DWORD address = *(functions + symbol.Ordinal - ordinalBase);
 		symbol.Address = address;
-		//auto offset = RvaToFileOffset(address);
+		symbol.IsForward = false;
+		symbol.HasName = false;
 		if (hasName) {
+			symbol.HasName = true;
 			if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
 				symbol.ForwardName = (PCSTR)GetAddress(address);
+				symbol.IsForward = true;
 			}
 		}
 		exports.push_back(std::move(symbol));
@@ -408,6 +419,8 @@ ULONG PEParser::GetEAT() const {
 	ULONG eat = data->AddressOfFunctions;
 	return eat;
 }
+
+
 
 DWORD PEParser::GetImageSize() const {
 	return IsPe64() ? GetOptionalHeader64().SizeOfImage : GetOptionalHeader32().SizeOfImage;

@@ -244,3 +244,37 @@ bool ProcessAccessHelper::IsPageAccessable(DWORD protect) {
 	}
 	return false;
 }
+
+LPVOID ProcessAccessHelper::CreateFileMappingViewRead(const WCHAR* filePath) {
+	return CreateFileMappingView(filePath, GENERIC_READ, PAGE_READONLY | SEC_IMAGE, FILE_MAP_READ);
+}
+
+LPVOID ProcessAccessHelper::CreateFileMappingViewFull(const WCHAR* filePath)
+{
+	return CreateFileMappingView(filePath, GENERIC_ALL, PAGE_EXECUTE_READWRITE, FILE_MAP_ALL_ACCESS);
+}
+
+LPVOID ProcessAccessHelper::CreateFileMappingView(const WCHAR* filePath, DWORD accessFile, DWORD protect, DWORD accessMap) {
+	HANDLE hFile = ::CreateFile(filePath, accessFile, FILE_SHARE_READ, nullptr, OPEN_EXISTING,0, nullptr);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return nullptr;
+
+	HANDLE hMap = ::CreateFileMapping(hFile, nullptr, protect, 0, 0, nullptr);
+	if (hMap == NULL) {
+		return nullptr;
+	}
+
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+		CloseHandle(hMap);
+		return nullptr;
+	}
+
+	LPVOID pMappedDll = ::MapViewOfFile(hMap, accessMap, 0, 0, 0);
+	if (pMappedDll == NULL) {
+		CloseHandle(hMap);
+		return nullptr;
+	}
+
+	CloseHandle(hMap);
+	return pMappedDll;
+}

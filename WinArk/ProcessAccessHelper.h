@@ -2,12 +2,61 @@
 #include "ProcessModuleTracker.h"
 
 
+class ApiInfo;
+
+class ModuleInfo {
+public:
+	WCHAR _fullPath[MAX_PATH];
+	DWORD_PTR _modBaseAddr = 0;
+	DWORD _modBaseSize = 0;
+	bool _isAlreadyParsed = false;
+	bool _parsing = false;
+
+	/*
+	  for iat rebuilding with duplicate entries:
+
+	  ntdll = low priority
+	  kernelbase = low priority
+	  SHLWAPI = low priority
+
+	  kernel32 = high priority
+
+	  priority = 1 -> normal/high priority
+	  priority = 0 -> low priority
+	*/
+	int _priority = 1;
+
+	std::vector<ApiInfo*> _apiList;
+
+	const WCHAR* GetFileName() const {
+		const WCHAR* pSlash = wcsrchr(_fullPath, L'\\');
+		if (pSlash) {
+			return pSlash + 1;
+		}
+		return _fullPath;
+	}
+};
+
+class ApiInfo {
+public:
+	char Name[MAX_PATH];
+	WORD Hint;
+	DWORD_PTR VA;
+	DWORD_PTR RVA;
+	WORD Oridinal;
+	bool IsForwarded;
+	ModuleInfo* pModule;
+};
+
 class ProcessAccessHelper {
 public:
 	static inline HANDLE _hProcess;
 	static inline DWORD_PTR _targetImageBase;
 	static inline DWORD_PTR _targetSizeOfImage;
 	static inline DWORD_PTR _maxValidAddress;
+
+	static inline std::vector<ModuleInfo> _moduleList;
+	static inline std::vector<ModuleInfo> _ownModuleList;
 
 	static inline const size_t PE_HEADER_BYTES_COUNT = 2000;
 	static inline BYTE _fileHeaderFromDisk[PE_HEADER_BYTES_COUNT];
@@ -35,6 +84,11 @@ public:
 
 	static bool IsPageExecutable(DWORD protect);
 	static bool IsPageAccessable(DWORD protect);
+
+	static LPVOID CreateFileMappingViewRead(const WCHAR* filePath);
+	static LPVOID CreateFileMappingViewFull(const WCHAR* filePath);
+
+	static LPVOID CreateFileMappingView(const WCHAR* filePath, DWORD accessFile, DWORD protect, DWORD accessMap);
 };
 
 typedef enum _MEMORY_INFORMATION_CLASS
