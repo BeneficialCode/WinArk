@@ -213,13 +213,15 @@ public:
 	//std::vector<std::pair<DWORD, WIN_CERTIFICATE>> EnumCertificates() const;
 	//const IMAGE_LOAD_CONFIG_DIRECTORY64* GetLoadConfiguration64() const;
 	//const IMAGE_LOAD_CONFIG_DIRECTORY32* GetLoadConfiguration32() const;
-	//PVOID GetDataDirectoryAddress(UINT index, PULONG size) const;
+	PVOID GetDataDirectoryAddress(UINT index, PULONG size) const;
 
 	bool IsImportLib() const;
 	bool IsObjectFile() const;
 	ULONG GetExportByName(PCSTR exportName);
 	HANDLE GetFileHandle();
 	unsigned RvaToFileOffset(unsigned rva) const;
+	DWORD_PTR RVAToRelativeOffset(DWORD_PTR rva) const;
+	int RVAToSectionIndex(DWORD_PTR rva) const;
 	IMAGE_SECTION_HEADER* GetSections();
 
 	LARGE_INTEGER GetFileSize() const;

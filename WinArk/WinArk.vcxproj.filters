@@ -525,6 +525,12 @@
     <ClCompile Include="ProcessAccessHelper.cpp">
       <Filter>Scylla</Filter>
     </ClCompile>
+    <ClCompile Include="IATSearcher.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
+    <ClCompile Include="IATReferenceScan.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1056,6 +1062,12 @@
       <Filter>Scylla</Filter>
     </ClInclude>
     <ClInclude Include="ProcessAccessHelper.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="IATSearcher.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="IATReferenceScan.h">
       <Filter>Scylla</Filter>
     </ClInclude>
   </ItemGroup>

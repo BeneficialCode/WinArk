@@ -182,7 +182,7 @@
       <ExceptionHandling />
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils;..\diStorm3\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -215,7 +215,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WIN64;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils;..\diStorm3\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
@@ -259,6 +259,8 @@
     <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="ExtensionTableDlg.cpp" />
     <ClCompile Include="HexEdit.cpp" />
+    <ClCompile Include="IATReferenceScan.cpp" />
+    <ClCompile Include="IATSearcher.cpp" />
     <ClCompile Include="ImportsHandling.cpp" />
     <ClCompile Include="KernelEATHookDlg.cpp" />
     <ClCompile Include="KernelEATHookTable.cpp" />
@@ -430,6 +432,8 @@
     <ClInclude Include="ExtensionTable.h" />
     <ClInclude Include="ExtensionTableDlg.h" />
     <ClInclude Include="HexEdit.h" />
+    <ClInclude Include="IATReferenceScan.h" />
+    <ClInclude Include="IATSearcher.h" />
     <ClInclude Include="ImportsHandling.h" />
     <ClInclude Include="KernelEATHookDlg.h" />
     <ClInclude Include="KernelEATHookTable.h" />
@@ -669,6 +673,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\diStorm3\diStorm3.vcxproj">
+      <Project>{bf8907f1-25d4-4f6f-ab03-7ff29ff56588}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PdbParser\PdbParser.vcxproj">
       <Project>{e0e3d364-abf7-407d-a67c-fdddb58687f3}</Project>
     </ProjectReference>

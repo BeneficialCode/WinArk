@@ -9,15 +9,16 @@
 
 
 PEParser::PEParser(const wchar_t* path) :_path(path) {
-	_hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	_hFile = ::CreateFile(path, GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (_hFile == INVALID_HANDLE_VALUE)
 		return;
 	::GetFileSizeEx(_hFile, &_fileSize);
-	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READWRITE, 0, 0, nullptr);
 	if (!_hMemMap)
 		return;
 
-	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
+	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
 	if (!_address)
 		return;
 
@@ -306,6 +307,26 @@ unsigned PEParser::RvaToFileOffset(unsigned rva) const {
 	return rva;
 }
 
+DWORD_PTR PEParser::RVAToRelativeOffset(DWORD_PTR rva) const {
+	auto sections = _sections;
+	for (int i = 0; i < GetSectionCount(); ++i) {
+		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + _sections[i].Misc.VirtualSize)
+			return rva - sections[i].VirtualAddress;
+	}
+
+	return 0;
+}
+
+int PEParser::RVAToSectionIndex(DWORD_PTR rva) const {
+	auto sections = _sections;
+	for (int i = 0; i < GetSectionCount(); ++i) {
+		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + _sections[i].Misc.VirtualSize)
+			return i;
+	}
+
+	return -1;
+}
+
 bool PEParser::GetImportAddressTable() const {
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IAT);
 	if (dir->Size == 0)
@@ -471,4 +492,8 @@ void PEParser::RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64
 				*reinterpret_cast<uint64_t*>(current_reloc.address + offset) += delta;
 		}
 	}
+}
+
+PVOID PEParser::GetDataDirectoryAddress(UINT index, PULONG size) const {
+	return ::ImageDirectoryEntryToData(_address, FALSE, index, size);
 }

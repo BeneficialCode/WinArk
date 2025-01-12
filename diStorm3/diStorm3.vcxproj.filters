@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\decoder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\instructions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\insts.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\operands.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\prefix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\textdefs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wstring.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\x86defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\distorm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mnemonics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\decoder.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\distorm.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\instructions.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\insts.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mnemonics.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\operands.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\prefix.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\textdefs.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

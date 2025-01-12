@@ -1,6 +1,9 @@
 #pragma once
 #include "ProcessModuleTracker.h"
+#include <distorm.h>
+#include <mnemonics.h>
 
+#define MAX_INSTRUCTIONS (200)
 
 class ApiInfo;
 
@@ -89,6 +92,17 @@ public:
 	static LPVOID CreateFileMappingViewFull(const WCHAR* filePath);
 
 	static LPVOID CreateFileMappingView(const WCHAR* filePath, DWORD accessFile, DWORD protect, DWORD accessMap);
+
+	static inline _DInst _insts[MAX_INSTRUCTIONS];
+	static inline unsigned int _instCount;
+	static inline _CodeInfo _codeInfo;
+
+	static inline _DecodedInst _decodedInsts[MAX_INSTRUCTIONS];
+	static inline unsigned int _decodedInstCount;
+
+	static bool DecomposeMemory(BYTE* pMemory, SIZE_T size, DWORD_PTR startAddress);
+
+	static bool DisassembleMemory(BYTE* pMemory, SIZE_T size, DWORD_PTR startOffset);
 };
 
 typedef enum _MEMORY_INFORMATION_CLASS

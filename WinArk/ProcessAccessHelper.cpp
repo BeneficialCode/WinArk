@@ -278,3 +278,40 @@ LPVOID ProcessAccessHelper::CreateFileMappingView(const WCHAR* filePath, DWORD a
 	CloseHandle(hMap);
 	return pMappedDll;
 }
+
+bool ProcessAccessHelper::DecomposeMemory(BYTE* pMemory, SIZE_T size, DWORD_PTR startAddress) {
+	ZeroMemory(&_codeInfo, sizeof(_CodeInfo));
+	_codeInfo.code = pMemory;
+	_codeInfo.codeLen = size;
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	if (isWow64) {
+		_codeInfo.dt = Decode32Bits;
+	}
+	else {
+		_codeInfo.dt = Decode64Bits;
+	}
+	_codeInfo.codeOffset = startAddress;
+
+	if (distorm_decompose(&_codeInfo, _insts, sizeof(_insts) / sizeof(_insts[0]), &_instCount) == DECRES_INPUTERR) {
+		return false;
+	}
+	return true;
+}
+
+bool ProcessAccessHelper::DisassembleMemory(BYTE* pMemory, SIZE_T size, DWORD_PTR startOffset) {
+	_DecodeResult result;
+	_decodedInstCount = 0;
+	_OffsetType offset = startOffset;
+	_DecodeType type = Decode64Bits;
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	if (isWow64) {
+		type = Decode32Bits;
+	}
+	result = distorm_decode(offset, pMemory, size, type, _decodedInsts, MAX_INSTRUCTIONS, &_decodedInstCount);
+	if (result == DECRES_INPUTERR)
+		return false;
+
+	return true;
+}

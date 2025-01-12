@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libMinHook", "minhook\build
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{F967758B-AE4A-44F6-AC12-7F63A9CE23E3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "diStorm3", "diStorm3\diStorm3.vcxproj", "{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -236,6 +238,18 @@ Global
 		{F967758B-AE4A-44F6-AC12-7F63A9CE23E3}.Release|x86.ActiveCfg = Release|Win32
 		{F967758B-AE4A-44F6-AC12-7F63A9CE23E3}.Release|x86.Build.0 = Release|Win32
 		{F967758B-AE4A-44F6-AC12-7F63A9CE23E3}.Release|x86.Deploy.0 = Release|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|ARM.ActiveCfg = Debug|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|x64.ActiveCfg = Debug|x64
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|x64.Build.0 = Debug|x64
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|x86.ActiveCfg = Debug|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Debug|x86.Build.0 = Debug|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|ARM.ActiveCfg = Release|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|ARM64.ActiveCfg = Release|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|x64.ActiveCfg = Release|x64
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|x64.Build.0 = Release|x64
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|x86.ActiveCfg = Release|Win32
+		{BF8907F1-25D4-4F6F-AB03-7FF29FF56588}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
