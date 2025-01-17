@@ -109,7 +109,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_WIN64;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils;..\diStorm3\include</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>Sync</ExceptionHandling>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -261,6 +261,7 @@
     <ClCompile Include="HexEdit.cpp" />
     <ClCompile Include="IATReferenceScan.cpp" />
     <ClCompile Include="IATSearcher.cpp" />
+    <ClCompile Include="ImportRebuilder.cpp" />
     <ClCompile Include="ImportsHandling.cpp" />
     <ClCompile Include="KernelEATHookDlg.cpp" />
     <ClCompile Include="KernelEATHookTable.cpp" />
@@ -434,6 +435,7 @@
     <ClInclude Include="HexEdit.h" />
     <ClInclude Include="IATReferenceScan.h" />
     <ClInclude Include="IATSearcher.h" />
+    <ClInclude Include="ImportRebuilder.h" />
     <ClInclude Include="ImportsHandling.h" />
     <ClInclude Include="KernelEATHookDlg.h" />
     <ClInclude Include="KernelEATHookTable.h" />

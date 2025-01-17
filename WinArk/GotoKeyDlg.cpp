@@ -69,7 +69,7 @@ LRESULT CGotoKeyDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		{ L"Lsa",LR"(HKLM\SYSTEM\CurrentControlSet\Control\Lsa)"},
 		{ L"LogonUI",LR"(HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI)"},
 		{ L"Credential Providers",LR"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers)"},
-		{ L"DisallowRun",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowRun)"},
+		{ L"DisallowCpl",LR"(HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\DisallowCpl)"},
 		{ L"DisablePath",LR"(HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\0\Paths)"},
 		{ L"Internet Settings",LR"(HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings)"},
 		{ L"Session Manager",LR"(HKLM\System\CurrentControlSet\Control\Session Manager)"},

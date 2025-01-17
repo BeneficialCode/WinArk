@@ -9,16 +9,16 @@
 
 
 PEParser::PEParser(const wchar_t* path) :_path(path) {
-	_hFile = ::CreateFile(path, GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+	_hFile = ::CreateFile(path, GENERIC_READ,
+		FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (_hFile == INVALID_HANDLE_VALUE)
 		return;
 	::GetFileSizeEx(_hFile, &_fileSize);
-	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READWRITE, 0, 0, nullptr);
+	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
 	if (!_hMemMap)
 		return;
 
-	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
 	if (!_address)
 		return;
 
@@ -496,4 +496,54 @@ void PEParser::RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64
 
 PVOID PEParser::GetDataDirectoryAddress(UINT index, PULONG size) const {
 	return ::ImageDirectoryEntryToData(_address, FALSE, index, size);
+}
+
+void PEParser::SetDefaultFileAligment() {
+	if (IsPe64()) {
+		GetOptionalHeader64().FileAlignment = _fileAlignmentConstant;
+	}
+	else {
+		GetOptionalHeader32().FileAlignment = _fileAlignmentConstant;
+	}
+}
+
+DWORD PEParser::GetSectionAlignment() {
+	if (IsPe64()) {
+		return GetOptionalHeader64().SectionAlignment;
+	}
+	else {
+		return GetOptionalHeader32().SectionAlignment;
+	}
+}
+
+DWORD PEParser::GetFileAlignment() {
+	if (IsPe64()) {
+		return GetOptionalHeader64().FileAlignment;
+	}
+	else {
+		return GetOptionalHeader32().FileAlignment;
+	}
+}
+
+DWORD PEParser::AlignValue(DWORD badValue, DWORD alignTo) {
+	return (badValue + alignTo - 1) & ~(alignTo - 1);
+}
+
+void PEParser::AlignAllSectionHeaders() {
+	auto sections = _sections;
+	DWORD sectionAlignment = GetSectionAlignment();
+	DWORD fileAlignment = GetFileAlignment();
+	DWORD newFileSize = 0;
+	
+	newFileSize = _dosHeader->e_lfanew + sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
+		_ntHeader->FileHeader.SizeOfOptionalHeader * sizeof(IMAGE_SECTION_HEADER);
+
+	for (int i = 0; i < GetSectionCount(); ++i) {
+		sections[i].VirtualAddress = AlignValue(sections[i].VirtualAddress, sectionAlignment);
+		sections[i].Misc.VirtualSize = AlignValue(sections[i].Misc.VirtualSize, sectionAlignment);
+
+		sections[i].PointerToRawData = AlignValue(newFileSize, fileAlignment);
+		
+		newFileSize = sections[i].PointerToRawData + sections[i].SizeOfRawData;
+	}
 }

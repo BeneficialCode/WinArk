@@ -1375,7 +1375,7 @@ LRESULT CRegistryManagerView::OnEditDelete(WORD, WORD, HWND, BOOL&){
 			}
 			list->AddCommand(cmd);
 		}
-		if (count == 1) // only up key selected
+		if (count == 0) // only up key selected
 			return 0;
 
 		if (count == 1)

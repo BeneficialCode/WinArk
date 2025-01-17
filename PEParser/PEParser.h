@@ -152,7 +152,7 @@ struct RelocInfo {
 	uint32_t count;
 };
 
-class PEParser final {
+class PEParser {
 public:
 	explicit PEParser(const wchar_t* path);
 	~PEParser();
@@ -171,6 +171,8 @@ public:
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
 	const IMAGE_DOS_HEADER& GetDosHeader() const;
 	void* GetBaseAddress() const;
+	void AlignAllSectionHeaders();
+	DWORD AlignValue(DWORD badValue, DWORD alignTo);
 
 	ULONGLONG GetImageBase() const;
 
@@ -214,6 +216,9 @@ public:
 	//const IMAGE_LOAD_CONFIG_DIRECTORY64* GetLoadConfiguration64() const;
 	//const IMAGE_LOAD_CONFIG_DIRECTORY32* GetLoadConfiguration32() const;
 	PVOID GetDataDirectoryAddress(UINT index, PULONG size) const;
+	void SetDefaultFileAligment();
+	DWORD GetSectionAlignment();
+	DWORD GetFileAlignment();
 
 	bool IsImportLib() const;
 	bool IsObjectFile() const;
@@ -229,6 +234,8 @@ public:
 	std::vector<RelocInfo> GetRelocs(void* imageBase);
 	static void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
 
+protected:
+	static const DWORD _fileAlignmentConstant = 0x200;
 
 private:
 	bool IsObjectPe64() const;
