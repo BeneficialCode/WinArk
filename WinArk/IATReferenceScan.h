@@ -40,8 +40,8 @@ public:
 	}
 
 	void StartScan(DWORD_PTR imageBase, DWORD_PTR imageSize, DWORD_PTR iatAddress, DWORD iatSize);
-	void PatchNewIAT(DWORD_PTR stdImageBase, DWORD_PTR newIATBaseAddress, PEParser& parser);
-	void PatchDirectJumpTable(DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA, PEParser& parser,
+	void PatchNewIAT(DWORD_PTR stdImageBase, DWORD_PTR newIATBaseAddress, PEParser* pParser);
+	void PatchDirectJumpTable(DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA, PEParser* pParser,
 		BYTE* pJmpTableMemory, DWORD newIATBase);
 	void PatchDirectImportsMemory(bool junkByteAfterInst);
 	int NumberOfFoundDirectImports();
@@ -80,5 +80,5 @@ private:
 	void PatchDirectImportInDump64(int patchPrefixBytes, int instSize, DWORD_PTR patchBytes, BYTE* pMemory,
 		DWORD memorySize, bool generateReloc, DWORD patchOffset, DWORD sectionRVA);
 	void PatchDirectJumpTableEntry(DWORD_PTR targetIATPointer, DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA,
-		PEParser& parser, BYTE* pJmpTableMemory, DWORD newIATBase);
+		PEParser* parser, BYTE* pJmpTableMemory, DWORD newIATBase);
 };

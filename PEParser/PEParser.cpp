@@ -30,6 +30,7 @@ PEParser::PEParser(const wchar_t* path) :_path(path) {
 
 PEParser::PEParser(void* base) {
 	_address = reinterpret_cast<PUCHAR>(base);
+	_moduleBase = (DWORD_PTR)base;
 	CheckValidity();
 }
 
@@ -82,6 +83,10 @@ int PEParser::GetSectionCount() const {
 	return _fileHeader->NumberOfSections;
 }
 
+void PEParser::SetSectionCount(WORD count) {
+	_fileHeader->NumberOfSections = count;
+}
+
 const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
 	if (!IsValid() || section >= _fileHeader->NumberOfSections)
 		return nullptr;
@@ -105,6 +110,23 @@ bool PEParser::IsSystemFile() const {
 
 const IMAGE_DOS_HEADER& PEParser::GetDosHeader() const {
 	return *_dosHeader;
+}
+
+BYTE* PEParser::GetDosStub() {
+	BYTE* pDosStub = nullptr;
+
+	if (_dosHeader->e_lfanew > sizeof(IMAGE_DOS_HEADER)) {
+		pDosStub = (BYTE*)((DWORD_PTR)_dosHeader + sizeof(IMAGE_DOS_HEADER));
+	}
+	else if (_dosHeader->e_lfanew < sizeof(IMAGE_DOS_HEADER)) {
+		_dosHeader->e_lfanew = sizeof(IMAGE_DOS_HEADER);
+	}
+
+	return pDosStub;
+}
+
+IMAGE_NT_HEADERS64* PEParser::GetNtHeader() {
+	return _ntHeader;
 }
 
 void* PEParser::GetBaseAddress() const {
@@ -262,6 +284,10 @@ void* PEParser::GetAddress(unsigned rva) const {
 	return ::ImageRvaToVa(::ImageNtHeader(_address), _address, rva, nullptr);
 }
 
+BYTE* PEParser::GetFileAddress(DWORD offset) {
+	return _address + offset;
+}
+
 SubsystemType PEParser::GetSubsystemType() const {
 	if (IsPe64())
 		return static_cast<SubsystemType>(GetOptionalHeader64().Subsystem);
@@ -307,6 +333,19 @@ unsigned PEParser::RvaToFileOffset(unsigned rva) const {
 	return rva;
 }
 
+DWORD_PTR PEParser::FileOffsetToRva(DWORD_PTR offset) {
+	auto sections = _sections;
+	for (int i = 0; i < GetSectionCount(); ++i) {
+		if ((sections[i].PointerToRawData <= offset) && 
+			((sections[i].PointerToRawData + sections[i].SizeOfRawData) > offset))
+		{
+			return ((offset - sections[i].PointerToRawData) + sections[i].VirtualAddress);
+		}
+	}
+
+	return 0;
+}
+
 DWORD_PTR PEParser::RVAToRelativeOffset(DWORD_PTR rva) const {
 	auto sections = _sections;
 	for (int i = 0; i < GetSectionCount(); ++i) {
@@ -325,6 +364,19 @@ int PEParser::RVAToSectionIndex(DWORD_PTR rva) const {
 	}
 
 	return -1;
+}
+
+DWORD PEParser::GetSectionHeaderBasedSizeOfImage() {
+	DWORD lastVirtualOffset = 0, lastVirtualSize = 0;
+
+	for (WORD i = 0; i < GetSectionCount(); i++) {
+		if ((_sections[i].VirtualAddress + _sections[i].Misc.VirtualSize) > (lastVirtualOffset + lastVirtualSize)) {
+			lastVirtualOffset = _sections[i].VirtualAddress;
+			lastVirtualSize = _sections[i].Misc.VirtualSize;
+		}
+	}
+
+	return lastVirtualSize + lastVirtualOffset;
 }
 
 bool PEParser::GetImportAddressTable() const {
@@ -546,4 +598,136 @@ void PEParser::AlignAllSectionHeaders() {
 		
 		newFileSize = sections[i].PointerToRawData + sections[i].SizeOfRawData;
 	}
+}
+
+void PEParser::FixPEHeader() {
+	DWORD size = _dosHeader->e_lfanew + sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER);
+
+	if (!IsPe64()) {
+		_opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].VirtualAddress = 0;
+		_opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].Size = 0;
+
+		for (DWORD i = _opt32->NumberOfRvaAndSizes; i < IMAGE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
+			_opt32->DataDirectory[i].Size = 0;
+			_opt32->DataDirectory[i].VirtualAddress = 0;
+		}
+		_opt32->NumberOfRvaAndSizes = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
+		_fileHeader->SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER32);
+
+		_opt32->SizeOfImage = GetSectionHeaderBasedSizeOfImage();
+
+		if (_moduleBase) {
+			_opt32->ImageBase = _moduleBase;;
+		}
+
+		_opt32->SizeOfHeaders = AlignValue(size + _ntHeader->FileHeader.SizeOfOptionalHeader
+			+ GetSectionCount() * sizeof(IMAGE_SECTION_HEADER), _opt32->FileAlignment);
+	}
+	else {
+		_opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].VirtualAddress = 0;
+		_opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].Size = 0;
+
+		for (DWORD i = _opt64->NumberOfRvaAndSizes; i < IMAGE_NUMBEROF_DIRECTORY_ENTRIES; i++) {
+			_opt64->DataDirectory[i].Size = 0;
+			_opt64->DataDirectory[i].VirtualAddress = 0;
+		}
+
+		_opt64->NumberOfRvaAndSizes = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
+		_fileHeader->SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER64);
+
+		if (_moduleBase) {
+			_opt64->ImageBase = _moduleBase;
+		}
+
+		_opt64->SizeOfHeaders = AlignValue(size + _fileHeader->SizeOfOptionalHeader +
+			+GetSectionCount() * sizeof(IMAGE_SECTION_HEADER), _opt64->FileAlignment);
+	}
+
+	RemoveIATDirectory();
+}
+
+void PEParser::RemoveIATDirectory() {
+	DWORD searchAddress = 0;
+
+	if (!IsPe64()) {
+		searchAddress = _opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress;
+		_opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0;
+		_opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 0;
+	}
+	else {
+		searchAddress = _opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress;
+		_opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0;
+		_opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 0;
+	}
+
+	if (searchAddress) {
+		for (WORD i = 0; i < GetSectionCount(); i++) {
+			if (_sections[i].VirtualAddress <= searchAddress &&
+				(_sections[i].VirtualAddress + _sections[i].Misc.VirtualSize) > searchAddress) {
+				_sections[i].Characteristics |= IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
+			}
+		}
+	}
+}
+
+DWORD PEParser::GetSectionHeaderBasedFileSize() {
+	DWORD lastRawOffset = 0, lastRawSize = 0;
+
+	for (WORD i = 0; i < GetSectionCount(); i++) {
+		auto section = _sections[i];
+		if ((section.PointerToRawData + section.SizeOfRawData) > (lastRawOffset + lastRawSize))
+		{
+			lastRawOffset = section.PointerToRawData;
+			lastRawSize = section.SizeOfRawData;
+		}
+	}
+
+	return lastRawSize + lastRawOffset;
+}
+
+bool PEParser::AddNewLastSection(const char* pSectionName, DWORD sectionSize, BYTE* pSectionData) {
+	size_t len = strlen(pSectionName);
+	DWORD fileAlignment = 0, sectionAlignment = 0;
+	PEFileSection peFileSection;
+
+	if (len > IMAGE_SIZEOF_SHORT_NAME) {
+		return false;
+	}
+
+	if (!IsPe64()) {
+		fileAlignment = _opt32->FileAlignment;
+		sectionAlignment = _opt32->SectionAlignment;
+	}
+	else {
+		fileAlignment = _opt64->FileAlignment;
+		sectionAlignment = _opt64->SectionAlignment;
+	}
+
+	memcpy_s(peFileSection._sectionHeader.Name, IMAGE_SIZEOF_SHORT_NAME, pSectionName, len);
+
+	peFileSection._sectionHeader.SizeOfRawData = sectionSize;
+	peFileSection._sectionHeader.Misc.VirtualSize = AlignValue(sectionSize, sectionAlignment);
+
+	peFileSection._sectionHeader.PointerToRawData = AlignValue(GetSectionHeaderBasedFileSize(), fileAlignment);
+	peFileSection._sectionHeader.VirtualAddress = AlignValue(GetSectionHeaderBasedSizeOfImage(), sectionAlignment);
+
+	peFileSection._sectionHeader.Characteristics = IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ 
+		| IMAGE_SCN_MEM_WRITE | IMAGE_SCN_CNT_CODE | IMAGE_SCN_CNT_INITIALIZED_DATA;
+	
+	peFileSection._normalSize = peFileSection._sectionHeader.SizeOfRawData;
+	peFileSection._dataSize = peFileSection._sectionHeader.SizeOfRawData;
+
+	if (pSectionData == nullptr) {
+		peFileSection._pData = new BYTE[peFileSection._sectionHeader.SizeOfRawData];
+		ZeroMemory(peFileSection._pData, peFileSection._sectionHeader.SizeOfRawData);
+	}
+	else {
+		peFileSection._pData = pSectionData;
+	}
+
+	_PESections.push_back(peFileSection);
+
+	SetSectionCount(GetSectionCount() + 1);
+
+	return true;
 }

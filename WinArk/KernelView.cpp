@@ -69,6 +69,10 @@ LRESULT CKernelView::OnSize(UINT, WPARAM, LPARAM, BOOL& bHandled) {
 	return 0;
 }
 
+LRESULT CKernelView::OnEraseBackground(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	return 1;
+}
+
 LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 	int index = 0;
 
@@ -98,6 +102,7 @@ LRESULT CKernelView::OnTcnSelChange(int, LPNMHDR hdr, BOOL&) {
 			break;
 		case TabColumn::DpcTimer:
 			m_DpcTimerTable->ShowWindow(SW_SHOW);
+			m_DpcTimerTable->SetFocus();
 			break;
 		case TabColumn::IoTimer:
 			m_IoTimerTable->ShowWindow(SW_SHOW);

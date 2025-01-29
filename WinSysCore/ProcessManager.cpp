@@ -328,6 +328,15 @@ std::shared_ptr<ProcessInfo> ProcessManager::Impl::BuildProcessInfo(
 		if (info->UniqueProcessId > 0) {
 			pi->EProcess = DriverHelper::GetEprocess(info->UniqueProcessId);
 		}
+		HANDLE hProcess = DriverHelper::OpenProcess(HandleToUlong(info->UniqueProcessId), 
+			PROCESS_VM_READ|PROCESS_QUERY_INFORMATION);
+		if (hProcess != NULL) {
+			pi->ImageBase = WinSys::Process::GetImageBaseAddress(hProcess);
+			if (pi->ImageBase != 0) {
+				pi->ImageSize = WinSys::Process::GetImageSize(hProcess, pi->ImageBase);
+			}
+			::CloseHandle(hProcess);
+		}
 		if (extended && info->UniqueProcessId > 0) {
 			auto ext = (SYSTEM_PROCESS_INFORMATION_EXTENSION*)((BYTE*)info +
 				FIELD_OFFSET(SYSTEM_PROCESS_INFORMATION, Threads) + sizeof(SYSTEM_EXTENDED_THREAD_INFORMATION) * info->NumberOfThreads);

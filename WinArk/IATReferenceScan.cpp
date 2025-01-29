@@ -65,7 +65,7 @@ void IATReferenceScan::StartScan(DWORD_PTR imageBase, DWORD_PTR imageSize, DWORD
 	} while (section<(imageBase+imageSize));
 }
 
-void IATReferenceScan::PatchNewIAT(DWORD_PTR stdImageBase, DWORD_PTR newIATBaseAddress, PEParser& parser) {
+void IATReferenceScan::PatchNewIAT(DWORD_PTR stdImageBase, DWORD_PTR newIATBaseAddress, PEParser* pParser) {
 	_newIATAddressRVA = newIATBaseAddress;
 	DWORD patchBytes = 0;
 
@@ -82,12 +82,12 @@ void IATReferenceScan::PatchNewIAT(DWORD_PTR stdImageBase, DWORD_PTR newIATBaseA
 		}
 
 		DWORD_PTR rva = ref._addressVA - _imageBase;
-		DWORD_PTR patchOffset = parser.RVAToRelativeOffset(rva);
-		int idx = parser.RVAToSectionIndex(rva);
-		auto section = parser.GetSectionHeader(idx);
+		DWORD_PTR patchOffset = pParser->RVAToRelativeOffset(rva);
+		int idx = pParser->RVAToSectionIndex(rva);
+		auto section = pParser->GetSectionHeader(idx);
 		auto start = section->VirtualAddress ? section->VirtualAddress : section->PointerToRawData;
 		auto size = std::min(section->Misc.VirtualSize, section->SizeOfRawData);
-		BYTE* pMemory = (BYTE*)parser.GetAddress(start);
+		BYTE* pMemory = (BYTE*)pParser->GetAddress(start);
 		DWORD memorySize = size;
 
 		if (memorySize < (DWORD)(patchOffset + 6)) {
@@ -107,7 +107,7 @@ void IATReferenceScan::PatchDirectImportsMemory(bool junkByteAfterInst) {
 	}
 }
 
-void IATReferenceScan::PatchDirectJumpTable(DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA, PEParser& parser,
+void IATReferenceScan::PatchDirectJumpTable(DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA, PEParser* pParser,
 	BYTE* pJmpTableMemory, DWORD newIATBase) {
 	std::set<DWORD_PTR> apiPointers;
 	for (auto& ref : _iatDirectImports) {
@@ -137,7 +137,7 @@ void IATReferenceScan::PatchDirectJumpTable(DWORD_PTR stdImageBase, DWORD direct
 		pJmpTableMemory[1] = 0x25;
 		*(DWORD*)&pJmpTableMemory[2] = patchBytes;
 
-		PatchDirectJumpTableEntry(pointer, stdImageBase, directImportsJumpTableRVA, parser, pJmpTableMemory, newIATBase);
+		PatchDirectJumpTableEntry(pointer, stdImageBase, directImportsJumpTableRVA, pParser, pJmpTableMemory, newIATBase);
 
 		pJmpTableMemory += 6;
 		directImportsJumpTableRVA += 6;
@@ -422,7 +422,7 @@ void IATReferenceScan::FindDirectIATReferenceMov(_DInst* pInst) {
 
 void IATReferenceScan::FindDirectIATReferencePush(_DInst* pInst) {
 	IATReference ref;
-	ref._type == IAT_REFERENCE_DIRECT_PUSH;
+	ref._type = IAT_REFERENCE_DIRECT_PUSH;
 
 	if(pInst->size >= 5 && pInst->opcode == I_PUSH) {
 		ref._targetAddressInIAT = pInst->imm.qword;
@@ -483,7 +483,7 @@ void IATReferenceScan::PatchDirectImportInDump64(int patchPrefixBytes, int instS
 }
 
 void IATReferenceScan::PatchDirectJumpTableEntry(DWORD_PTR targetIATPointer, DWORD_PTR stdImageBase, DWORD directImportsJumpTableRVA,
-	PEParser& parser, BYTE* pJmpTableMemory, DWORD newIATBase) {
+	PEParser* pParser, BYTE* pJmpTableMemory, DWORD newIATBase) {
 	DWORD patchBytes = 0;
 	for (auto& ref : _iatDirectImports) {
 		if (ref._targetPointer == targetIATPointer) {
@@ -494,12 +494,12 @@ void IATReferenceScan::PatchDirectJumpTableEntry(DWORD_PTR targetIATPointer, DWO
 			DWORD sectionRVA = 0;
 
 			DWORD_PTR rva = ref._addressVA - _imageBase;
-			patchOffset = parser.RVAToRelativeOffset(rva);
-			int idx = parser.RVAToSectionIndex(rva);
-			auto section = parser.GetSectionHeader(idx);
+			patchOffset = pParser->RVAToRelativeOffset(rva);
+			int idx = pParser->RVAToSectionIndex(rva);
+			auto section = pParser->GetSectionHeader(idx);
 			auto start = section->VirtualAddress ? section->VirtualAddress : section->PointerToRawData;
 			auto size = std::min(section->Misc.VirtualSize, section->SizeOfRawData);
-			pMemory = (BYTE*)parser.GetAddress(start);
+			pMemory = (BYTE*)pParser->GetAddress(start);
 			memorySize = size;
 			sectionRVA = start;
 

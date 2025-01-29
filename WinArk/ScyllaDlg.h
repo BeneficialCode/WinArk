@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "HexEdit.h"
 #include "ImportsHandling.h"
+#include "ApiReader.h"
 
 
 class CScyllaDlg 
@@ -22,7 +23,7 @@ public:
 	END_DDX_MAP()
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px) :m_pm(pm), m_px(px),_importsHandling(_treeImports){}
+	CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px);
 
 	BEGIN_MSG_MAP_EX(CScyllaDlg)
 		MSG_WM_SIZE(OnSize)
@@ -58,12 +59,20 @@ protected:
 	enum StatusParts {
 		Count = 0,
 		Invalid,
-		ImageBase
+		ImageBase,
+		Module,
 	};
+
+
 
 	WCHAR _text[512];
 	ImportsHandling _importsHandling;
 	CMultiSelectTreeViewCtrl _treeImports;
+	ApiReader _ApiReader;
+
+	CIcon _hIconError;
+	CIcon _hIconWarning;
+	CIcon _hIconCheck;
 
 private:
 	ProcessInfoEx& m_px;
@@ -76,4 +85,5 @@ private:
 	CHexEdit _iatAddress;
 	CHexEdit _iatSize;
 	CIcon m_Icon;
+	DWORD _pid;
 };

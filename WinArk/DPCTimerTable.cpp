@@ -10,9 +10,14 @@ LRESULT CDpcTimerTable::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
 	return 0;
 }
 
+LRESULT CDpcTimerTable::OnEraseBackground(UINT, WPARAM wParam, LPARAM, BOOL&) {
+	return 1;
+}
+
 LRESULT CDpcTimerTable::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lparam, BOOL& /*bHandled*/) {
 	return 0;
 }
+
 LRESULT CDpcTimerTable::OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	PaintTable(m_hWnd);
 	return 0;
@@ -47,15 +52,19 @@ LRESULT CDpcTimerTable::OnMouseWheel(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 	int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 	return Tablefunction(m_hWnd, WM_VSCROLL, zDelta >= 0 ? 0 : 1, wParam);
 }
+
 LRESULT CDpcTimerTable::OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CDpcTimerTable::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CDpcTimerTable::OnLBtnUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
+
 LRESULT CDpcTimerTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	CMenu menu;
 	CMenuHandle hSubMenu;
@@ -73,6 +82,7 @@ LRESULT CDpcTimerTable::OnRBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 	return 0;
 }
+
 LRESULT CDpcTimerTable::OnUserSts(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	return Tablefunction(m_hWnd, uMsg, wParam, lParam);
 }
@@ -129,7 +139,7 @@ int CDpcTimerTable::ParseTableEntry(CString& s, char& mask, int& select, std::sh
 			break;
 
 		case Column::DueTime:
-			s.Format(L"0x%x", info->DueTime);
+			s.Format(L"0x%x", info->DueTime.QuadPart);
 			break;
 	}
 	return s.GetLength();
@@ -142,7 +152,6 @@ void CDpcTimerTable::Refresh() {
 	ULONG size = SymbolHelper::GetKernelStructSize("_KTIMER_TABLE_ENTRY");
 	KernelTimerData data;
 	if (size != 0) {
-		
 		ULONG entryCount = memberSize / size;
 		data.entriesOffset = SymbolHelper::GetKernelStructMemberOffset("_KTIMER_TABLE", "TimerEntries");
 		data.maxEntryCount = entryCount;

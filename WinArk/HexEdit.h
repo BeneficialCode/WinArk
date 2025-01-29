@@ -58,7 +58,7 @@ public:
 	}
 
 	ULONG_PTR _CharToNum(TCHAR c) const {
-		c = _toupper(c);
+		c = _totupper(c);
 		for (int i = 0; _strDigits[i]; i++) {
 			if (c == _strDigits[i])
 				return i;

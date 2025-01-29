@@ -24,8 +24,13 @@ namespace WinSys {
 }
 
 static bool GetProcessPeb(HANDLE hProcess, PPEB peb) {
+	ULONG len = 0;
 	PROCESS_BASIC_INFORMATION info;
-	if(!NT_SUCCESS(::NtQueryInformationProcess(hProcess,ProcessBasicInformation,&info,sizeof(info),nullptr)))
+	DWORD status = ::NtQueryInformationProcess(hProcess, ProcessBasicInformation, &info, sizeof(info), &len);
+	if(!NT_SUCCESS(status))
+		return false;
+
+	if (info.PebBaseAddress == nullptr)
 		return false;
 
 	return ::ReadProcessMemory(hProcess, info.PebBaseAddress, peb, sizeof(*peb), nullptr);
@@ -390,4 +395,25 @@ std::vector<std::pair<std::wstring, std::wstring>> Process::GetEnvironment(HANDL
 	free(buffer);
 
 	return env;
+}
+
+
+DWORD_PTR Process::GetImageBaseAddress(HANDLE hProcess) {
+	PEB peb;
+	if (!GetProcessPeb(hProcess, &peb))
+		return 0;
+
+	return (DWORD_PTR)peb.ImageBaseAddress;
+}
+
+SIZE_T Process::GetImageSize(HANDLE hProcess, DWORD_PTR imageBase) {
+	MEMORY_REGION_INFORMATION info = { 0 };
+	SIZE_T size = 0;
+	SIZE_T len = 0;
+	DWORD status = ::NtQueryVirtualMemory(hProcess, (PVOID)imageBase, MemoryRegionInformation,
+		&info, sizeof(MEMORY_REGION_INFORMATION), &len);
+	if (NT_SUCCESS(status)) {
+		return info.RegionSize;
+	}
+	return 0;
 }

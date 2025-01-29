@@ -3,6 +3,7 @@
 #include <distorm.h>
 #include <mnemonics.h>
 
+
 #define MAX_INSTRUCTIONS (200)
 
 class ApiInfo;
@@ -58,11 +59,18 @@ public:
 	static inline DWORD_PTR _targetSizeOfImage;
 	static inline DWORD_PTR _maxValidAddress;
 
+	static inline ModuleInfo* _pSelectedModule = nullptr;
+
 	static inline std::vector<ModuleInfo> _moduleList;
 	static inline std::vector<ModuleInfo> _ownModuleList;
 
 	static inline const size_t PE_HEADER_BYTES_COUNT = 2000;
 	static inline BYTE _fileHeaderFromDisk[PE_HEADER_BYTES_COUNT];
+
+	static bool OpenProcessHandle(DWORD pid);
+	static void CloseProcessHandle();
+
+	static bool GetProcessModules(HANDLE hProcess, std::vector<ModuleInfo>& moduleList);
 
 	static bool ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, LPVOID pData);
 	static bool WriteMemoryToProcess(DWORD_PTR address, SIZE_T size, LPVOID pData);

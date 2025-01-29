@@ -1,6 +1,14 @@
 #include "stdafx.h"
 #include "ScyllaDlg.h"
+#include "ProcessAccessHelper.h"
+#include "Architecture.h"
 
+CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
+	: m_pm(pm), m_px(px), _importsHandling(_treeImports) {
+	_hIconCheck.LoadIcon(IDI_CHECK);
+	_hIconWarning.LoadIcon(IDI_WARNING);
+	_hIconError.LoadIcon(IDI_ERROR);
+}
 
 BOOL CScyllaDlg::PreTranslateMessage(MSG* pMsg) {
 	if (m_Accelerators.TranslateAccelerator(m_hWnd, pMsg)) {
@@ -15,6 +23,7 @@ BOOL CScyllaDlg::PreTranslateMessage(MSG* pMsg) {
 LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
 	DWORD pid = static_cast<DWORD>(lParam);
+	_pid = pid;
 	std::wstring bitness = m_px.GetBitness() == 64 ? L" (x64) " : L" (x86) ";
 	WCHAR proc[25] = { 0 };
 	_itow_s(pid, proc, 10);
@@ -26,7 +35,10 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	m_Icon.LoadIcon(IDI_SCYLLA);
 	SetIcon(m_Icon, TRUE);
 
+
 	SetupStatusBar();
+
+	DoDataExchange(); // attach controls
 	
 	EnableDialogControls(FALSE);
 
@@ -49,11 +61,12 @@ void CScyllaDlg::SetupStatusBar() {
 	GetClientRect(&rcMain);
 	m_StatusBar.GetWindowRect(&rcStatus);
 
-	const int parts = 3;
+	const int parts = 4;
 	int widths[parts];
 	widths[StatusParts::Count] = rcMain.Width() / 5;
 	widths[StatusParts::Invalid] = widths[StatusParts::Count] + rcMain.Width() / 5;
 	widths[StatusParts::ImageBase] = widths[StatusParts::Invalid] + rcMain.Width() / 3;
+	widths[StatusParts::Module] = -1;
 
 	m_StatusBar.SetParts(parts, widths);
 
@@ -70,11 +83,66 @@ void CScyllaDlg::OnDestroy() {
 }
 
 void CScyllaDlg::ProcessHandler() {
+	if (ProcessAccessHelper::_hProcess != 0) {
+		ProcessAccessHelper::CloseProcessHandle();
+		_ApiReader.ClearAll();
+	}
+
+	if (!ProcessAccessHelper::OpenProcessHandle(_pid)) {
+		EnableDialogControls(FALSE);
+		UpdateStatusBar();
+		return;
+	}
+
+	ProcessAccessHelper::GetProcessModules(ProcessAccessHelper::_hProcess, ProcessAccessHelper::_moduleList);
+
+	_ApiReader.ReadApisFromModuleList();
+
+	ProcessAccessHelper::_pSelectedModule = nullptr;
+
+	ProcessAccessHelper::_targetImageBase = m_px.GetProcessInfo()->ImageBase;
+	ProcessAccessHelper::_targetSizeOfImage = m_px.GetProcessInfo()->ImageSize;
+
+	DWORD entryPoint = ProcessAccessHelper::GetEntryPointFromFile(m_px.GetExecutablePath().c_str());
+
+	_oepAddress.SetValue(entryPoint + ProcessAccessHelper::_targetImageBase);
+
+	EnableDialogControls(TRUE);
+
 	UpdateStatusBar();
 }
 
 void CScyllaDlg::UpdateStatusBar() {
-	
+	unsigned int totalImports = _importsHandling.ThunkCount();
+	unsigned int invalidImports = _importsHandling.InvalidThunkCount();
+
+	swprintf_s(_text, L"\tImports: %u", totalImports);
+	m_StatusBar.SetText(StatusParts::Count, _text);
+	if (invalidImports > 0) {
+		m_StatusBar.SetIcon(StatusParts::Invalid, _hIconError);
+	}
+	else {
+		m_StatusBar.SetIcon(StatusParts::Invalid, _hIconCheck);
+	}
+
+	swprintf_s(_text, L"\tInvalid: %d", invalidImports);
+	m_StatusBar.SetText(StatusParts::Invalid, _text);
+
+	DWORD_PTR imageBase = 0;
+	std::wstring fileName;
+	if (ProcessAccessHelper::_pSelectedModule) {
+		imageBase = ProcessAccessHelper::_pSelectedModule->_modBaseAddr;
+		fileName = ProcessAccessHelper::_pSelectedModule->GetFileName();
+	}
+	else {
+		imageBase = m_px.GetProcessInfo()->ImageBase;
+		fileName = m_px.GetProcessInfo()->GetImageName();
+	}
+
+	swprintf_s(_text, L"\tImagebase: " PRINTF_DWORD_PTR_FULL, imageBase);
+	m_StatusBar.SetText(StatusParts::ImageBase, _text);
+	m_StatusBar.SetText(StatusParts::Module, fileName.c_str());
+	m_StatusBar.SetTipText(StatusParts::Module, fileName.c_str());
 }
 
 void CScyllaDlg::OnContextMenu(CWindow wnd, CPoint point)

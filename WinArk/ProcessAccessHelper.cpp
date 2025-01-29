@@ -2,6 +2,37 @@
 #include "ProcessAccessHelper.h"
 #include <Psapi.h>
 #include <PEParser.h>
+#include <DriverHelper.h>
+#include "ProcessModuleTracker.h"
+
+bool ProcessAccessHelper::OpenProcessHandle(DWORD pid) {
+	if (pid > 0) {
+		if (_hProcess)
+			return false;
+		else {
+			_hProcess = DriverHelper::OpenProcess(pid, PROCESS_CREATE_THREAD | PROCESS_VM_OPERATION
+				| PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_VM_WRITE
+				| PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE);
+			if (_hProcess) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+	}
+}
+
+void ProcessAccessHelper::CloseProcessHandle() {
+	if (_hProcess) {
+		::CloseHandle(_hProcess);
+		_hProcess = NULL;
+	}
+
+	_moduleList.clear();
+	_targetImageBase = 0;
+	_pSelectedModule = nullptr;
+}
 
 bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, LPVOID pData)
 {
@@ -312,6 +343,38 @@ bool ProcessAccessHelper::DisassembleMemory(BYTE* pMemory, SIZE_T size, DWORD_PT
 	result = distorm_decode(offset, pMemory, size, type, _decodedInsts, MAX_INSTRUCTIONS, &_decodedInstCount);
 	if (result == DECRES_INPUTERR)
 		return false;
+
+	return true;
+}
+
+bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleInfo>& moduleList) {
+	ModuleInfo module;
+	WCHAR fileName[MAX_PATH] = { 0 };
+	DWORD needed = 0;
+
+	_moduleList.reserve(20);
+
+	WinSys::ProcessModuleTracker tracker(hProcess);
+
+	tracker.EnumModules();
+
+	auto infos = tracker.GetModules();
+
+	for (auto& info : infos) {
+		module._modBaseAddr = (DWORD_PTR)info.get()->ImageBase;
+		module._modBaseSize = info.get()->ModuleSize;
+		module._isAlreadyParsed = false;
+		module._parsing = false;
+
+		fileName[0] = 0;
+		module._fullPath[0] = 0;
+
+		wcscpy_s(module._fullPath, info.get()->Path.c_str());
+
+		wcscpy_s(fileName, info.get()->Name.c_str());
+
+		_moduleList.push_back(module);
+	}
 
 	return true;
 }

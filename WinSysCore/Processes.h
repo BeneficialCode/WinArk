@@ -118,7 +118,8 @@ namespace WinSys {
 		static std::wstring GetCurDirectory(HANDLE hProcess);
 		static std::wstring GetCmdLine(HANDLE hProcess);
 		static std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment(HANDLE hProcess);
-		std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment() const;
+		static DWORD_PTR GetImageBaseAddress(HANDLE hProcess);
+		static SIZE_T GetImageSize(HANDLE hProcess, DWORD_PTR imageBase);
 
 		bool SetPriorityClass(ProcessPriorityClass pc);
 		uint32_t GetGdiObjectCount() const;

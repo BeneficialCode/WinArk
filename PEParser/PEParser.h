@@ -146,6 +146,18 @@ struct ResourceInfo {
 	bool IsId{ false };
 };
 
+class PEFileSection {
+public:
+	IMAGE_SECTION_HEADER _sectionHeader;
+	BYTE* _pData = nullptr;
+	DWORD _dataSize = 0;
+	DWORD _normalSize = 0;
+
+	PEFileSection() {
+		ZeroMemory(&_sectionHeader, sizeof(IMAGE_SECTION_HEADER));
+	}
+};
+
 struct RelocInfo {
 	uint64_t address;
 	uint16_t* item;
@@ -166,7 +178,10 @@ public:
 	bool HasImports() const;
 	bool IsSystemFile() const;
 
+	void FixPEHeader();
+
 	int GetSectionCount() const;
+	void SetSectionCount(WORD count);
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
 	const IMAGE_DOS_HEADER& GetDosHeader() const;
@@ -175,6 +190,11 @@ public:
 	DWORD AlignValue(DWORD badValue, DWORD alignTo);
 
 	ULONGLONG GetImageBase() const;
+
+	void RemoveIATDirectory();
+
+	DWORD GetSectionHeaderBasedFileSize();
+	DWORD GetSectionHeaderBasedSizeOfImage();
 
 	DWORD GetImageSize() const;
 	DWORD GetHeadersSize() const;
@@ -199,6 +219,8 @@ public:
 	void* GetAddress(unsigned rva) const;
 
 	void* GetMemAddress(unsigned rva) const;
+
+	BYTE* GetFileAddress(DWORD offset);
 
 	SubsystemType GetSubsystemType() const;
 
@@ -228,14 +250,23 @@ public:
 	DWORD_PTR RVAToRelativeOffset(DWORD_PTR rva) const;
 	int RVAToSectionIndex(DWORD_PTR rva) const;
 	IMAGE_SECTION_HEADER* GetSections();
+	DWORD_PTR FileOffsetToRva(DWORD_PTR offset);
 
 	LARGE_INTEGER GetFileSize() const;
 
 	std::vector<RelocInfo> GetRelocs(void* imageBase);
 	static void RelocateImageByDelta(std::vector<RelocInfo>& relocs, const uint64_t delta);
 
+	BYTE* GetDosStub();
+
+	IMAGE_NT_HEADERS64* GetNtHeader();
+
+	std::vector<PEFileSection> _PESections;
+
 protected:
 	static const DWORD _fileAlignmentConstant = 0x200;
+
+	bool AddNewLastSection(const char* pSectionName, DWORD sectionSize, BYTE* pSectionData);
 
 private:
 	bool IsObjectPe64() const;
@@ -245,12 +276,13 @@ private:
 	//CString GetResourceName(void* data) const;
 
 	PBYTE _address{ nullptr };
+	DWORD_PTR _moduleBase = 0;
 	LARGE_INTEGER _fileSize{ 0 };
 	HMODULE _module{ nullptr };
 	HANDLE _hMemMap{ nullptr };
 	HANDLE _hFile{ INVALID_HANDLE_VALUE };
 	IMAGE_DOS_HEADER* _dosHeader = nullptr;
-	IMAGE_NT_HEADERS64* _ntHeader=nullptr;
+	IMAGE_NT_HEADERS64* _ntHeader = nullptr;
 	IMAGE_FILE_HEADER* _fileHeader = nullptr;
 	IMAGE_SECTION_HEADER* _sections = nullptr;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
