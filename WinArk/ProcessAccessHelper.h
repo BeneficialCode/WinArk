@@ -55,6 +55,7 @@ public:
 class ProcessAccessHelper {
 public:
 	static inline HANDLE _hProcess;
+	static inline DWORD _pid;
 	static inline DWORD_PTR _targetImageBase;
 	static inline DWORD_PTR _targetSizeOfImage;
 	static inline DWORD_PTR _maxValidAddress;

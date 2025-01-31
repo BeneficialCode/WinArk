@@ -7,7 +7,7 @@ bool IATSearcher::SearchImportAddressTableInProcess(DWORD_PTR startAddress, DWOR
 	*pSize = 0;
 
 	if (advance) {
-		FindIATAdvanced(startAddress, pIAT, pSize);
+		return FindIATAdvanced(startAddress, pIAT, pSize);
 	}
 
 	addressInIAT = FindAPIAddressInIAT(startAddress);
@@ -66,7 +66,7 @@ bool IATSearcher::FindIATAdvanced(DWORD_PTR startAddress, DWORD_PTR* pIAT, DWORD
 	DWORD_PTR start = *iter;
 	*pIAT = start;
 	iter = iatPointers.end();
-	DWORD_PTR end = *iter;
+	DWORD_PTR end = *(--iter);
 	*pSize = (DWORD)(end - start + sizeof(DWORD_PTR));
 	
 	if (*pSize > (2000000 * sizeof(DWORD_PTR))) {
@@ -104,6 +104,8 @@ DWORD_PTR IATSearcher::FindAPIAddressInIAT(DWORD_PTR startAddress) {
 				}
 			}
 		}
+
+		startAddress = FindNextFunctionAddress();
 	} while (startAddress != 0 && count != 8);
 
 
@@ -146,7 +148,8 @@ DWORD_PTR IATSearcher::FindIATPointer() {
 					}
 				}
 				else {
-					return INSTRUCTION_GET_RIP_TARGET(&_insts[i]);
+					if(_insts[i].flags & FLAG_RIP_RELATIVE)
+						return INSTRUCTION_GET_RIP_TARGET(&_insts[i]);
 				}
 			}
 		}
@@ -163,7 +166,7 @@ bool IATSearcher::IsIATPointerValid(DWORD_PTR iatPointer, bool checkRedirects) {
 		return false;
 	}
 
-	if (!IsApiAddressValid(apiAddress)) {
+	if (IsApiAddressValid(apiAddress)) {
 		return true;
 	}
 	else {
@@ -218,8 +221,12 @@ DWORD_PTR IATSearcher::FindIATStartAddress(DWORD_PTR baseAddress, DWORD_PTR star
 			if ((DWORD_PTR)(pIATAddress - 1) >= (DWORD_PTR)pData) {
 				if (IsInvalidMemoryForIAT(*(pIATAddress - 1))) {
 					if ((DWORD_PTR)(pIATAddress - 2) >= (DWORD_PTR)pData) {
-						if (!IsApiAddressValid(*(pIATAddress - 2))) {
-							return (((DWORD_PTR)pIATAddress - (DWORD_PTR)pData) + baseAddress);
+						DWORD_PTR* pIATStart = pIATAddress - 2;
+						DWORD_PTR apiAddress = *pIATStart;
+						if (IsApiAddressValid(apiAddress)) {
+							if (!IsApiAddressValid(*(pIATStart - 1))) {
+								return (((DWORD_PTR)pIATStart - (DWORD_PTR)pData) + baseAddress);
+							}
 						}
 					}
 				}
@@ -240,7 +247,8 @@ DWORD IATSearcher::FindIATSize(DWORD_PTR baseAddress, DWORD_PTR iatAddress, BYTE
 	while ((DWORD_PTR)pIATAddress < ((DWORD_PTR)pData + dataSize - 1)) {
 		if (IsInvalidMemoryForIAT(*pIATAddress)) {
 			if (IsInvalidMemoryForIAT(*(pIATAddress + 1))) {
-				if (!IsApiAddressValid(*(pIATAddress + 2))) {
+				DWORD_PTR apiAddress = *(pIATAddress + 2);
+				if (!IsApiAddressValid(apiAddress) && apiAddress != 0) {
 					return (DWORD)((DWORD_PTR)pIATAddress - (DWORD_PTR)pData - (iatAddress - baseAddress));
 				}
 			}
@@ -254,16 +262,20 @@ DWORD IATSearcher::FindIATSize(DWORD_PTR baseAddress, DWORD_PTR iatAddress, BYTE
 void IATSearcher::FindIATPointers(std::set<DWORD_PTR>& iatPointers) {
 	for (unsigned int i = 0; i < _instCount; i++) {
 		if (_insts[i].flags != FLAG_NOT_DECODABLE) {
-			if (_insts[i].size >= 5) {
-				BOOL isWow64 = FALSE;
-				::IsWow64Process(_hProcess, &isWow64);
-				if (isWow64) {
-					if (_insts[i].ops[0].type == O_DISP) {
-						iatPointers.insert((DWORD_PTR)_insts[i].disp);
+			uint16_t fc = META_GET_FC(_insts[i].meta);
+			if (fc == FC_CALL || fc == FC_UNC_BRANCH) {
+				if (_insts[i].size >= 5) {
+					BOOL isWow64 = FALSE;
+					::IsWow64Process(_hProcess, &isWow64);
+					if (isWow64) {
+						if (_insts[i].ops[0].type == O_DISP) {
+							iatPointers.insert((DWORD_PTR)_insts[i].disp);
+						}
 					}
-				}
-				else {
-					iatPointers.insert(INSTRUCTION_GET_RIP_TARGET(&_insts[i]));
+					else {
+						if (_insts[i].flags & FLAG_RIP_RELATIVE)
+							iatPointers.insert(INSTRUCTION_GET_RIP_TARGET(&_insts[i]));
+					}
 				}
 			}
 		}
@@ -279,7 +291,8 @@ void IATSearcher::FindExecutableMemoryPagesByStartAddress(DWORD_PTR startAddress
 	*pBaseAddress = 0;
 
 	SIZE_T len = sizeof(MEMORY_BASIC_INFORMATION);
-	if (VirtualQueryEx(_hProcess, (LPCVOID)startAddress, &mbi, len) != len) {
+	SIZE_T size = VirtualQueryEx(_hProcess, (LPCVOID)startAddress, &mbi, len);
+	if (size != len) {
 		return;
 	}
 
@@ -288,8 +301,8 @@ void IATSearcher::FindExecutableMemoryPagesByStartAddress(DWORD_PTR startAddress
 		*pMemorySize = mbi.RegionSize;
 		*pBaseAddress = (DWORD_PTR)mbi.BaseAddress;
 		tempAddress = (DWORD_PTR)mbi.BaseAddress - 1;
-
-		if (VirtualQueryEx(_hProcess, (LPCVOID)tempAddress, &mbi, len) != len) {
+		size = VirtualQueryEx(_hProcess, (LPCVOID)tempAddress, &mbi, len);
+		if (size != len) {
 			break;
 		}
 	} while (IsPageExecutable(mbi.Protect));
@@ -349,31 +362,33 @@ void IATSearcher::FilterIATPointersList(std::set<DWORD_PTR>& iatPointers) {
 		lastPointer = *iter;
 		iter++;
 
-		if ((*iter - lastPointer) > 0x100) //check pointer difference, a typical difference is 4 on 32bit systems
-		{
-			bool isLastValid = IsIATPointerValid(lastPointer, false);
-			bool isCurrentValid = IsIATPointerValid(*iter, false);
-			if (isLastValid == false || isCurrentValid == false)
+		for (; iter != iatPointers.end(); iter++) {
+			if ((*iter - lastPointer) > 0x100) //check pointer difference, a typical difference is 4 on 32bit systems
 			{
-				if (isLastValid == false)
+				bool isLastValid = IsIATPointerValid(lastPointer, false);
+				bool isCurrentValid = IsIATPointerValid(*iter, false);
+				if (isLastValid == false || isCurrentValid == false)
 				{
-					iter--;
-				}
+					if (isLastValid == false)
+					{
+						iter--;
+					}
 
-				iatPointers.erase(iter);
-				erased = true;
-				break;
+					iatPointers.erase(iter);
+					erased = true;
+					break;
+				}
+				else
+				{
+					erased = false;
+					lastPointer = *iter;
+				}
 			}
 			else
 			{
 				erased = false;
 				lastPointer = *iter;
 			}
-		}
-		else
-		{
-			erased = false;
-			lastPointer = *iter;
 		}
 	}
 

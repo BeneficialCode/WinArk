@@ -2,6 +2,7 @@
 #include "ScyllaDlg.h"
 #include "ProcessAccessHelper.h"
 #include "Architecture.h"
+#include "IATSearcher.h"
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
 	: m_pm(pm), m_px(px), _importsHandling(_treeImports) {
@@ -87,7 +88,7 @@ void CScyllaDlg::ProcessHandler() {
 		ProcessAccessHelper::CloseProcessHandle();
 		_ApiReader.ClearAll();
 	}
-
+	ProcessAccessHelper::_pid = _pid;
 	if (!ProcessAccessHelper::OpenProcessHandle(_pid)) {
 		EnableDialogControls(FALSE);
 		UpdateStatusBar();
@@ -170,4 +171,54 @@ void CScyllaDlg::EnableDialogControls(BOOL value) {
 	GetDlgItem(IDC_BTN_SHOW_SUSPECT).EnableWindow(value);
 	GetDlgItem(IDC_BTN_SHOW_INVALID).EnableWindow(value);
 	GetDlgItem(IDC_BTN_CLEAR).EnableWindow(value);
+}
+
+void CScyllaDlg::OnAutoSearch(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	IATAutoSearchActionHandler();
+}
+
+void CScyllaDlg::IATAutoSearchActionHandler() {
+	DWORD_PTR searchAddress = 0;
+	DWORD_PTR addressIAT = 0, addressIATAdv = 0;
+	DWORD sizeIAT = 0, sizeIATAdv = 0;
+	IATSearcher iatSearch;
+
+	if (_oepAddress.GetWindowTextLength() > 0) {
+		searchAddress = _oepAddress.GetValue();
+		if (searchAddress) {
+			iatSearch.SearchImportAddressTableInProcess(searchAddress, &addressIATAdv, &sizeIATAdv, true);
+
+			iatSearch.SearchImportAddressTableInProcess(searchAddress, &addressIAT, &sizeIAT, false);
+
+			if (addressIAT != 0 && addressIATAdv == 0) {
+				SetDialogIATAddressAndSize(addressIAT, sizeIAT);
+			}
+			else if (addressIAT == 0 && addressIATAdv != 0) {
+				SetDialogIATAddressAndSize(addressIATAdv, sizeIAT);
+			}
+			else if (addressIAT != 0 && addressIATAdv != 0) {
+				if (addressIAT != addressIATAdv || sizeIAT != sizeIATAdv) {
+					int msgboxID = MessageBox(L"Result of advanced and normal search is different. Do you want to use the IAT Search Advanced result?",
+						L"Information", MB_YESNO | MB_ICONINFORMATION);
+					if (msgboxID == IDYES) {
+						SetDialogIATAddressAndSize(addressIATAdv, sizeIATAdv);
+					}
+					else {
+						SetDialogIATAddressAndSize(addressIAT, sizeIAT);
+					}
+				}
+				else {
+					SetDialogIATAddressAndSize(addressIAT, sizeIAT);
+				}
+			}
+		}
+	}
+}
+
+void CScyllaDlg::SetDialogIATAddressAndSize(DWORD_PTR addressIAT, DWORD sizeIAT) {
+	_iatAddress.SetValue(addressIAT);
+	_iatSize.SetValue(sizeIAT);
+
+	swprintf_s(_text, L"IAT found:\r\n\r\nStart: " PRINTF_DWORD_PTR_FULL L"\r\nSize: 0x%04X (%d) ", addressIAT, sizeIAT, sizeIAT);
+	MessageBox(_text, L"IAT found", MB_ICONINFORMATION);
 }

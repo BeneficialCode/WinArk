@@ -31,6 +31,7 @@ PEParser::PEParser(const wchar_t* path) :_path(path) {
 PEParser::PEParser(void* base) {
 	_address = reinterpret_cast<PUCHAR>(base);
 	_moduleBase = (DWORD_PTR)base;
+	_isFileMap = false;
 	CheckValidity();
 }
 
@@ -151,60 +152,121 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 	if (dir == nullptr || dir->Size == 0)
 		return exports;
 
-	auto data = static_cast<IMAGE_EXPORT_DIRECTORY*>(GetAddress(dir->VirtualAddress));
-	auto count = data->NumberOfFunctions;
-	exports.reserve(count);
+	if (_isFileMap) {
+		auto data = static_cast<IMAGE_EXPORT_DIRECTORY*>(GetAddress(dir->VirtualAddress));
+		auto count = data->NumberOfFunctions;
+		exports.reserve(count);
 
-	auto names = (PBYTE)(data->AddressOfNames != 0 ? GetAddress(data->AddressOfNames) : nullptr);
-	auto ordinals = (PBYTE)(data->AddressOfNameOrdinals != 0 ? GetAddress(data->AddressOfNameOrdinals) : nullptr);
-	auto functions = (PDWORD)GetAddress(data->AddressOfFunctions);
-	char undecorated[1 << 10];
-	auto ordinalBase = data->Base;
+		auto names = (PBYTE)(data->AddressOfNames != 0 ? GetAddress(data->AddressOfNames) : nullptr);
+		auto ordinals = (PBYTE)(data->AddressOfNameOrdinals != 0 ? GetAddress(data->AddressOfNameOrdinals) : nullptr);
+		auto functions = (PDWORD)GetAddress(data->AddressOfFunctions);
+		char undecorated[1 << 10];
+		auto ordinalBase = data->Base;
 
-	std::unordered_map<uint32_t, std::string> functionNamesMap;
-	std::unordered_map<uint32_t, uint32_t> hintsMap;
-	for (uint32_t idx = 0; idx < data->NumberOfNames; idx++) {
-		uint16_t ordinal;
-		ordinal = *(USHORT*)(ordinals + idx * 2) + (USHORT)ordinalBase;
-		uint32_t name;
-		auto offset = *(ULONG*)(names + idx * 4);
-		functionNamesMap[ordinal] = (PCSTR)GetAddress(offset);
-		hintsMap[ordinal] = idx;
-	}
-
-	for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
-		ExportedSymbol symbol;
-		int ordinal = i + (USHORT)ordinalBase;
-		symbol.Ordinal = ordinal;
-
-		std::unordered_map<uint32_t,uint32_t>::iterator iter = hintsMap.find(ordinal);
-		if (iter != hintsMap.end()) {
-			symbol.Hint = iter->second;
+		std::unordered_map<uint32_t, std::string> functionNamesMap;
+		std::unordered_map<uint32_t, uint32_t> hintsMap;
+		for (uint32_t idx = 0; idx < data->NumberOfNames; idx++) {
+			uint16_t ordinal;
+			ordinal = *(USHORT*)(ordinals + idx * 2) + (USHORT)ordinalBase;
+			uint32_t name;
+			auto offset = *(ULONG*)(names + idx * 4);
+			PCSTR pName = (PCSTR)GetAddress(offset);
+			functionNamesMap[ordinal] = pName;
+			hintsMap[ordinal] = idx;
 		}
 
-		bool hasName = false;
-		auto pos = functionNamesMap.find(ordinal);
-		if (pos != functionNamesMap.end()) {
-			hasName = true;
-		}
-		if (names && hasName) {
-			symbol.Name = pos->second;
-			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
-				symbol.UndecoratedName = undecorated;
-		}
-		DWORD address = *(functions + symbol.Ordinal - ordinalBase);
-		symbol.Address = address;
-		symbol.IsForward = false;
-		symbol.HasName = false;
-		if (hasName) {
-			symbol.HasName = true;
-			if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
-				symbol.ForwardName = (PCSTR)GetAddress(address);
-				symbol.IsForward = true;
+		for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
+			ExportedSymbol symbol;
+			int ordinal = i + (USHORT)ordinalBase;
+			symbol.Ordinal = ordinal;
+
+			std::unordered_map<uint32_t, uint32_t>::iterator iter = hintsMap.find(ordinal);
+			if (iter != hintsMap.end()) {
+				symbol.Hint = iter->second;
 			}
+
+			bool hasName = false;
+			auto pos = functionNamesMap.find(ordinal);
+			if (pos != functionNamesMap.end()) {
+				hasName = true;
+			}
+			if (names && hasName) {
+				symbol.Name = pos->second;
+				if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
+					symbol.UndecoratedName = undecorated;
+			}
+			DWORD address = *(functions + symbol.Ordinal - ordinalBase);
+			symbol.Address = address;
+			symbol.IsForward = false;
+			symbol.HasName = false;
+			if (hasName) {
+				symbol.HasName = true;
+				if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
+					symbol.ForwardName = (PCSTR)GetAddress(address);
+					symbol.IsForward = true;
+				}
+			}
+			exports.push_back(std::move(symbol));
 		}
-		exports.push_back(std::move(symbol));
 	}
+	else {
+		auto data = (IMAGE_EXPORT_DIRECTORY*)(_address + dir->VirtualAddress);
+		auto count = data->NumberOfFunctions;
+		exports.reserve(count);
+
+		auto names = (PBYTE)(data->AddressOfNames != 0 ? _address + data->AddressOfNames: nullptr);
+		auto ordinals = (PBYTE)(data->AddressOfNameOrdinals != 0 ? _address + data->AddressOfNameOrdinals : nullptr);
+		auto functions = (PDWORD)(_address + data->AddressOfFunctions);
+		char undecorated[1 << 10];
+		auto ordinalBase = data->Base;
+
+		std::unordered_map<uint32_t, std::string> functionNamesMap;
+		std::unordered_map<uint32_t, uint32_t> hintsMap;
+		for (uint32_t idx = 0; idx < data->NumberOfNames; idx++) {
+			uint16_t ordinal;
+			ordinal = *(USHORT*)(ordinals + idx * 2) + (USHORT)ordinalBase;
+			uint32_t name;
+			auto offset = *(ULONG*)(names + idx * 4);
+			PCSTR pName = (PCSTR)_address + offset;
+			functionNamesMap[ordinal] = pName;
+			hintsMap[ordinal] = idx;
+		}
+
+		for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
+			ExportedSymbol symbol;
+			int ordinal = i + (USHORT)ordinalBase;
+			symbol.Ordinal = ordinal;
+
+			std::unordered_map<uint32_t, uint32_t>::iterator iter = hintsMap.find(ordinal);
+			if (iter != hintsMap.end()) {
+				symbol.Hint = iter->second;
+			}
+
+			bool hasName = false;
+			auto pos = functionNamesMap.find(ordinal);
+			if (pos != functionNamesMap.end()) {
+				hasName = true;
+			}
+			if (names && hasName) {
+				symbol.Name = pos->second;
+				if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
+					symbol.UndecoratedName = undecorated;
+			}
+			DWORD address = *(functions + symbol.Ordinal - ordinalBase);
+			symbol.Address = address;
+			symbol.IsForward = false;
+			symbol.HasName = false;
+			if (hasName) {
+				symbol.HasName = true;
+				if (address > dir->VirtualAddress && address < dir->VirtualAddress + dir->Size) {
+					symbol.ForwardName = (PCSTR)_address + address;
+					symbol.IsForward = true;
+				}
+			}
+			exports.push_back(std::move(symbol));
+		}
+	}
+	
 
 	return exports;
 }

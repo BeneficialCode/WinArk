@@ -69,7 +69,7 @@ public:
 
 	ULONG_PTR _StringToNum(const TCHAR str[_strSize]) const {
 		ULONG_PTR cNum;
-		ULONG_PTR num;
+		ULONG_PTR num = 0;
 
 		for (int i = 0; str[i]; i++) {
 			cNum = _CharToNum(str[i]);

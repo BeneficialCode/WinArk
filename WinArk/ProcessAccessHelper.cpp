@@ -271,9 +271,9 @@ bool ProcessAccessHelper::IsPageExecutable(DWORD protect) {
 
 bool ProcessAccessHelper::IsPageAccessable(DWORD protect) {
 	if (PAGE_NOACCESS == (protect & 0xff)) {
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 LPVOID ProcessAccessHelper::CreateFileMappingViewRead(const WCHAR* filePath) {
@@ -354,7 +354,7 @@ bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleI
 
 	_moduleList.reserve(20);
 
-	WinSys::ProcessModuleTracker tracker(hProcess);
+	WinSys::ProcessModuleTracker tracker(_pid);
 
 	tracker.EnumModules();
 

@@ -45,9 +45,9 @@ void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
-						symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+						symbol.Address + pModule->_modBaseAddr, symbol.Address, false, pModule);
 				else {
-					AddApiWithoutName(symbol.Ordinal, symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+					AddApiWithoutName(symbol.Ordinal, symbol.Address + pModule->_modBaseAddr, symbol.Address, false, pModule);
 				}
 			}
 			else {
@@ -70,9 +70,9 @@ void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
-						symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+						symbol.Address + pModule->_modBaseAddr, symbol.Address,  false, pModule);
 				else {
-					AddApiWithoutName(symbol.Ordinal, symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+					AddApiWithoutName(symbol.Ordinal, symbol.Address + pModule->_modBaseAddr, symbol.Address,  false, pModule);
 				}
 			}
 			else {
@@ -90,9 +90,9 @@ void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
-						symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+						symbol.Address + pModule->_modBaseAddr, symbol.Address, false, pModule);
 				else {
-					AddApiWithoutName(symbol.Ordinal, symbol.Address, symbol.Address + pModule->_modBaseAddr, false, pModule);
+					AddApiWithoutName(symbol.Ordinal, symbol.Address + pModule->_modBaseAddr, symbol.Address, false, pModule);
 				}
 			}
 			else {
@@ -675,9 +675,9 @@ bool ApiReader::IsInvalidMemoryForIAT(DWORD_PTR address)
 	}
 
 	if(mbi.State == MEM_COMMIT && IsPageAccessable(mbi.Protect))
-		return true;
+		return false;
 
-	return false;
+	return true;
 }
 
 void ApiReader::ParseIAT(DWORD_PTR iat, BYTE* pIAT, SIZE_T size) {

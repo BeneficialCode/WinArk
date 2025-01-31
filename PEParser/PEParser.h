@@ -293,4 +293,5 @@ private:
 	//mutable std::unique_ptr<CLRMetaParser> _clrParser;
 	bool _valid = false;
 	bool _importLib = false, _objectFile = false;
+	bool _isFileMap = true;
 };
