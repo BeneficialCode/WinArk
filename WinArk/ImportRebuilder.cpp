@@ -427,7 +427,7 @@ void ImportRebuilder::ChangeIATBaseAddress(std::map<DWORD_PTR, ImportModuleThunk
 
 	for (auto& moduleThunk : moduleThunkMap) {
 		ImportModuleThunk* pModuleThunk = &moduleThunk.second;
-
+		pModuleThunk->m_FirstThunk = pModuleThunk->m_FirstThunk - oldIATRva + _newIATBaseAddressRVA;
 		for (auto& thunk : pModuleThunk->m_ThunkMap) {
 			ImportThunk* pThunk = &thunk.second;
 			pThunk->m_RVA = pThunk->m_RVA - oldIATRva + _newIATBaseAddressRVA;

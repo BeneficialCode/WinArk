@@ -273,8 +273,10 @@ void IATSearcher::FindIATPointers(std::set<DWORD_PTR>& iatPointers) {
 						}
 					}
 					else {
-						if (_insts[i].flags & FLAG_RIP_RELATIVE)
+						if (_insts[i].flags & FLAG_RIP_RELATIVE) {
+							// FF 15 17 97 f9 00 call qword ptr ds:[&GetCurrentProcess]
 							iatPointers.insert(INSTRUCTION_GET_RIP_TARGET(&_insts[i]));
+						}
 					}
 				}
 			}

@@ -702,6 +702,10 @@ void ApiReader::ParseIAT(DWORD_PTR iat, BYTE* pIAT, SIZE_T size) {
 						AddFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pApiFound, false, isSuspect);
 					}
 				}
+				else {
+					countApiNotFound++;
+					AddNotFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pIATAddress[i]);
+				}
 			}
 			else {
 				countApiNotFound++;

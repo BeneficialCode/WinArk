@@ -81,14 +81,15 @@ CTreeItem ImportsHandling::AddApiToTreeView(CMultiSelectTreeViewCtrl& idTreeView
 void ImportsHandling::UpdateImportInTreeView(const ImportThunk* pImportThunk, CTreeItem item)
 {
 	if (pImportThunk->m_Valid) {
+		WCHAR temp[256];
 		if (pImportThunk->m_Name[0] != 0x00) {
-			swprintf_s(Text, L"ord: %04X name: %S", pImportThunk->m_Ordinal, pImportThunk->m_Name);
+			swprintf_s(temp, L"ord: %04X name: %S", pImportThunk->m_Ordinal, pImportThunk->m_Name);
 		}
 		else {
-			swprintf_s(Text, L"ord: %04X", pImportThunk->m_Ordinal);
+			swprintf_s(temp, L"ord: %04X", pImportThunk->m_Ordinal);
 		}
 
-		swprintf_s(Text, L" rva: " PRINTF_DWORD_PTR_HALF L" mod: %s %s", pImportThunk->m_RVA, pImportThunk->m_ModuleName, Text);
+		swprintf_s(Text, L" rva: " PRINTF_DWORD_PTR_HALF L" mod: %s %s", pImportThunk->m_RVA, pImportThunk->m_ModuleName, temp);
 	}
 	else {
 		swprintf_s(Text, L" rva: " PRINTF_DWORD_PTR_HALF L" ptr: " PRINTF_DWORD_PTR_FULL, pImportThunk->m_RVA, pImportThunk->m_ApiAddressVA);
@@ -189,6 +190,7 @@ bool ImportsHandling::AddNotFoundApiToModuleList(const ImportThunk* pApiNotFound
 	import.m_Suspect = true;
 	import.m_Valid = false;
 	import.m_VA = pApiNotFound->m_VA;
+	import.m_RVA = rva;
 	import.m_ApiAddressVA = pApiNotFound->m_ApiAddressVA;
 	import.m_Ordinal = 0;
 
@@ -197,6 +199,8 @@ bool ImportsHandling::AddNotFoundApiToModuleList(const ImportThunk* pApiNotFound
 
 	import.m_Key = import.m_RVA;
 	pModule->m_ThunkMap[import.m_Key] = import;
+
+
 	return true;
 }
 
@@ -238,6 +242,7 @@ bool ImportsHandling::AddFunctionToModuleList(const ImportThunk* pApiFound)
 	import.m_Suspect = pApiFound->m_Suspect;
 	import.m_Valid = pApiFound->m_Valid;
 	import.m_VA = pApiFound->m_VA;
+	import.m_RVA = pApiFound->m_RVA;
 	import.m_ApiAddressVA = pApiFound->m_ApiAddressVA;
 	import.m_Ordinal = pApiFound->m_Ordinal;
 	import.m_Hint = pApiFound->m_Hint;
@@ -566,7 +571,7 @@ void ImportsHandling::ScanAndFixModuleList()
 	}
 
 	m_ModuleMap = m_ModuleMapNew;
-	m_ModuleMap.clear();
+	m_ModuleMapNew.clear();
 }
 
 void ImportsHandling::ExpandAllTreeNodes()

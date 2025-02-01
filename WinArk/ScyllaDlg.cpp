@@ -222,3 +222,44 @@ void CScyllaDlg::SetDialogIATAddressAndSize(DWORD_PTR addressIAT, DWORD sizeIAT)
 	swprintf_s(_text, L"IAT found:\r\n\r\nStart: " PRINTF_DWORD_PTR_FULL L"\r\nSize: 0x%04X (%d) ", addressIAT, sizeIAT, sizeIAT);
 	MessageBox(_text, L"IAT found", MB_ICONINFORMATION);
 }
+
+void CScyllaDlg::OnGetImports(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	GetImportsHandler();
+}
+
+void CScyllaDlg::GetImportsHandler() {
+	DWORD_PTR addressIAT = _iatAddress.GetValue();
+	DWORD sizeIAT = _iatSize.GetValue();
+
+	if (addressIAT && sizeIAT) {
+		_ApiReader.ReadAndParseIAT(addressIAT, sizeIAT, _importsHandling.m_ModuleMap);
+		_importsHandling.ScanAndFixModuleList();
+		_importsHandling.DisplayAllImports();
+
+		UpdateStatusBar();
+
+		if (IsIATOutsidePEImage(addressIAT)) {
+			MessageBox(L"WARNING! IAT is not inside the PE image, requires rebasing");
+		}
+	}
+}
+
+bool CScyllaDlg::IsIATOutsidePEImage(DWORD_PTR addressIAT) {
+	DWORD_PTR minAddr = 0, maxAddr = 0;
+
+	if (ProcessAccessHelper::_pSelectedModule) {
+		minAddr = ProcessAccessHelper::_pSelectedModule->_modBaseAddr;
+		maxAddr = minAddr + ProcessAccessHelper::_pSelectedModule->_modBaseSize;
+	}
+	else {
+		minAddr = ProcessAccessHelper::_targetImageBase;
+		maxAddr = ProcessAccessHelper::_targetSizeOfImage + minAddr;
+	}
+
+	if (addressIAT > minAddr && addressIAT < maxAddr) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
