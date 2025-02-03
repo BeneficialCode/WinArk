@@ -3,6 +3,8 @@
 #include "ProcessAccessHelper.h"
 #include "Architecture.h"
 #include "IATSearcher.h"
+#include <PEParser.h>
+
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
 	: m_pm(pm), m_px(px), _importsHandling(_treeImports) {
@@ -262,4 +264,136 @@ bool CScyllaDlg::IsIATOutsidePEImage(DWORD_PTR addressIAT) {
 	else {
 		return true;
 	}
+}
+
+void CScyllaDlg::OnDump(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	DumpHandler();
+}
+
+void CScyllaDlg::DumpHandler() {
+	WCHAR filePath[MAX_PATH] = { 0 };
+	WCHAR defaultFileName[MAX_PATH] = { 0 };
+	const WCHAR* pFileFilter;
+	const WCHAR* pDefExtension;
+	DWORD_PTR modBase = 0;
+	SIZE_T modSize = 0;
+	DWORD_PTR entryPoint = 0;
+	WCHAR fileName[MAX_PATH] = { 0 };
+
+	if (ProcessAccessHelper::_pSelectedModule) {
+		pFileFilter = s_FilterDll;
+		pDefExtension = L"dll";
+	}
+	else {
+		pFileFilter = s_FilterExe;
+		pDefExtension = L"exe";
+	}
+
+	GetCurrentModulePath(_text, _countof(_text));
+	GetCurrentDefaultDumpFilename(defaultFileName, _countof(defaultFileName));
+	if (ShowFileDialog(filePath, true, defaultFileName, pFileFilter, pDefExtension, _text)) {
+		entryPoint = _oepAddress.GetValue();
+
+		if (ProcessAccessHelper::_pSelectedModule) {
+			modBase = ProcessAccessHelper::_pSelectedModule->_modBaseAddr;
+			wcscpy_s(fileName, ProcessAccessHelper::_pSelectedModule->_fullPath);
+			modSize = ProcessAccessHelper::_pSelectedModule->_modBaseSize;
+		}
+		else {
+			modBase = ProcessAccessHelper::_targetImageBase;
+			wcscpy_s(fileName, m_px.GetExecutablePath().c_str());
+			modSize = ProcessAccessHelper::_targetSizeOfImage;
+		}
+
+		void* pImageBase = new BYTE[modSize];
+
+		ProcessAccessHelper::ReadMemoryFromProcess(modBase, modSize, pImageBase);
+
+		PEParser parser(pImageBase);
+		if (parser.IsValid()) {
+			bool success = parser.DumpProcess(modBase, entryPoint, filePath);
+			if (!success) {
+				MessageBox(L"Cannot dump image.", L"Failure", MB_ICONERROR);
+			}
+		}
+
+		delete[] pImageBase;
+	}
+}
+
+bool CScyllaDlg::GetCurrentModulePath(WCHAR* pBuffer, size_t bufSize) {
+	if (ProcessAccessHelper::_pSelectedModule) {
+		wcscpy_s(pBuffer, bufSize, ProcessAccessHelper::_pSelectedModule->_fullPath);
+	}
+	else {
+		wcscpy_s(pBuffer, bufSize, m_px.GetExecutablePath().c_str());
+	}
+
+	WCHAR* pSlash = wcsrchr(pBuffer, L'\\');
+	if (pSlash) {
+		*(pSlash + 1) = L'\0';
+	}
+
+	return true;
+}
+
+bool CScyllaDlg::GetCurrentDefaultDumpFilename(WCHAR* pBuffer, size_t bufSize) {
+	WCHAR fullPath[MAX_PATH] = { 0 };
+
+	if (ProcessAccessHelper::_pSelectedModule) {
+		wcscpy_s(fullPath, ProcessAccessHelper::_pSelectedModule->_fullPath);
+	}
+	else {
+		wcscpy_s(fullPath, m_px.GetExecutablePath().c_str());
+	}
+
+	WCHAR* pSlash = wcsrchr(fullPath, L'\\');
+	if (pSlash) {
+		pSlash++;
+
+		wcscpy_s(pBuffer, bufSize, pSlash);
+		if (pSlash) {
+			*pSlash = 0;
+			if (ProcessAccessHelper::_pSelectedModule) {
+				wcscat_s(pBuffer, bufSize, L"_dump.dll");
+			}
+			else {
+				wcscat_s(pBuffer, bufSize, L"_dump.exe");
+			}
+		}
+
+		return true;
+	}
+	return false;
+}
+
+bool CScyllaDlg::ShowFileDialog(WCHAR* pSelectedFile, bool save, const WCHAR* pDefFileName, const WCHAR* pFilter,
+	const WCHAR* pDefExtension, const WCHAR* pDir)
+{
+	OPENFILENAME ofn = { 0 };
+	if (pDefFileName) {
+		wcscpy_s(pSelectedFile, MAX_PATH, pDefFileName);
+	}
+	else {
+		pSelectedFile[0] = L'\0';
+	}
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = m_hWnd;
+	ofn.lpstrFilter = pFilter;
+	ofn.lpstrDefExt = pDefExtension; // only first 3 chars are used, no dots!
+	ofn.lpstrFile = pSelectedFile;
+	ofn.lpstrInitialDir = pDir;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+	if (save)
+		ofn.Flags |= OFN_OVERWRITEPROMPT;
+	else
+		ofn.Flags |= OFN_FILEMUSTEXIST;
+
+	if(save)
+		return 0 != GetSaveFileName(&ofn);
+	else
+		return 0 != GetOpenFileName(&ofn);
 }

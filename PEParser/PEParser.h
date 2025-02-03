@@ -179,6 +179,17 @@ public:
 	bool IsSystemFile() const;
 
 	void FixPEHeader();
+	bool DumpProcess(DWORD_PTR modBase, DWORD_PTR entryPoint, const WCHAR* pDumpFilePath);
+	void GetPESections();
+	void GetPESectionData(DWORD_PTR offset, PEFileSection& peFileSection);
+	void SetEntryPointVA(DWORD_PTR entryPoint);
+	void SetEntryPointRVA(DWORD rva);
+	void SetModuleBase(DWORD_PTR va);
+	bool SavePEFileToDisk(const WCHAR* pNewFile);
+	bool OpenWriteFileHandle(const WCHAR* pNewFile);
+	bool WriteMemoryToFile(HANDLE hFile, LONG offset, DWORD size, LPVOID pData);
+	bool WriteZeroMemoryToFile(HANDLE hFile, DWORD fileOffset, DWORD size);
+	void GetSectionHeaders();
 
 	int GetSectionCount() const;
 	void SetSectionCount(WORD count);

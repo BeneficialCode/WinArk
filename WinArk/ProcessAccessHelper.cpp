@@ -21,6 +21,7 @@ bool ProcessAccessHelper::OpenProcessHandle(DWORD pid) {
 			}
 		}
 	}
+	return false;
 }
 
 void ProcessAccessHelper::CloseProcessHandle() {
@@ -349,7 +350,6 @@ bool ProcessAccessHelper::DisassembleMemory(BYTE* pMemory, SIZE_T size, DWORD_PT
 
 bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleInfo>& moduleList) {
 	ModuleInfo module;
-	WCHAR fileName[MAX_PATH] = { 0 };
 	DWORD needed = 0;
 
 	_moduleList.reserve(20);
@@ -361,17 +361,18 @@ bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleI
 	auto infos = tracker.GetModules();
 
 	for (auto& info : infos) {
-		module._modBaseAddr = (DWORD_PTR)info.get()->ImageBase;
+		std::wstring path = info.get()->Path;
+		if (path.empty())
+			continue;
+
+		module._modBaseAddr = (DWORD_PTR)info.get()->Base;
 		module._modBaseSize = info.get()->ModuleSize;
 		module._isAlreadyParsed = false;
 		module._parsing = false;
 
-		fileName[0] = 0;
 		module._fullPath[0] = 0;
 
-		wcscpy_s(module._fullPath, info.get()->Path.c_str());
-
-		wcscpy_s(fileName, info.get()->Name.c_str());
+		wcscpy_s(module._fullPath, path.c_str());
 
 		_moduleList.push_back(module);
 	}

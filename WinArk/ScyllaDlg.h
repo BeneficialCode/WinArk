@@ -35,6 +35,7 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_AUTO_SEARCH,OnAutoSearch)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_GET_IMPORTS,OnGetImports)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_DUMP,OnDump)
 	END_MSG_MAP()
 
 
@@ -50,9 +51,11 @@ public:
 
 	void ProcessHandler();
 	void GetImportsHandler();
+	void DumpHandler();
 
 	void OnAutoSearch(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnGetImports(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnDump(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	bool IsIATOutsidePEImage(DWORD_PTR addressIAT);
 
@@ -81,8 +84,22 @@ protected:
 protected:
 	void SetDialogIATAddressAndSize(DWORD_PTR addressIAT, DWORD sizeIAT);
 
+	bool ShowFileDialog(WCHAR* pSelectedFile, bool save, const WCHAR* pDefFileName, const WCHAR* pFilter = nullptr,
+		const WCHAR* pDefExtension = nullptr, const WCHAR* pDir = nullptr);
+
+	bool GetCurrentModulePath(WCHAR* pBuffer, size_t bufSize);
+	bool GetCurrentDefaultDumpFilename(WCHAR* pBuffer, size_t bufSize);
+
 private:
+	static inline const WCHAR s_FilterExe[] = L"Executable (*.exe)\0*.exe\0All files\0*.*\0";
+	static inline const WCHAR s_FilterDll[] = L"Dynamic Link Library (*.dll)\0*.dll\0All files\0*.*\0";
+	static inline const WCHAR s_FilterExeDll[] = L"Executable (*.exe)\0*.exe\0Dynamic Link Library (*.dll)\0*.dll\0All files\0*.*\0";
+	static inline const WCHAR s_FilterTxt[] = L"Text file (*.txt)\0*.txt\0All files\0*.*\0";
+	static inline const WCHAR s_FilterXml[] = L"XML file (*.xml)\0*.xml\0All files\0*.*\0";
+	static inline const WCHAR s_FilterMem[] = L"MEM file (*.mem)\0*.mem\0All files\0*.*\0";
+
 	ProcessInfoEx& m_px;
+
 	const WinSys::ProcessManager& m_pm;
 	CStatusBarCtrl m_StatusBar;
 	

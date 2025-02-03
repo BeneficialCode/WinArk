@@ -5,6 +5,7 @@
 #include "PEParser.h"
 #include "CLRMetadataParser.h"
 #include <unordered_map>
+#include <algorithm>
 #pragma comment(lib,"imagehlp")
 
 
@@ -23,8 +24,8 @@ PEParser::PEParser(const wchar_t* path) :_path(path) {
 		return;
 
 	CheckValidity();
-	if (IsValid() && IsManaged()) {
-
+	if (IsValid()) {
+		GetSectionHeaders();
 	}
 }
 
@@ -33,6 +34,22 @@ PEParser::PEParser(void* base) {
 	_moduleBase = (DWORD_PTR)base;
 	_isFileMap = false;
 	CheckValidity();
+	if (IsValid()) {
+		GetSectionHeaders();
+	}
+}
+
+void PEParser::GetSectionHeaders() {
+	_PESections.clear();
+	int count = GetSectionCount();
+	_PESections.reserve(count);
+
+	PEFileSection peFileSection;
+
+	for (WORD i = 0; i < count; i++) {
+		memcpy_s(&peFileSection._sectionHeader, sizeof(IMAGE_SECTION_HEADER), &_sections[i], sizeof(IMAGE_SECTION_HEADER));
+		_PESections.push_back(peFileSection);
+	}
 }
 
 HANDLE PEParser::GetFileHandle() {
@@ -370,9 +387,8 @@ void PEParser::CheckValidity() {
 
 	_dosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(_address);
 	if (_dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-		// perhaps object file / static library
-		_fileHeader = (IMAGE_FILE_HEADER*)_address;
-		_sections = (PIMAGE_SECTION_HEADER)(_fileHeader + 1);
+		_valid = false;
+		return;
 	}
 	else {
 		auto ntHeader = (PIMAGE_NT_HEADERS64)(_address + _dosHeader->e_lfanew);
@@ -660,6 +676,10 @@ void PEParser::AlignAllSectionHeaders() {
 		
 		newFileSize = sections[i].PointerToRawData + sections[i].SizeOfRawData;
 	}
+
+	std::sort(_PESections.begin(), _PESections.end(), [](const PEFileSection& d1, const PEFileSection& d2) {
+		return d1._sectionHeader.VirtualAddress < d2._sectionHeader.VirtualAddress;
+	});
 }
 
 void PEParser::FixPEHeader() {
@@ -792,4 +812,205 @@ bool PEParser::AddNewLastSection(const char* pSectionName, DWORD sectionSize, BY
 	SetSectionCount(GetSectionCount() + 1);
 
 	return true;
+}
+
+void PEParser::SetEntryPointRVA(DWORD rva) {
+	if (IsPe64()) {
+		_opt64->AddressOfEntryPoint = rva;
+	}
+	else {
+		_opt32->AddressOfEntryPoint = rva;
+	}
+}
+
+void PEParser::SetEntryPointVA(DWORD_PTR entryPoint) {
+	DWORD rva = (DWORD)(entryPoint - _moduleBase);
+	SetEntryPointRVA(rva);
+}
+
+bool PEParser::DumpProcess(DWORD_PTR modBase, DWORD_PTR entryPoint, const WCHAR* pDumpFilePath) {
+	_moduleBase = modBase;
+	GetPESections();
+	SetDefaultFileAligment();
+	SetEntryPointVA(entryPoint);
+	AlignAllSectionHeaders();
+	FixPEHeader();
+	
+	return SavePEFileToDisk(pDumpFilePath);
+}
+
+void PEParser::GetPESections() {
+	DWORD_PTR offset = 0;
+
+	int count = GetSectionCount();
+	_PESections.reserve(count);
+
+	for (WORD i = 0; i < count; i++) {
+		_PESections[i]._normalSize = _sections[i].Misc.VirtualSize;
+		offset = _sections[i].VirtualAddress;
+		GetPESectionData(offset, _PESections[i]);
+	}
+}
+
+void PEParser::GetPESectionData(DWORD_PTR offset, PEFileSection& peFileSection) {
+	peFileSection._pData = new BYTE[peFileSection._dataSize];
+	memcpy(peFileSection._pData, _address + offset, peFileSection._dataSize);
+}
+
+void PEParser::SetModuleBase(DWORD_PTR va) {
+	_moduleBase = va;
+}
+
+bool PEParser::OpenWriteFileHandle(const WCHAR* pNewFile) {
+	if (pNewFile) {
+		_hFile = ::CreateFile(pNewFile, GENERIC_WRITE, FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	}
+
+	return _hFile != INVALID_HANDLE_VALUE;
+}
+
+bool PEParser::WriteMemoryToFile(HANDLE hFile, LONG offset, DWORD size, LPVOID pData) {
+	DWORD bytes;
+	DWORD ret;
+	DWORD error;
+
+	if (hFile != INVALID_HANDLE_VALUE) {
+		ret = SetFilePointer(hFile, offset, nullptr, FILE_BEGIN);
+		if (ret == INVALID_SET_FILE_POINTER) {
+			error = GetLastError();
+			return false;
+		}
+		return WriteFile(hFile, pData, size, &bytes, nullptr);
+	}
+	return false;
+}
+
+bool PEParser::SavePEFileToDisk(const WCHAR* pNewFile) {
+	bool ret = true;
+
+	DWORD fileOffset = 0, writeSize = 0;
+
+	do
+	{
+		ret = OpenWriteFileHandle(pNewFile);
+		if (!ret)
+			break;
+
+		writeSize = sizeof(IMAGE_DOS_HEADER);
+
+		if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, GetBaseAddress())) {
+			ret = false;
+			break;
+		}
+
+		fileOffset += writeSize;
+
+		LONG e_lfanew = GetDosHeader().e_lfanew;
+		DWORD dosStubSize = 0;
+		if (e_lfanew > sizeof(IMAGE_DOS_HEADER)) {
+			dosStubSize = e_lfanew - sizeof(IMAGE_DOS_HEADER);
+
+			BYTE* pDosStub = GetDosStub();
+			if (pDosStub) {
+				writeSize = dosStubSize;
+				if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, pDosStub)) {
+					ret = false;
+					break;
+				}
+				fileOffset += writeSize;
+			}
+		}
+
+		if (!IsPe64()) {
+			writeSize = sizeof(IMAGE_NT_HEADERS32);
+		}
+		else {
+			writeSize = sizeof(IMAGE_NT_HEADERS64);
+		}
+		PIMAGE_NT_HEADERS64 pNtHeader = GetNtHeader();
+		if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, pNtHeader)) {
+			ret = false;
+			break;
+		}
+
+		fileOffset += writeSize;
+
+		writeSize = sizeof(IMAGE_SECTION_HEADER);
+		auto sections = GetSections();
+		for (WORD i = 0; i < GetSectionCount(); i++) {
+			auto section = sections[i];
+			if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, &section)) {
+				ret = false;
+				break;
+			}
+			fileOffset += writeSize;
+		}
+
+
+		for (WORD i = 0; i < GetSectionCount(); i++) {
+			auto section = sections[i];
+			if (!section.PointerToRawData)
+				continue;
+
+			if (section.PointerToRawData > fileOffset) {
+				writeSize = section.PointerToRawData - fileOffset;
+
+				if (!WriteZeroMemoryToFile(_hFile, fileOffset, writeSize)) {
+					ret = false;
+					break;
+				}
+				fileOffset += writeSize;
+			}
+
+			writeSize = section.SizeOfRawData;
+
+			if (writeSize) {
+				BYTE* pData = GetFileAddress(section.PointerToRawData);
+				if (!WriteMemoryToFile(_hFile, section.PointerToRawData, writeSize, pData)) {
+					ret = false;
+					break;
+				}
+				fileOffset += writeSize;
+			}
+		}
+
+		DWORD overlayOffset = GetSectionHeaderBasedFileSize();
+
+		LARGE_INTEGER fileSize = GetFileSize();
+		if (fileSize.QuadPart > 0) {
+			DWORD overlaySize = fileSize.QuadPart - overlayOffset;
+
+			if (overlaySize) {
+				writeSize = overlaySize;
+				BYTE* pOverlayData = GetFileAddress(overlayOffset);
+				if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, pOverlayData)) {
+					ret = false;
+					break;
+				}
+				fileOffset += writeSize;
+			}
+		}
+
+		SetEndOfFile(_hFile);
+	} while (false);
+
+
+	if (_hFile != INVALID_HANDLE_VALUE) {
+		CloseHandle(_hFile);
+		_hFile = INVALID_HANDLE_VALUE;
+	}
+
+	return ret;
+}
+
+bool PEParser::WriteZeroMemoryToFile(HANDLE hFile, DWORD fileOffset, DWORD size) {
+	bool ret = false;
+	PVOID pZeroMemory = calloc(size, 1);
+
+	if (pZeroMemory) {
+		ret = WriteMemoryToFile(hFile, fileOffset, size, pZeroMemory);
+		free(pZeroMemory);
+	}
+
+	return ret;
 }
