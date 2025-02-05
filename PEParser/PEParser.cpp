@@ -994,6 +994,8 @@ bool PEParser::SavePEFileToDisk(const WCHAR* pNewFile) {
 
 			writeSize = _PESections[i]._sectionHeader.SizeOfRawData;
 
+			writeSize = std::min<DWORD>(_PESections[i]._dataSize, writeSize);
+
 			if (writeSize) {
 				if (!WriteMemoryToFile(_hFile, _PESections[i]._sectionHeader.PointerToRawData, 
 					writeSize, _PESections[i]._pData)) {

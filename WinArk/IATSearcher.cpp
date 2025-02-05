@@ -67,9 +67,19 @@ bool IATSearcher::FindIATAdvanced(DWORD_PTR startAddress, DWORD_PTR* pIAT, DWORD
 	*pIAT = start;
 	iter = iatPointers.end();
 	DWORD_PTR end = *(--iter);
-	*pSize = (DWORD)(end - start + sizeof(DWORD_PTR));
 	
-	if (*pSize > (2000000 * sizeof(DWORD_PTR))) {
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	DWORD pointerSize = 0;
+	if (isWow64) {
+		pointerSize = 4;
+	}
+	else {
+		pointerSize = 8;
+	}
+	*pSize = (DWORD)(end - start + pointerSize);
+	
+	if (*pSize > (2000000 * pointerSize)) {
 		*pIAT = 0;
 		*pSize = 0;
 		return false;
@@ -162,7 +172,16 @@ DWORD_PTR IATSearcher::FindIATPointer() {
 
 bool IATSearcher::IsIATPointerValid(DWORD_PTR iatPointer, bool checkRedirects) {
 	DWORD_PTR apiAddress = 0;
-	if (!ReadMemoryFromProcess(iatPointer, sizeof(DWORD_PTR), &apiAddress)) {
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	DWORD pointerSize = 0;
+	if (isWow64) {
+		pointerSize = 4;
+	}
+	else {
+		pointerSize = 8;
+	}
+	if (!ReadMemoryFromProcess(iatPointer, pointerSize, &apiAddress)) {
 		return false;
 	}
 
@@ -193,7 +212,16 @@ bool IATSearcher::FindIATStartAndSize(DWORD_PTR address, DWORD_PTR* pIAT, DWORD*
 	if (!baseAddress)
 		return false;
 
-	size_t size = baseSize * sizeof(DWORD_PTR) * 3;
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	DWORD pointerSize = 0;
+	if (isWow64) {
+		pointerSize = 4;
+	}
+	else {
+		pointerSize = 8;
+	}
+	size_t size = baseSize * pointerSize * 3;
 	buffer = std::make_unique<BYTE[]>(size);
 
 	if (!buffer)
@@ -212,48 +240,94 @@ bool IATSearcher::FindIATStartAndSize(DWORD_PTR address, DWORD_PTR* pIAT, DWORD*
 }
 
 DWORD_PTR IATSearcher::FindIATStartAddress(DWORD_PTR baseAddress, DWORD_PTR startAddress, BYTE* pData) {
-	DWORD_PTR* pIATAddress = nullptr;
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	DWORD pointerSize = 0;
+	if (isWow64) {
+		DWORD* p32 = nullptr;
 
-	pIATAddress = (DWORD_PTR*)((startAddress - baseAddress) + (DWORD_PTR)pData);
+		p32 = (DWORD*)((startAddress - baseAddress) + (DWORD_PTR)pData);
 
-	while ((DWORD_PTR)pIATAddress != (DWORD_PTR)pData) {
-		if (IsInvalidMemoryForIAT(*pIATAddress)) {
-			if ((DWORD_PTR)(pIATAddress - 1) >= (DWORD_PTR)pData) {
-				if (IsInvalidMemoryForIAT(*(pIATAddress - 1))) {
-					if ((DWORD_PTR)(pIATAddress - 2) >= (DWORD_PTR)pData) {
-						DWORD_PTR* pIATStart = pIATAddress - 2;
-						DWORD_PTR apiAddress = *pIATStart;
-						if (IsApiAddressValid(apiAddress)) {
-							if (!IsApiAddressValid(*(pIATStart - 1))) {
-								return (((DWORD_PTR)pIATStart - (DWORD_PTR)pData) + baseAddress);
+		while ((DWORD_PTR)p32 != (DWORD_PTR)pData) {
+			if (IsInvalidMemoryForIAT(*p32)) {
+				if ((DWORD_PTR)(p32 - 1) >= (DWORD_PTR)pData) {
+					if (IsInvalidMemoryForIAT(*(p32 - 1))) {
+						if ((DWORD_PTR)(p32 - 2) >= (DWORD_PTR)pData) {
+							if (!IsApiAddressValid(*(p32 - 2))) {
+								return (DWORD_PTR)p32 - (DWORD_PTR)pData + baseAddress;
 							}
 						}
 					}
 				}
 			}
-		}
 
-		pIATAddress--;
+			p32--;
+		}
 	}
+	else {
+		DWORD_PTR* p64 = nullptr;
+
+		p64 = (DWORD_PTR*)((startAddress - baseAddress) + (DWORD_PTR)pData);
+
+		while ((DWORD_PTR)p64 != (DWORD_PTR)pData) {
+			if (IsInvalidMemoryForIAT(*p64)) {
+				if ((DWORD_PTR)(p64 - 1) >= (DWORD_PTR)pData) {
+					if (IsInvalidMemoryForIAT(*(p64 - 1))) {
+						if ((DWORD_PTR)(p64 - 2) >= (DWORD_PTR)pData) {
+							DWORD_PTR* pIATStart = p64 - 2;
+							DWORD_PTR apiAddress = *pIATStart;
+							if (IsApiAddressValid(apiAddress)) {
+								if (!IsApiAddressValid(*(pIATStart - 1))) {
+									return (((DWORD_PTR)pIATStart - (DWORD_PTR)pData) + baseAddress);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			p64--;
+		}
+	}
+	
 
 	return baseAddress;
 }
 
 
 DWORD IATSearcher::FindIATSize(DWORD_PTR baseAddress, DWORD_PTR iatAddress, BYTE* pData, DWORD dataSize) {
-	DWORD_PTR* pIATAddress = nullptr;
-	pIATAddress = (DWORD_PTR*)((iatAddress - baseAddress) + (DWORD_PTR)pData);
+	PBYTE* pIATAddress = nullptr;
+	pIATAddress = (PBYTE*)((iatAddress - baseAddress) + (DWORD_PTR)pData);
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	DWORD* p32 = (DWORD*)pIATAddress;
+	DWORD_PTR* p64 = (DWORD_PTR*)pIATAddress;
 
-	while ((DWORD_PTR)pIATAddress < ((DWORD_PTR)pData + dataSize - 1)) {
-		if (IsInvalidMemoryForIAT(*pIATAddress)) {
-			if (IsInvalidMemoryForIAT(*(pIATAddress + 1))) {
-				DWORD_PTR apiAddress = *(pIATAddress + 2);
-				if (!IsApiAddressValid(apiAddress) && apiAddress != 0) {
-					return (DWORD)((DWORD_PTR)pIATAddress - (DWORD_PTR)pData - (iatAddress - baseAddress));
+	if (isWow64) {
+		while ((DWORD_PTR)p32 < ((DWORD_PTR)pData + dataSize - 1)) {
+			if (IsInvalidMemoryForIAT(*p32)) {
+				if (IsInvalidMemoryForIAT(*(p32 + 1))) {
+					DWORD_PTR apiAddress = *(p32 + 2);
+					if (!IsApiAddressValid(apiAddress) && apiAddress != 0) {
+						return (DWORD)((DWORD_PTR)p32 - (DWORD_PTR)pData - (iatAddress - baseAddress));
+					}
 				}
 			}
+			p32++;
 		}
-		pIATAddress++;
+	}
+	else {
+		while ((DWORD_PTR)p64 < ((DWORD_PTR)pData + dataSize - 1)) {
+			if (IsInvalidMemoryForIAT(*p64)) {
+				if (IsInvalidMemoryForIAT(*(p64 + 1))) {
+					DWORD_PTR apiAddress = *(p64 + 2);
+					if (!IsApiAddressValid(apiAddress) && apiAddress != 0) {
+						return (DWORD)((DWORD_PTR)p64 - (DWORD_PTR)pData - (iatAddress - baseAddress));
+					}
+				}
+			}
+			p64++;
+		}
 	}
 
 	return dataSize;

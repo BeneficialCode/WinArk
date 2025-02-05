@@ -161,65 +161,34 @@ void ApiReader::ParseModuleWithOwnProcess(ModuleInfo* pModule) {
 	}
 }
 
-void ApiReader::FindApiInProcess(ModuleInfo* pModule, char* searchName, WORD ordinal, DWORD_PTR* pVA, DWORD_PTR* pRVA) {
+void ApiReader::FindApiInProcess(ModuleInfo* pModule, char* pSearchName, WORD ordinal, DWORD_PTR* pVA, DWORD_PTR* pRVA) {
 	PIMAGE_NT_HEADERS pNtHeader = nullptr;
 	PIMAGE_DOS_HEADER pDosHeader = nullptr;
-	BYTE* pPE = nullptr;
-	PIMAGE_EXPORT_DIRECTORY pExportTable = nullptr;
+	BYTE* pPE = new BYTE[pModule->_modBaseSize];
 
-	pPE = GetHeaderFromProcess(pModule);
-	if (pPE == nullptr)
-		return;
+	ReadMemoryFromProcess(pModule->_modBaseAddr, pModule->_modBaseSize, pPE);
+	
+	PEParser parser(pPE);
 
-	pDosHeader = (PIMAGE_DOS_HEADER)pPE;
-	pNtHeader = (PIMAGE_NT_HEADERS)((BYTE*)pPE + pDosHeader->e_lfanew);
-	if (IsPEAndExportTableValid(pNtHeader)) {
-		pExportTable = GetExportTableFromProcess(pModule, pNtHeader);
-		if (pExportTable) {
-			FindApiInExportTable(pModule, pExportTable,
-				(DWORD_PTR)pExportTable - pNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress,
-				searchName, ordinal, pVA, pRVA);
-			delete[] pExportTable;
+	auto exports = parser.GetExports();
+
+	for (ExportedSymbol symbol : exports) {
+		if (pSearchName != nullptr) {
+			if (!strcmp(symbol.Name.c_str(), pSearchName)) {
+				*pVA = symbol.Address + pModule->_modBaseAddr;
+				*pRVA = symbol.Address;
+				break;
+			}
+		}
+		if (symbol.Ordinal == ordinal) {
+			*pVA = symbol.Address + pModule->_modBaseAddr;
+			*pRVA = symbol.Address;
+			break;
 		}
 	}
+	
 
 	delete[] pPE;
-}
-
-bool ApiReader::FindApiInExportTable(ModuleInfo* pModule, PIMAGE_EXPORT_DIRECTORY pExportDir, 
-	DWORD_PTR deltaAddress, char* searchName,WORD ordinal, DWORD_PTR* pVA, DWORD_PTR* pRVA)
-{
-	DWORD* pAddressOfFunctions = nullptr, * pAddressOfNames = nullptr;
-	WORD* pAddressOfNameOrdinals = nullptr;
-	char* pFunctionName = nullptr;
-
-	pAddressOfFunctions = (DWORD*)((DWORD_PTR)pExportDir->AddressOfFunctions + deltaAddress);
-	pAddressOfNames = (DWORD*)((DWORD_PTR)pExportDir->AddressOfNames + deltaAddress);
-	pAddressOfNameOrdinals = (WORD*)((DWORD_PTR)pExportDir->AddressOfNameOrdinals + deltaAddress);
-
-	if (searchName) {
-		for (DWORD i = 0; i < pExportDir->NumberOfNames; i++) {
-			pFunctionName = (char*)(pAddressOfNames[i] + deltaAddress);
-			if (!strcmp(pFunctionName, searchName)) {
-				*pRVA = pAddressOfFunctions[pAddressOfNameOrdinals[i]];
-				*pVA = *pRVA + pModule->_modBaseAddr;
-				return true;
-			}
-		}
-	}
-	else {
-		for (DWORD i = 0; i < pExportDir->NumberOfFunctions; i++)
-		{
-			if (ordinal == (i + pExportDir->Base))
-			{
-				*pRVA = pAddressOfFunctions[i];
-				*pVA = *pRVA + pModule->_modBaseAddr;
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 BYTE* ApiReader::GetHeaderFromProcess(ModuleInfo* pModule)
@@ -685,34 +654,72 @@ void ApiReader::ParseIAT(DWORD_PTR iat, BYTE* pIAT, SIZE_T size) {
 	ModuleInfo* pModule = nullptr;
 	bool isSuspect = false;
 	int countApiFound = 0, countApiNotFound = 0;
-	DWORD_PTR* pIATAddress = (DWORD_PTR*)pIAT;
-	SIZE_T iatSize = size / sizeof(DWORD_PTR);
-
-	for (SIZE_T i = 0; i < iatSize; i++) {
-		if (!IsInvalidMemoryForIAT(pIATAddress[i])) {
-			if (pIATAddress[i] > _minApiAddress && pIATAddress[i] < _maxApiAddress) {
-				pApiFound = GetApiByVirtualAddress(pIATAddress[i], &isSuspect);
-				if (pApiFound != nullptr) {
-					countApiFound++;
-					if (pModule != pApiFound->pModule) {
-						pModule = pApiFound->pModule;
-						AddFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pApiFound, true, isSuspect);
+	DWORD_PTR* p64 = (DWORD_PTR*)pIAT;
+	DWORD* p32 = reinterpret_cast<DWORD*>(pIAT);
+	SIZE_T iatSize = 0;
+	DWORD pointerSize = 0;
+	BOOL isWow64 = FALSE;
+	::IsWow64Process(_hProcess, &isWow64);
+	if (isWow64) {
+		pointerSize = 4;
+		iatSize = size / pointerSize;
+		for (SIZE_T i = 0; i < iatSize; i++) {
+			if (!IsInvalidMemoryForIAT(p32[i])) {
+				if (p32[i] > _minApiAddress && p32[i] < _maxApiAddress) {
+					pApiFound = GetApiByVirtualAddress(p32[i], &isSuspect);
+					if (pApiFound != nullptr) {
+						countApiFound++;
+						if (pModule != pApiFound->pModule) {
+							pModule = pApiFound->pModule;
+							AddFoundApiToModuleList(iat + (DWORD_PTR)&p32[i] - (DWORD_PTR)pIAT, pApiFound, true, isSuspect);
+						}
+						else {
+							AddFoundApiToModuleList(iat + (DWORD_PTR)&p32[i] - (DWORD_PTR)pIAT, pApiFound, false, isSuspect);
+						}
 					}
 					else {
-						AddFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pApiFound, false, isSuspect);
+						countApiNotFound++;
+						AddNotFoundApiToModuleList(iat + (DWORD_PTR)&p32[i] - (DWORD_PTR)pIAT, p32[i]);
 					}
 				}
 				else {
 					countApiNotFound++;
-					AddNotFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pIATAddress[i]);
+					AddNotFoundApiToModuleList(iat + (DWORD_PTR)&p32[i] - (DWORD_PTR)pIAT, p32[i]);
 				}
-			}
-			else {
-				countApiNotFound++;
-				AddNotFoundApiToModuleList(iat + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)pIAT, pIATAddress[i]);
 			}
 		}
 	}
+	else {
+		pointerSize = 8;
+		iatSize = size / pointerSize;
+		for (SIZE_T i = 0; i < iatSize; i++) {
+			if (!IsInvalidMemoryForIAT(p64[i])) {
+				if (p64[i] > _minApiAddress && p64[i] < _maxApiAddress) {
+					pApiFound = GetApiByVirtualAddress(p64[i], &isSuspect);
+					if (pApiFound != nullptr) {
+						countApiFound++;
+						if (pModule != pApiFound->pModule) {
+							pModule = pApiFound->pModule;
+							AddFoundApiToModuleList(iat + (DWORD_PTR)&p64[i] - (DWORD_PTR)pIAT, pApiFound, true, isSuspect);
+						}
+						else {
+							AddFoundApiToModuleList(iat + (DWORD_PTR)&p64[i] - (DWORD_PTR)pIAT, pApiFound, false, isSuspect);
+						}
+					}
+					else {
+						countApiNotFound++;
+						AddNotFoundApiToModuleList(iat + (DWORD_PTR)&p64[i] - (DWORD_PTR)pIAT, p64[i]);
+					}
+				}
+				else {
+					countApiNotFound++;
+					AddNotFoundApiToModuleList(iat + (DWORD_PTR)&p64[i] - (DWORD_PTR)pIAT, p64[i]);
+				}
+			}
+		}
+	}
+
+	
 }
 
 void ApiReader::AddApi(const char* pName, WORD hint, WORD ordinal, 

@@ -35,6 +35,8 @@ void ProcessAccessHelper::CloseProcessHandle() {
 	_pSelectedModule = nullptr;
 }
 
+#define PAGE_SIZE               (4096)
+
 bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, LPVOID pData)
 {
 	SIZE_T read = 0;
@@ -44,33 +46,37 @@ bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, 
 	if (!_hProcess) {
 		return false;
 	}
+	
+	std::uintptr_t offset = 0;
+	std::uintptr_t requestedSize = size;
+	std::uintptr_t sizeLeftInFirstPage = PAGE_SIZE - (address & (PAGE_SIZE - 1));
+	std::uintptr_t readSize = std::min(sizeLeftInFirstPage, requestedSize);
 
-	if (!ReadProcessMemory(_hProcess, (LPVOID)address, pData, size, &read)) {
-		if (!VirtualProtectEx(_hProcess, (LPVOID)address, size, PAGE_READWRITE, &protect))
-		{
-			ret = false;
-		}
-		else {
-			if (!ReadProcessMemory(_hProcess, (LPVOID)address, pData, size, &read)) {
-				ret = false;
-			}
-			else {
-				ret = true;
-			}
-			VirtualProtectEx(_hProcess, (LPVOID)address, size, protect, &protect);
-		}
+	while (readSize)
+	{
+		SIZE_T bytesRead = 0;
+		auto readSuccess = ReadProcessMemory(_hProcess, (PVOID)(address + offset), 
+			(PBYTE)pData + offset, readSize, &bytesRead);
+		DWORD error = ::GetLastError();
+		if (!readSuccess && error != ERROR_PARTIAL_COPY)
+			break;
+
+		read += bytesRead;
+
+		offset += readSize;
+		requestedSize -= readSize;
+		readSize = std::min((std::uintptr_t)PAGE_SIZE, requestedSize);
+
+		if (readSize && (address + offset) % PAGE_SIZE)
+			__debugbreak(); //TODO: remove when proven stable, this checks if (BaseAddress + offset) is aligned to PAGE_SIZE after the first call
 	}
-	else {
+
+	if (read > 0) {
 		ret = true;
 	}
 
-	if (ret) {
-		if (size != read) {
-			ret = false;
-		}
-		else {
-			ret = true;
-		}
+	if (read != size) {
+		SetLastError(ERROR_PARTIAL_COPY);
 	}
 
 	return ret;

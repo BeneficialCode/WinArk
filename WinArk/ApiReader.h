@@ -50,9 +50,6 @@ private:
 	void ParseModuleWithOwnProcess(ModuleInfo* pModule);
 	bool IsPEAndExportTableValid(PIMAGE_NT_HEADERS pNtHeader);
 	void FindApiInProcess(ModuleInfo* pModule, char* searchName, WORD ordinal, DWORD_PTR* pVA, DWORD_PTR* pRVA);
-	bool FindApiInExportTable(ModuleInfo* pModule, PIMAGE_EXPORT_DIRECTORY pExportDir, DWORD_PTR deltaAddress, 
-		char* searchName,WORD ordinal,
-		DWORD_PTR* pVA, DWORD_PTR* pRVA);
 
 	BYTE* GetHeaderFromProcess(ModuleInfo* pModule);
 	PIMAGE_EXPORT_DIRECTORY GetExportTableFromProcess(ModuleInfo* pModule, PIMAGE_NT_HEADERS pNtHeader);
