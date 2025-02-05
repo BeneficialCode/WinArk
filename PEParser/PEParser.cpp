@@ -9,19 +9,35 @@
 #pragma comment(lib,"imagehlp")
 
 
-PEParser::PEParser(const wchar_t* path) :_path(path) {
-	_hFile = ::CreateFile(path, GENERIC_READ,
-		FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
-	if (_hFile == INVALID_HANDLE_VALUE)
-		return;
-	::GetFileSizeEx(_hFile, &_fileSize);
-	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
-	if (!_hMemMap)
-		return;
+PEParser::PEParser(const wchar_t* path,bool isScylla) :_path(path) {
+	if (isScylla) {
+		_hFile = ::CreateFile(path, GENERIC_READ|GENERIC_WRITE,
+			FILE_SHARE_READ| FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+		if (_hFile == INVALID_HANDLE_VALUE)
+			return;
+		::GetFileSizeEx(_hFile, &_fileSize);
+		_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READWRITE, 0, 0, nullptr);
+		if (!_hMemMap)
+			return;
 
-	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
-	if (!_address)
-		return;
+		_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0);
+		if (!_address)
+			return;
+	}
+	else {
+		_hFile = ::CreateFile(path, GENERIC_READ,
+			FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+		if (_hFile == INVALID_HANDLE_VALUE)
+			return;
+		::GetFileSizeEx(_hFile, &_fileSize);
+		_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+		if (!_hMemMap)
+			return;
+
+		_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
+		if (!_address)
+			return;
+	}
 
 	CheckValidity();
 	if (IsValid()) {
@@ -665,16 +681,22 @@ void PEParser::AlignAllSectionHeaders() {
 	DWORD fileAlignment = GetFileAlignment();
 	DWORD newFileSize = 0;
 	
+
+	std::sort(_PESections.begin(), _PESections.end(), [](const PEFileSection& d1, const PEFileSection& d2) {
+		return d1._sectionHeader.PointerToRawData < d2._sectionHeader.PointerToRawData;
+	});
+
 	newFileSize = _dosHeader->e_lfanew + sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
-		_ntHeader->FileHeader.SizeOfOptionalHeader * sizeof(IMAGE_SECTION_HEADER);
+		_ntHeader->FileHeader.SizeOfOptionalHeader + GetSectionCount() * sizeof(IMAGE_SECTION_HEADER);
 
 	for (int i = 0; i < GetSectionCount(); ++i) {
-		sections[i].VirtualAddress = AlignValue(sections[i].VirtualAddress, sectionAlignment);
-		sections[i].Misc.VirtualSize = AlignValue(sections[i].Misc.VirtualSize, sectionAlignment);
+		_PESections[i]._sectionHeader.VirtualAddress = AlignValue(sections[i].VirtualAddress, sectionAlignment);
+		_PESections[i]._sectionHeader.Misc.VirtualSize = AlignValue(sections[i].Misc.VirtualSize, sectionAlignment);
 
-		sections[i].PointerToRawData = AlignValue(newFileSize, fileAlignment);
+		_PESections[i]._sectionHeader.PointerToRawData = AlignValue(newFileSize, fileAlignment);
+		_PESections[i]._sectionHeader.SizeOfRawData = AlignValue(_PESections[i]._dataSize, fileAlignment);
 		
-		newFileSize = sections[i].PointerToRawData + sections[i].SizeOfRawData;
+		newFileSize = _PESections[i]._sectionHeader.PointerToRawData + _PESections[i]._sectionHeader.SizeOfRawData;
 	}
 
 	std::sort(_PESections.begin(), _PESections.end(), [](const PEFileSection& d1, const PEFileSection& d2) {
@@ -716,6 +738,8 @@ void PEParser::FixPEHeader() {
 
 		_opt64->NumberOfRvaAndSizes = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
 		_fileHeader->SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER64);
+
+		_opt64->SizeOfImage = GetSectionHeaderBasedSizeOfImage();
 
 		if (_moduleBase) {
 			_opt64->ImageBase = _moduleBase;
@@ -847,6 +871,7 @@ void PEParser::GetPESections() {
 
 	for (WORD i = 0; i < count; i++) {
 		_PESections[i]._normalSize = _sections[i].Misc.VirtualSize;
+		_PESections[i]._dataSize = _sections[i].Misc.VirtualSize;
 		offset = _sections[i].VirtualAddress;
 		GetPESectionData(offset, _PESections[i]);
 	}
@@ -938,8 +963,7 @@ bool PEParser::SavePEFileToDisk(const WCHAR* pNewFile) {
 		writeSize = sizeof(IMAGE_SECTION_HEADER);
 		auto sections = GetSections();
 		for (WORD i = 0; i < GetSectionCount(); i++) {
-			auto section = sections[i];
-			if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, &section)) {
+			if (!WriteMemoryToFile(_hFile, fileOffset, writeSize, &_PESections[i]._sectionHeader)) {
 				ret = false;
 				break;
 			}
@@ -948,12 +972,11 @@ bool PEParser::SavePEFileToDisk(const WCHAR* pNewFile) {
 
 
 		for (WORD i = 0; i < GetSectionCount(); i++) {
-			auto section = sections[i];
-			if (!section.PointerToRawData)
+			if (!_PESections[i]._sectionHeader.PointerToRawData)
 				continue;
 
-			if (section.PointerToRawData > fileOffset) {
-				writeSize = section.PointerToRawData - fileOffset;
+			if (_PESections[i]._sectionHeader.PointerToRawData > fileOffset) {
+				writeSize = _PESections[i]._sectionHeader.PointerToRawData - fileOffset;
 
 				if (!WriteZeroMemoryToFile(_hFile, fileOffset, writeSize)) {
 					ret = false;
@@ -962,15 +985,24 @@ bool PEParser::SavePEFileToDisk(const WCHAR* pNewFile) {
 				fileOffset += writeSize;
 			}
 
-			writeSize = section.SizeOfRawData;
+			writeSize = _PESections[i]._sectionHeader.SizeOfRawData;
 
 			if (writeSize) {
-				BYTE* pData = GetFileAddress(section.PointerToRawData);
-				if (!WriteMemoryToFile(_hFile, section.PointerToRawData, writeSize, pData)) {
+				if (!WriteMemoryToFile(_hFile, _PESections[i]._sectionHeader.PointerToRawData, 
+					writeSize, _PESections[i]._pData)) {
 					ret = false;
 					break;
 				}
 				fileOffset += writeSize;
+
+				if (_PESections[i]._dataSize < _PESections[i]._sectionHeader.SizeOfRawData) {
+					writeSize = _PESections[i]._sectionHeader.SizeOfRawData - _PESections[i]._dataSize;
+					if (!WriteZeroMemoryToFile(_hFile, fileOffset, writeSize)) {
+						ret = false;
+						break;
+					}
+					fileOffset += writeSize;
+				}
 			}
 		}
 

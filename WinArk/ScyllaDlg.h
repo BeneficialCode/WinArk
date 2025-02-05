@@ -26,19 +26,6 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px);
 
-	BEGIN_MSG_MAP_EX(CScyllaDlg)
-		MSG_WM_SIZE(OnSize)
-		MSG_WM_DESTROY(OnDestroy)
-		MSG_WM_CONTEXTMENU(OnContextMenu)
-		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		COMMAND_ID_HANDLER_EX(IDC_BTN_AUTO_SEARCH,OnAutoSearch)
-		COMMAND_ID_HANDLER_EX(IDC_BTN_GET_IMPORTS,OnGetImports)
-		COMMAND_ID_HANDLER_EX(IDC_BTN_DUMP,OnDump)
-	END_MSG_MAP()
-
-
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void OnSize(UINT nType, CSize size);
@@ -52,12 +39,32 @@ public:
 	void ProcessHandler();
 	void GetImportsHandler();
 	void DumpHandler();
+	void FixDumpHandler();
+	void PERebuildHandler();
+	void DeleteSelectedImportsHandler();
+
+
+	CTreeItem FindTreeItem(CPoint pt, bool screenCoordinates);
+
+	void ShowInvalidImportsHandler();
+	void ShowSuspectImportsHandler();
+	void ClearImportsHandler();
+
+	void OnInvalidImports(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnSuspectImports(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnClearImports(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnAutoSearch(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnGetImports(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnDump(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnFixDump(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnPERebuild(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+	LRESULT OnTreeImportsDoubleClick(const NMHDR* pnmh);
+	LRESULT OnTreeImportsKeyDown(const NMHDR* pnmh);
 
 	bool IsIATOutsidePEImage(DWORD_PTR addressIAT);
+
 
 protected:
 	void SetupStatusBar();
@@ -110,4 +117,27 @@ private:
 	CHexEdit _iatSize;
 	CIcon m_Icon;
 	DWORD _pid;
+
+public:
+	BEGIN_MSG_MAP_EX(CScyllaDlg)
+		MSG_WM_SIZE(OnSize)
+		MSG_WM_DESTROY(OnDestroy)
+		MSG_WM_CONTEXTMENU(OnContextMenu)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+
+		NOTIFY_HANDLER_EX(IDC_TREE_IMPORTS,NM_DBLCLK, OnTreeImportsDoubleClick)
+		NOTIFY_HANDLER_EX(IDC_TREE_IMPORTS,TVN_KEYDOWN,OnTreeImportsKeyDown)
+
+		COMMAND_ID_HANDLER_EX(IDC_BTN_AUTO_SEARCH, OnAutoSearch)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_GET_IMPORTS, OnGetImports)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_DUMP, OnDump)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_FIX_DUMP, OnFixDump)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_PE_REBUILD,OnPERebuild)
+
+		COMMAND_ID_HANDLER_EX(IDC_BTN_CLEAR,OnClearImports)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_SHOW_INVALID,OnInvalidImports)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_SHOW_SUSPECT, OnSuspectImports)
+	END_MSG_MAP()
 };

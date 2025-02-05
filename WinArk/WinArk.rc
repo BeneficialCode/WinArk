@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified) resources
+// 中文(简体) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_NEUTRAL
@@ -69,12 +69,12 @@ BEGIN
     0
 END
 
-#endif    // Chinese (Simplified) resources
+#endif    // 中文(简体) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -331,9 +331,9 @@ BEGIN
     PUSHBUTTON      "IAT Auto Search",IDC_BTN_AUTO_SEARCH,141,197,63,14
     PUSHBUTTON      "Get Imports",IDC_BTN_GET_IMPORTS,147,222,50,14
     GROUPBOX        "Dump",IDC_GROUP_DUMP,256,184,122,69,BS_CENTER
-    PUSHBUTTON      "Dump",IDC_BTN_DUMP,288,199,50,14
-    PUSHBUTTON      "PE Rebuild",IDC_BTN_PE_REBUILD,288,218,50,14
-    PUSHBUTTON      "Fix Dump",IDC_BTN_FIX_DUMP,287,235,50,14
+    PUSHBUTTON      "Dump",IDC_BTN_DUMP,265,206,50,14
+    PUSHBUTTON      "PE Rebuild",IDC_BTN_PE_REBUILD,291,228,50,14
+    PUSHBUTTON      "Fix Dump",IDC_BTN_FIX_DUMP,321,206,50,15
     GROUPBOX        "Log",IDC_GROUP_LOG,0,256,409,83,BS_CENTER
     LISTBOX         IDC_LIST_LOG,0,267,413,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
 END
@@ -999,12 +999,12 @@ BEGIN
     ID_EDIT_FIND            "Find the specified text\nFind"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1525,7 +1525,7 @@ BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

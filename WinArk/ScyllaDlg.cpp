@@ -4,6 +4,7 @@
 #include "Architecture.h"
 #include "IATSearcher.h"
 #include <PEParser.h>
+#include "ImportRebuilder.h"
 
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
@@ -347,13 +348,15 @@ bool CScyllaDlg::GetCurrentDefaultDumpFilename(WCHAR* pBuffer, size_t bufSize) {
 		wcscpy_s(fullPath, m_px.GetExecutablePath().c_str());
 	}
 
-	WCHAR* pSlash = wcsrchr(fullPath, L'\\');
-	if (pSlash) {
-		pSlash++;
+	WCHAR* pTemp = wcsrchr(fullPath, L'\\');
+	if (pTemp) {
+		pTemp++;
 
-		wcscpy_s(pBuffer, bufSize, pSlash);
-		if (pSlash) {
-			*pSlash = 0;
+		wcscpy_s(pBuffer, bufSize, pTemp);
+
+		pTemp = wcsrchr(pBuffer, L'.');
+		if (pTemp) {
+			*pTemp = 0;
 			if (ProcessAccessHelper::_pSelectedModule) {
 				wcscat_s(pBuffer, bufSize, L"_dump.dll");
 			}
@@ -396,4 +399,171 @@ bool CScyllaDlg::ShowFileDialog(WCHAR* pSelectedFile, bool save, const WCHAR* pD
 		return 0 != GetSaveFileName(&ofn);
 	else
 		return 0 != GetOpenFileName(&ofn);
+}
+
+void CScyllaDlg::OnFixDump(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	FixDumpHandler();
+}
+
+void CScyllaDlg::FixDumpHandler() {
+	if (_treeImports.GetCount() < 2) {
+		return;
+	}
+
+	WCHAR newFilePath[MAX_PATH] = { 0 };
+	WCHAR selectedFilePath[MAX_PATH] = { 0 };
+	const WCHAR* pFileFilter = nullptr;
+	DWORD_PTR modBase = 0;
+	DWORD_PTR entryPoint = _oepAddress.GetValue();
+
+	if (ProcessAccessHelper::_pSelectedModule) {
+		modBase = ProcessAccessHelper::_pSelectedModule->_modBaseAddr;
+		pFileFilter = s_FilterDll;
+	}
+	else {
+		modBase = ProcessAccessHelper::_targetImageBase;
+		pFileFilter = s_FilterExe;
+	}
+
+	GetCurrentModulePath(_text, _countof(_text));
+	if (ShowFileDialog(selectedFilePath, false, nullptr, pFileFilter, nullptr, _text)) {
+		wcscpy_s(newFilePath, selectedFilePath);
+
+		const WCHAR* pExtension = nullptr;
+		WCHAR* pDot = wcsrchr(newFilePath, L'.');
+		if (pDot) {
+			*pDot = L'\0';
+			pExtension = selectedFilePath + (pDot - newFilePath);
+		}
+
+		wcscat_s(newFilePath, L"_SCY");
+
+		if (pExtension) {
+			wcscat_s(newFilePath, pExtension);
+		}
+
+		ImportRebuilder rebuilder(selectedFilePath);
+
+		rebuilder.RebuildImportTable(newFilePath, _importsHandling.m_ModuleMap);
+	}
+}
+
+void CScyllaDlg::OnPERebuild(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	PERebuildHandler();
+}
+
+void CScyllaDlg::PERebuildHandler() {
+	DWORD newSize = 0;
+	WCHAR selectedFilePath[MAX_PATH] = { 0 };
+
+	GetCurrentModulePath(_text, _countof(_text));
+	if (ShowFileDialog(selectedFilePath, false, nullptr, s_FilterExeDll, nullptr, _text)) {
+		DWORD fileSize = ProcessAccessHelper::GetFileSize(selectedFilePath);
+		
+		PEParser parser(selectedFilePath, true);
+
+		if (!parser.IsValid()) {
+			return;
+		}
+
+		parser.GetPESections();
+		parser.SetDefaultFileAligment();
+		parser.AlignAllSectionHeaders();
+		parser.FixPEHeader();
+		parser.SavePEFileToDisk(selectedFilePath);
+	}
+}
+
+CTreeItem CScyllaDlg::FindTreeItem(CPoint pt, bool screenCoordinates) {
+	if (screenCoordinates) {
+		_treeImports.ScreenToClient(&pt);
+	}
+	UINT flags;
+	CTreeItem over = _treeImports.HitTest(pt, &flags);
+	if (over) {
+		if (!(flags & TVHT_ONITEM))
+		{
+			over.m_hTreeItem = NULL;
+		}
+	}
+	return over;
+}
+
+LRESULT CScyllaDlg::OnTreeImportsDoubleClick(const NMHDR* pnmh) {
+	if (_treeImports.GetCount() < 1)
+		return 0;
+
+	CTreeItem over = FindTreeItem(CPoint(GetMessagePos()), true);
+	if (over && _importsHandling.IsImport(over)) {
+		// todo: Pick API Handler
+
+	}
+
+	return 0;
+}
+
+LRESULT CScyllaDlg::OnTreeImportsKeyDown(const NMHDR* pnmh) {
+	const NMTVKEYDOWN* tkd = (NMTVKEYDOWN*)pnmh;
+	switch (tkd->wVKey)
+	{
+		case VK_RETURN:
+		{
+			CTreeItem selected = _treeImports.GetFocusItem();
+			if (!selected.IsNull() && _importsHandling.IsImport(selected))
+			{
+				// to do: Pick API handler
+			}
+		}
+		return 1;
+		case VK_DELETE:
+			DeleteSelectedImportsHandler();
+			return 1;
+	}
+
+	SetMsgHandled(FALSE);
+	return 0;
+}
+
+void CScyllaDlg::DeleteSelectedImportsHandler() {
+	CTreeItem selected = _treeImports.GetFirstSelectedItem();
+	while (!selected.IsNull())
+	{
+		if (_importsHandling.IsModule(selected))
+		{
+			_importsHandling.CutModule(selected);
+		}
+		else
+		{
+			_importsHandling.CutImport(selected);
+		}
+		selected = _treeImports.GetNextSelectedItem(selected);
+	}
+	UpdateStatusBar();
+}
+
+void CScyllaDlg::OnInvalidImports(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	ShowInvalidImportsHandler();
+}
+
+void CScyllaDlg::OnSuspectImports(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	ShowSuspectImportsHandler();
+}
+
+void CScyllaDlg::OnClearImports(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	ClearImportsHandler();
+}
+
+void CScyllaDlg::ShowInvalidImportsHandler() {
+	_importsHandling.SelectImports(true, false);
+	GotoDlgCtrl(_treeImports);
+}
+
+void CScyllaDlg::ShowSuspectImportsHandler() {
+	_importsHandling.SelectImports(false, true);
+	GotoDlgCtrl(_treeImports);
+}
+
+void CScyllaDlg::ClearImportsHandler() {
+	_importsHandling.ClearAllImports();
+	UpdateStatusBar();
 }

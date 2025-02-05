@@ -166,7 +166,7 @@ struct RelocInfo {
 
 class PEParser {
 public:
-	explicit PEParser(const wchar_t* path);
+	explicit PEParser(const wchar_t* path,bool isScylla = false);
 	~PEParser();
 	PEParser(void* base);
 

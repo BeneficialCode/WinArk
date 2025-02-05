@@ -362,8 +362,12 @@ bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleI
 
 	for (auto& info : infos) {
 		std::wstring path = info.get()->Path;
+		std::wstring name = info.get()->Name;
 		if (path.empty())
 			continue;
+		if (_wcsicmp(L"kernelbase.dll", name.c_str()) == 0)
+			continue;
+		
 
 		module._modBaseAddr = (DWORD_PTR)info.get()->Base;
 		module._modBaseSize = info.get()->ModuleSize;
