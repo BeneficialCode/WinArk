@@ -872,7 +872,12 @@ void PEParser::GetPESections() {
 	for (WORD i = 0; i < count; i++) {
 		_PESections[i]._normalSize = _sections[i].Misc.VirtualSize;
 		_PESections[i]._dataSize = _sections[i].Misc.VirtualSize;
-		offset = _sections[i].VirtualAddress;
+		if (_isFileMap) {
+			offset = _sections[i].PointerToRawData;
+		}
+		else {
+			offset = _sections[i].VirtualAddress;
+		}
 		GetPESectionData(offset, _PESections[i]);
 	}
 }

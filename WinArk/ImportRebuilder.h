@@ -14,10 +14,6 @@ public:
 	void EnableOFTSupport();
 	void EnableNewIATInSection(DWORD_PTR iatAddress, DWORD iatSize);
 
-	bool SavePEFileToDisk(const WCHAR* pNewFile);
-	bool OpenWriteFileHandle(const WCHAR* pNewFile);
-	bool WriteZeroMemoryToFile(HANDLE hFile, DWORD fileOffset, DWORD size);
-
 	IATReferenceScan* _pIATReferenceScan = nullptr;
 	bool _buildDirectImportsJumpTable = false;
 

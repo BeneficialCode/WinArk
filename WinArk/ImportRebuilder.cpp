@@ -9,6 +9,9 @@ bool ImportRebuilder::RebuildImportTable(const WCHAR* newFilePath,
 	copyModule.insert(moduleThunkMap.begin(), moduleThunkMap.end());
 
 	if (IsValid()) {
+
+		GetPESections();
+
 		SetDefaultFileAligment();
 
 		ret = BuildNewImportTable(copyModule);
@@ -51,141 +54,6 @@ void ImportRebuilder::EnableNewIATInSection(DWORD_PTR iatAddress, DWORD iatSize)
 bool ImportRebuilder::BuildNewImportTable(std::map<DWORD_PTR, ImportModuleThunk>& moduleThunkMap) {
 
 	return true;
-}
-
-bool ImportRebuilder::SavePEFileToDisk(const WCHAR* pNewFile) {
-	bool ret = true;
-
-	DWORD fileOffset = 0, writeSize = 0;
-
-	do
-	{
-		ret = OpenWriteFileHandle(pNewFile);
-		if (!ret)
-			break;
-
-		writeSize = sizeof(IMAGE_DOS_HEADER);
-
-		if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, fileOffset, writeSize, GetBaseAddress())) {
-			ret = false;
-			break;
-		}
-
-		fileOffset += writeSize;
-
-		LONG e_lfanew = GetDosHeader().e_lfanew;
-		DWORD dosStubSize = 0;
-		if (e_lfanew > sizeof(IMAGE_DOS_HEADER)) {
-			dosStubSize = e_lfanew - sizeof(IMAGE_DOS_HEADER);
-
-			BYTE* pDosStub = GetDosStub();
-			if (pDosStub) {
-				writeSize = dosStubSize;
-				if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, fileOffset, writeSize, pDosStub)) {
-					ret = false;
-					break;
-				}
-				fileOffset += writeSize;
-			}
-		}
-		
-		if (!IsPe64()) {
-			writeSize = sizeof(IMAGE_NT_HEADERS32);
-		}
-		else {
-			writeSize = sizeof(IMAGE_NT_HEADERS64);
-		}
-		PIMAGE_NT_HEADERS64 pNtHeader = GetNtHeader();
-		if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, fileOffset, writeSize, pNtHeader)) {
-			ret = false;
-			break;
-		}
-
-		fileOffset += writeSize;
-
-		writeSize = sizeof(IMAGE_SECTION_HEADER);
-		auto sections = GetSections();
-		for (WORD i = 0; i < GetSectionCount(); i++) {
-			auto section = sections[i];
-			if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, fileOffset, writeSize, &section)) {
-				ret = false;
-				break;
-			}
-			fileOffset += writeSize;
-		}
-
-
-		for (WORD i = 0; i < GetSectionCount(); i++) {
-			auto section = sections[i];
-			if (!section.PointerToRawData)
-				continue;
-
-			if (section.PointerToRawData > fileOffset) {
-				writeSize = section.PointerToRawData - fileOffset;
-
-				if (!WriteZeroMemoryToFile(_hFile, fileOffset, writeSize)) {
-					ret = false;
-					break;
-				}
-				fileOffset += writeSize;
-			}
-
-			writeSize = section.SizeOfRawData;
-
-			if (writeSize) {
-				BYTE* pData = GetFileAddress(section.PointerToRawData);
-				if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, section.PointerToRawData, writeSize, pData)) {
-					ret = false;
-					break;
-				}
-				fileOffset += writeSize;
-			}
-		}
-
-		DWORD overlayOffset = GetSectionHeaderBasedFileSize();
-
-		LARGE_INTEGER fileSize = GetFileSize();
-		DWORD overlaySize = fileSize.QuadPart - overlayOffset;
-
-		if (overlaySize) {
-			writeSize = overlaySize;
-			BYTE* pOverlayData = GetFileAddress(overlayOffset);
-			if (!ProcessAccessHelper::WriteMemoryToFile(_hFile, fileOffset, writeSize, pOverlayData)) {
-				ret = false;
-				break;
-			}
-			fileOffset += writeSize;
-		}
-
-		SetEndOfFile(_hFile);
-	} while (false);
-	
-
-	if (_hFile != INVALID_HANDLE_VALUE) {
-		CloseHandle(_hFile);
-	}
-
-	return ret;
-}
-
-bool ImportRebuilder::OpenWriteFileHandle(const WCHAR* pNewFile) {
-	if (pNewFile) {
-		_hFile = ::CreateFile(pNewFile, GENERIC_WRITE, FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-	}
-
-	return _hFile != INVALID_HANDLE_VALUE;
-}
-
-bool ImportRebuilder::WriteZeroMemoryToFile(HANDLE hFile, DWORD fileOffset, DWORD size) {
-	bool ret = false;
-	PVOID pZeroMemory = calloc(size, 1);
-
-	if (pZeroMemory) {
-		ret = ProcessAccessHelper::WriteMemoryToFile(hFile, fileOffset, size, pZeroMemory);
-		free(pZeroMemory);
-	}
-
-	return ret;
 }
 
 DWORD ImportRebuilder::FillImportSection(std::map<DWORD_PTR, ImportModuleThunk>& moduleThunkMap) {
