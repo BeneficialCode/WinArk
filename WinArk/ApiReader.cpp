@@ -28,7 +28,10 @@ void ApiReader::ParseModule(ModuleInfo* pModule) {
 			ParseModuleWithMapping(pModule);
 		}
 		else {
-			ParseModuleWithProcess(pModule);
+			bool success = ParseModuleWithProcess(pModule);
+			if (!success) {
+				ParseModuleWithMapping(pModule);
+			}
 		}
 	}
 }
@@ -37,7 +40,7 @@ void ApiReader::ParseModuleWithMapping(ModuleInfo* pModule) {
 	ParseExportTable(pModule, true, true);
 }
 
-void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProcess) {
+bool ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProcess) {
 	if (isMapping) {
 		PEParser parser(pModule->_fullPath);
 		auto exports = parser.GetExports();
@@ -61,7 +64,7 @@ void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 		pPE = new BYTE[pModule->_modBaseSize];
 		if (!ReadMemoryFromProcess(pModule->_modBaseAddr, pModule->_modBaseSize, pPE)) {
 			delete[] pPE;
-			return;
+			return false;
 		}
 
 		PEParser parser(pPE);
@@ -101,6 +104,7 @@ void ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 			}
 		}
 	}
+	return true;
 }
 
 void ApiReader::FindApiByModuleAndOrdinal(ModuleInfo* pModule, WORD ordinal, DWORD_PTR* pVA, DWORD_PTR* pRVA)
@@ -166,24 +170,44 @@ void ApiReader::FindApiInProcess(ModuleInfo* pModule, char* pSearchName, WORD or
 	PIMAGE_DOS_HEADER pDosHeader = nullptr;
 	BYTE* pPE = new BYTE[pModule->_modBaseSize];
 
-	ReadMemoryFromProcess(pModule->_modBaseAddr, pModule->_modBaseSize, pPE);
-	
-	PEParser parser(pPE);
+	bool success = ReadMemoryFromProcess(pModule->_modBaseAddr, pModule->_modBaseSize, pPE);
+	if (success) {
+		PEParser parser(pPE);
 
-	auto exports = parser.GetExports();
+		auto exports = parser.GetExports();
 
-	for (ExportedSymbol symbol : exports) {
-		if (pSearchName != nullptr) {
-			if (!strcmp(symbol.Name.c_str(), pSearchName)) {
+		for (ExportedSymbol symbol : exports) {
+			if (pSearchName != nullptr) {
+				if (!strcmp(symbol.Name.c_str(), pSearchName)) {
+					*pVA = symbol.Address + pModule->_modBaseAddr;
+					*pRVA = symbol.Address;
+					break;
+				}
+			}
+			if (symbol.Ordinal == ordinal) {
 				*pVA = symbol.Address + pModule->_modBaseAddr;
 				*pRVA = symbol.Address;
 				break;
 			}
 		}
-		if (symbol.Ordinal == ordinal) {
-			*pVA = symbol.Address + pModule->_modBaseAddr;
-			*pRVA = symbol.Address;
-			break;
+	}
+	else {
+		PEParser parser(pModule->_fullPath);
+		auto exports = parser.GetExports();
+
+		for (ExportedSymbol symbol : exports) {
+			if (pSearchName != nullptr) {
+				if (!strcmp(symbol.Name.c_str(), pSearchName)) {
+					*pVA = symbol.Address + pModule->_modBaseAddr;
+					*pRVA = symbol.Address;
+					break;
+				}
+			}
+			if (symbol.Ordinal == ordinal) {
+				*pVA = symbol.Address + pModule->_modBaseAddr;
+				*pRVA = symbol.Address;
+				break;
+			}
 		}
 	}
 	
@@ -839,8 +863,8 @@ void ApiReader::HandleForwardedApi(const char* pForwardName, const char* pFuncti
 	}
 }
 
-void ApiReader::ParseModuleWithProcess(ModuleInfo* pModule) {
-	ParseExportTable(pModule, false);
+bool ApiReader::ParseModuleWithProcess(ModuleInfo* pModule) {
+	return ParseExportTable(pModule, false);
 }
 
 ModuleInfo* ApiReader::FindModuleByName(WCHAR* name) {

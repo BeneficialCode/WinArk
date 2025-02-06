@@ -37,8 +37,8 @@ private:
 	inline bool IsApiForwarded(DWORD_PTR rva, PIMAGE_NT_HEADERS pNtHeader);
 	void HandleForwardedApi(const char* pForwardName, const char* pFunctionNameParent, DWORD_PTR rvaParent, WORD ordinalParent, ModuleInfo* pModuleParent);
 	void ParseModule(ModuleInfo* pModule);
-	void ParseModuleWithProcess(ModuleInfo* pModule);
-	void ParseExportTable(ModuleInfo* pModule, bool isMapping, bool ownProcess = false);
+	bool ParseModuleWithProcess(ModuleInfo* pModule);
+	bool ParseExportTable(ModuleInfo* pModule, bool isMapping, bool ownProcess = false);
 	
 	ModuleInfo* FindModuleByName(WCHAR* name);
 

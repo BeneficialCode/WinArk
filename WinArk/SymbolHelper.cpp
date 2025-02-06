@@ -125,7 +125,6 @@ ULONG64 SymbolHelper::GetKernelSymbolAddressFromName(PCSTR name) {
 	ULONG64 addr = _kernel.GetSymbolAddressFromName(symbolName.c_str());
 	if (addr == 0) {
 		OutputDebugStringA(symbolName.c_str());
-		abort();
 	}
 	return addr;
 }

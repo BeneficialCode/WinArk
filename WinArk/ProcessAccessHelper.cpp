@@ -58,7 +58,7 @@ bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, 
 		auto readSuccess = ReadProcessMemory(_hProcess, (PVOID)(address + offset), 
 			(PBYTE)pData + offset, readSize, &bytesRead);
 		DWORD error = ::GetLastError();
-		if (!readSuccess && error != ERROR_PARTIAL_COPY)
+		if (!readSuccess)
 			break;
 
 		read += bytesRead;
@@ -71,12 +71,9 @@ bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, 
 			__debugbreak(); //TODO: remove when proven stable, this checks if (BaseAddress + offset) is aligned to PAGE_SIZE after the first call
 	}
 
-	if (read > 0) {
-		ret = true;
-	}
 
-	if (read != size) {
-		SetLastError(ERROR_PARTIAL_COPY);
+	if (read == size) {
+		ret = true;
 	}
 
 	return ret;

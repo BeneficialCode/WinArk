@@ -190,11 +190,12 @@ public:
 	bool WriteMemoryToFile(HANDLE hFile, LONG offset, DWORD size, LPVOID pData);
 	bool WriteZeroMemoryToFile(HANDLE hFile, DWORD fileOffset, DWORD size);
 	void GetSectionHeaders();
-
+	DWORD IsMemoryNotNull(BYTE* pData, int dataSize);
 	int GetSectionCount() const;
 	void SetSectionCount(WORD count);
-	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
-	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
+	void SetImportTable(DWORD va, DWORD size);
+	IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
+	IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
 	const IMAGE_DOS_HEADER& GetDosHeader() const;
 	void* GetBaseAddress() const;
 	void AlignAllSectionHeaders();
@@ -243,11 +244,6 @@ public:
 		return *_opt32;
 	}
 
-	//IMAGE_COR20_HEADER* GetCLRHeader() const;
-	//CLRMetadataParser* GetCLRParser() const;
-	//std::vector<std::pair<DWORD, WIN_CERTIFICATE>> EnumCertificates() const;
-	//const IMAGE_LOAD_CONFIG_DIRECTORY64* GetLoadConfiguration64() const;
-	//const IMAGE_LOAD_CONFIG_DIRECTORY32* GetLoadConfiguration32() const;
 	PVOID GetDataDirectoryAddress(UINT index, PULONG size) const;
 	void SetDefaultFileAligment();
 	DWORD GetSectionAlignment();
@@ -294,10 +290,13 @@ private:
 	HANDLE _hFile{ INVALID_HANDLE_VALUE };
 	IMAGE_DOS_HEADER* _dosHeader = nullptr;
 	IMAGE_NT_HEADERS64* _ntHeader = nullptr;
+	IMAGE_NT_HEADERS64 _ntHeader64Copy;
+	IMAGE_NT_HEADERS32 _ntHeader32Copy;
 	IMAGE_FILE_HEADER* _fileHeader = nullptr;
 	IMAGE_SECTION_HEADER* _sections = nullptr;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
 	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
+
 	//CComPtr<IMetaDataImport> _spMetadata;
 	std::wstring _path;
 	mutable HMODULE _resModule{ nullptr };
