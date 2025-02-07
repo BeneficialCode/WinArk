@@ -877,9 +877,9 @@ BEGIN
     BEGIN
         MENUITEM "&Dump",                       ID_FILE_DUMP
     END
-    MENUITEM "Imports",                     0
+    MENUITEM "Imports",                     ID_IMPORTS
     MENUITEM "Misc",                        ID_MISC
-    MENUITEM "Help",                        0
+    MENUITEM "Help",                        ID_HELP33025
 END
 
 IDR_DBG_CONTEXT MENU
@@ -903,6 +903,20 @@ BEGIN
         MENUITEM "Delete",                      ID_TASK_DELETE
         MENUITEM SEPARATOR
         MENUITEM "&Properties...",              ID_TASK_PROPERTIES
+    END
+END
+
+IDR_IMPORTS MENU
+BEGIN
+    POPUP "Imports"
+    BEGIN
+        MENUITEM "Invalidate",                  ID_INVALIDATE
+        MENUITEM SEPARATOR
+        MENUITEM "Cut thunk",                   ID_CUT_THUNK
+        MENUITEM "Delete tree node",            ID_DELETE_TREE_NODE
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all nodes",            ID_EXPAND_ALL_NODES
+        MENUITEM "Collapse all nodes",          ID_COLLAPSE_ALL_NODES
     END
 END
 

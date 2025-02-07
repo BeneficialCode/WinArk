@@ -65,6 +65,8 @@ public:
 
 	bool IsIATOutsidePEImage(DWORD_PTR addressIAT);
 
+	void DisplayContextMenuImports(CWindow, CPoint);
+	void SetupImportsMenuItems(CTreeItem item);
 
 protected:
 	void SetupStatusBar();
@@ -117,6 +119,7 @@ private:
 	CHexEdit _iatSize;
 	CIcon m_Icon;
 	DWORD _pid;
+	CMenu _hMenuImports;
 
 public:
 	BEGIN_MSG_MAP_EX(CScyllaDlg)

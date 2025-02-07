@@ -9,6 +9,7 @@
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
 	: m_pm(pm), m_px(px), _importsHandling(_treeImports) {
+	_hMenuImports.LoadMenu(IDR_IMPORTS);
 	_hIconCheck.LoadIcon(IDI_CHECK);
 	_hIconWarning.LoadIcon(IDI_WARNING);
 	_hIconError.LoadIcon(IDI_ERROR);
@@ -38,6 +39,7 @@ LRESULT CScyllaDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	SetWindowText(title.c_str());
 	m_Icon.LoadIcon(IDI_SCYLLA);
 	SetIcon(m_Icon, TRUE);
+
 
 
 	SetupStatusBar();
@@ -156,9 +158,13 @@ void CScyllaDlg::OnContextMenu(CWindow wnd, CPoint point)
 		case IDC_LIST_LOG:
 			DisplayContextMenuLog(wnd, point);
 			return;
+		case IDC_TREE_IMPORTS:
+			DisplayContextMenuImports(wnd, point);
+			return;
 		default:
 			break;
 	}
+	SetMsgHandled(false);
 }
 
 void CScyllaDlg::DisplayContextMenuLog(CWindow, CPoint) {
@@ -443,6 +449,7 @@ void CScyllaDlg::FixDumpHandler() {
 		}
 
 		ImportRebuilder rebuilder(selectedFilePath);
+		rebuilder.EnableOFTSupport();
 
 		rebuilder.RebuildImportTable(newFilePath, _importsHandling.m_ModuleMap);
 	}
@@ -566,4 +573,76 @@ void CScyllaDlg::ShowSuspectImportsHandler() {
 void CScyllaDlg::ClearImportsHandler() {
 	_importsHandling.ClearAllImports();
 	UpdateStatusBar();
+}
+
+void CScyllaDlg::DisplayContextMenuImports(CWindow hwnd, CPoint pt) {
+	if (_treeImports.GetCount() < 1)
+		return;
+
+	CTreeItem over, parent;
+
+	if (pt.x == -1 && pt.y == -1) {
+		CRect pos;
+		over = _treeImports.GetFocusItem();
+		if (over)
+		{
+			over.EnsureVisible();
+			over.GetRect(&pos, TRUE);
+			_treeImports.ClientToScreen(&pos);
+		}
+		else
+		{
+			_treeImports.GetWindowRect(&pos);
+		}
+		pt = pos.TopLeft();
+	}
+	else {
+		over = FindTreeItem(pt, true);
+	}
+
+	SetupImportsMenuItems(over);
+
+	CMenuHandle hSub = _hMenuImports.GetSubMenu(0);
+	BOOL menuItem = hSub.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, hwnd);
+	if (menuItem) {
+		switch (menuItem)
+		{
+			case ID_INVALIDATE:
+				if (_importsHandling.IsModule(over))
+					_importsHandling.InvalidateModule(over);
+				else
+					_importsHandling.InvalidateImport(over);
+				break;
+			case ID_EXPAND_ALL_NODES:
+				_importsHandling.ExpandAllTreeNodes();
+				break;
+			case ID_CUT_THUNK:
+				_importsHandling.CutImport(over);
+				break;
+			case ID_DELETE_TREE_NODE:
+				_importsHandling.CutModule(_importsHandling.IsImport(over) ? over.GetParent() : over);
+				break;
+			default:
+				break;
+		}
+	}
+
+	UpdateStatusBar();
+}
+
+void CScyllaDlg::SetupImportsMenuItems(CTreeItem item) {
+	bool isItem, isImport = false;
+	isItem = !item.IsNull();
+	if (isItem) {
+		isImport = _importsHandling.IsImport(item);
+	}
+
+	CMenuHandle hSub = _hMenuImports.GetSubMenu(0);
+
+	UINT itemOnly = isItem ? MF_ENABLED : MF_GRAYED;
+	UINT importOnly = isImport ? MF_ENABLED : MF_GRAYED;
+
+	hSub.EnableMenuItem(ID_INVALIDATE, itemOnly);
+	hSub.EnableMenuItem(ID_CUT_THUNK, importOnly);
+	hSub.EnableMenuItem(ID_DELETE_TREE_NODE, itemOnly);
 }

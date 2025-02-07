@@ -181,11 +181,11 @@ DWORD ImportRebuilder::FillImportSection(std::map<DWORD_PTR, ImportModuleThunk>&
 
 size_t ImportRebuilder::AddImportDescriptor(ImportModuleThunk* pImportThunk, DWORD sectionOffset, DWORD sectionOffsetOFTArray) {
 	std::string dllName;
-
+	char name[512] = { 0 };
 	dllName = Helpers::WstringToString(pImportThunk->m_ModuleName);
 	size_t len = dllName.length() + 1;
-
-	memcpy(_PESections[_importSectionIndex]._pData + sectionOffset, dllName.c_str(), len);
+	strcpy_s(name, dllName.c_str());
+	memcpy(_PESections[_importSectionIndex]._pData + sectionOffset, name, len);
 
 	_pImportDescriptor->FirstThunk = pImportThunk->m_FirstThunk;
 	_pImportDescriptor->Name = FileOffsetToRva((DWORD_PTR)_PESections[_importSectionIndex]._sectionHeader.PointerToRawData + sectionOffset);
@@ -216,6 +216,7 @@ BYTE* ImportRebuilder::GetMemoryPointerFromRVA(DWORD_PTR rva) {
 		_PESections[idx]._dataSize = minSectionSize;
 		_PESections[idx]._normalSize = minSectionSize;
 		_PESections[idx]._pData = new BYTE[_PESections[idx]._dataSize];
+		_PESections[idx]._sectionHeader.SizeOfRawData = _PESections[idx]._dataSize;
 	}
 	else if (_PESections[idx]._dataSize < minSectionSize) {
 		BYTE* pTemp = new BYTE[minSectionSize];

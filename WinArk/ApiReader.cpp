@@ -817,23 +817,6 @@ void ApiReader::HandleForwardedApi(const char* pForwardName, const char* pFuncti
 	}
 
 	if (!_strnicmp(dllName, "API-", 4) || !_strnicmp(dllName, "EXT-", 4)) {
-		FARPROC addr = nullptr;
-		HMODULE hModTemp = GetModuleHandleA(dllName);
-		if (hModTemp == NULL) {
-			hModTemp = LoadLibraryA(dllName);
-		}
-		if (ordinal) {
-			addr = GetProcAddress(hModTemp, (char*)ordinal);
-		}
-		else {
-			addr = GetProcAddress(hModTemp, pSearchFunctionName);
-		}
-
-		if (addr != nullptr) {
-			AddApi(pFunctionNameParent, 0, ordinalParent, (DWORD_PTR)addr,
-				(DWORD_PTR)addr - (DWORD_PTR)hModTemp, true, pModuleParent);
-		}
-
 		return;
 	}
 

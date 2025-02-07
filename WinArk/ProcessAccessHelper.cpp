@@ -370,6 +370,10 @@ bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleI
 			continue;
 		if (_wcsicmp(L"kernelbase.dll", name.c_str()) == 0)
 			continue;
+		if (!_wcsnicmp(name.c_str(), L"API-", 4))
+			continue;
+		if (!_wcsnicmp(name.c_str(), L"EXT-", 4))
+			continue;
 		
 
 		module._modBaseAddr = (DWORD_PTR)info.get()->Base;

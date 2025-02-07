@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WinArk.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 WinArk.rc 使用
 //
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
@@ -114,6 +114,7 @@
 #define IDI_CHECK                       307
 #define IDI_SCYLLA_WARNING              310
 #define IDI_SCYLLA_ERROR                311
+#define IDR_IMPORTS                     312
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -478,13 +479,29 @@
 #define ID_PROCESS_SUS                  33021
 #define ID_PROCESS_SUSPEND              33022
 #define ID_MISC                         33023
+#define ID_IMPORTS                      33024
+#define ID_HELP33025                    33025
+#define ID__INVALIDATE                  33026
+#define ID__CUTTHUNK                    33027
+#define ID__DELETETREENODE              33028
+#define ID__EXPANDALLNODES              33029
+#define ID__COLLAPSEALLNODES            33030
+#define ID__CUT_THUNK                   33031
+#define ID__DELETE_TREE_NODE            33032
+#define ID__EXPAND_ALL_NODES            33033
+#define ID__COLLAPSE_ALL_NODES          33034
+#define ID_INVALIDATE                   33035
+#define ID_CUT_THUNK                    33036
+#define ID_DELETE_TREE_NODE             33037
+#define ID_EXPAND_ALL_NODES             33038
+#define ID_COLLAPSE_ALL_NODES           33039
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        312
-#define _APS_NEXT_COMMAND_VALUE         33024
+#define _APS_NEXT_RESOURCE_VALUE        313
+#define _APS_NEXT_COMMAND_VALUE         33040
 #define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
