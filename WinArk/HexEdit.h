@@ -1,9 +1,11 @@
 #pragma once
 
 
-class CHexEdit : public CWindowImpl<CHexEdit, CEdit>
+class CHexEdit : public CWindowImpl<CHexEdit, CEdit, CControlWinTraits>
 {
 public:
+	DECLARE_WND_CLASS(L"WTL_HexEdit")
+
 	static const short int _base = 16;
 	static const size_t _digits = sizeof(ULONG_PTR) * 2; // 2 digits/byte
 	static const size_t _strSize = _digits + 1;

@@ -70,6 +70,7 @@ public:
 
 	static bool OpenProcessHandle(DWORD pid);
 	static void CloseProcessHandle();
+	static DWORD GetModuleHandlesFromProcess(const HANDLE hProcess, HMODULE** pphModues);
 
 	static bool GetProcessModules(HANDLE hProcess, std::vector<ModuleInfo>& moduleList);
 

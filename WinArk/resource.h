@@ -7,7 +7,6 @@
 #define IDS_TITLE                       129
 #define IDR_CONTEXT                     202
 #define IDI_CANCEL                      202
-#define IDR_BIN1                        204
 #define IDI_FILTER                      204
 #define IDI_FILTER_ADD                  205
 #define IDI_FILTER_DELETE               206
@@ -115,6 +114,8 @@
 #define IDI_SCYLLA_WARNING              310
 #define IDI_SCYLLA_ERROR                311
 #define IDR_IMPORTS                     312
+#define IDD_DISASSEMBLER                313
+#define IDR_DISASM                      315
 #define IDC_CONFIG_LIST                 1000
 #define IDC_VALUE                       1001
 #define IDC_APPICON                     1002
@@ -251,6 +252,13 @@
 #define IDC_DISABLE_DRIVER_LOAD         1123
 #define IDC_CHECK1                      1124
 #define IDC_LOG_HASH                    1124
+#define IDC_LIST_DISASSEMBLER           1126
+#define IDC_DISASSEMBLE_ADDRESS         1127
+#define IDC_EDIT_DIS_ADDRESS            1128
+#define IDC_DISASM_ADDRESS              1128
+#define IDC_DISASM_BACK                 1129
+#define IDC_DISASM_FORWARD              1130
+#define IDC_DISASM                      1131
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
 #define ID_PROCESS_KILL                 32777
@@ -481,28 +489,43 @@
 #define ID_MISC                         33023
 #define ID_IMPORTS                      33024
 #define ID_HELP33025                    33025
-#define ID__INVALIDATE                  33026
-#define ID__CUTTHUNK                    33027
-#define ID__DELETETREENODE              33028
-#define ID__EXPANDALLNODES              33029
-#define ID__COLLAPSEALLNODES            33030
-#define ID__CUT_THUNK                   33031
-#define ID__DELETE_TREE_NODE            33032
-#define ID__EXPAND_ALL_NODES            33033
-#define ID__COLLAPSE_ALL_NODES          33034
 #define ID_INVALIDATE                   33035
 #define ID_CUT_THUNK                    33036
 #define ID_DELETE_TREE_NODE             33037
 #define ID_EXPAND_ALL_NODES             33038
 #define ID_COLLAPSE_ALL_NODES           33039
+#define ID_DISASSEMBLER_FOLLOW          33040
+#define ID_DISASSEMBLER_DISASSEMBLEHERE 33041
+#define ID_DISASSEMBLER_COPYADDRESS     33042
+#define ID_DISASSEMBLER_COPYSIZE        33043
+#define ID_DISASSEMBLER_COPYOPCODES     33044
+#define ID_DISASSEMBLER_COPYINSTRUCTIONS 33045
+#define ID_DISASSEMBLER_DISASSEMBLE_HERE 33046
+#define ID_DISASSEMBLER_COPY_ADDRESS    33047
+#define ID_DISASSEMBLER_COPY_SIZE       33048
+#define ID_DISASSEMBLER_COPY_OPCODES    33049
+#define ID_DISASSEMBLER_COPY_INSTRUCTIONS 33050
+#define ID_DISASM_FOLLOW                33051
+#define ID_DISASM_DISASSEMBLEHERE       33052
+#define ID_DISASM_COPYADDRESS           33053
+#define ID_DISASM_COPYSIZE              33054
+#define ID_DISASM_COPYOPCODES           33055
+#define ID_DISASM_COPYINSTRUCTIONS      33056
+#define ID_DISASM_DISASSEMBLE_HERE      33057
+#define ID_DISASM_COPY_ADDRESS          33058
+#define ID_DISASM_COPY_SIZE             33059
+#define ID_DISASM_COPY_OPCODES          33060
+#define ID_DISASM_COPY_INSTRUCTIONS     33061
+#define ID_IMPORTS_DISASSEMBLE          33062
+#define ID_MISC_DISASSEMBLER            33063
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        313
-#define _APS_NEXT_COMMAND_VALUE         33040
-#define _APS_NEXT_CONTROL_VALUE         1126
+#define _APS_NEXT_RESOURCE_VALUE        316
+#define _APS_NEXT_COMMAND_VALUE         33064
+#define _APS_NEXT_CONTROL_VALUE         1132
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -49,6 +49,8 @@ public:
 	void ShowInvalidImportsHandler();
 	void ShowSuspectImportsHandler();
 	void ClearImportsHandler();
+	void StartDisassembler(CTreeItem selectedTreeNode);
+	void DisassemblerHandler();
 
 	void OnInvalidImports(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnSuspectImports(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -59,6 +61,7 @@ public:
 	void OnDump(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnFixDump(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnPERebuild(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnDisassembler(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	LRESULT OnTreeImportsDoubleClick(const NMHDR* pnmh);
 	LRESULT OnTreeImportsKeyDown(const NMHDR* pnmh);
@@ -138,6 +141,7 @@ public:
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DUMP, OnDump)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_FIX_DUMP, OnFixDump)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_PE_REBUILD,OnPERebuild)
+		COMMAND_ID_HANDLER_EX(ID_MISC_DISASSEMBLER,OnDisassembler)
 
 		COMMAND_ID_HANDLER_EX(IDC_BTN_CLEAR,OnClearImports)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SHOW_INVALID,OnInvalidImports)

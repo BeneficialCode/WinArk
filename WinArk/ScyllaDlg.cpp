@@ -5,6 +5,7 @@
 #include "IATSearcher.h"
 #include <PEParser.h>
 #include "ImportRebuilder.h"
+#include "DisasmDlg.h"
 
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
@@ -613,6 +614,9 @@ void CScyllaDlg::DisplayContextMenuImports(CWindow hwnd, CPoint pt) {
 				else
 					_importsHandling.InvalidateImport(over);
 				break;
+			case ID_IMPORTS_DISASSEMBLE:
+				StartDisassembler(over);
+				break;
 			case ID_EXPAND_ALL_NODES:
 				_importsHandling.ExpandAllTreeNodes();
 				break;
@@ -645,4 +649,29 @@ void CScyllaDlg::SetupImportsMenuItems(CTreeItem item) {
 	hSub.EnableMenuItem(ID_INVALIDATE, itemOnly);
 	hSub.EnableMenuItem(ID_CUT_THUNK, importOnly);
 	hSub.EnableMenuItem(ID_DELETE_TREE_NODE, itemOnly);
+}
+
+void CScyllaDlg::StartDisassembler(CTreeItem selectedTreeNode) {
+	DWORD_PTR address = _importsHandling.GetApiAddressByNode(selectedTreeNode);
+	if (address) {
+		BYTE test;
+		if (!ProcessAccessHelper::ReadMemoryFromProcess(address, sizeof(test), &test)) {
+			swprintf_s(_text, L"Can't read memory at " PRINTF_DWORD_PTR_FULL, address);
+			MessageBox(_text, L"Failure", MB_ICONERROR);
+		}
+		else {
+			CDisasmDlg disassembler(address, &_ApiReader);
+			disassembler.DoModal();
+		}
+	}
+}
+
+void CScyllaDlg::DisassemblerHandler() {
+	DWORD_PTR oep = _oepAddress.GetValue();
+	CDisasmDlg dlg(oep, &_ApiReader);
+	dlg.DoModal();
+}
+
+void CScyllaDlg::OnDisassembler(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	DisassemblerHandler();
 }

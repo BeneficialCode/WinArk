@@ -338,6 +338,20 @@ BEGIN
     LISTBOX         IDC_LIST_LOG,0,267,413,72,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
 END
 
+IDD_DISASSEMBLER DIALOGEX 0, 0, 463, 244
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Disassembler"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LIST_DISASSEMBLER,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,7,449,206
+    LTEXT           "Address:",IDC_DISASSEMBLE_ADDRESS,15,222,30,8
+    EDITTEXT        IDC_DISASM_ADDRESS,49,218,107,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "<",IDC_DISASM_BACK,390,218,22,14
+    PUSHBUTTON      ">",IDC_DISASM_FORWARD,418,218,22,14
+    PUSHBUTTON      "Disassemble",IDC_DISASM,166,218,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -456,6 +470,14 @@ BEGIN
         TOPMARGIN, 1
         BOTTOMMARGIN, 349
     END
+
+    IDD_DISASSEMBLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 456
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 237
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -561,6 +583,11 @@ BEGIN
 END
 
 IDD_SCYLLA AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DISASSEMBLER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -878,7 +905,10 @@ BEGIN
         MENUITEM "&Dump",                       ID_FILE_DUMP
     END
     MENUITEM "Imports",                     ID_IMPORTS
-    MENUITEM "Misc",                        ID_MISC
+    POPUP "Misc"
+    BEGIN
+        MENUITEM "Disassembler",                ID_MISC_DISASSEMBLER
+    END
     MENUITEM "Help",                        ID_HELP33025
 END
 
@@ -917,6 +947,21 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Expand all nodes",            ID_EXPAND_ALL_NODES
         MENUITEM "Collapse all nodes",          ID_COLLAPSE_ALL_NODES
+        MENUITEM SEPARATOR
+        MENUITEM "Disassemble",                 ID_IMPORTS_DISASSEMBLE
+    END
+END
+
+IDR_DISASM MENU
+BEGIN
+    POPUP "Disasm"
+    BEGIN
+        MENUITEM "Follow",                      ID_DISASM_FOLLOW
+        MENUITEM "Disassemble here",            ID_DISASM_DISASSEMBLE_HERE
+        MENUITEM "Copy Address",                ID_DISASM_COPY_ADDRESS
+        MENUITEM "Copy Size",                   ID_DISASM_COPY_SIZE
+        MENUITEM "Copy OpCodes",                ID_DISASM_COPY_OPCODES
+        MENUITEM "Copy Instructions",           ID_DISASM_COPY_INSTRUCTIONS
     END
 END
 

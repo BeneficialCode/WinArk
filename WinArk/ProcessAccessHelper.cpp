@@ -35,6 +35,36 @@ void ProcessAccessHelper::CloseProcessHandle() {
 	_pSelectedModule = nullptr;
 }
 
+DWORD ProcessAccessHelper::GetModuleHandlesFromProcess(const HANDLE hProcess, HMODULE** pphModues) {
+	DWORD count = 64;
+	DWORD needed = 0;
+	*pphModues = new HMODULE[count];
+	bool notEnough = true;
+
+	do
+	{
+		if (!EnumProcessModules(hProcess, *pphModues, count * sizeof(HMODULE), &needed)) {
+			delete[] * pphModues;
+			return 0;
+		}
+
+		if (count * sizeof(HMODULE) < needed) {
+			delete[] * pphModues;
+			count = needed / sizeof(HMODULE);
+			*pphModues = new HMODULE[count];
+		}
+		else {
+			notEnough = false;
+		}
+	} while (notEnough);
+
+	count = needed / sizeof(HMODULE);
+	if (count == 0) {
+		delete[] * pphModues;
+	}
+	return count;
+}
+
 #define PAGE_SIZE               (4096)
 
 bool ProcessAccessHelper::ReadMemoryFromProcess(DWORD_PTR address, SIZE_T size, LPVOID pData)

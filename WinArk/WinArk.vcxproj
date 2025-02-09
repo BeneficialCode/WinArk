@@ -255,6 +255,7 @@
     <ClCompile Include="BinaryValueDlg.cpp" />
     <ClCompile Include="BypassDlg.cpp" />
     <ClCompile Include="CallStackDlg.cpp" />
+    <ClCompile Include="DisasmDlg.cpp" />
     <ClCompile Include="ExplorerView.cpp" />
     <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="ExtensionTableDlg.cpp" />
@@ -429,6 +430,7 @@
     <ClInclude Include="ComHelper.h" />
     <ClInclude Include="CustomListView.h" />
     <ClInclude Include="CustomSplitterWindow.h" />
+    <ClInclude Include="DisasmDlg.h" />
     <ClInclude Include="ExplorerView.h" />
     <ClInclude Include="ExtensionTable.h" />
     <ClInclude Include="ExtensionTableDlg.h" />
