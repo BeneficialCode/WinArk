@@ -270,6 +270,7 @@
     <ClCompile Include="KernelInlineHookTable.cpp" />
     <ClCompile Include="MiscView.cpp" />
     <ClCompile Include="ObjectCallbackTable.cpp" />
+    <ClCompile Include="PickDLLDlg.cpp" />
     <ClCompile Include="ProcessAccessHelper.cpp" />
     <ClCompile Include="ProcessATHookDlg.cpp" />
     <ClCompile Include="ChangeValueCommand.cpp" />
@@ -446,6 +447,7 @@
     <ClInclude Include="MiscView.h" />
     <ClInclude Include="MultiTree.h" />
     <ClInclude Include="ObjectCallbackTable.h" />
+    <ClInclude Include="PickDLLDlg.h" />
     <ClInclude Include="ProcessAccessHelper.h" />
     <ClInclude Include="ProcessATHookDlg.h" />
     <ClInclude Include="ChangeValueCommand.h" />

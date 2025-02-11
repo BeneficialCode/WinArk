@@ -537,6 +537,9 @@
     <ClCompile Include="DisasmDlg.cpp">
       <Filter>Scylla</Filter>
     </ClCompile>
+    <ClCompile Include="PickDLLDlg.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1080,6 +1083,9 @@
       <Filter>Scylla</Filter>
     </ClInclude>
     <ClInclude Include="DisasmDlg.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="PickDLLDlg.h">
       <Filter>Scylla</Filter>
     </ClInclude>
   </ItemGroup>

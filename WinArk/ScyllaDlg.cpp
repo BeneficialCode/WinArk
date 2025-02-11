@@ -6,6 +6,7 @@
 #include <PEParser.h>
 #include "ImportRebuilder.h"
 #include "DisasmDlg.h"
+#include "PickDLLDlg.h"
 
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
@@ -674,4 +675,26 @@ void CScyllaDlg::DisassemblerHandler() {
 
 void CScyllaDlg::OnDisassembler(UINT uNotifyCode, int nID, CWindow wndCtl) {
 	DisassemblerHandler();
+}
+
+void CScyllaDlg::OnPickDLL(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	PickDLLHandler();
+}
+
+void CScyllaDlg::PickDLLHandler() {
+	CPickDLLDlg dlg(ProcessAccessHelper::_moduleList);
+
+	if (dlg.DoModal()) {
+		ProcessAccessHelper::_pSelectedModule = dlg.GetSelectedModule();
+		ProcessAccessHelper::_targetImageBase = ProcessAccessHelper::_pSelectedModule->_modBaseAddr;
+		ProcessAccessHelper::_targetSizeOfImage = ProcessAccessHelper::_pSelectedModule->_modBaseSize;
+
+		DWORD entryPoint = ProcessAccessHelper::GetEntryPointFromFile(ProcessAccessHelper::_pSelectedModule->_fullPath);
+		_oepAddress.SetValue(entryPoint + ProcessAccessHelper::_targetImageBase);
+	}
+	else {
+		ProcessAccessHelper::_pSelectedModule = nullptr;
+	}
+
+	UpdateStatusBar();
 }
