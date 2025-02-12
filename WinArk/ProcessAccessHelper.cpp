@@ -398,8 +398,6 @@ bool ProcessAccessHelper::GetProcessModules(HANDLE hProcess, std::vector<ModuleI
 		std::wstring name = info.get()->Name;
 		if (path.empty())
 			continue;
-		if (_wcsicmp(L"kernelbase.dll", name.c_str()) == 0)
-			continue;
 		if (!_wcsnicmp(name.c_str(), L"API-", 4))
 			continue;
 		if (!_wcsnicmp(name.c_str(), L"EXT-", 4))
