@@ -260,7 +260,6 @@
 #define IDC_DISASM_BACK                 1129
 #define IDC_DISASM_FORWARD              1130
 #define IDC_DISASM                      1131
-#define IDC_LIST1                       1132
 #define IDC_DLL_LIST                    1132
 #define ID_PROCESS_THREADS              32775
 #define ID_PROCESS_MODULES              32776
@@ -521,13 +520,27 @@
 #define ID_DISASM_COPY_INSTRUCTIONS     33061
 #define ID_IMPORTS_DISASSEMBLE          33062
 #define ID_MISC_DISASSEMBLER            33063
+#define ID_IMPORTS_SHOWINVALID          33064
+#define ID_IMPORTS_SHOW_INVALID         33065
+#define ID_IMPORTS_SHOWSUSPECT          33066
+#define ID_IMPORTS_SHOW_SUSPECT         33067
+#define ID_IMPORTS_INVALIDATESELECTED   33068
+#define ID_IMPORTS_INVALIDATE_SELECTED  33069
+#define ID_IMPORTS_CUTS                 33070
+#define ID_IMPORTS_CLEARIMPORTS         33071
+#define ID_IMPORTS_CLEAR_IMPORTS        33072
+#define ID_IMPORTS_S                    33073
+#define ID_IMPORTS_SAVE_TREE            33074
+#define ID_IMPORTS_LOADTREE             33075
+#define ID_IMPORTS_LOAD_TREE            33076
+#define ID_IMPORTS_CUT_SELECTED         33077
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        318
-#define _APS_NEXT_COMMAND_VALUE         33064
+#define _APS_NEXT_COMMAND_VALUE         33078
 #define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

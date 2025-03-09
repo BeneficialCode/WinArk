@@ -927,7 +927,19 @@ BEGIN
     BEGIN
         MENUITEM "&Dump",                       ID_FILE_DUMP
     END
-    MENUITEM "Imports",                     ID_IMPORTS
+    POPUP "Imports"
+    BEGIN
+        MENUITEM "Show Invalid",                ID_IMPORTS_SHOW_INVALID
+        MENUITEM "Show Suspect",                ID_IMPORTS_SHOW_SUSPECT
+        MENUITEM SEPARATOR
+        MENUITEM "Invalidate Selected",         ID_IMPORTS_INVALIDATE_SELECTED
+        MENUITEM SEPARATOR
+        MENUITEM "Cut Selected",                ID_IMPORTS_CUT_SELECTED
+        MENUITEM "Clear Imports",               ID_IMPORTS_CLEAR_IMPORTS
+        MENUITEM SEPARATOR
+        MENUITEM "&Save Tree",                  ID_IMPORTS_SAVE_TREE
+        MENUITEM "L&oad Tree",                  ID_IMPORTS_LOAD_TREE
+    END
     POPUP "Misc"
     BEGIN
         MENUITEM "Disassembler",                ID_MISC_DISASSEMBLER

@@ -406,6 +406,7 @@
     <ClCompile Include="TokenObjectType.cpp" />
     <ClCompile Include="TokenPropertiesDlg.cpp" />
     <ClCompile Include="TreeHelper.cpp" />
+    <ClCompile Include="TreeImportExport.cpp" />
     <ClCompile Include="UnloadedDriverTable.cpp" />
     <ClCompile Include="View.cpp" />
     <ClCompile Include="WFPFilterTable.cpp" />
@@ -588,6 +589,7 @@
     <ClInclude Include="TokenObjectType.h" />
     <ClInclude Include="TokenPropertiesDlg.h" />
     <ClInclude Include="TreeHelper.h" />
+    <ClInclude Include="TreeImportExport.h" />
     <ClInclude Include="TreeViewManager.h" />
     <ClInclude Include="UnloadedDriverTable.h" />
     <ClInclude Include="View.h" />

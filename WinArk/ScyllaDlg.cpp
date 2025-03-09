@@ -7,6 +7,8 @@
 #include "ImportRebuilder.h"
 #include "DisasmDlg.h"
 #include "PickDLLDlg.h"
+#include "TreeImportExport.h"
+#include <Helpers.h>
 
 
 CScyllaDlg::CScyllaDlg(const WinSys::ProcessManager& pm, ProcessInfoEx& px)
@@ -698,3 +700,60 @@ void CScyllaDlg::PickDLLHandler() {
 
 	UpdateStatusBar();
 }
+
+void CScyllaDlg::OnCutSelected(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	DeleteSelectedImportsHandler();
+}
+
+
+void CScyllaDlg::SaveTreeHandler() {
+	WCHAR selectedFilePath[MAX_PATH] = { 0 };
+	GetCurrentModulePath(_text, _countof(_text));
+	if (ShowFileDialog(selectedFilePath, true, nullptr, s_FilterXml, L"xml", _text)) {
+		TreeImportExport treeIO(selectedFilePath);
+		DWORD_PTR oep = _oepAddress.GetValue();
+		DWORD_PTR iat = _iatAddress.GetValue();
+		DWORD iatSize = _iatSize.GetValue();
+		std::wstring wname = m_px.GetProcess()->GetName();
+		std::string name = Helpers::WstringToString(wname);
+		if (!treeIO.ExportTreeList(_importsHandling.m_ModuleMap, name, oep, iat, iatSize)) {
+
+		}
+	}
+}
+
+void CScyllaDlg::OnSaveTree(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	SaveTreeHandler();
+}
+
+void CScyllaDlg::LoadTreeHandler() {
+	WCHAR selectedFilePath[MAX_PATH];
+	GetCurrentModulePath(_text, _countof(_text));
+	if (ShowFileDialog(selectedFilePath, false, nullptr, s_FilterXml, nullptr, _text)) {
+		TreeImportExport treeIO(selectedFilePath);
+		DWORD_PTR oep = 0;
+		DWORD_PTR iat = 0;
+		DWORD iatSize = 0;
+		if (!treeIO.ImportTreeList(_importsHandling.m_ModuleMap, &oep, &iat, &iatSize)) {
+
+		}
+		else {
+			swprintf_s(_text, L"Are you sure? Replace the OEP, IAT, and IAT size with %p %p %x", 
+				oep, iat, iatSize);
+
+			int result = MessageBox(_text, L"Confirmation", MB_YESNO | MB_ICONQUESTION);
+			if (result == IDYES) {
+				_oepAddress.SetValue(oep);
+				_iatAddress.SetValue(iat);
+				_iatSize.SetValue(iatSize);
+			}
+			_importsHandling.DisplayAllImports();
+			UpdateStatusBar();
+		}
+	}
+}
+
+void CScyllaDlg::OnLoadTree(UINT uNotifyCode, int nID, CWindow wndCtl) {
+	LoadTreeHandler();
+}
+

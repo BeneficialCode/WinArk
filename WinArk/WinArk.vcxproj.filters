@@ -540,6 +540,9 @@
     <ClCompile Include="PickDLLDlg.cpp">
       <Filter>Scylla</Filter>
     </ClCompile>
+    <ClCompile Include="TreeImportExport.cpp">
+      <Filter>Scylla</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -1086,6 +1089,9 @@
       <Filter>Scylla</Filter>
     </ClInclude>
     <ClInclude Include="PickDLLDlg.h">
+      <Filter>Scylla</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeImportExport.h">
       <Filter>Scylla</Filter>
     </ClInclude>
   </ItemGroup>

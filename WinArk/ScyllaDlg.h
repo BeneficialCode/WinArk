@@ -43,6 +43,8 @@ public:
 	void PERebuildHandler();
 	void DeleteSelectedImportsHandler();
 
+	void SaveTreeHandler();
+	void LoadTreeHandler();
 
 	CTreeItem FindTreeItem(CPoint pt, bool screenCoordinates);
 
@@ -56,6 +58,9 @@ public:
 	void OnInvalidImports(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnSuspectImports(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnClearImports(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnCutSelected(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnSaveTree(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnLoadTree(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnAutoSearch(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnGetImports(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -149,5 +154,12 @@ public:
 		COMMAND_ID_HANDLER_EX(IDC_BTN_CLEAR,OnClearImports)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SHOW_INVALID,OnInvalidImports)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SHOW_SUSPECT, OnSuspectImports)
+
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_CLEAR_IMPORTS,OnClearImports)
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_SHOW_INVALID,OnInvalidImports)
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_SHOW_SUSPECT,OnSuspectImports)
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_CUT_SELECTED,OnCutSelected)
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_SAVE_TREE,OnSaveTree)
+		COMMAND_ID_HANDLER_EX(ID_IMPORTS_LOAD_TREE,OnLoadTree)
 	END_MSG_MAP()
 };
