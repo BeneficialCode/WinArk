@@ -44,7 +44,7 @@ bool ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 	if (isMapping) {
 		PEParser parser(pModule->_fullPath);
 		auto exports = parser.GetExports();
-		for (ExportedSymbol symbol : exports) {
+		for (const ExportedSymbol& symbol : exports) {
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
@@ -69,7 +69,7 @@ bool ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 
 		PEParser parser(pPE);
 		auto exports = parser.GetExports();
-		for (ExportedSymbol symbol : exports) {
+		for (const ExportedSymbol& symbol : exports) {
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
@@ -89,7 +89,7 @@ bool ApiReader::ParseExportTable(ModuleInfo* pModule,bool isMapping,bool ownProc
 		BYTE* pPE = (BYTE*)GetModuleHandle(pModule->GetFileName());
 		PEParser parser(pPE);
 		auto exports = parser.GetExports();
-		for (ExportedSymbol symbol : exports) {
+		for (const ExportedSymbol& symbol : exports) {
 			if (!symbol.IsForward) {
 				if (symbol.HasName)
 					AddApi(symbol.Name.c_str(), symbol.Hint, symbol.Ordinal,
