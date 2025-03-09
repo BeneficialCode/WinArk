@@ -88,6 +88,8 @@ void TreeImportExport::ParseAllElementModules(tinyxml2::XMLElement* pTargetEleme
 	for (tinyxml2::XMLElement* pModuleElement = pTargetElement->FirstChildElement();
 		pModuleElement; pModuleElement = pModuleElement->NextSiblingElement()) {
 		std::string moduleName = pModuleElement->Attribute("module_name");
+		std::wstring wname = Helpers::StringToWstring(moduleName);
+		wcscpy_s(importModuleThunk.m_ModuleName, wname.c_str());
 		if (!moduleName.empty()) {
 			importModuleThunk.m_FirstThunk = ConvertStringToDwordPtr(pModuleElement->Attribute("first_thunk_rva"));
 			importModuleThunk.m_ThunkMap.clear();
