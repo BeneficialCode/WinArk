@@ -11,6 +11,8 @@ vcpkg install capstone[x86]:x86-windows-static
 vcpkg install capstone[x86]:x64-windows-static
 vcpkg install curlcpp:x86-windows-static
 vcpkg install curlcpp:x64-windows-static
+vcpkg install tinyxml2:x86-windows-static
+vcpkg install tinyxml2:x64-windows-static
 ```
 
 ## Compiling
