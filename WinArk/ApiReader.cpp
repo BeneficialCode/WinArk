@@ -34,6 +34,7 @@ void ApiReader::ParseModule(ModuleInfo* pModule) {
 			}
 		}
 	}
+	pModule->_isAlreadyParsed = true;
 }
 
 void ApiReader::ParseModuleWithMapping(ModuleInfo* pModule) {
@@ -176,7 +177,7 @@ void ApiReader::FindApiInProcess(ModuleInfo* pModule, char* pSearchName, WORD or
 
 		auto exports = parser.GetExports();
 
-		for (ExportedSymbol symbol : exports) {
+		for (const ExportedSymbol& symbol : exports) {
 			if (pSearchName != nullptr) {
 				if (!strcmp(symbol.Name.c_str(), pSearchName)) {
 					*pVA = symbol.Address + pModule->_modBaseAddr;
@@ -195,7 +196,7 @@ void ApiReader::FindApiInProcess(ModuleInfo* pModule, char* pSearchName, WORD or
 		PEParser parser(pModule->_fullPath);
 		auto exports = parser.GetExports();
 
-		for (ExportedSymbol symbol : exports) {
+		for (const ExportedSymbol& symbol : exports) {
 			if (pSearchName != nullptr) {
 				if (!strcmp(symbol.Name.c_str(), pSearchName)) {
 					*pVA = symbol.Address + pModule->_modBaseAddr;
