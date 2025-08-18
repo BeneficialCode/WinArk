@@ -717,7 +717,7 @@ void CProcessInlineHookTable::CheckInlineHook(uint8_t* code, size_t codeSize,
 			if (remainSize < patternSize) {
 				break;
 			}
-			bool find = Helpers::SearchPattern(x86HookType3, 0xCC, patternSize,
+			bool find = Helpers::SearchPattern(x86HookType6, 0xCC, patternSize,
 				(void*)searchAddr, remainSize, &pFound);
 			if (find) {
 				if (pFound == NULL) {
