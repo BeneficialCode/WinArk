@@ -202,3 +202,7 @@ int ProcessInfoEx::GetImageIndex(CImageList images) const {
 	}
 	return _image;
 }
+
+bool ProcessInfoEx::HasVEH(HANDLE hProcess) const {
+	return _process->HasVEH(hProcess);
+}

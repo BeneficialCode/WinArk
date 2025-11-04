@@ -84,6 +84,14 @@ int CProcessTable::ParseTableEntry(CString& s, char& mask, int& select, std::sha
 		case ProcessColumn::Eprocess:
 			s.Format(L"0x%p", info->EProcess);
 			break;
+		case ProcessColumn::HasVEH:
+		{
+			auto hProcess = DriverHelper::OpenProcess(info->Id, PROCESS_VM_READ | PROCESS_QUERY_INFORMATION);
+			s.Format(L"%s", px.HasVEH(hProcess) ? L"Yes" : L"No");
+			::CloseHandle(hProcess);
+		}
+			
+			break;
 		default:
 			break;
 	}
@@ -275,7 +283,7 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"杀死进程：%u (%ws)?", p->Id, p->GetImageName().c_str());
+	text.Format(L"Kill Process：%u (%ws)?", p->Id, p->GetImageName().c_str());
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
@@ -294,7 +302,7 @@ LRESULT CProcessTable::OnProcessResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"恢复进程: %u (%ws)?", p->Id, p->GetImageName().c_str());
+	text.Format(L"Resume Process: %u (%ws)?", p->Id, p->GetImageName().c_str());
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
@@ -323,7 +331,7 @@ LRESULT CProcessTable::OnProcessSuspend(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"挂起进程: %u (%ws)?", p->Id, p->GetImageName().c_str());
+	text.Format(L"Suspend Process: %u (%ws)?", p->Id, p->GetImageName().c_str());
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 

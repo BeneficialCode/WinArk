@@ -417,3 +417,33 @@ SIZE_T Process::GetImageSize(HANDLE hProcess, DWORD_PTR imageBase) {
 	}
 	return 0;
 }
+
+bool Process::HasVEH(HANDLE hProcess) const {
+	ULONG len = 0;
+	PROCESS_BASIC_INFORMATION info;
+	DWORD status = ::NtQueryInformationProcess(hProcess, ProcessBasicInformation, &info, sizeof(info), &len);
+	if (!NT_SUCCESS(status))
+		return false;
+
+	if (info.PebBaseAddress == nullptr)
+		return false;
+	DWORD flags = 0;
+	DWORD* pCrossProcessFlags = nullptr;
+	PROCESS_EXTENDED_BASIC_INFORMATION extInfo;
+	if (!GetExtendedInfo(hProcess, &extInfo))
+		return false;
+	if (extInfo.IsWow64Process) {
+		pCrossProcessFlags = reinterpret_cast<DWORD*>((BYTE*)info.PebBaseAddress + 0x1000 + 0x28);
+	}
+	else {
+		pCrossProcessFlags = reinterpret_cast<DWORD*>((BYTE*)info.PebBaseAddress + 0x50);
+	}
+
+	if (!::ReadProcessMemory(hProcess, pCrossProcessFlags, &flags, sizeof(flags), nullptr))
+		return false;
+
+	if (flags & 0x00000004)
+		return true;
+
+	return false;
+}

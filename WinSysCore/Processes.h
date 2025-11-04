@@ -120,6 +120,7 @@ namespace WinSys {
 		static std::vector<std::pair<std::wstring, std::wstring>> GetEnvironment(HANDLE hProcess);
 		static DWORD_PTR GetImageBaseAddress(HANDLE hProcess);
 		static SIZE_T GetImageSize(HANDLE hProcess, DWORD_PTR imageBase);
+		bool HasVEH(HANDLE hProcess) const;
 
 		bool SetPriorityClass(ProcessPriorityClass pc);
 		uint32_t GetGdiObjectCount() const;

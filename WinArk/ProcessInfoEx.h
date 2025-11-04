@@ -37,6 +37,7 @@ public:
 	const std::wstring& GetCompanyName() const;
 	const std::wstring& GetDescription() const;
 	const std::wstring& GetVersion() const;
+	bool HasVEH(HANDLE hProcess) const;
 
 	int GetBitness() const;
 	const WinSys::Process* GetProcess() const {

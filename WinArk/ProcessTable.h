@@ -97,7 +97,7 @@ public:
 
 private:
 	enum class ProcessColumn {
-		Name,Id,Session,UserName,Eprocess,Priority,Threads,Handles,Attributes,CreateTime,Description,CompanyName,Version,ExePath,CmdLine
+		Name,Id,Session,UserName,HasVEH,Eprocess,Priority,Threads,Handles,Attributes,CreateTime,Description,CompanyName,Version,ExePath,CmdLine
 	};
 	//std::vector<std::shared_ptr<WinSys::ProcessInfo>> m_Processes;
 	mutable std::unordered_map<WinSys::ProcessInfo*, ProcessInfoEx> m_ProcessesEx;
