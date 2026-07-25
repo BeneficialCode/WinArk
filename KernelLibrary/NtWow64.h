@@ -276,3 +276,10 @@ typedef struct _LDR_DATA_TABLE_ENTRY32
     ULONG DependentLoadFlags;
     UCHAR SigningLevel; // since REDSTONE2
 } LDR_DATA_TABLE_ENTRY32, * PLDR_DATA_TABLE_ENTRY32;
+
+typedef struct _EWOW64PROCESS
+{
+    VOID* Peb;                                                              //0x0
+    USHORT Machine;                                                         //0x8
+    enum _SYSTEM_DLL_TYPE NtdllType;                                        //0xc
+}EWOW64PROCESS, * PEWOW64PROCESS;

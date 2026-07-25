@@ -80,6 +80,7 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 
 			FZG* result = CONTAINING_RECORD(pBucket, FZG, bucket);
 			KdPrint(("%d %d %s", result->age, result->height, result->name));
+			UNREFERENCED_PARAMETER(result);
 		}
 
 
@@ -90,6 +91,7 @@ DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
 		{
 			FZG* result = CONTAINING_RECORD(Iterator.HashEntry, FZG, bucket);
 			KdPrint(("result %p", result));
+			UNREFERENCED_PARAMETER(result);
 			HashTableIterRemove(&Iterator);
 			//KdPrint(("Iterator %d %d %s", result->age, result->height, result->name));
 			//ExFreePoolWithTag(result, 'meti');

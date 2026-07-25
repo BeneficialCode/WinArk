@@ -92,6 +92,8 @@ Return Value:
 		DebugObject->Flags = 0;
 	}
 
+	// _EWOW64PROCESS
+
 	// 调试对象插入句柄表
 	status = ObInsertObject(
 		DebugObject,
@@ -104,6 +106,8 @@ Return Value:
 	if (!NT_SUCCESS(status)) {
 		return status;
 	}
+
+	
 
 	__try {
 		*DebugObjectHandle = handle;
@@ -1678,7 +1682,7 @@ Return Value:
 				// No unread events there. Clear the event.
 				KeClearEvent(&DebugObject->EventsPresent);
 			}
-			status = STATUS_SUCCESS;;
+			status = STATUS_SUCCESS;
 
 		}
 		else {

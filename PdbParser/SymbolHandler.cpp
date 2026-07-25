@@ -252,7 +252,7 @@ IMAGEHLP_MODULE SymbolHandler::GetModuleInfo(DWORD64 address) {
 ULONG_PTR SymbolHandler::GetSymbolAddressFromName(PCSTR name) {
 	auto symbol = std::make_unique<ImagehlpSymbol>();
 	auto info = symbol->GetSymbolInfo();
-	BOOL success = ::SymGetSymFromName64(m_hProcess, name, info);
+	BOOL success = ::SymGetSymFromName(m_hProcess, name, info);
 	if (!success) {
 		DWORD error = ::GetLastError();
 		std::string value = to_string(error);

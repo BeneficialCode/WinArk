@@ -239,6 +239,13 @@ LONG WINAPI SelfUnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
+	// Suppress the OS "There is no disk in the drive" critical-error dialog. It is
+	// raised whenever the process touches an empty removable drive (e.g. D: on a VM):
+	// DbgHelp below probes each module's build-time PDB path,
+	// and various views enumerate drive letters. SEM_FAILCRITICALERRORS turns those
+	// failures into silent error returns instead of a modal dialog.
+	::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+
 	g_hSingleInstMutex = ::CreateMutex(nullptr, FALSE, L"WinArkSingleInstanceMutex");
 	if (!g_hSingleInstMutex) {
 		return 1;

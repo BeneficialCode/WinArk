@@ -962,6 +962,9 @@ NTSTATUS AntiRootkitDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			auto info = (UnloadedDriversInfo*)Irp->AssociatedIrp.SystemBuffer;
+			if (!info->pMmUnloadedDrivers) {
+				break;
+			}
 			// MmUnloadedDrivers MmLastUnloadedDriver
 			PUNLOADED_DRIVER pMmUnloadDrivers = nullptr;
 			pMmUnloadDrivers = *(PUNLOADED_DRIVER*)info->pMmUnloadedDrivers;

@@ -149,7 +149,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\PEParser;..\WinSysCore;..\PdbParser;..\Utils;..\diStorm3\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -25,7 +25,7 @@ NtSuspendProcess(
 	_In_ HANDLE ProcessHandle
 );
 
-extern "C" NTSTATUS NtResumeProcess(_In_ HANDLE ProcessHandle);
+extern "C" NTSTATUS NTAPI NtResumeProcess(_In_ HANDLE ProcessHandle);
 
 CProcessTable::CProcessTable(BarInfo& bars,TableInfo& table)
 	:CTable(bars,table){
@@ -180,7 +180,7 @@ LRESULT CProcessTable::OnSysKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 }
 
 LRESULT CProcessTable::OnGetDlgCode(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	return DLGC_WANTARROWS;	// Direction keys.ÎÒÏëÒª´¦Àí·½Ïò¼ü
+	return DLGC_WANTARROWS;	// Direction keys.ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 }
 
 void CProcessTable::Refresh() {
@@ -284,7 +284,7 @@ LRESULT CProcessTable::OnProcessKill(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	auto& p = m_Table.data.info[selected];
 
 	CString text;
-	text.Format(L"Kill Process£º%u (%ws)?", p->Id, p->GetImageName().c_str());
+	text.Format(L"Kill Processï¿½ï¿½%u (%ws)?", p->Id, p->GetImageName().c_str());
 	if (AtlMessageBox(*this, (PCWSTR)text, IDS_TITLE, MB_ICONWARNING | MB_OKCANCEL | MB_DEFBUTTON2) == IDCANCEL)
 		return 0;
 
